@@ -35,7 +35,6 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
 
         private bool _initial = true;
 
-        //private int _beginAfter = 10;
 
         enum Direction {
             North,
