@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler, Magnus K. Jensen,
+//               Casper Nyvang Sørensen, Christian Ziegler Sejersen, Henrik Van Peet, Jakob Meyer Olsen, Mads Beyer Mogensen and Puvikaran Santhirasegaram 
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -61,7 +62,7 @@ namespace Maes.Map
         internal VisibleTilesCoarseMap VisibleTilesCoarseMap;
 
 
-        public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
+        public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed, bool mapKnown = false)
         {
             _collisionMap = collisionMap;
             _robotConstraints = robotConstraints;
@@ -69,19 +70,46 @@ namespace Maes.Map
             _widthInTiles = collisionMap.WidthInTiles * 2;
             _heightInTiles = collisionMap.HeightInTiles * 2;
             _offset = collisionMap.ScaledOffset;
-            _tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
 
             _currentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
             this.random = new Random(randomSeed);
             _pathFinder = new AStar();
 
-            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset);
+            CoarseMap = mapKnown ? new CoarseGrainedMap(collisionMap, this, _offset) : new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset);
             VisibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
+            _tiles = mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
+        }
+        
+        private SlamTileStatus[,] SetTilesAsKnownMap(SimulationMap<Tile> collisionMap)
+        {
+            var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
+            for (var x = 0; x < _widthInTiles; x++)
+            {
+                for (var y = 0; y < _heightInTiles; y++)
+                {
+                    var tile = collisionMap.GetTileByLocalCoordinate(x / 2, y / 2);
+                    var triangles = tile.GetTriangles();
+                    var xIndex = x % 2;
+                    var yIndex = y % 2;
 
-            for (int x = 0; x < _widthInTiles; x++)
-                for (int y = 0; y < _heightInTiles; y++)
-                    _tiles[x, y] = SlamTileStatus.Unseen;
+                    var index = xIndex * 2 + yIndex * 4;
+                    var slice = triangles.Skip(index).Take(2);
+                    tiles[x, y] = slice.Any(t => Tile.IsWall(t.Type)) ? SlamTileStatus.Solid : SlamTileStatus.Open;
+                }
+            }
+
+            return tiles;
+        }
+        
+        private SlamTileStatus[,] EmptyMap()
+        {
+            var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
+            for (var x = 0; x < _widthInTiles; x++)
+                for (var y = 0; y < _heightInTiles; y++)
+                    tiles[x, y] = SlamTileStatus.Unseen;
+
+            return tiles;
         }
 
         public Vector2Int TriangleIndexToCoordinate(int triangleIndex)
@@ -406,6 +434,8 @@ namespace Maes.Map
         {
             return CoarseMap;
         }
+
+        public SlamTileStatus[,] GetTileStatuses() => _tiles;
 
         public VisibleTilesCoarseMap GetVisibleTilesCoarseMap()
         {

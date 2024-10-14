@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler, Magnus K. Jensen,
+//                      Casper Nyvang Sørensen, Christian Ziegler Sejersen, Henrik Van Peet, Jakob Meyer Olsen, Mads Beyer Mogensen and Puvikaran Santhirasegaram 
 // 
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Maes.Map.MapGen;
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;
@@ -49,15 +51,31 @@ namespace Maes.Map
         /// <param name="width">Width in coarse-grained tiles.</param>
         /// <param name="height">Height in coarse-grained tiles.</param>
         /// <param name="offset">Coordinate offset.</param>
-        public CoarseGrainedMap(SlamMap slamMap, int width, int height, Vector2 offset)
+        public CoarseGrainedMap(SlamMap slamMap, int width, int height, Vector2 offset, bool mapKnown = false)
         {
             _slamMap = slamMap;
             _width = width;
             _height = height;
             _offset = offset;
             _tilesCoveredStatus = new bool[width, height];
-            _optimisticTileStatuses = new SlamMap.SlamTileStatus[width, height];
+            _optimisticTileStatuses = SetTileStatuses(slamMap, width, height, mapKnown);
             _aStar = new AStar();
+        }
+        
+        private static SlamMap.SlamTileStatus[,] SetTileStatuses(SlamMap slamMap, int width, int height, bool mapKnown)
+        {
+            var tileStatuses = new SlamMap.SlamTileStatus[width, height];
+            if (mapKnown)
+            {
+                var slamMapTiles = slamMap.GetTileStatuses();
+                for (var x = 0; x < width; x++)
+                    for (var y = 0; y < height; y++)
+                    {
+                        var tiles = new[] { slamMapTiles[x * 2, y * 2], slamMapTiles[x * 2 + 1, y * 2], slamMapTiles[x * 2, y * 2 + 1], slamMapTiles[x * 2 + 1, y * 2 + 1] };
+                        tileStatuses[x, y] = tiles.Contains(SlamMap.SlamTileStatus.Solid) ? SlamMap.SlamTileStatus.Solid : SlamMap.SlamTileStatus.Open;
+                    }
+            }
+            return tileStatuses;
         }
 
         /// <summary>

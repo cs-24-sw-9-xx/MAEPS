@@ -5,7 +5,9 @@
         "Unity.Robotics.ROSTCPConnector.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Unity.Robotics.ROSTCPConnector"
+        "Unity.Robotics.ROSTCPConnector",
+        "Unity.Robotics.ROSTCPConnector.MessageGeneration",
+        "Unity.Robotics.ROSTCPConnector.Messages"
     ],
     "includePlatforms": [
         "Editor"
