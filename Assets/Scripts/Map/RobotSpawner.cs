@@ -360,6 +360,7 @@ namespace Maes.Map
             robot.ExplorationAlgorithm = algorithm;
             robot.Controller.CommunicationManager = CommunicationManager;
             robot.Controller.SlamMap = new SlamMap(collisionMap, RobotConstraints, seed);
+            robot.Controller.PatrollingMap = new PatrollingMap(collisionMap);
             robot.Controller.Constraints = RobotConstraints;
             algorithm.SetController(robot.Controller);
 
