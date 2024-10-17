@@ -13,7 +13,7 @@ namespace Maes.Map {
         private Vector2Int _position;
         private int _totalIdleness;
         private int _visits;
-        private float _maxIdleness;
+        private int _maxIdleness;
 
         private Color _color;
 
