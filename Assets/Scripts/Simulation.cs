@@ -44,6 +44,8 @@ namespace Maes
         public RobotSpawner RobotSpawner;
         public ExplorationVisualizer explorationVisualizer;
 
+        public PatrollingVisualizer PatrollingVisualizer;
+
         private SimulationScenario _scenario;
         private SimulationMap<Tile> _collisionMap;
         public List<MonaRobot> Robots;
@@ -79,6 +81,7 @@ namespace Maes
             _communicationManager.SetRobotReferences(Robots);
 
             ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
+            PatrollingVisualizer.SetMap(_collisionMap);
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)

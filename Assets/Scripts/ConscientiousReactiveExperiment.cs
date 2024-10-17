@@ -23,7 +23,7 @@ using System;
 using Maes.ExplorationAlgorithm.Minotaur;
 using System.Collections;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
-using Maes.ExplorationAlgorithm.WallFollower;
+using Maes.PatrollingAlgorithm.ConscientiousReactive;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
@@ -39,7 +39,7 @@ using Maes.ExplorationAlgorithm.Greed;
 
 namespace Maes
 {
-    internal class WallFollowerExperiment : MonoBehaviour
+    internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
         private Simulator _simulator;
         /*
@@ -135,7 +135,7 @@ namespace Maes
             var mapSizes = new List<int> { 50, 75, 100 };
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
-                    { "wall_follower", seed => new WallFollowerAlgorithm() },
+                    { "conscientious_reactive", seed => new ConscientiousReactiveAlgorithm() },
                 };
             constraintIterator++;
             var buildingMaps = ((buildingConfigList100));
