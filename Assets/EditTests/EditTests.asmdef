@@ -4,7 +4,14 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "CustomScriptsAssembly"
+        "CustomScriptsAssembly",
+        "CustomRosMessages",
+        "QuickOutline",
+        "Unity.Robotics.ROSTCPConnector",
+        "Unity.Robotics.ROSTCPConnector.Editor",
+        "Unity.Robotics.ROSTCPConnector.MessageGeneration",
+        "Unity.Robotics.ROSTCPConnector.Messages",
+        "YamlDotNet"
     ],
     "includePlatforms": [
         "Editor"
