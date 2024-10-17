@@ -151,7 +151,7 @@ namespace Maes.Map
                 var leftVerticalLefttSplitRoom = new SplitRoom(
                     splitRoom.Tiles.Where(t => t.x >= verticalSplitPointLeft).ToArray()
                 );
-                return (leftVerticalRightSplitRoom, leftVerticalRightSplitRoom);
+                return (leftVerticalRightSplitRoom, leftVerticalLefttSplitRoom);
             }
 
             // Splits the room vertically right
