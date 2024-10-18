@@ -135,7 +135,6 @@ namespace Maes
                     { "HenrikExplAlgo", seed => new HenrikExplorationAlgorithm() }
                 };
             constraintIterator++;
-            // var buildingMaps = buildingConfigList50.Union(buildingConfigList75.Union(buildingConfigList100));
             var buildingMaps = buildingConfigList100;
             foreach (var mapConfig in buildingMaps)
             {
