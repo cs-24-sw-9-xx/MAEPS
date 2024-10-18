@@ -30,7 +30,7 @@ namespace Maes.Map
                 }
             }
 
-            Verticies = CreateVerticiesFromRooms(new SplitRoom(roomTiles.ToArray()));
+            Verticies = CreateVerticiesFromRooms(new SplitRoom(roomTiles.ToArray(), "Start"));
         }
 
         private static Vertex[] CreateVerticiesFromRooms(SplitRoom splitRoom)
@@ -60,8 +60,18 @@ namespace Maes.Map
                     {
                         vertex.AddNeighbor(otherVertex);
                     }
+
+                    if (DoRoomsOverlap(room, otherRoom)) {
+                        Debug.LogError($"Room {room.FromWhichAlgo} overlaps with Room {otherRoom.FromWhichAlgo}");
+                    }
                 }
             }
+
+            // Visualize all tiles
+            // return roomVerticies.Keys
+            //     .Select(r => (Random.ColorHSV(0.2f, 1.0f), r))
+            //     .SelectMany(p => p.r.Tiles.Select(t => new Vertex(1.0f, t, p.Item1)))
+            //     .ToArray();
 
             return roomVerticies.Values.ToArray();
         }
@@ -128,31 +138,32 @@ namespace Maes.Map
                     }
 
                     // Splits the room horizontally
-                    var horizonUpSplitRoom = new SplitRoom(
-                        splitRoom.Tiles.Where(t => t.y <= horizontalSplitPoint).ToArray()
-                    );
                     var horizonDownSplitRoom = new SplitRoom(
-                        splitRoom.Tiles.Where(t => t.y > horizontalSplitPoint).ToArray()
+                        splitRoom.Tiles.Where(t => t.y <= horizontalSplitPoint).ToArray(), "Horizontal Down"
                     );
-                    return (horizonUpSplitRoom, horizonDownSplitRoom);
+                    var horizonUpSplitRoom = new SplitRoom(
+                        splitRoom.Tiles.Where(t => t.y > horizontalSplitPoint).ToArray(), "Horizontal Up"
+                    );
+                    return (horizonDownSplitRoom, horizonUpSplitRoom);
                 }
 
                 // Splits the room vertically left
+                var leftVerticalLeftSplitRoom = new SplitRoom(
+                    splitRoom.Tiles.Where(t => t.x < verticalSplitPointLeft).ToArray(), "Left Vertical Left"
+                );
                 var leftVerticalRightSplitRoom = new SplitRoom(
-                    splitRoom.Tiles.Where(t => t.x < verticalSplitPointLeft).ToArray()
+                    splitRoom.Tiles.Where(t => t.x >= verticalSplitPointLeft).ToArray(), "Left Vertical Right"
                 );
-                var leftVerticalLefttSplitRoom = new SplitRoom(
-                    splitRoom.Tiles.Where(t => t.x >= verticalSplitPointLeft).ToArray()
-                );
-                return (leftVerticalRightSplitRoom, leftVerticalRightSplitRoom);
+
+                return (leftVerticalLeftSplitRoom, leftVerticalRightSplitRoom);
             }
 
             // Splits the room vertically right
             var rightVerticalLeftSplitRoom = new SplitRoom(
-                splitRoom.Tiles.Where(t => t.x <= verticalSplitPointRight).ToArray()
+                splitRoom.Tiles.Where(t => t.x <= verticalSplitPointRight).ToArray(), "Right Vertical Left"
             );
             var rightVerticalRightSplitRoom = new SplitRoom(
-                splitRoom.Tiles.Where(t => t.x > verticalSplitPointRight).ToArray()
+                splitRoom.Tiles.Where(t => t.x > verticalSplitPointRight).ToArray(), "Right Vertical Right"
             );
 
             return (rightVerticalLeftSplitRoom, rightVerticalRightSplitRoom);
@@ -226,7 +237,6 @@ namespace Maes.Map
 
             foreach (var tile in splitRoom.Tiles)
             {
-                // If no tiles are on the right side add it as potential split
                 if (!splitRoom.Tiles.Any(t => t == tile + Vector2Int.up))
                 {
                     potentialSplits.Add(tile.y);
@@ -235,7 +245,6 @@ namespace Maes.Map
 
             foreach (var potentialSplit in potentialSplits)
             {
-                // If there are a tile to the right of the split
                 if (splitRoom.Tiles.Any(t => t.y > potentialSplit))
                 {
                     return potentialSplit;
@@ -255,18 +264,20 @@ namespace Maes.Map
             return Vector2Int.Distance(first, second) <= 1.0f;
         }
 
+        private static bool DoRoomsOverlap(SplitRoom first, SplitRoom second) {
+            return first.Tiles.Any(f => second.Tiles.Any(s => f == s));
+        }
+
         private class SplitRoom
         {
             public readonly IReadOnlyCollection<Vector2Int> Tiles;
 
-            public SplitRoom(Vector2Int[] tiles)
+            public readonly string FromWhichAlgo;
+
+            public SplitRoom(Vector2Int[] tiles, string algo)
             {
                 Tiles = tiles;
-            }
-
-            public SplitRoom(Room room)
-            {
-                Tiles = room.Tiles;
+                FromWhichAlgo = algo;
             }
         }
     }
