@@ -132,10 +132,7 @@ namespace Maes
             var mapSizes = new List<int> { 50, 75, 100 };
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
-                    { "random", seed => new HenrikExplorationAlgorithm() }
-                    //{ "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) }
-                    // { "minotaur", seed => new MinotaurAlgorithm(robotConstraints, seed, 2) },
-                    // { "greed", seed => new GreedAlgorithm() }
+                    { "HenrikExplAlgo", seed => new HenrikExplorationAlgorithm() }
                 };
             constraintIterator++;
             // var buildingMaps = buildingConfigList50.Union(buildingConfigList75.Union(buildingConfigList100));
