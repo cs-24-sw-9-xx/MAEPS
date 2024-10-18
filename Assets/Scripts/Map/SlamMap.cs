@@ -75,10 +75,10 @@ namespace Maes.Map
             this.random = new Random(randomSeed);
             _pathFinder = new AStar();
 
-            CoarseMap = mapKnown ? new CoarseGrainedMap(collisionMap, this, _offset) : new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset);
+            _tiles = mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
+            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, mapKnown);
             VisibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
-            _tiles = mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
         }
         
         private SlamTileStatus[,] SetTilesAsKnownMap(SimulationMap<Tile> collisionMap)
