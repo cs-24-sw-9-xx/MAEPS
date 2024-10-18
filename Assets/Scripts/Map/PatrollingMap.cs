@@ -23,17 +23,10 @@ namespace Maes.Map
                 {
                     var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];
-                    if (
-                        firstTri.Type == TileType.Wall
-                        || firstTri.Type == TileType.Brick
-                        || firstTri.Type == TileType.Concrete
-                        || firstTri.Type == TileType.Wood
-                    )
+                    if (!Tile.IsWall(firstTri.Type))
                     {
-                        continue;
+                        roomTiles.Add(new Vector2Int(x, y));
                     }
-
-                    roomTiles.Add(new Vector2Int(x, y));
                 }
             }
 
