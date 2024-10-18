@@ -125,8 +125,6 @@ namespace Maes
             var buildingConfigList100 = new List<BuildingMapConfig>();
             foreach (int val in rand_numbers)
             {
-                // buildingConfigList50.Add(new BuildingMapConfig(val, widthInTiles: 50, heightInTiles: 50));
-                // buildingConfigList75.Add(new BuildingMapConfig(val, widthInTiles: 75, heightInTiles: 75));
                 buildingConfigList100.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
             }
 
