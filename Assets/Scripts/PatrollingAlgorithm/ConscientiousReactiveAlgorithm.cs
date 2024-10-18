@@ -8,18 +8,18 @@ using UnityEngine;
 
 namespace Maes.PatrollingAlgorithm.ConscientiousReactive
 {
-    public partial class ConscientiousReactiveAlgorithm : IExplorationAlgorithm
+    public class ConscientiousReactiveAlgorithm : IExplorationAlgorithm
     {
         private Robot2DController _controller;
         private IReadOnlyList<Vertex> _vertices;
         private Vertex _currentVertex;
-        private bool _robotIsRunning = false;
+        private bool _isPatrolling = false;
         public string GetDebugInfo()
         {
             return 
             "Conscientious Reactive Algorithm\n" + 
             $"Coordinate: {_currentVertex.Position}\n" +
-            $"Init done:  {_robotIsRunning}\n";
+            $"Init done:  {_isPatrolling}\n";
         }
 
         public void SetController(Robot2DController controller)
@@ -31,10 +31,10 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
         public void UpdateLogic()
         {
             UpdateVerticesIdleness();
-            if(!_robotIsRunning){
+            if(!_isPatrolling){
                 var vertex = GetClosestVertex();
                 _currentVertex = vertex; 
-                _robotIsRunning = true;
+                _isPatrolling = true;
             }
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
             if(currentPosition != _currentVertex.Position){
@@ -51,7 +51,6 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
             foreach (var vertex in _vertices)
             {
                 vertex.UpdateIdleness();
-                System.Console.WriteLine($"{vertex.Position}"+ ": " + vertex.Idleness);
             }
         }
 

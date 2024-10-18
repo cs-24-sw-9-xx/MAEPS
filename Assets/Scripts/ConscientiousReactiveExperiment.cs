@@ -15,7 +15,19 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: 
+// Rasmus Borrisholt Schmidt, 
+// Andreas Sebastian Sørensen, 
+// Thor Beregaard, 
+// Malte Z. Andreasen, 
+// Philip I. Holler,
+// Magnus K. Jensen, 	
+// Casper Nyvang Sørensen,
+// Christian Ziegler Sejersen,
+// Henrik van Peet,
+// Jakob Meyer Olsen,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
 // 
 // Original repository: https://github.com/Molitany/MAES
 
