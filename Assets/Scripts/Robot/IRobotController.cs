@@ -144,7 +144,6 @@ namespace Maes.Robot
         /// </summary>
         /// <returns> a list of all the tags within tag reading range of the robot</returns>
         List<RelativeObject<EnvironmentTag>> ReadNearbyTags();
-        
         public readonly struct DetectedWall
         {
             public readonly float distance;
