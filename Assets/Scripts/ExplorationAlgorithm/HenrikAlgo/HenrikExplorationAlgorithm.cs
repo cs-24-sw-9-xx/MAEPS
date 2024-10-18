@@ -6,6 +6,7 @@
 //   - Proposed fix: When finding the nearest unexplored tile, the robot could exclude tiles which are close to other robots.
 // - The anti-wall collision 'CollisionCorrector()' is primitive.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,11 +39,8 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
         public void UpdateLogic()
         {
             ShareSlamMap();
-
-            var status = _robotController.GetStatus();
-            if (status == RobotStatus.Idle)
+            if (_robotController.GetStatus() == RobotStatus.Idle)
             {
-                CollisionCorrector();
                 _targetTile = _robotController.GetSlamMap().CoarseMap.GetNearestTileFloodFill(_robotController.GetSlamMap().CoarseMap.GetCurrentPosition(), SlamMap.SlamTileStatus.Unseen);
             }
             if (_targetTile != null)
@@ -78,16 +76,6 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
                 }
             }
             _ticksSinceHeartbeat++;
-        }
-
-        private void CollisionCorrector()
-        {
-            if (_robotController.IsCurrentlyColliding())
-            {
-                _robotController.Move(0.2f, true);
-                _robotController.Rotate(45);
-                _robotController.Move(0.2f, true);
-            }
         }
 
         public string GetDebugInfo()
