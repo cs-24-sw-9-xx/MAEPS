@@ -122,9 +122,6 @@ namespace Maes
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-
-            // var buildingConfigList50 = new List<BuildingMapConfig>();
-            // var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
             foreach (int val in rand_numbers)
             {
