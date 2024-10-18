@@ -161,18 +161,6 @@ namespace Maes
                         {
                             spawningPosList.Add(new Vector2Int(random.Next(0, size), random.Next(0, size)));
                         }
-
-                        // simulator.EnqueueScenario(new SimulationScenario(seed: 123,
-                        //                                                  mapSpawner: generator => generator.GenerateMap(mapConfig),
-                        //                                                  robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                        //                                                      collisionMap: buildingConfig,
-                        //                                                      seed: 123,
-                        //                                                      numberOfRobots: robotCount,
-                        //                                                      spawnPositions: spawningPosList,
-                        //                                                      createAlgorithmDelegate: algorithm),
-                        //                                                  statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                        //                                                  robotConstraints: robotConstraints)
-                        // );
                     }
                 }
             }
