@@ -138,7 +138,7 @@ namespace Maes
                     { "wall_follower", seed => new WallFollowerAlgorithm() },
                 };
             constraintIterator++;
-            var buildingMaps = ((buildingConfigList100));
+            var buildingMaps = buildingConfigList50.Union(buildingConfigList75.Union(buildingConfigList100));
             foreach (var mapConfig in buildingMaps)
             {
                 for (var amountOfRobots = 1; amountOfRobots < 10; amountOfRobots += 2)

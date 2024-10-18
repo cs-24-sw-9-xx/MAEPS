@@ -17,7 +17,7 @@ namespace Maes.Statistics {
 
         public void SetMap(SimulationMap<Tile> simulationMap)
         {
-            // Why the fuck do i have to do this?
+            // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;
             foreach (var visualizer in _visualizers) {
                 GameObject.Destroy(visualizer);
