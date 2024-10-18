@@ -1,5 +1,10 @@
 // Copyright 2024
 // Contributors: Henneboy
+// This algorithm is not optimal:
+// - Robots can get stuck when they collide with eachother
+// - Robots do not share their targets/intentions, i.e. they don't coordinate.
+//   - Proposed fix: When finding the nearest unexplored tile, the robot could exclude tiles which are close to other robots.
+// - The anti-wall collision 'CollisionCorrector()' is primitive.
 
 using System.Collections.Generic;
 using System.Linq;

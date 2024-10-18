@@ -16,6 +16,7 @@
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
 // Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+//                      Henrik van Peet & Jakob Meyer Olsen.
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -138,7 +139,7 @@ namespace Maes
             var buildingMaps = buildingConfigList100;
             foreach (var mapConfig in buildingMaps)
             {
-                var robotCount = 1;
+                var robotCount = 5;
                 foreach (var size in mapSizes)
                 {
                     foreach (var (algorithmName, algorithm) in algorithms)
