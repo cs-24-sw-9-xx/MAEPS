@@ -433,3 +433,16 @@ Rasmus Borrisholt Schmidt - [rasmus.rbs@gmail.com](mailto:rasmus.rbs@gmail.com?s
 Andreas Sebastian Sørensen - [todes92@protonmail.com](mailto:todes92@protonmail.com?subject=Regarding%20the%20MAES%20Project)
 
 Thor Beregaard - [thor@beregaard.dk](mailto:thor@beregaard.dk?subject=Regarding%20the%20MAES%20Project)
+
+Casper Nyvang Sørensen - [caspernyvang@gmail.com](mailto:caspernyvang@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
+Christian Ziegler Sejersen - [ChristianZ.Sejersen@gmail.com](mailto:ChristianZ.Sejersen@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
+Henrik Van Peet - [henneboycool@gmail.com](mailto:henneboycool@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
+Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
+Mads Beyer Mogensen -[mads256h@gmail.com](mailto:mads256h@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
+Puvikaran Santhirasegaram - [puvi2001@gmail.com](mailto:puvi2001@gmail.com?subject=Regarding%20the%20MAES%20Project)
+
