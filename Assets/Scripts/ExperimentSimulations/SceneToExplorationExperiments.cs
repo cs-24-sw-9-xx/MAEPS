@@ -29,7 +29,7 @@ using UnityEngine.SceneManagement;
 
 namespace Maes.ExperimentSimulations
 {
-    public class SceneToExperiments : ExperimentBase
+    public class SceneToExplorationExperiments : ExplorationExperimentBase
     {
         // Start is called before the first frame update
         void Start()

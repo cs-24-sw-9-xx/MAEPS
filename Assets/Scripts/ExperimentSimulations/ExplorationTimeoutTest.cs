@@ -37,12 +37,16 @@ using System.Linq;
 using Maes.ExplorationAlgorithm.Greed;
 using System.Text.RegularExpressions;
 using System.IO;
+using MAES.Simulation;
 
 namespace Maes.ExperimentSimulations
 {
-    public class TimeoutTest : MonoBehaviour
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    public class ExplorationTimeoutTest : MonoBehaviour
     {
-        private Simulator _simulator;
+        private MySimulator _simulator;
 
         private void Start()
         {
@@ -114,32 +118,32 @@ namespace Maes.ExperimentSimulations
                     { "minotaur", seed => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2) },
                     { "greed", seed => new GreedAlgorithm() }
                 };
-            var simulator = Simulator.GetInstance();
+            var simulator = MySimulator.GetInstance();
             var random = new System.Random(1234);
-            List<int> rand_numbers = new List<int>();
+            List<int> randNumbers = new List<int>();
             for (int i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
-                rand_numbers.Add(val);
+                randNumbers.Add(val);
             }
 
             var buildingConfigList = new List<BuildingMapConfig>();
             switch (amount)
             {
                 case "50":
-                    foreach (var val in rand_numbers)
+                    foreach (var val in randNumbers)
                     {
                         buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 50, heightInTiles: 50));
                     }
                     break;
                 case "75":
-                    foreach (var val in rand_numbers)
+                    foreach (var val in randNumbers)
                     {
                         buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 75, heightInTiles: 75));
                     }
                     break;
                 case "100":
-                    foreach (var val in rand_numbers)
+                    foreach (var val in randNumbers)
                     {
                         buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
                     }
@@ -159,7 +163,7 @@ namespace Maes.ExperimentSimulations
                     var regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether_.*\.csv");
                     if (robotCount == 5 && mapConfig.RandomSeed == 585462)
                     {
-                        simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                 buildingConfig,
@@ -172,7 +176,7 @@ namespace Maes.ExperimentSimulations
                     }
                     else
                     {
-                        new SimulationScenario(seed: 123,
+                        new MySimulationScenario(seed: 123,
                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                 buildingConfig,
@@ -192,7 +196,7 @@ namespace Maes.ExperimentSimulations
                     regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart_.*\.csv");
                     if (false)
                     {
-                    simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                    simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                             collisionMap: buildingConfig,
@@ -205,7 +209,7 @@ namespace Maes.ExperimentSimulations
                     }
                     else
                     {
-                        new SimulationScenario(seed: 123,
+                        new MySimulationScenario(seed: 123,
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                             collisionMap: buildingConfig,
@@ -221,7 +225,7 @@ namespace Maes.ExperimentSimulations
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                     buildingConfig,

@@ -23,12 +23,13 @@ using System.Collections.Generic;
 using Maes;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Visualizer;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace Maes.Statistics
 {
-    public class ExplorationVisualizer : MonoBehaviour
+    public class ExplorationVisualizer : MonoBehaviour, IVisualizer<ExplorationCell>
     {
         public MeshRenderer meshRenderer;
         public MeshFilter meshFilter;

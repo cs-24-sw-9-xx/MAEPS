@@ -20,6 +20,7 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
+using MAES.Simulation;
 using UnityEngine;
 using YamlDotNet.Core.Tokens;
 
@@ -30,9 +31,11 @@ namespace Maes.Map {
         public Outline outline;
         private OnVisibleTagSelectedDelegate _onVisibleTagSelected;
 
+        public ISimulation Simulation;
+
         public void SetTag(EnvironmentTag t) {
             _environmentTag = t;
-            _onVisibleTagSelected = Simulation.SingletonInstance.SetSelectedTag;
+            _onVisibleTagSelected = Simulation.SetSelectedTag;
         }
         
         public void OnMouseEnter() {

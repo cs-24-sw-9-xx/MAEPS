@@ -22,19 +22,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using Maes;
+using MAES.Simulation;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RestartRemakeContoller : MonoBehaviour
+public class RestartRemakeContoller<TSimulation> : MonoBehaviour
+where TSimulation : class, ISimulation<TSimulation>
 {
 
     public Button RestartCurrentButton;
     public Button RestartAllButton;
     public Button MakeAndRunButton;
     public Button CreateBatchButton;
-    public SimulationManager simulationManager;
+    public SimulationManager<TSimulation> simulationManager;
 
-    private Simulation previousSimulation;
+    private ISimulation _previousSimulationBase;
 
     
 
@@ -58,15 +60,9 @@ public class RestartRemakeContoller : MonoBehaviour
         });
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void RestartCurrentScenario() {
         simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
-        var newScenariosQueue = new Queue<SimulationScenario>();
+        var newScenariosQueue = new Queue<SimulationScenario<TSimulation>>();
         newScenariosQueue.Enqueue(simulationManager._currentScenario);
         simulationManager.RemoveCurrentSimulation();
         if (simulationManager._scenarios.Count != 0) {
@@ -84,7 +80,7 @@ public class RestartRemakeContoller : MonoBehaviour
     }
     private void RestartAllScenarios() {
         simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
-        Queue<SimulationScenario> tempScenariosQueue = new Queue<SimulationScenario>();
+        Queue<SimulationScenario<TSimulation>> tempScenariosQueue = new Queue<SimulationScenario<TSimulation>>();
         foreach (var scenario in simulationManager._initialScenarios){
             tempScenariosQueue.Enqueue(scenario);
         }

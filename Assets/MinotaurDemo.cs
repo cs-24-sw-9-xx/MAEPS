@@ -30,7 +30,7 @@ using Maes.ExperimentSimulations;
 
 namespace Maes
 {
-    public class MinotaurDemo : ExperimentBase
+    public class MinotaurDemo : ExplorationExperimentBase
     {
         void Start()
         {

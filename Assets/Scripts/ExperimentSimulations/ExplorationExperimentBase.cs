@@ -38,12 +38,16 @@ using Maes.ExplorationAlgorithm.Greed;
 using System.Text.RegularExpressions;
 using System.IO;
 using Maes.ExplorationAlgorithm.Voronoi;
+using MAES.Simulation;
 
 namespace Maes.ExperimentSimulations
 {
-    public class ExperimentBase : MonoBehaviour
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    public class ExplorationExperimentBase : MonoBehaviour
     {
-        private Simulator _simulator;
+        private MySimulator _simulator;
         
         /// <summary>
         /// This class will run mostly all configurations, it is written fast and loose.
@@ -100,7 +104,7 @@ namespace Maes.ExperimentSimulations
                     { "greed", seed => new GreedAlgorithm() },
                     { "voronoi", seed => new VoronoiExplorationAlgorithm(seed, constraintsDict[constraintName], constraintsDict[constraintName].SlamRayTraceRange-1) }
                 };
-            var simulator = Simulator.GetInstance();
+            var simulator = MySimulator.GetInstance();
             var random = new System.Random(1234);
             List<int> rand_numbers = new List<int>();
             for (int i = 0; i < mapIterations; i++)
@@ -178,7 +182,7 @@ namespace Maes.ExperimentSimulations
                         var regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether_.*\.csv");
                         if (((desiredSeed.HasValue && desiredSeed.Value == mapConfig.RandomSeed) && (desiredRobots.HasValue && desiredRobots == robotCount)) || (!desiredSeed.HasValue && !previousSimulations.Any(simulation => regex.IsMatch(simulation))))
                         {
-                            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                                 buildingConfig,
@@ -192,7 +196,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new SimulationScenario(seed: 123,
+                            new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                     buildingConfig,
@@ -214,7 +218,7 @@ namespace Maes.ExperimentSimulations
                         regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart_.*\.csv");
                         if (((desiredSeed.HasValue && desiredSeed.Value == mapConfig.RandomSeed) && (desiredRobots.HasValue && desiredRobots == robotCount)) || (!desiredSeed.HasValue && !previousSimulations.Any(simulation => regex.IsMatch(simulation))))
                         {
-                            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                                 collisionMap: buildingConfig,
@@ -228,7 +232,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new SimulationScenario(seed: 123,
+                            new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                     collisionMap: buildingConfig,
@@ -252,7 +256,7 @@ namespace Maes.ExperimentSimulations
                         var regex = new Regex($@"{mapType}-{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether_.*\.csv");
                         if (!previousSimulations.Any(simulation => regex.IsMatch(simulation)))
                         {
-                            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                                 buildingConfig,
@@ -266,7 +270,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new SimulationScenario(seed: 123,
+                            new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                     buildingConfig,
@@ -288,7 +292,7 @@ namespace Maes.ExperimentSimulations
                         regex = new Regex($@"{mapType}-{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart_.*\.csv");
                         if (!previousSimulations.Any(simulation => regex.IsMatch(simulation)))
                         {
-                            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                                 collisionMap: buildingConfig,
@@ -302,7 +306,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new SimulationScenario(seed: 123,
+                            new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                     collisionMap: buildingConfig,
@@ -318,7 +322,7 @@ namespace Maes.ExperimentSimulations
             }
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,

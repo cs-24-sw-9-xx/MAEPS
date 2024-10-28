@@ -29,9 +29,9 @@ using static Maes.Statistics.ExplorationTracker;
 
 namespace Maes.Statistics
 {
-    internal class StatisticsCSVWriter
+    internal class ExplorationStatisticsCSVWriter
     {
-        private Simulation _simulation { get; }
+        private ExplorationSimulation ExplorationSimulation { get; }
         private List<SnapShot<float>> _coverSnapShots { get; }
         private List<SnapShot<float>> _exploreSnapShots { get; }
         private List<SnapShot<float>> _distanceSnapShots { get; }
@@ -40,18 +40,18 @@ namespace Maes.Statistics
         private string _path { get; }
 
 
-        public StatisticsCSVWriter(Simulation simulation, string fileNameWithoutExtension)
+        public ExplorationStatisticsCSVWriter(ExplorationSimulation explorationSimulation, string fileNameWithoutExtension)
         {
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
-            _coverSnapShots = simulation.ExplorationTracker._coverSnapshots;
-            _exploreSnapShots = simulation.ExplorationTracker._exploreSnapshots;
-            _distanceSnapShots = simulation.ExplorationTracker._distanceSnapshots;
-            _allAgentsConnectedSnapShots = simulation._communicationManager.CommunicationTracker.InterconnectionSnapShot;
-            _biggestClusterPercentageSnapShots = simulation._communicationManager.CommunicationTracker.BiggestClusterPercentageSnapshots;
+            _coverSnapShots = explorationSimulation.ExplorationTracker._coverSnapshots;
+            _exploreSnapShots = explorationSimulation.ExplorationTracker._exploreSnapshots;
+            _distanceSnapShots = explorationSimulation.ExplorationTracker._distanceSnapshots;
+            _allAgentsConnectedSnapShots = explorationSimulation._communicationManager.CommunicationTracker.InterconnectionSnapShot;
+            _biggestClusterPercentageSnapShots = explorationSimulation._communicationManager.CommunicationTracker.BiggestClusterPercentageSnapshots;
 
-            _simulation = simulation;
+            ExplorationSimulation = explorationSimulation;
             var resultForFileName = "e??-c??";
             if (_exploreSnapShots.Any())
                 resultForFileName = $"e{(int)_exploreSnapShots[^1].Value}-c{(int)_coverSnapShots[^1].Value}";

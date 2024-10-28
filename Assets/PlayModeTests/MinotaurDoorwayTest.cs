@@ -28,9 +28,13 @@ using UnityEngine;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.Utilities.Files;
 using System.Linq;
+using MAES.Simulation;
 
 namespace PlayModeTests
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
     public class MinotaurDoorwayMock : MinotaurAlgorithm
     {
         public MinotaurDoorwayMock(RobotConstraints robotConstraints, int seed, int doorWidth) : base(robotConstraints, seed, doorWidth)
@@ -46,14 +50,14 @@ namespace PlayModeTests
     public class MinotaurDoorwayTest
     {
         private const int RandomSeed = 123;
-        private Simulator _maes;
-        private Simulation _simulation;
+        private MySimulator _maes;
+        private ExplorationSimulation _explorationSimulation;
         private List<MinotaurDoorwayMock> _minotaurs = new();
 
         [TearDown]
         public void ClearSimulator()
         {
-            Simulator.Destroy();
+            MySimulator.Destroy();
             _minotaurs.Clear();
         }
         private void InitSimulator(string mapName, List<Vector2Int> robotSpawnPositions)
@@ -87,7 +91,7 @@ namespace PlayModeTests
                 }
             );
             var map = PgmMapFileLoader.LoadMapFromFileIfPresent(mapName + ".pgm");
-            var testingScenario = new SimulationScenario(RandomSeed,
+            var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(map, RandomSeed),
                 hasFinishedSim: simulation => false,
                 robotConstraints: constraints,
@@ -99,16 +103,16 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = Simulator.GetInstance();
+            _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
         }
 
         private IEnumerator AssertDoorsWhenFinished(int doorAmount)
         {
-            if (_simulation.SimulatedLogicTicks > 36000)
+            if (_explorationSimulation.SimulatedLogicTicks > 36000)
                 yield return false;
-            while (_simulation.ExplorationTracker.ExploredProportion < 0.999f)
+            while (_explorationSimulation.ExplorationTracker.ExploredProportion < 0.999f)
             {
                 yield return null;
             }

@@ -26,20 +26,25 @@ using Maes.ExplorationAlgorithm.RandomBallisticWalk;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Robot.Task;
+using MAES.Simulation;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace PlayModeTests {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    
     [TestFixture(1.0f)]
     [TestFixture(1.5f)]
     [TestFixture(0.5f)]
     public class Robot2DControllerTest {
 
         private const int RandomSeed = 123;
-        private Simulator _maes;
+        private MySimulator _maes;
         private TestingAlgorithm _testAlgorithm;
-        private Simulation _simulation;
+        private ExplorationSimulation _simulationBase;
         private MonaRobot _robot;
 
         private float _relativeMoveSpeed;
@@ -49,7 +54,7 @@ namespace PlayModeTests {
 
         [SetUp]
         public void InitializeTestingSimulator() {
-            var testingScenario = new SimulationScenario(RandomSeed,
+            var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: simulation => false,
                 robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed),
@@ -60,15 +65,15 @@ namespace PlayModeTests {
                         return algorithm;
                     }));
             
-            _maes = Simulator.GetInstance();
+            _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulation = _maes.GetSimulationManager().CurrentSimulation;
-            _robot = _simulation.Robots[0];
+            _simulationBase = _maes.GetSimulationManager().CurrentSimulation;
+            _robot = _simulationBase.Robots[0];
         }
 
         [TearDown]
         public void ClearSimulator() {
-            Simulator.Destroy();
+            MySimulator.Destroy();
         }
 
         
@@ -98,9 +103,9 @@ namespace PlayModeTests {
             }
             
             //  Wait 1 second (10 ticks) for the robot to stand completely still
-            var movementTaskEndTick = _simulation.SimulatedLogicTicks;
+            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulation.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
 
             // Assert that the actual final position approximately matches the expected final position
             var endingPosition = _robot.transform.position;
@@ -136,9 +141,9 @@ namespace PlayModeTests {
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle) 
                 yield return null;
             //  Wait 1 second (10 ticks) for the robot to stand completely still
-            var movementTaskEndTick = _simulation.SimulatedLogicTicks;
+            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulation.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
             
             // Assert that the actual final rotation approximately matches the expected angle
             var actualAngle = _robot.transform.rotation.eulerAngles.z;

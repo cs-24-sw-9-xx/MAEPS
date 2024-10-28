@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using Maes.Map;
 using Maes.Map.MapGen;
+using Maes.Visualizer;
 using UnityEngine;
 
 namespace Maes.Statistics {
-    public class PatrollingVisualizer : MonoBehaviour {
+    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<Tile> {
 
         public GameObject VertexVisualizer;
 
@@ -15,7 +16,7 @@ namespace Maes.Statistics {
 
         private List<GameObject> _visualizers = new List<GameObject>();
 
-        public void SetMap(SimulationMap<Tile> simulationMap)
+        public void SetMap(SimulationMap<Tile> simulationMap, Vector3 offset)
         {
             // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;

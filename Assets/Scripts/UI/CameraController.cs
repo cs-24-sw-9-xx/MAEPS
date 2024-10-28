@@ -21,6 +21,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using MAES.Simulation;
 using Maes.Utilities;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -37,7 +38,7 @@ namespace Maes.UI
         private List<CamAssembly> _cams;
         public Camera currentCam;
 
-        public SimulationManager SimulationManager;
+        public ISimulationManager SimulationManager;
 
         public float movementSpeed;
         public float movementTime;
@@ -266,16 +267,18 @@ namespace Maes.UI
 
         private void OnNewMouseWorldPosition(Vector2 mouseWorldPosition)
         {
+            SimulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
+            
             // Update the UI to show the current position of the mouse in world space
             // (The frame of reference changes between ros and maes mode)
             if (GlobalSettings.IsRosMode)
             {
-                SimulationManager.simulationInfoUIController.UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
+                SimulationManager.GetSimulationInfoUIController().UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
             }
-            else if (SimulationManager.CurrentSimulation != null)
+            else if (SimulationManager.GetCurrentSimulation() != null)
             {
                 // var coord = SimulationManager.CurrentSimulation.WorldCoordinateToSlamCoordinate(mouseWorldPosition);
-                SimulationManager.simulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition!);
+                SimulationManager.GetSimulationInfoUIController().UpdateMouseCoordinates(mouseWorldPosition!);
             }
         }
 

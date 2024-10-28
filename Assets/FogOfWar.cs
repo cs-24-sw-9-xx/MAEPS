@@ -22,12 +22,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using Maes;
+using MAES.Simulation;
 using UnityEngine;
 
 public class FogOfWarScript : MonoBehaviour
 {
 
-    public SimulationManager simulationManager;
+    public ISimulationManager simulationManager;
     public GameObject _fogOfWarPlane;
     public List<Transform> robots;
     public LayerMask _foglayer;
@@ -41,12 +42,12 @@ public class FogOfWarScript : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        foreach (Maes.Robot.MonaRobot robot in simulationManager.CurrentSimulation.Robots)
+        foreach (Maes.Robot.MonaRobot robot in simulationManager.GetCurrentSimulation().Robots)
         {
             robots.Add(robot.transform);
         }
 
-        _revealRadius = simulationManager._currentScenario.RobotConstraints.SlamRayTraceRange;
+        _revealRadius = simulationManager.CurrentScenario.RobotConstraints.SlamRayTraceRange;
         _revealRadiusSqr = _revealRadius * _revealRadius;
         _mesh = _fogOfWarPlane.GetComponent<MeshFilter>().mesh;
         _vertices = _mesh.vertices;

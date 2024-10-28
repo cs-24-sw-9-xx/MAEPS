@@ -24,7 +24,7 @@ using UnityEngine.UI;
 
 namespace Maes.UI
 {
-    internal class StatisticsUIController : MonoBehaviour
+    internal class ExplorationStatisticsUIController : MonoBehaviour
     {
         public Image Mask;
         public Text ProgressPercentageText;
@@ -37,12 +37,12 @@ namespace Maes.UI
             ProgressPercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
-        public void UpdateStatistics(Simulation currentSimulation)
+        public void UpdateStatistics(ExplorationSimulation currentExplorationSimulation)
         {
-            SetExplorationProgress(currentSimulation.ExplorationTracker.ExploredProportion);
+            SetExplorationProgress(currentExplorationSimulation.ExplorationTracker.ExploredProportion);
             ExplorationRateText.text = "Exploration rate (cells/minute): " +
-                                       (currentSimulation.ExplorationTracker.ExploredTriangles /
-                                        currentSimulation.SimulateTimeSeconds).ToString("#.0")
+                                       (currentExplorationSimulation.ExplorationTracker.ExploredTriangles /
+                                        currentExplorationSimulation.SimulateTimeSeconds).ToString("#.0")
                                        ;
         }
     }

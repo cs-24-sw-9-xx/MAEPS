@@ -19,12 +19,13 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using MAES.Simulation;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Maes.UI {
     public class SimulationSpeedController : MonoBehaviour {
-        public SimulationManager simulationManager;
+        public ISimulationManager simulationManager;
         public Button pauseButton;
         public Button playButton;
         public Button fastForwardButton;

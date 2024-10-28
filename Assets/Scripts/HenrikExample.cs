@@ -38,13 +38,17 @@ using System.Linq;
 using Maes.ExplorationAlgorithm.Greed;
 using Maes.ExplorationAlgorithm.RandomBallisticWalk;
 using Maes.ExplorationAlgorithm.HenrikAlgo;
+using MAES.Simulation;
 
 
 namespace Maes
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
     internal class HenrikExample : MonoBehaviour
     {
-        private Simulator _simulator;
+        private MySimulator _simulator;
         /*
 */
         private void Start()
@@ -112,7 +116,7 @@ namespace Maes
                 }
             );
 
-            var simulator = Simulator.GetInstance();
+            var simulator = MySimulator.GetInstance();
             var random = new System.Random(1234);
             List<int> rand_numbers = new List<int>();
             for (int i = 0; i < 100; i++)
@@ -145,7 +149,7 @@ namespace Maes
                     foreach (var (algorithmName, algorithm) in algorithms)
                     {
 
-                        simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                          mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                          robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                              buildingConfig,
@@ -168,7 +172,7 @@ namespace Maes
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,
