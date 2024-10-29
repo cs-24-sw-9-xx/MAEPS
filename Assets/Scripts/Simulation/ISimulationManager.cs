@@ -7,8 +7,8 @@ namespace MAES.Simulation
     {
         ISimulationScenario CurrentScenario { get; }
         
-        ISimulation GetCurrentSimulation();
-        ISimulationInfoUIController GetSimulationInfoUIController();
+        ISimulation CurrentSimulation { get; }
+        ISimulationInfoUIController SimulationInfoUIController { get; }
 
         SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState);
         

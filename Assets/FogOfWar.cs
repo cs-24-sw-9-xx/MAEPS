@@ -42,7 +42,7 @@ public class FogOfWarScript : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        foreach (Maes.Robot.MonaRobot robot in simulationManager.GetCurrentSimulation().Robots)
+        foreach (Maes.Robot.MonaRobot robot in simulationManager.CurrentSimulation.Robots)
         {
             robots.Add(robot.transform);
         }

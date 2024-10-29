@@ -46,10 +46,14 @@ namespace Maes {
         public Text SimulationStatusText;
         private int _physicsTicksSinceUpdate = 0;
 
-        public ISimulationInfoUIController simulationInfoUIController;
+        public ISimulationInfoUIController SimulationInfoUIController;
+        ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
 
         public SimulationScenario<TSimulation> _currentScenario;
         public TSimulation CurrentSimulation;
+
+        ISimulation ISimulationManager.CurrentSimulation => CurrentSimulation;
+        
         private GameObject _simulationGameObject;
 
         public GameObject SettingsPanel;
@@ -71,7 +75,7 @@ namespace Maes {
                 return;
             }
             
-            SimulationPrefab = Resources.Load("Simulation", typeof(GameObject)) as GameObject;
+            SimulationPrefab = Resources.Load<GameObject>("Simulation");
             UISpeedController = GetComponent<SimulationSpeedController>();
             SettingsPanel = GameObject.Find("SettingsPanel");
             RestartRemakePanel = GameObject.Find("Restart and Remake Panel");
@@ -264,15 +268,15 @@ namespace Maes {
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = AddSimulation(_simulationGameObject);
             CurrentSimulation.SetScenario(scenario);
-            simulationInfoUIController = CurrentSimulation.AddSimulationInfoUIController(SettingsPanel);
+            SimulationInfoUIController = CurrentSimulation.AddSimulationInfoUIController(SettingsPanel);
             _logicTicksCurrentSim = 0;
 
-            simulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+            SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
         }
 
 
         private void UpdateStatisticsUI() {
-            simulationInfoUIController.UpdateStatistics(CurrentSimulation);
+            SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             if (CurrentSimulation != null)
                 CurrentSimulation.UpdateDebugInfo();
         }
@@ -288,15 +292,6 @@ namespace Maes {
         }
 
         public ISimulationScenario CurrentScenario => _currentScenario;
-
-        public ISimulation GetCurrentSimulation() {
-            return CurrentSimulation;
-        }
-
-        public ISimulationInfoUIController GetSimulationInfoUIController()
-        {
-            return simulationInfoUIController;
-        }
 
         public void EnqueueScenario(SimulationScenario<TSimulation> simulationScenario) {
             if (!_started)

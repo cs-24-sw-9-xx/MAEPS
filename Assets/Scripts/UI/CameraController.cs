@@ -109,9 +109,9 @@ namespace Maes.UI
             {
                 movementTransform = null;
                 // Notify current simulation that no robot is selected
-                SimulationManager.GetCurrentSimulation().SetSelectedRobot(null);
-                SimulationManager.GetCurrentSimulation().SetSelectedTag(null);
-                SimulationManager.GetCurrentSimulation().ClearVisualTags();
+                SimulationManager.CurrentSimulation.SetSelectedRobot(null);
+                SimulationManager.CurrentSimulation.SetSelectedTag(null);
+                SimulationManager.CurrentSimulation.ClearVisualTags();
             }
         }
 
@@ -273,12 +273,12 @@ namespace Maes.UI
             // (The frame of reference changes between ros and maes mode)
             if (GlobalSettings.IsRosMode)
             {
-                SimulationManager.GetSimulationInfoUIController().UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
+                SimulationManager.SimulationInfoUIController.UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
             }
-            else if (SimulationManager.GetCurrentSimulation() != null)
+            else if (SimulationManager.CurrentSimulation != null)
             {
                 // var coord = SimulationManager.CurrentSimulation.WorldCoordinateToSlamCoordinate(mouseWorldPosition);
-                SimulationManager.GetSimulationInfoUIController().UpdateMouseCoordinates(mouseWorldPosition!);
+                SimulationManager.SimulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition!);
             }
         }
 
