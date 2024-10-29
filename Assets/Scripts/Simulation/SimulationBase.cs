@@ -61,6 +61,7 @@ namespace Maes.Simulation
         protected SimulationMap<Tile> _collisionMap;
         public List<MonaRobot> Robots;
 
+
         IReadOnlyList<MonaRobot> ISimulation.Robots => Robots;
 
         [CanBeNull] private MonaRobot _selectedRobot;
@@ -204,6 +205,11 @@ namespace Maes.Simulation
             // Override me for functionality.
         }
 
+        public virtual void OnDestory()
+        {
+            // Override me for functionality.
+        }
+
         public void ShowAllTags()
         {
             _debugVisualizer.RenderVisibleTags();
@@ -225,7 +231,7 @@ namespace Maes.Simulation
         public abstract bool HasFinishedSim();
 
         public abstract ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
-
+        
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();

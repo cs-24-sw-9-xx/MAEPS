@@ -25,6 +25,7 @@ using Maes.Simulation;
 using MAES.Simulation;
 using Maes.Statistics;
 using Maes.UI;
+using MAES.UI.RestartRemakeContollers;
 using Maes.Utilities;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -52,6 +53,7 @@ namespace Maes {
         private GameObject _simulationGameObject;
 
         public GameObject SettingsPanel;
+        public GameObject RestartRemakePanel;
         
         public GameObject RosClockPrefab;
         public GameObject RosVisualizerPrefab;
@@ -72,6 +74,7 @@ namespace Maes {
             SimulationPrefab = Resources.Load("Simulation", typeof(GameObject)) as GameObject;
             UISpeedController = GetComponent<SimulationSpeedController>();
             SettingsPanel = GameObject.Find("SettingsPanel");
+            RestartRemakePanel = GameObject.Find("Restart and Remake Panel");
             SimulationStatusText = GameObject.Find("StatusText").GetComponent<Text>();
             UIControllerDebugTitle = GameObject.Find("ControllerTitle");
             UIControllerDebugInfo = GameObject.Find("ControllerDebugInfo");
@@ -88,7 +91,9 @@ namespace Maes {
                 UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
-
+            
+            AddRestartRemakeController(RestartRemakePanel);
+            
             _started = true;
         }
 
@@ -132,6 +137,8 @@ namespace Maes {
             UISpeedController.UpdateButtonsUI(_playState);
             return _playState;
         }
+
+        public abstract void AddRestartRemakeController(GameObject restartRemakePanel);
 
 
         private void Update()
@@ -270,8 +277,10 @@ namespace Maes {
                 CurrentSimulation.UpdateDebugInfo();
         }
 
-        public void RemoveCurrentSimulation() {
-            Destroy(_simulationGameObject);
+        public void RemoveCurrentSimulation()
+        {
+            CurrentSimulation?.OnDestory();
+            DestroyImmediate(_simulationGameObject);
             _currentScenario = null;
             CurrentSimulation = null;
             _simulationGameObject = null;

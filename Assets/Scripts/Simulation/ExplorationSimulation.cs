@@ -1,6 +1,7 @@
 using Maes.Simulation;
 using Maes.Statistics;
 using Maes.UI;
+using MAES.UI.RestartRemakeContollers;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -12,13 +13,14 @@ namespace Maes
 
         public ExplorationVisualizer explorationVisualizer;
 
+        public GameObject explorationVisualizerPrefab;
         public override ExplorationVisualizer Visualizer => explorationVisualizer;
 
         public override ExplorationTracker Tracker => ExplorationTracker;
 
         protected override void AfterStart()
         {
-            var explorationVisualizerPrefab = Resources.Load<GameObject>("ExplorationVisualizer");
+            explorationVisualizerPrefab = Resources.Load<GameObject>("ExplorationVisualizer");
             explorationVisualizer = Instantiate(explorationVisualizerPrefab).GetComponent<ExplorationVisualizer>();
         }
 
@@ -50,6 +52,11 @@ namespace Maes
             {
                 CreateStatisticsFile();
             }
+        }
+
+        public override void OnDestory()
+        {
+            DestroyImmediate(explorationVisualizer.gameObject);
         }
 
         private void CreateStatisticsFile() {

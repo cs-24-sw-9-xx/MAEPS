@@ -47,5 +47,7 @@ namespace MAES.Simulation
         void UpdateDebugInfo();
         
         void OnSimulationFinished();
+        
+        void OnDestory();
     }
 }

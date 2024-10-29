@@ -1,4 +1,5 @@
 using Maes.UI;
+using UnityEngine;
 
 namespace MAES.Simulation
 {
@@ -10,5 +11,7 @@ namespace MAES.Simulation
         ISimulationInfoUIController GetSimulationInfoUIController();
 
         SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState);
+        
+        void AddRestartRemakeController(GameObject restartRemakePanel);
     }
 }
