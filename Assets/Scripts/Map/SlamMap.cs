@@ -61,8 +61,9 @@ namespace Maes.Map
         // Low resolution map only considering what is visible now
         internal VisibleTilesCoarseMap VisibleTilesCoarseMap;
 
+        private bool _mapKnown;
 
-        public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed, bool mapKnown = false)
+        public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
             _collisionMap = collisionMap;
             _robotConstraints = robotConstraints;
@@ -74,9 +75,10 @@ namespace Maes.Map
             _currentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
             this.random = new Random(randomSeed);
             _pathFinder = new AStar();
+            _mapKnown = robotConstraints.MapKnown;
 
-            _tiles = mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
-            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, mapKnown);
+            _tiles = _mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
+            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, _mapKnown);
             VisibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
         }

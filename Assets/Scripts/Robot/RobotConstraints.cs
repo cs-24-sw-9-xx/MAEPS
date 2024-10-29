@@ -49,6 +49,7 @@ namespace Maes.Robot
         public int SlamUpdateIntervalInTicks { get; }
         public int SlamSynchronizeIntervalInTicks { get; }
         public float SlamPositionInaccuracy { get; }
+        public bool MapKnown { get; }
         public bool DistributeSlam { get; }
 
 
@@ -79,6 +80,7 @@ namespace Maes.Robot
             int slamUpdateIntervalInTicks = 10,
             int slamSynchronizeIntervalInTicks = 10,
             float slamPositionInaccuracy = 0.2f,
+            bool mapKnown = false,
             bool distributeSlam = false,
             float environmentTagReadRange = 2f,
             float slamRayTraceRange = 20f,
@@ -138,6 +140,7 @@ namespace Maes.Robot
             SlamUpdateIntervalInTicks = slamUpdateIntervalInTicks;
             SlamSynchronizeIntervalInTicks = slamSynchronizeIntervalInTicks;
             SlamPositionInaccuracy = slamPositionInaccuracy;
+            MapKnown = mapKnown;
             SlamRayTraceRange = slamRayTraceRange;
             SlamRayTraceCount = slamRayTraceCount;
             DistributeSlam = distributeSlam;
