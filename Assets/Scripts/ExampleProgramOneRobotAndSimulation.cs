@@ -46,6 +46,7 @@ namespace Maes
                 slamUpdateIntervalInTicks: 1,
                 slamSynchronizeIntervalInTicks: 10,
                 slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
                 distributeSlam: false,
                 environmentTagReadRange: 4.0f,
                 slamRayTraceRange: 7f,
