@@ -64,6 +64,8 @@ namespace Maes.UI {
 
         private void Start()
         {
+            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation>>();
+            
             AlgorithmDebugText = GameObject.Find("AlgorithmDebugInfo").GetComponent<Text>();
             ControllerDebugText = GameObject.Find("ControllerDebugInfo").GetComponent<Text>();
             TagDebugText = GameObject.Find("TagDebugInfo").GetComponent<Text>();
