@@ -8,7 +8,7 @@ namespace MAES.Simulation
     {
         public override void AddRestartRemakeController(GameObject restartRemakePanel)
         {
-            restartRemakePanel.AddComponent<ExplorationRestartRemakeContoller>();
+            restartRemakePanel.AddComponent<ExplorationRestartRemakeController>();
         }
 
         protected override ExplorationSimulation AddSimulation(GameObject gameObject)

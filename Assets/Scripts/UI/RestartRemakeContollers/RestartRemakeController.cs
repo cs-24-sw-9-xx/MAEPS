@@ -27,7 +27,7 @@ using UnityEngine.UI;
 
 namespace MAES.UI.RestartRemakeContollers
 {
-    public abstract class RestartRemakeContoller<TSimulation> : MonoBehaviour
+    public abstract class RestartRemakeController<TSimulation> : MonoBehaviour
         where TSimulation : class, ISimulation<TSimulation>
     {
 
