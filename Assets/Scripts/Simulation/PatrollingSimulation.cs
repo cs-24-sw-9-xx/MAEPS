@@ -3,9 +3,7 @@ using Maes.Simulation;
 using Maes.Statistics;
 using Maes.Trackers;
 using Maes.UI;
-using MAES.UI.RestartRemakeContollers;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Maes
 {
@@ -25,6 +23,11 @@ namespace Maes
 
             PatrollingTracker = new PatrollingTracker();
             patrollingVisualizer.SetMap(_collisionMap, _collisionMap.ScaledOffset);
+        }
+
+        public override void OnDestory()
+        {
+            DestroyImmediate(patrollingVisualizer.gameObject);
         }
 
         public override bool HasFinishedSim()

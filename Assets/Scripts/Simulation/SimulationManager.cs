@@ -142,7 +142,6 @@ namespace Maes {
             return _playState;
         }
 
-        public abstract void AddRestartRemakeController(GameObject restartRemakePanel);
 
 
         private void Update()
@@ -168,6 +167,7 @@ namespace Maes {
         }
 
         protected abstract TSimulation AddSimulation(GameObject gameObject);
+        public abstract void AddRestartRemakeController(GameObject restartRemakePanel);
 
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
         private long _nextUpdateTimeMillis = 0;
