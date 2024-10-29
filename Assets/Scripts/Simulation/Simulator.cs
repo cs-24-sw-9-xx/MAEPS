@@ -35,7 +35,7 @@ namespace Maes {
     {
         protected static Simulator<TSimulation> _instance = null;
         private GameObject _maesGameObject;
-        private SimulationManager<TSimulation> _simulationManager;
+        protected SimulationManager<TSimulation> _simulationManager;
 
         protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab

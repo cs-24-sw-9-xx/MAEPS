@@ -40,7 +40,7 @@ namespace Maes {
     using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
     using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
 
-    public class ExporationScenarioGenerator {
+    public class ExplorationScenarioGenerator {
         
          private const int Minute = 60;
          
