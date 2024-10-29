@@ -444,5 +444,5 @@ Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com
 
 Mads Beyer Mogensen -[mads256h@gmail.com](mailto:mads256h@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
-Puvikaran Santhirasegaram - [puvi2001@gmail.com](mailto:puvi2001@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvi2001@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
