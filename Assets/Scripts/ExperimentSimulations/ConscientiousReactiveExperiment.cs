@@ -52,15 +52,13 @@ using MAES.Simulation;
 
 namespace Maes
 {
-    using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulator = PatrollingSimulator;
+    using MySimulationScenario = SimulationScenario<PatrollingSimulation>;
     
     internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
-        private Simulator<ExplorationSimulation> _simulator;
-        /*
-*/
+        private Simulator<PatrollingSimulation> _simulator;
+
         private void Start()
         {
             const int randomSeed = 12345;
