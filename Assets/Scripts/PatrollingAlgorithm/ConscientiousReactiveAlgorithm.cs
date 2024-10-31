@@ -41,8 +41,8 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
                 _controller.PathAndMoveTo(_currentVertex.Position);
                 return;
             }
-
-            _currentVertex.ResetIdleness();
+            //TODO: Fixed in next PR
+            /*_currentVertex.ResetIdleness();*/
             _currentVertex = _currentVertex.Neighbors.OrderByDescending((x)=>x.Idleness).First();
         }
 
@@ -50,7 +50,8 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
         {
             foreach (var vertex in _vertices)
             {
-                vertex.UpdateIdleness();
+                //TODO: Fixed in next PR
+                /*vertex.UpdateIdleness();*/
             }
         }
 
