@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Log the current path
-      run: echo pwd
+      run: pwd
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
