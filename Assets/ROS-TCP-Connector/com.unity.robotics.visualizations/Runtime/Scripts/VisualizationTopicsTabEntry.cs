@@ -289,10 +289,10 @@ namespace Unity.Robotics.Visualizations
         void ShowOptionsMenu(Rect position)
         {
             UnityEditor.GenericMenu menu = new UnityEditor.GenericMenu();
-            foreach(IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
+            foreach (IVisualFactory factory in VisualFactoryRegistry.GetAllVisualFactories(Topic, RosMessageName))
             {
                 bool isSelected = GetVisualFactory() == factory;
-                menu.AddItem(new GUIContent(isSelected? factory.Name+" (main)": factory.Name), false, () => OnSelect(factory));
+                menu.AddItem(new GUIContent(isSelected ? factory.Name + " (main)" : factory.Name), false, () => OnSelect(factory));
             }
             menu.DropDown(position);
         }

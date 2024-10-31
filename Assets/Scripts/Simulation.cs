@@ -195,7 +195,8 @@ namespace Maes
 
         private void OnDrawGizmos()
         {
-            if (_collisionMap == null) {
+            if (_collisionMap == null)
+            {
                 return;
             }
 

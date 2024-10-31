@@ -28,61 +28,76 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace Maes {
-    public class Simulator {
+namespace Maes
+{
+    public class Simulator
+    {
 
         private static Simulator _instance = null;
         private GameObject _maesGameObject;
         private SimulationManager _simulationManager;
 
-        private Simulator() {
+        private Simulator()
+        {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = Resources.Load("MAES", typeof(GameObject)) as GameObject;
             _maesGameObject = Object.Instantiate(prefab);
             _simulationManager = _maesGameObject.GetComponentInChildren<SimulationManager>();
         }
 
-        public static Simulator GetInstance() {
+        public static Simulator GetInstance()
+        {
             return _instance ??= new Simulator();
         }
 
         // Clears the singleton instance and removes the simulator game object
-        public static void Destroy() {
-            if (_instance != null) {
+        public static void Destroy()
+        {
+            if (_instance != null)
+            {
                 Object.Destroy(_instance._maesGameObject);
                 _instance = null;
             }
         }
-        
+
         /// <summary>
         /// This method is used to start the simulation in a predefined configuration that will change depending on
         /// whether the simulation is in ros mode or not.
         /// </summary>
-        public void DefaultStart(bool isRosMode = false) {
+        public void DefaultStart(bool isRosMode = false)
+        {
             GlobalSettings.IsRosMode = isRosMode;
             IEnumerable<SimulationScenario> generatedScenarios;
-            if (GlobalSettings.IsRosMode) {
+            if (GlobalSettings.IsRosMode)
+            {
                 generatedScenarios = ScenarioGenerator.GenerateROS2Scenario();
-            } else {
+            }
+            else
+            {
                 generatedScenarios = ScenarioGenerator.GenerateYoutubeVideoScenarios();
             }
             EnqueueScenarios(generatedScenarios);
-            if (Application.isBatchMode) {
+            if (Application.isBatchMode)
+            {
                 _simulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }
         }
 
-        public void EnqueueScenario(SimulationScenario scenario) {
+        public void EnqueueScenario(SimulationScenario scenario)
+        {
             _simulationManager.EnqueueScenario(scenario);
             _simulationManager._initialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<SimulationScenario> scenario) {
-            foreach (var simulationScenario in scenario) {
+        public void EnqueueScenarios(IEnumerable<SimulationScenario> scenario)
+        {
+            foreach (var simulationScenario in scenario)
+            {
                 _simulationManager.EnqueueScenario(simulationScenario);
             }
         }
-        
-        public void PressPlayButton() {
+
+        public void PressPlayButton()
+        {
             if (_simulationManager.PlayState == SimulationPlayState.Play)
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
             if (!_simulationManager.HasActiveScenario())
@@ -93,7 +108,8 @@ namespace Maes {
             _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
 
-        public SimulationManager GetSimulationManager() {
+        public SimulationManager GetSimulationManager()
+        {
             return _simulationManager;
         }
     }

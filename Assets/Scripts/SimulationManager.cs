@@ -27,8 +27,10 @@ using Maes.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes {
-    public class SimulationManager : MonoBehaviour {
+namespace Maes
+{
+    public class SimulationManager : MonoBehaviour
+    {
         private SimulationPlayState _playState = SimulationPlayState.Paused;
 
         public GameObject SimulationPrefab;
@@ -46,7 +48,7 @@ namespace Maes {
         public SimulationScenario _currentScenario;
         public Simulation CurrentSimulation;
         private GameObject _simulationGameObject;
-        
+
         public GameObject RosClockPrefab;
         public GameObject RosVisualizerPrefab;
 
@@ -54,13 +56,15 @@ namespace Maes {
         private int _logicTicksCurrentSim = 0;
 
         // Runs once when starting the program
-        private void Start() {
+        private void Start()
+        {
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
-            
+
             // Adapt UI for ros mode
-            if (GlobalSettings.IsRosMode) {
+            if (GlobalSettings.IsRosMode)
+            {
                 CreateRosClockAndVisualiserObjects();
                 RemoveFastForwardButtonsFromControlPanel();
                 UIControllerDebugTitle.SetActive(false);
@@ -69,37 +73,41 @@ namespace Maes {
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
         }
 
-        public void RemoveFastForwardButtonsFromControlPanel() {
+        public void RemoveFastForwardButtonsFromControlPanel()
+        {
             // Deactivate fast forward buttons
             UISpeedController.stepperButton.gameObject.SetActive(false);
             UISpeedController.fastForwardButton.gameObject.SetActive(false);
             UISpeedController.fastAsPossibleButton.gameObject.SetActive(false);
-            
+
             // Resize background
             var controlPanel = GameObject.Find("ControlPanel");
             var cpRectTransform = controlPanel.GetComponent<RectTransform>();
             cpRectTransform.sizeDelta = new Vector2(100, 50);
-            
+
             // Reposition play button
             var playButton = GameObject.Find("PlayButton");
             var pbRectTransform = playButton.GetComponent<RectTransform>();
             pbRectTransform.anchoredPosition = new Vector2(-20, 0);
-            
+
             // Reposition pause button
             var pauseButton = GameObject.Find("PauseButton");
             var pauseRectTransform = pauseButton.GetComponent<RectTransform>();
             pauseRectTransform.anchoredPosition = new Vector2(20, 0);
         }
 
-        public void CreateRosClockAndVisualiserObjects() {
+        public void CreateRosClockAndVisualiserObjects()
+        {
             Instantiate(RosClockPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             Instantiate(RosVisualizerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         }
 
-        internal SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState) {
+        internal SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState)
+        {
             if (targetState == _playState) return _playState;
 
-            if (_currentScenario == null) {
+            if (_currentScenario == null)
+            {
                 targetState = SimulationPlayState.Paused;
             }
 
@@ -113,11 +121,12 @@ namespace Maes {
 
         private void Update()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
                     AttemptSetPlayState(SimulationPlayState.Play);
-                } 
+                }
                 else if (Input.GetKeyDown(KeyCode.Alpha2))
                 {
                     AttemptSetPlayState(SimulationPlayState.FastForward);
@@ -138,9 +147,12 @@ namespace Maes {
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
         // real time (or whatever speed setting is chosen)
-        private void FixedUpdate() {
-            if (_playState == SimulationPlayState.Paused) {
-                if (Application.isBatchMode) {
+        private void FixedUpdate()
+        {
+            if (_playState == SimulationPlayState.Paused)
+            {
+                if (Application.isBatchMode)
+                {
                     // The simulation will only enter paused mode after finishing when in headless/batch mode
                     Application.Quit(0);
                 }
@@ -153,7 +165,7 @@ namespace Maes {
             }
 
             long startTimeMillis = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            int millisPerFixedUpdate = (int) (1000f * Time.fixedDeltaTime);
+            int millisPerFixedUpdate = (int)(1000f * Time.fixedDeltaTime);
             // Subtract 8 milliseconds to allow for other procedures such as rendering to occur between updates 
             millisPerFixedUpdate -= 8;
             long fixedUpdateEndTime = startTimeMillis + millisPerFixedUpdate;
@@ -163,18 +175,20 @@ namespace Maes {
                 GlobalSettings.LogicTickDeltaMillis / GlobalSettings.PhysicsTicksPerLogicUpdate;
 
             // Only calculate updates if there is still time left in the current update
-            while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate) {
+            while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate)
+            {
                 // Yield if no more updates are needed this FixedUpdate cycle
                 if (_nextUpdateTimeMillis > fixedUpdateEndTime) break;
 
                 var shouldContinue = UpdateSimulation();
-                if (!shouldContinue) {
+                if (!shouldContinue)
+                {
                     AttemptSetPlayState(SimulationPlayState.Paused);
                     return;
                 }
 
                 // The delay before simulating the next update is dependant on the current simulation play speed
-                int updateDelayMillis = physicsTickDeltaMillis / (int) _playState;
+                int updateDelayMillis = physicsTickDeltaMillis / (int)_playState;
                 _nextUpdateTimeMillis = _nextUpdateTimeMillis + updateDelayMillis;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
@@ -182,23 +196,29 @@ namespace Maes {
             }
         }
 
-        private void CreateStatisticsFile() {
-            var csvWriter = new StatisticsCSVWriter(CurrentSimulation,$"{_currentScenario.StatisticsFileName}");
+        private void CreateStatisticsFile()
+        {
+            var csvWriter = new StatisticsCSVWriter(CurrentSimulation, $"{_currentScenario.StatisticsFileName}");
             csvWriter.CreateCSVFile(",");
         }
 
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
-        private bool UpdateSimulation() {
-            if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation)) {
+        private bool UpdateSimulation()
+        {
+            if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation))
+            {
                 if (GlobalSettings.ShouldWriteCSVResults && _currentScenario.HasFinishedSim(CurrentSimulation))
                     CreateStatisticsFile();
-                if (_scenarios.Count != 0) { //If last simulation, let us keep looking around in it
+                if (_scenarios.Count != 0)
+                { //If last simulation, let us keep looking around in it
                     RemoveCurrentSimulation();
                 }
             }
 
-            if (_currentScenario == null) {
-                if (_scenarios.Count == 0) {
+            if (_currentScenario == null)
+            {
+                if (_scenarios.Count == 0)
+                {
                     // Indicate that no further updates are needed
                     return false;
                 }
@@ -210,17 +230,18 @@ namespace Maes {
             CurrentSimulation.PhysicsUpdate();
             _physicsTicksSinceUpdate++;
             var shouldContinueSim = true;
-            if (_physicsTicksSinceUpdate >= GlobalSettings.PhysicsTicksPerLogicUpdate) {
+            if (_physicsTicksSinceUpdate >= GlobalSettings.PhysicsTicksPerLogicUpdate)
+            {
                 CurrentSimulation.LogicUpdate();
                 _logicTicksCurrentSim++;
                 _physicsTicksSinceUpdate = 0;
-                if(GlobalSettings.ShouldWriteCSVResults 
-                   && _logicTicksCurrentSim != 0 
-                   && _logicTicksCurrentSim % GlobalSettings.TicksPerStatsSnapShot == 0) 
+                if (GlobalSettings.ShouldWriteCSVResults
+                   && _logicTicksCurrentSim != 0
+                   && _logicTicksCurrentSim % GlobalSettings.TicksPerStatsSnapShot == 0)
                     CurrentSimulation.ExplorationTracker.CreateSnapShot();
                 UpdateStatisticsUI();
-                
-                
+
+
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
                 if (_playState == SimulationPlayState.Step)
                     shouldContinueSim = false;
@@ -231,11 +252,12 @@ namespace Maes {
             SimulationStatusText.text = "Phys. ticks: " + CurrentSimulation.SimulatedPhysicsTicks +
                                         "\nLogic ticks: " + CurrentSimulation.SimulatedLogicTicks +
                                         "\nSimulated: " + output;
-            
+
             return shouldContinueSim;
         }
 
-        public void CreateSimulation(SimulationScenario scenario) {
+        public void CreateSimulation(SimulationScenario scenario)
+        {
             _currentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<Simulation>();
@@ -247,13 +269,15 @@ namespace Maes {
         }
 
 
-        private void UpdateStatisticsUI() {
+        private void UpdateStatisticsUI()
+        {
             simulationInfoUIController.UpdateStatistics(CurrentSimulation);
             if (CurrentSimulation != null)
                 CurrentSimulation.UpdateDebugInfo();
         }
 
-        public void RemoveCurrentSimulation() {
+        public void RemoveCurrentSimulation()
+        {
             Destroy(_simulationGameObject);
             _currentScenario = null;
             CurrentSimulation = null;
@@ -261,20 +285,25 @@ namespace Maes {
             _logicTicksCurrentSim = 0;
         }
 
-        public Simulation GetCurrentSimulation() {
+        public Simulation GetCurrentSimulation()
+        {
             return CurrentSimulation;
         }
 
-        public void EnqueueScenario(SimulationScenario simulationScenario) {
-            if (HasActiveScenario()) {
+        public void EnqueueScenario(SimulationScenario simulationScenario)
+        {
+            if (HasActiveScenario())
+            {
                 _scenarios.Enqueue(simulationScenario);
-            } else // This is the first scenario, initialize it immediately 
+            }
+            else // This is the first scenario, initialize it immediately 
                 CreateSimulation(simulationScenario);
         }
 
-        public bool HasActiveScenario() {
+        public bool HasActiveScenario()
+        {
             return _currentScenario is not null;
         }
-        
+
     }
 }

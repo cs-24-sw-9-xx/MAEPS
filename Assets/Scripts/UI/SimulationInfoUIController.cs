@@ -27,8 +27,10 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Maes.UI {
-    public class SimulationInfoUIController : MonoBehaviour {
+namespace Maes.UI
+{
+    public class SimulationInfoUIController : MonoBehaviour
+    {
         public Image ExplorationBarMask, CoverageBarMask;
         public Text ProgressPercentageText, CoveragePercentageText;
         public Text ExplorationRateText;
@@ -38,21 +40,21 @@ namespace Maes.UI {
         public Text TagDebugText;
 
         public Text MouseCoordinateText;
-        
+
         public Button AllExplorationButton;
         public Button AllCoverageButton;
         public Button AllExplorationHeatMapButton;
         public Button AllCoverageHeatMapButton;
         public Button SelectVisibleAreaButton;
         public Button SelectedSlamMapButton;
-        
+
         public Button AllVisualizeTagsButton;
         private bool _visualizingAllTags = false;
         public Button VisualizeTagsButton;
         private bool _visualizingSelectedTags = false;
 
         public Button StickyCameraButton;
-        
+
         private List<Button> _mapVisualizationToggleGroup;
         private Color _mapVisualizationColor = Color.white;
         private Color _mapVisualizationSelectedColor = new Color(150 / 255f, 200 / 255f, 150 / 255f);
@@ -64,108 +66,136 @@ namespace Maes.UI {
 
         private SimulationModification? _mostRecentMapVisualizationModification;
 
-        private void Start() {
+        private void Start()
+        {
             _mapVisualizationToggleGroup = new List<Button>() {
                 AllExplorationButton, AllCoverageButton, AllExplorationHeatMapButton, AllCoverageHeatMapButton,
                 SelectVisibleAreaButton, SelectedSlamMapButton
             };
             SelectVisualizationButton(AllExplorationButton);
-            
+
             // Set listeners for all map visualization buttons
-            AllExplorationButton.onClick.AddListener(() => {
+            AllExplorationButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotExploration());
             });
-            
-            AllCoverageButton.onClick.AddListener(() => {
+
+            AllCoverageButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotCoverage());
             });
-            
-            AllExplorationHeatMapButton.onClick.AddListener(() => {
+
+            AllExplorationHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotExplorationHeatMap());
             });
-            
-            AllCoverageHeatMapButton.onClick.AddListener(() => {
+
+            AllCoverageHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotCoverageHeatMap());
             });
-            
-            SelectVisibleAreaButton.onClick.AddListener(() => {
-                ExecuteAndRememberMapVisualizationModification((sim) => {
-                    if (sim != null) {
+
+            SelectVisibleAreaButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification((sim) =>
+                {
+                    if (sim != null)
+                    {
                         if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
-                        sim.ExplorationTracker.ShowSelectedRobotVisibleArea();    
+                        sim.ExplorationTracker.ShowSelectedRobotVisibleArea();
                     }
                 });
             });
-            
-            SelectedSlamMapButton.onClick.AddListener(() => {
-                ExecuteAndRememberMapVisualizationModification((sim) => {
-                    if (sim != null) {
+
+            SelectedSlamMapButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification((sim) =>
+                {
+                    if (sim != null)
+                    {
                         if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
-                        sim.ExplorationTracker.ShowSelectedRobotSlamMap();    
+                        sim.ExplorationTracker.ShowSelectedRobotSlamMap();
                     }
                 });
             });
-            
+
             // Set listeners for Tag visualization buttons 
-            AllVisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
+            AllVisualizeTagsButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberTagVisualization(sim =>
+                {
+                    if (sim != null)
+                    {
                         ToggleVisualizeTagsButtons(AllVisualizeTagsButton);
                     }
                 });
             });
-            
-            VisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
-                        if (sim.HasSelectedRobot()) {
+
+            VisualizeTagsButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberTagVisualization(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (sim.HasSelectedRobot())
+                        {
                             ToggleVisualizeTagsButtons(VisualizeTagsButton);
                         }
                     }
                 });
             });
-            
-            StickyCameraButton.onClick.AddListener(() => {
+
+            StickyCameraButton.onClick.AddListener(() =>
+            {
                 CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
                 StickyCameraButton.image.color = CameraController.singletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             });
         }
 
-        public void Update() {
+        public void Update()
+        {
             var currentSim = simulationManager.CurrentSimulation;
-            if (currentSim is not null) {
-                if (_visualizingAllTags) {
+            if (currentSim is not null)
+            {
+                if (_visualizingAllTags)
+                {
                     simulationManager.CurrentSimulation.ShowAllTags();
                 }
-                else if (_visualizingSelectedTags) {
+                else if (_visualizingSelectedTags)
+                {
                     simulationManager.CurrentSimulation.ShowSelectedTags();
                 }
                 simulationManager.CurrentSimulation.RenderCommunicationLines();
             }
         }
 
-        public void ClearSelectedRobot() {
+        public void ClearSelectedRobot()
+        {
             _visualizingSelectedTags = false;
             CameraController.singletonInstance.stickyCam = false;
             StickyCameraButton.image.color = _mapVisualizationColor;
             VisualizeTagsButton.image.color = _mapVisualizationColor;
         }
 
-        public void UpdateMouseCoordinates(Vector2 mousePosition) {
+        public void UpdateMouseCoordinates(Vector2 mousePosition)
+        {
             var xNumberString = $"{mousePosition.x:00.00}".PadLeft(6);
             var yNumberString = $"{mousePosition.y:00.00}".PadLeft(6);
             MouseCoordinateText.text = $"(x: {xNumberString}, y: {yNumberString})";
         }
 
-        private void ToggleVisualizeTagsButtons(Button button) {
+        private void ToggleVisualizeTagsButtons(Button button)
+        {
             simulationManager.CurrentSimulation.ClearVisualTags();
-            if (button.name == "AllVisualizeTags") {
+            if (button.name == "AllVisualizeTags")
+            {
                 _visualizingSelectedTags = false;
                 VisualizeTagsButton.image.color = _mapVisualizationColor;
                 _visualizingAllTags = !_visualizingAllTags;
                 button.image.color = _visualizingAllTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             }
-            else {
+            else
+            {
                 _visualizingAllTags = false;
                 AllVisualizeTagsButton.image.color = _mapVisualizationColor;
                 _visualizingSelectedTags = !_visualizingSelectedTags;
@@ -175,34 +205,40 @@ namespace Maes.UI {
 
         // This function executes the given map visualization change and remembers it.
         // Whenever the simulator creates a new simulation the most recent visualization change is repeated 
-        private void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc) {
+        private void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc)
+        {
             _mostRecentMapVisualizationModification = modificationFunc;
             modificationFunc(simulationManager.CurrentSimulation);
         }
 
-        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc) {
+        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc)
+        {
             modificationFunc(simulationManager.CurrentSimulation);
         }
 
         // Highlights the selected map visualization button
-        private void SelectVisualizationButton(Button selectedButton) {
-            foreach (var button in _mapVisualizationToggleGroup) 
+        private void SelectVisualizationButton(Button selectedButton)
+        {
+            foreach (var button in _mapVisualizationToggleGroup)
                 button.image.color = _mapVisualizationColor;
 
             selectedButton.image.color = _mapVisualizationSelectedColor;
         }
 
-        public void SetExplorationProgress(float progress) {
+        public void SetExplorationProgress(float progress)
+        {
             ExplorationBarMask.fillAmount = progress;
             ProgressPercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
-        public void SetCoverageProgress(float progress) {
+        public void SetCoverageProgress(float progress)
+        {
             CoverageBarMask.fillAmount = progress;
-            CoveragePercentageText.text = (progress * 100f).ToString("#.00") + "%";            
+            CoveragePercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
-        public void UpdateStatistics(Simulation currentSimulation) {
+        public void UpdateStatistics(Simulation currentSimulation)
+        {
             SetExplorationProgress(currentSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(currentSimulation.ExplorationTracker.CoverageProportion);
             ExplorationRateText.text = "Exploration rate (cells/minute): " +
@@ -214,44 +250,63 @@ namespace Maes.UI {
             // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
         }
 
-        public void UpdateAlgorithmDebugInfo(string info) {
+        public void UpdateAlgorithmDebugInfo(string info)
+        {
             AlgorithmDebugText.text = info;
         }
 
 
-        public void UpdateControllerDebugInfo(string info) {
+        public void UpdateControllerDebugInfo(string info)
+        {
             ControllerDebugText.text = info;
         }
 
-        public void UpdateTagDebugInfo(string info) {
+        public void UpdateTagDebugInfo(string info)
+        {
             TagDebugText.text = info;
         }
 
         // Called whenever the simulator instantiates a new simulation object 
-        public void NotifyNewSimulation(Simulation? newSimulation) {
-            if (newSimulation != null) {
+        public void NotifyNewSimulation(Simulation? newSimulation)
+        {
+            if (newSimulation != null)
+            {
                 newSimulation.ExplorationTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }
         }
 
-        private void OnMapVisualizationModeChanged(VisualizationMode mode) {
-            if (mode is AllRobotsExplorationVisualization) {
+        private void OnMapVisualizationModeChanged(VisualizationMode mode)
+        {
+            if (mode is AllRobotsExplorationVisualization)
+            {
                 SelectVisualizationButton(AllExplorationButton);
-            } else if (mode is AllRobotsCoverageVisualization) {
+            }
+            else if (mode is AllRobotsCoverageVisualization)
+            {
                 SelectVisualizationButton(AllCoverageButton);
-            } else if (mode is ExplorationHeatMapVisualization) {
+            }
+            else if (mode is ExplorationHeatMapVisualization)
+            {
                 SelectVisualizationButton(AllExplorationHeatMapButton);
-            } else if (mode is CoverageHeatMapVisualization) {
+            }
+            else if (mode is CoverageHeatMapVisualization)
+            {
                 SelectVisualizationButton(AllCoverageHeatMapButton);
-            } else if (mode is CurrentlyVisibleAreaVisualization) {
+            }
+            else if (mode is CurrentlyVisibleAreaVisualization)
+            {
                 SelectVisualizationButton(SelectVisibleAreaButton);
-            } else if (mode is SelectedRobotSlamMapVisualization) {
+            }
+            else if (mode is SelectedRobotSlamMapVisualization)
+            {
                 SelectVisualizationButton(SelectedSlamMapButton);
-            } else {
+            }
+            else
+            {
                 throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
             }
-            
+
         }
     }
 }
