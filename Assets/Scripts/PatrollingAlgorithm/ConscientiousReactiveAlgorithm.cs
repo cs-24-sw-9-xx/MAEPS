@@ -49,7 +49,7 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
             }
 
             _currentVertex.VisitedAtTick(_controller.GetRobot().Simulation.SimulatedLogicTicks);
-            _currentVertex = _currentVertex.Neighbors.OrderBy((x)=>x.Idleness).First();
+            _currentVertex = _currentVertex.Neighbors.OrderBy((x)=>x.LastTimeVisitedTick).First();
         }
 
         private Vertex GetClosestVertex(){
