@@ -96,6 +96,11 @@ namespace Maes.Robot
             RightWheel = rightWheel;
             _robot = robot;
         }
+        
+        public MonaRobot GetRobot()
+        {
+            return _robot;
+        }
 
         public int GetRobotID()
         {

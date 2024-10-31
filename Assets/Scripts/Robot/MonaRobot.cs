@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using Maes.ExplorationAlgorithm;
+using MAES.Simulation;
 using Maes.UI;
 using UnityEditor;
 using UnityEngine;
@@ -31,6 +32,8 @@ namespace Maes.Robot {
         public Transform leftWheelTransform;
         public Transform rightWheelTransform;
         public Outline outLine;
+
+        public ISimulation Simulation { get; private set; }
 
         public int id = -1;
 
@@ -49,6 +52,7 @@ namespace Maes.Robot {
         private void Awake() {
             var rigidBody = GetComponent<Rigidbody2D>();
             Controller = new Robot2DController(rigidBody, transform, leftWheelTransform, rightWheelTransform, this);
+            Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation;
         }
 
         public void LogicUpdate() {

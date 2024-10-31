@@ -4,6 +4,7 @@ using System.Linq;
 using Maes.ExplorationAlgorithm;
 using Maes.Map;
 using Maes.Robot;
+using MAES.Simulation;
 using UnityEngine;
 
 namespace Maes.PatrollingAlgorithm.ConscientiousReactive
@@ -30,7 +31,6 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
 
         public void UpdateLogic()
         {
-            UpdateVerticesIdleness();
             if(!_isPatrolling){
                 var vertex = GetClosestVertex();
                 _currentVertex = vertex; 
@@ -41,18 +41,9 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
                 _controller.PathAndMoveTo(_currentVertex.Position);
                 return;
             }
-            //TODO: Fixed in next PR
-            /*_currentVertex.ResetIdleness();*/
-            _currentVertex = _currentVertex.Neighbors.OrderByDescending((x)=>x.Idleness).First();
-        }
 
-        private void UpdateVerticesIdleness()
-        {
-            foreach (var vertex in _vertices)
-            {
-                //TODO: Fixed in next PR
-                /*vertex.UpdateIdleness();*/
-            }
+            _currentVertex.VisitedAtTick(_controller.GetRobot().Simulation.SimulatedLogicTicks);
+            _currentVertex = _currentVertex.Neighbors.OrderBy((x)=>x.Idleness).First();
         }
 
         private Vertex GetClosestVertex(){
