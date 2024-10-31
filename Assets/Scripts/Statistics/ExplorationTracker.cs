@@ -26,12 +26,13 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization;
 using Maes.Robot;
+using Maes.Trackers;
 using Maes.Utilities;
 using UnityEngine;
 
 namespace Maes.Statistics {
-    internal class ExplorationTracker {
-
+    public class ExplorationTracker : ITracker
+    {
         private CoverageCalculator _coverageCalculator;
         
         // The low-resolution collision map used to create the smoothed map that robots are navigating 
@@ -104,7 +105,7 @@ namespace Maes.Statistics {
             _distanceSnapshots.Add(new SnapShot<float>(_currentTick, mostRecentDistance));
         }
 
-        private float calculateAverageDistance(List<MonaRobot> robots){
+        private float CalculateAverageDistance(IReadOnlyList<MonaRobot> robots){
             List<float> averages = new List<float>();
             float average = 0;
             float sum = 0;
@@ -142,7 +143,7 @@ namespace Maes.Statistics {
             return new Vector2Int((int)robotPosition.x, (int)robotPosition.y);
         }
         
-        public void LogicUpdate(List<MonaRobot> robots) {
+        public void LogicUpdate(IReadOnlyList<MonaRobot> robots) {
             // The user can specify the tick interval at which the slam map is updated. 
             var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam && 
                                       _currentTick % _constraints.SlamUpdateIntervalInTicks == 0; 
@@ -151,7 +152,7 @@ namespace Maes.Statistics {
             // In the first tick, the robot does not have a position in the slam map.
             if (!_isFirstTick) {
                 foreach (var robot in robots) UpdateCoverageStatus(robot);
-                mostRecentDistance = calculateAverageDistance(robots);
+                mostRecentDistance = CalculateAverageDistance(robots);
             } 
             else _isFirstTick = false;
 
@@ -167,10 +168,17 @@ namespace Maes.Statistics {
             
             _currentVisualizationMode.UpdateVisualization(_explorationVisualizer, _currentTick);
             _currentTick++;
+
+            if (GlobalSettings.ShouldWriteCSVResults
+                && _currentTick != 0
+                && _currentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
+            {
+                CreateSnapShot();
+            }
         }
 
         // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(List<MonaRobot> robots, bool shouldUpdateSlamMap) {
+        private void PerformRayTracing(IReadOnlyList<MonaRobot> robots, bool shouldUpdateSlamMap) {
             List<(int, ExplorationCell)> newlyExploredTriangles = new List<(int, ExplorationCell)>();
             float visibilityRange = _constraints.SlamRayTraceRange;
 

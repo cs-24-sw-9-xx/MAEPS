@@ -35,12 +35,17 @@ using Maes.UI;
 using UnityEditor;
 using System.Linq;
 using Maes.ExplorationAlgorithm.Greed;
+using MAES.Simulation;
 
 namespace Maes
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
-        private Simulator _simulator;
+        private Simulator<ExplorationSimulation> _simulator;
         private void Start()
         {
             const int randomSeed = 12345;
@@ -68,14 +73,14 @@ namespace Maes
                 }
             );
 
-            var simulator = Simulator.GetInstance();
+            var simulator = MySimulator.GetInstance();
 
             var map = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);
             for (int i = 0; i < 10; i++)
             {
                 var val = random.Next(0, 1000000);
-                simulator.EnqueueScenario(new SimulationScenario(val,
+                simulator.EnqueueScenario(new MySimulationScenario(val,
                     mapSpawner: generator => generator.GenerateMap(map, val),
                     robotConstraints: LOS,
                     statisticsFileName: $"mino_blank_{val}",
@@ -84,7 +89,7 @@ namespace Maes
                         5,
                         new Vector2Int(0, 0),
                         robotSeed => new MinotaurAlgorithm(LOS, val, 4))));
-                simulator.EnqueueScenario(new SimulationScenario(val,
+                simulator.EnqueueScenario(new MySimulationScenario(val,
                     mapSpawner: generator => generator.GenerateMap(map, val),
                     robotConstraints: LOS,
                     statisticsFileName: $"greed_blank_{val}",
@@ -96,7 +101,7 @@ namespace Maes
             }
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,

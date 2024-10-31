@@ -22,9 +22,9 @@
 using System;
 
 namespace Maes {
-    internal interface ISimulationUnit {
-        public void LogicUpdate();
+    public interface ISimulationUnit {
+        void LogicUpdate();
 
-        public void PhysicsUpdate();
+        void PhysicsUpdate();
     }
 }

@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using Maes;
 using Maes.Map.MapGen;
 using Maes.Robot;
+using MAES.Simulation;
 using NUnit.Framework;
 using UnityEngine;
 using Random = System.Random;
@@ -31,12 +32,15 @@ using Random = System.Random;
 
 namespace PlayModeTests
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
     public class MaterialCommunicationTest
     {
         private const int MapWidth = 50, MapHeight = 50;
         private const int RandomSeed = 123;
-        private Simulator _maes;
-        private Simulation _simulation;
+        private MySimulator _maes;
+        private ExplorationSimulation _explorationSimulation;
         private List<TestingAlgorithm> _robotTestAlgorithms;
 
         private static Tile[,] GenerateMapWithHorizontalWallInMiddle(int wallThicknessInTiles)
@@ -87,7 +91,7 @@ namespace PlayModeTests
         [TearDown]
         public void ClearSimulator()
         {
-            Simulator.Destroy();
+            MySimulator.Destroy();
         }
 
         private void InitSimulator(MapFactory mapFactory,
@@ -97,7 +101,7 @@ namespace PlayModeTests
             )
         {
             _robotTestAlgorithms = new List<TestingAlgorithm>();
-            var testingScenario = new SimulationScenario(RandomSeed,
+            var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
                 hasFinishedSim: _ => false,
                 robotConstraints: new RobotConstraints(materialCommunication: true, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc, attenuationDictionary: attenuationDictionary),
@@ -109,9 +113,9 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = Simulator.GetInstance();
+            _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
 
             // The first robot will broadcast immediately
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
@@ -151,7 +155,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -197,7 +201,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -220,7 +224,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -250,12 +254,12 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the adjacency matrix has been created
-            while (_simulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef == null)
+            while (_explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef == null)
             {
                 yield return null;
             }
 
-            var signalStrength = _simulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }
@@ -283,7 +287,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -312,7 +316,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 5)
+            while (_explorationSimulation.SimulatedLogicTicks < 5)
             {
                 yield return null;
             }

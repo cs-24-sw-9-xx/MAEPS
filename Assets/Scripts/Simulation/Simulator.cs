@@ -22,6 +22,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using MAES.Simulation;
 using Maes.UI;
 using UnityEditor;
 using UnityEngine;
@@ -29,22 +30,22 @@ using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace Maes {
-    public class Simulator {
-
-        private static Simulator _instance = null;
+    public abstract class Simulator<TSimulation>
+        where TSimulation : class, ISimulation<TSimulation>
+    {
+        protected static Simulator<TSimulation> _instance = null;
         private GameObject _maesGameObject;
-        private SimulationManager _simulationManager;
+        protected SimulationManager<TSimulation> _simulationManager;
 
-        private Simulator() {
+        protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = Resources.Load("MAES", typeof(GameObject)) as GameObject;
             _maesGameObject = Object.Instantiate(prefab);
-            _simulationManager = _maesGameObject.GetComponentInChildren<SimulationManager>();
+            var simulationManagerGameObject = GameObject.Find("SimulationManager");
+            _simulationManager = AddSimulationManager(simulationManagerGameObject);
         }
 
-        public static Simulator GetInstance() {
-            return _instance ??= new Simulator();
-        }
+        protected abstract SimulationManager<TSimulation> AddSimulationManager(GameObject gameObject);
 
         // Clears the singleton instance and removes the simulator game object
         public static void Destroy() {
@@ -54,29 +55,11 @@ namespace Maes {
             }
         }
         
-        /// <summary>
-        /// This method is used to start the simulation in a predefined configuration that will change depending on
-        /// whether the simulation is in ros mode or not.
-        /// </summary>
-        public void DefaultStart(bool isRosMode = false) {
-            GlobalSettings.IsRosMode = isRosMode;
-            IEnumerable<SimulationScenario> generatedScenarios;
-            if (GlobalSettings.IsRosMode) {
-                generatedScenarios = ScenarioGenerator.GenerateROS2Scenario();
-            } else {
-                generatedScenarios = ScenarioGenerator.GenerateYoutubeVideoScenarios();
-            }
-            EnqueueScenarios(generatedScenarios);
-            if (Application.isBatchMode) {
-                _simulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
-            }
-        }
-
-        public void EnqueueScenario(SimulationScenario scenario) {
+        public void EnqueueScenario(SimulationScenario<TSimulation> scenario) {
             _simulationManager.EnqueueScenario(scenario);
             _simulationManager._initialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<SimulationScenario> scenario) {
+        public void EnqueueScenarios(IEnumerable<SimulationScenario<TSimulation>> scenario) {
             foreach (var simulationScenario in scenario) {
                 _simulationManager.EnqueueScenario(simulationScenario);
             }
@@ -93,7 +76,7 @@ namespace Maes {
             _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
 
-        public SimulationManager GetSimulationManager() {
+        public SimulationManager<TSimulation> GetSimulationManager() {
             return _simulationManager;
         }
     }

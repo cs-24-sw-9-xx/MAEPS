@@ -21,31 +21,43 @@
 
 using System;
 using System.Collections.Generic;
+using Maes.Simulation;
+using MAES.Simulation;
 using Maes.Statistics;
 using Maes.UI;
+using MAES.UI.RestartRemakeContollers;
 using Maes.Utilities;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Maes {
-    public class SimulationManager : MonoBehaviour {
+    public abstract class SimulationManager<TSimulation> : MonoBehaviour, ISimulationManager
+    where TSimulation : class, ISimulation<TSimulation> {
         private SimulationPlayState _playState = SimulationPlayState.Paused;
 
         public GameObject SimulationPrefab;
-        public Queue<SimulationScenario> _scenarios = new Queue<SimulationScenario>();
+        public Queue<SimulationScenario<TSimulation>> _scenarios = new Queue<SimulationScenario<TSimulation>>();
 
-        public Queue<SimulationScenario> _initialScenarios = new Queue<SimulationScenario>();
+        public Queue<SimulationScenario<TSimulation>> _initialScenarios = new Queue<SimulationScenario<TSimulation>>();
         public SimulationSpeedController UISpeedController;
         public GameObject UIControllerDebugTitle;
         public GameObject UIControllerDebugInfo;
         public Text SimulationStatusText;
         private int _physicsTicksSinceUpdate = 0;
 
-        public SimulationInfoUIController simulationInfoUIController;
+        public ISimulationInfoUIController SimulationInfoUIController;
+        ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
 
-        public SimulationScenario _currentScenario;
-        public Simulation CurrentSimulation;
+        public SimulationScenario<TSimulation> _currentScenario;
+        public TSimulation CurrentSimulation;
+
+        ISimulation ISimulationManager.CurrentSimulation => CurrentSimulation;
+        
         private GameObject _simulationGameObject;
+
+        public GameObject SettingsPanel;
+        public GameObject RestartRemakePanel;
         
         public GameObject RosClockPrefab;
         public GameObject RosVisualizerPrefab;
@@ -53,8 +65,24 @@ namespace Maes {
         internal SimulationPlayState PlayState { get; } = SimulationPlayState.Paused;
         private int _logicTicksCurrentSim = 0;
 
+        private bool _started = false;
+
         // Runs once when starting the program
-        private void Start() {
+        private void Start()
+        {
+            if (_started)
+            {
+                return;
+            }
+            
+            SimulationPrefab = Resources.Load<GameObject>("Simulation");
+            UISpeedController = GetComponent<SimulationSpeedController>();
+            SettingsPanel = GameObject.Find("SettingsPanel");
+            RestartRemakePanel = GameObject.Find("Restart and Remake Panel");
+            SimulationStatusText = GameObject.Find("StatusText").GetComponent<Text>();
+            UIControllerDebugTitle = GameObject.Find("ControllerTitle");
+            UIControllerDebugInfo = GameObject.Find("ControllerDebugInfo");
+            
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
@@ -67,6 +95,10 @@ namespace Maes {
                 UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
+            
+            AddRestartRemakeController(RestartRemakePanel);
+            
+            _started = true;
         }
 
         public void RemoveFastForwardButtonsFromControlPanel() {
@@ -96,7 +128,7 @@ namespace Maes {
             Instantiate(RosVisualizerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         }
 
-        internal SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState) {
+        public SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState) {
             if (targetState == _playState) return _playState;
 
             if (_currentScenario == null) {
@@ -109,6 +141,7 @@ namespace Maes {
             UISpeedController.UpdateButtonsUI(_playState);
             return _playState;
         }
+
 
 
         private void Update()
@@ -132,6 +165,9 @@ namespace Maes {
                 }
             }
         }
+
+        protected abstract TSimulation AddSimulation(GameObject gameObject);
+        public abstract void AddRestartRemakeController(GameObject restartRemakePanel);
 
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
         private long _nextUpdateTimeMillis = 0;
@@ -182,16 +218,12 @@ namespace Maes {
             }
         }
 
-        private void CreateStatisticsFile() {
-            var csvWriter = new StatisticsCSVWriter(CurrentSimulation,$"{_currentScenario.StatisticsFileName}");
-            csvWriter.CreateCSVFile(",");
-        }
-
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
         private bool UpdateSimulation() {
-            if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation)) {
-                if (GlobalSettings.ShouldWriteCSVResults && _currentScenario.HasFinishedSim(CurrentSimulation))
-                    CreateStatisticsFile();
+            if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation))
+            {
+                CurrentSimulation.OnSimulationFinished();
+                
                 if (_scenarios.Count != 0) { //If last simulation, let us keep looking around in it
                     RemoveCurrentSimulation();
                 }
@@ -214,10 +246,6 @@ namespace Maes {
                 CurrentSimulation.LogicUpdate();
                 _logicTicksCurrentSim++;
                 _physicsTicksSinceUpdate = 0;
-                if(GlobalSettings.ShouldWriteCSVResults 
-                   && _logicTicksCurrentSim != 0 
-                   && _logicTicksCurrentSim % GlobalSettings.TicksPerStatsSnapShot == 0) 
-                    CurrentSimulation.ExplorationTracker.CreateSnapShot();
                 UpdateStatisticsUI();
                 
                 
@@ -235,37 +263,42 @@ namespace Maes {
             return shouldContinueSim;
         }
 
-        public void CreateSimulation(SimulationScenario scenario) {
+        private void CreateSimulation(SimulationScenario<TSimulation> scenario) {
             _currentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
-            CurrentSimulation = _simulationGameObject.GetComponent<Simulation>();
+            CurrentSimulation = AddSimulation(_simulationGameObject);
             CurrentSimulation.SetScenario(scenario);
-            CurrentSimulation.SimInfoUIController = simulationInfoUIController;
+            SimulationInfoUIController = CurrentSimulation.AddSimulationInfoUIController(SettingsPanel);
             _logicTicksCurrentSim = 0;
 
-            simulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+            SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
         }
 
 
         private void UpdateStatisticsUI() {
-            simulationInfoUIController.UpdateStatistics(CurrentSimulation);
+            SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             if (CurrentSimulation != null)
                 CurrentSimulation.UpdateDebugInfo();
         }
 
-        public void RemoveCurrentSimulation() {
-            Destroy(_simulationGameObject);
+        public void RemoveCurrentSimulation()
+        {
+            CurrentSimulation?.OnDestory();
+            DestroyImmediate(_simulationGameObject);
             _currentScenario = null;
             CurrentSimulation = null;
             _simulationGameObject = null;
             _logicTicksCurrentSim = 0;
         }
 
-        public Simulation GetCurrentSimulation() {
-            return CurrentSimulation;
-        }
+        public ISimulationScenario CurrentScenario => _currentScenario;
 
-        public void EnqueueScenario(SimulationScenario simulationScenario) {
+        public void EnqueueScenario(SimulationScenario<TSimulation> simulationScenario) {
+            if (!_started)
+            {
+                Start();
+            }
+            
             if (HasActiveScenario()) {
                 _scenarios.Enqueue(simulationScenario);
             } else // This is the first scenario, initialize it immediately 

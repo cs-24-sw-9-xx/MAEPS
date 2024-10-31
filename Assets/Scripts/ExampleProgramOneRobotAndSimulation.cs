@@ -26,12 +26,16 @@ using Maes.Robot;
 using UnityEngine;
 using System.Collections.Generic;
 using MAES.ExplorationAlgorithm.FollowWaypoints;
+using MAES.Simulation;
 
 namespace Maes
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
     internal class ExampleProgramOneRobotAndSimulation : MonoBehaviour
     {
-        private Simulator _simulator;
+        private MySimulator _simulator;
         /*
 */
         private void Start()
@@ -54,7 +58,7 @@ namespace Maes
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => true);
 
-            var simulator = Simulator.GetInstance();
+            var simulator = MySimulator.GetInstance();
             var random = new System.Random(randomSeed);
             const int robotCount = 1;
             const int size = 75;
@@ -72,7 +76,7 @@ namespace Maes
                 spawningPosList.Add(new Vector2Int(random.Next(0, size), random.Next(0, size)));
             }
 
-            simulator.EnqueueScenario(new SimulationScenario(seed: 123,
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                  collisionMap: buildingConfig,

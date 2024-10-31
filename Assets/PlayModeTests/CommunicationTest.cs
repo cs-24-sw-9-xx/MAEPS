@@ -24,19 +24,24 @@ using System.Collections.Generic;
 using Maes;
 using Maes.Map.MapGen;
 using Maes.Robot;
+using MAES.Simulation;
 using NUnit.Framework;
 using UnityEngine;
 using Random = System.Random;
 
 namespace PlayModeTests
 {
+    using MySimulator = ExplorationSimulator;
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    
     public class CommunicationTest
     {
 
         private const int MapWidth = 50, MapHeight = 50;
         private const int RandomSeed = 123;
-        private Simulator _maes;
-        private Simulation _simulation;
+        private MySimulator _maes;
+        private ExplorationSimulation _explorationSimulation;
         private List<TestingAlgorithm> _robotTestAlgorithms;
 
         private Tile[,] GenerateMapWithHorizontalWallInMiddle(int wallThicknessInTiles)
@@ -63,7 +68,7 @@ namespace PlayModeTests
         [TearDown]
         public void ClearSimulator()
         {
-            Simulator.Destroy();
+            MySimulator.Destroy();
         }
 
         private void InitSimulator(MapFactory mapFactory,
@@ -71,7 +76,7 @@ namespace PlayModeTests
             List<Vector2Int> robotSpawnPositions)
         {
             _robotTestAlgorithms = new List<TestingAlgorithm>();
-            var testingScenario = new SimulationScenario(RandomSeed,
+            var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
                 hasFinishedSim: simulation => false,
                 robotConstraints: new RobotConstraints(materialCommunication: false, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc),
@@ -82,9 +87,9 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = Simulator.GetInstance();
+            _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
 
             // The first robot will broadcast immediatealy
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {
@@ -121,7 +126,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -152,7 +157,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -174,7 +179,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -205,7 +210,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 2)
+            while (_explorationSimulation.SimulatedLogicTicks < 2)
             {
                 yield return null;
             }
@@ -234,7 +239,7 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
-            while (_simulation.SimulatedLogicTicks < 5)
+            while (_explorationSimulation.SimulatedLogicTicks < 5)
             {
                 yield return null;
             }

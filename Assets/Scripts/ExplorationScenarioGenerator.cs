@@ -30,24 +30,29 @@ using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.ExplorationAlgorithm.Voronoi;
 using Maes.Map.MapGen;
 using Maes.Robot;
+using Maes.UI;
 using Maes.Utilities.Files;
 using Maes.YamlConfig;
 using UnityEngine;
 using static Maes.Map.RobotSpawner;
 
 namespace Maes {
-    public class ScenarioGenerator {
+    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+
+    public class ExplorationScenarioGenerator {
+        
          private const int Minute = 60;
          
-         public static Queue<SimulationScenario> GenerateROS2Scenario() {
-             Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+         public static Queue<MySimulationScenario> GenerateROS2Scenario() {
+             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
              var yamlConfig = MaesYamlConfigLoader.LoadConfig();
              
              // Number of robots
              var numberOfRobots = yamlConfig.NumberOfRobots;
              
              // End criteria
-             SimulationEndCriteriaDelegate shouldEndSim = simulation => false;
+             MySimulationEndCriteriaDelegate shouldEndSim = simulation => false;
              if (yamlConfig.EndCriteria != null) {
                  if (yamlConfig.EndCriteria.CoveragePercent != null) {
                      // End at coverage achieved
@@ -163,7 +168,7 @@ namespace Maes {
                  }
                  
                  
-                 scenarios.Enqueue(new SimulationScenario(
+                 scenarios.Enqueue(new MySimulationScenario(
                      seed: 0,
                      hasFinishedSim: shouldEndSim,
                      mapSpawner: mapSpawner,
@@ -179,15 +184,15 @@ namespace Maes {
          /// <summary>
          /// Generates the scenarios used for the testing of LVD's long-range experiements.
          /// </summary>
-         public static Queue<SimulationScenario> GenerateVoronoiLongRangeScenarios() {
-             Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+         public static Queue<MySimulationScenario> GenerateVoronoiLongRangeScenarios() {
+             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
             var numberOfRobots = 15;
             var runs = 20;
             var sizes = new List<(int, int)>() {(200,200)};
             var maxRunTime = 60 * Minute;
-            SimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
-                                                                             || simulation.ExplorationTracker
-                                                                                 .CoverageProportion > 0.995f);
+            MySimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
+                                                                            || simulation.ExplorationTracker
+                                                                                .CoverageProportion > 0.995f);
             
             var robotConstraintsLVD = new RobotConstraints(
                 // broadcastRange: 0,
@@ -237,7 +242,7 @@ namespace Maes {
                         1);
                     
                     foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames) {
-                        scenarios.Enqueue(new SimulationScenario(
+                        scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
@@ -249,7 +254,7 @@ namespace Maes {
                             robotConstraints: constraints,
                             $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
                         ));
-                        scenarios.Enqueue(new SimulationScenario(
+                        scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
@@ -272,14 +277,14 @@ namespace Maes {
          /// <summary>
          /// Generates the scenarios used for the YouTube video recordings.
          /// </summary>
-        public static Queue<SimulationScenario> GenerateYoutubeVideoScenarios() {
+        public static Queue<MySimulationScenario> GenerateYoutubeVideoScenarios() {
              // var bitmap = PgmMapFileLoader.LoadMapFromFileIfPresent("map.pgm");
-             Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
              var numberOfRobots = 2;
              var maxRunTime = 60 * Minute;
              var width = 50;
              var height = 50;
-             SimulationEndCriteriaDelegate hasFinishedFunc =
+             MySimulationEndCriteriaDelegate hasFinishedFunc =
                  (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime ||
                                   simulation.ExplorationTracker.CoverageProportion > 0.995f);
 
@@ -331,7 +336,7 @@ namespace Maes {
                  };
 
                  foreach (var (createAlgorithmDelegate, algorithmName) in algorithmsAndFileNames) {
-                     scenarios.Enqueue(new SimulationScenario(
+                     scenarios.Enqueue(new MySimulationScenario(
                          seed: randomSeed,
                          hasFinishedSim: hasFinishedFunc,
                          mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
@@ -366,17 +371,17 @@ namespace Maes {
         /// <summary>
         /// Generates the scenarios used for the main experiments of the MAES paper.
         /// </summary>
-        public static Queue<SimulationScenario> GenerateArticleScenarios() {
-            Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+        public static Queue<MySimulationScenario> GenerateArticleScenarios() {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
             var numberOfRobots = 1;
             var runs = 20;
             var sizes = new List<(int, int)>() {(50, 50), (100,100), (200,200)};
             var maxRunTime = 60 * Minute;
-            SimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
+            MySimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
                                                                              || simulation.ExplorationTracker
                                                                                  .CoverageProportion > 0.995f);
             // Overwrite for when simulating TNF, which aims at exploration, and not coverage.
-            SimulationEndCriteriaDelegate shouldEndTnfSim = simulation => simulation.SimulateTimeSeconds >= maxRunTime
+            MySimulationEndCriteriaDelegate shouldEndTnfSim = simulation => simulation.SimulateTimeSeconds >= maxRunTime
                                                                           || simulation.ExplorationTracker
                                                                               .ExploredProportion > .995f
                                                                           || simulation.TnfBotsOutOfFrontiers();
@@ -489,7 +494,7 @@ namespace Maes {
                         1);
                     
                     foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames) {
-                        scenarios.Enqueue(new SimulationScenario(
+                        scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
@@ -501,7 +506,7 @@ namespace Maes {
                             robotConstraints: constraints,
                             $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
                         ));
-                        scenarios.Enqueue(new SimulationScenario(
+                        scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
@@ -524,8 +529,8 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the LVD algorithm.
         /// </summary>
-        public static Queue<SimulationScenario> GenerateVoronoiScenarios() {
-           Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+        public static Queue<MySimulationScenario> GenerateVoronoiScenarios() {
+           Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
             for (int i = 0; i < 3; i++) {
                 int randomSeed = i + 4 + 1;
@@ -569,7 +574,7 @@ namespace Maes {
                 );
 
                 if (i % 2 != 0) {
-                    scenarios.Enqueue(new SimulationScenario(
+                    scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
@@ -583,7 +588,7 @@ namespace Maes {
                     ));
                 }
                 else {
-                    scenarios.Enqueue(new SimulationScenario(
+                    scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(mapConfig, 2.0f),
@@ -605,8 +610,8 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the RBW algorithm.
         /// </summary>
-        public static Queue<SimulationScenario> GenerateBallisticScenarios() {
-            Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+        public static Queue<MySimulationScenario> GenerateBallisticScenarios() {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
             for (int i = 0; i < 5; i++) {
                 int randomSeed = i + 4 + 1;
@@ -660,7 +665,7 @@ namespace Maes {
                 );
 
                 if (i % 2 == 0) {
-                    scenarios.Enqueue(new SimulationScenario(
+                    scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 60 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
@@ -674,7 +679,7 @@ namespace Maes {
                     ));
                 }
                 else {
-                    scenarios.Enqueue(new SimulationScenario(
+                    scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(mapConfig, 2.0f),
@@ -696,8 +701,8 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the SSB algorithm.
         /// </summary>
-         public static Queue<SimulationScenario> GenerateSsbScenarios() {
-            Queue<SimulationScenario> scenarios = new Queue<SimulationScenario>();
+         public static Queue<MySimulationScenario> GenerateSsbScenarios() {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
             for (int i = 0; i < 5; i++) {
                 int randomSeed = i + 4 + 1;
@@ -740,7 +745,7 @@ namespace Maes {
                     calculateSignalTransmissionProbability: (distance, walls) => true 
                 );
 
-                scenarios.Enqueue(new SimulationScenario(
+                scenarios.Enqueue(new MySimulationScenario(
                     seed: randomSeed,
                     hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 60 * minute,
                     mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
@@ -760,8 +765,8 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the TNF algorithm.
         /// </summary>
-        public static Queue<SimulationScenario> GenerateTnfScenarios() {
-            var scenarios = new Queue<SimulationScenario>();
+        public static Queue<MySimulationScenario> GenerateTnfScenarios() {
+            var scenarios = new Queue<MySimulationScenario>();
 
             int randomSeed = 4 + 2;
 
@@ -814,7 +819,7 @@ namespace Maes {
                 }
             );
             
-            scenarios.Enqueue(new SimulationScenario(
+            scenarios.Enqueue(new MySimulationScenario(
                 seed: randomSeed, 
                 hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 60 * Minute,
                 mapSpawner: generator => generator.GenerateMap(buildingConfig, 2.0f),

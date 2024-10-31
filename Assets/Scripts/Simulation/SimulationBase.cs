@@ -27,44 +27,83 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization;
 using Maes.Robot;
+using MAES.Simulation;
 using Maes.Statistics;
+using Maes.Trackers;
 using Maes.UI;
+using Maes.Visualizer;
 using UnityEngine;
 
-namespace Maes
+namespace Maes.Simulation
 {
-    public class Simulation : MonoBehaviour, ISimulationUnit
+    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController> : MonoBehaviour, ISimulation<TSimulation>
+    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController>
+    where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
+    where TTracker : ITracker
+    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation>
     {
-        public static Simulation SingletonInstance;
+        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController> SingletonInstance;
+        
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
         public float SimulateTimeSeconds { get; private set; } = 0;
 
         public MapSpawner MapGenerator;
         public RobotSpawner RobotSpawner;
-        public ExplorationVisualizer explorationVisualizer;
 
-        public PatrollingVisualizer PatrollingVisualizer;
+        public abstract TVisualizer Visualizer { get; }
+        
+        public abstract TTracker Tracker { get; }
+        
+        ITracker ISimulation.Tracker => Tracker;
 
-        private SimulationScenario _scenario;
-        private SimulationMap<Tile> _collisionMap;
+        protected SimulationScenario<TSimulation> _scenario;
+        protected SimulationMap<Tile> _collisionMap;
         public List<MonaRobot> Robots;
+
+
+        IReadOnlyList<MonaRobot> ISimulation.Robots => Robots;
 
         [CanBeNull] private MonaRobot _selectedRobot;
         public bool HasSelectedRobot() => _selectedRobot != null;
         [CanBeNull] private VisibleTagInfoHandler _selectedTag;
         public bool HasSelectedTag() => _selectedTag != null;
-        internal ExplorationTracker ExplorationTracker { get; set; }
         internal CommunicationManager _communicationManager;
 
         // The debugging visualizer provides 
-        private DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
+        protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
-        internal SimulationInfoUIController SimInfoUIController;
+        protected SimulationInfoUIControllerBase<TSimulation> SimInfoUIController;
+
+        private bool _started;
+
+        protected virtual void AfterStart()
+        {
+            // Override me
+        }
+
+        private void Start()
+        {
+            if (_started)
+            {
+                return;
+            }
+            
+            MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
+            RobotSpawner = GameObject.Find("RobotSpawner").GetComponent<RobotSpawner>();
+            var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
+            SimInfoUIController = simInfoUIControllerGameObject
+                .GetComponent<SimulationInfoUIControllerBase<TSimulation>>();
+            
+            AfterStart();
+            
+            _started = true;
+        }
 
         // Sets up the simulation by generating the map and spawning the robots
-        public void SetScenario(SimulationScenario scenario)
+        public virtual void SetScenario(SimulationScenario<TSimulation> scenario)
         {
+            Start();
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
@@ -80,8 +119,6 @@ namespace Maes
 
             _communicationManager.SetRobotReferences(Robots);
 
-            ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
-            PatrollingVisualizer.SetMap(_collisionMap);
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)
@@ -90,7 +127,7 @@ namespace Maes
             if (_selectedRobot != null) _selectedRobot.outLine.enabled = false;
             _selectedRobot = newSelectedRobot;
             if (newSelectedRobot != null) newSelectedRobot.outLine.enabled = true;
-            ExplorationTracker.SetVisualizedRobot(newSelectedRobot);
+            Tracker.SetVisualizedRobot(newSelectedRobot);
             if (_selectedRobot == null) SimInfoUIController.ClearSelectedRobot();
             UpdateDebugInfo();
         }
@@ -111,7 +148,7 @@ namespace Maes
         public void LogicUpdate()
         {
             _debugVisualizer.LogicUpdate();
-            ExplorationTracker.LogicUpdate(Robots);
+            Tracker.LogicUpdate(Robots);
             Robots.ForEach(robot => robot.LogicUpdate());
             SimulatedLogicTicks++;
             _communicationManager.LogicUpdate();
@@ -163,6 +200,16 @@ namespace Maes
             }
         }
 
+        public virtual void OnSimulationFinished()
+        {
+            // Override me for functionality.
+        }
+
+        public virtual void OnDestory()
+        {
+            // Override me for functionality.
+        }
+
         public void ShowAllTags()
         {
             _debugVisualizer.RenderVisibleTags();
@@ -181,6 +228,10 @@ namespace Maes
             _debugVisualizer.HideAllTags();
         }
 
+        public abstract bool HasFinishedSim();
+
+        public abstract ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
+        
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();
