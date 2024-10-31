@@ -43,14 +43,15 @@ using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm>
-    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm>
+    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
+    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario>
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
-    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm>
+    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
+    where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm> SingletonInstance;
+        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario> SingletonInstance;
         
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
@@ -66,7 +67,7 @@ namespace Maes.Simulation
         
         ITracker ISimulation.Tracker => Tracker;
 
-        protected SimulationScenario<TSimulation, TAlgorithm> _scenario;
+        protected TScenario _scenario;
         protected SimulationMap<Tile> _collisionMap;
         public List<MonaRobot> Robots;
 
@@ -82,7 +83,7 @@ namespace Maes.Simulation
         // The debugging visualizer provides 
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm> SimInfoUIController;
+        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController;
 
         private bool _started;
 
@@ -101,7 +102,7 @@ namespace Maes.Simulation
             MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
             var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
             SimInfoUIController = simInfoUIControllerGameObject
-                .GetComponent<SimulationInfoUIControllerBase<TSimulation, TAlgorithm>>();
+                .GetComponent<SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>>();
             
             AfterStart();
             
@@ -109,7 +110,7 @@ namespace Maes.Simulation
         }
 
         // Sets up the simulation by generating the map and spawning the robots
-        public virtual void SetScenario(SimulationScenario<TSimulation, TAlgorithm> scenario)
+        public virtual void SetScenario(TScenario scenario)
         {
             Start();
             _scenario = scenario;

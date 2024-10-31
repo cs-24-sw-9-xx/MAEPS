@@ -9,9 +9,9 @@ using UnityEngine;
 
 namespace MAES.Simulation
 {
-    public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm>
+    public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        protected override SimulationManager<ExplorationSimulation, IExplorationAlgorithm> AddSimulationManager(GameObject gameObject)
+        protected override SimulationManager<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario> AddSimulationManager(GameObject gameObject)
         {
             return gameObject.AddComponent<ExplorationSimulationManager>();
         }
@@ -26,7 +26,7 @@ namespace MAES.Simulation
         /// </summary>	
         public void DefaultStart(bool isRosMode = false) {	
             GlobalSettings.IsRosMode = isRosMode;	
-            IEnumerable<SimulationScenario<ExplorationSimulation, IExplorationAlgorithm>> generatedScenarios;	
+            IEnumerable<ExplorationSimulationScenario> generatedScenarios;	
             if (GlobalSettings.IsRosMode) {	
                 generatedScenarios = ExplorationScenarioGenerator.GenerateROS2Scenario();	
             } else {	

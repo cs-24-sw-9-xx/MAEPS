@@ -24,6 +24,7 @@ using Maes;
 using Maes.Algorithms;
 
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
 
 using Maes.UI;
 
@@ -31,9 +32,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace MAES.UI.SimulationInfoUIControllers {
-    public abstract class SimulationInfoUIControllerBase<TSimulation, TAlgorithm> : MonoBehaviour, ISimulationInfoUIController
-    where TSimulation : class, ISimulation<TSimulation, TAlgorithm>
+    public abstract class SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationInfoUIController
+    where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
+    where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
 
         public Text AlgorithmDebugText;
@@ -53,7 +55,7 @@ namespace MAES.UI.SimulationInfoUIControllers {
         public TSimulation? Simulation { get; set; }
         
 
-        public SimulationManager<TSimulation, TAlgorithm> simulationManager;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
         // Represents a function that modifies the given simulation in some way
         // (for example by changing map visualization mode)
         protected delegate void SimulationModification(TSimulation? simulation);
@@ -67,7 +69,7 @@ namespace MAES.UI.SimulationInfoUIControllers {
 
         private void Start()
         {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm>>();
+            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             
             AlgorithmDebugText = GameObject.Find("AlgorithmDebugInfo").GetComponent<Text>();
             ControllerDebugText = GameObject.Find("ControllerDebugInfo").GetComponent<Text>();

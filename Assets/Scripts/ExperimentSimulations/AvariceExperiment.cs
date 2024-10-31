@@ -45,7 +45,7 @@ namespace Maes
 
     internal class AvariceExperiments : MonoBehaviour
     {
-        private Simulator<ExplorationSimulation, IExplorationAlgorithm> _simulator;
+        private MySimulator _simulator;
         private void Start()
         {
             const int randomSeed = 12345;

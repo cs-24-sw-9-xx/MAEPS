@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace Maes
 {
-    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm>
+    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         public GameObject patrollingVisualizerPrefab;
         public PatrollingVisualizer patrollingVisualizer;
@@ -32,7 +32,7 @@ namespace Maes
             RobotSpawner = gameObject.AddComponent<PatrollingRobotSpawner>();
         }
 
-        public override void SetScenario(SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm> scenario)
+        public override void SetScenario(PatrollingSimulationScenario scenario)
         {
             base.SetScenario(scenario);
 

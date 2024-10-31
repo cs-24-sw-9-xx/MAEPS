@@ -34,13 +34,14 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Maes {
-    public abstract class Simulator<TSimulation, TAlgorithm>
-        where TSimulation : class, ISimulation<TSimulation, TAlgorithm>
+    public abstract class Simulator<TSimulation, TAlgorithm, TScenario>
+        where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
         where TAlgorithm : IAlgorithm
+        where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        protected static Simulator<TSimulation, TAlgorithm> _instance = null;
+        protected static Simulator<TSimulation, TAlgorithm, TScenario> _instance = null;
         private GameObject _maesGameObject;
-        protected SimulationManager<TSimulation, TAlgorithm> _simulationManager;
+        protected SimulationManager<TSimulation, TAlgorithm, TScenario> _simulationManager;
 
         protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
@@ -50,7 +51,7 @@ namespace Maes {
             _simulationManager = AddSimulationManager(simulationManagerGameObject);
         }
 
-        protected abstract SimulationManager<TSimulation, TAlgorithm> AddSimulationManager(GameObject gameObject);
+        protected abstract SimulationManager<TSimulation, TAlgorithm, TScenario> AddSimulationManager(GameObject gameObject);
 
         // Clears the singleton instance and removes the simulator game object
         public static void Destroy() {
@@ -60,11 +61,11 @@ namespace Maes {
             }
         }
         
-        public void EnqueueScenario(SimulationScenario<TSimulation, TAlgorithm> scenario) {
+        public void EnqueueScenario(TScenario scenario) {
             _simulationManager.EnqueueScenario(scenario);
             _simulationManager._initialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<SimulationScenario<TSimulation, TAlgorithm>> scenario) {
+        public void EnqueueScenarios(IEnumerable<TScenario> scenario) {
             foreach (var simulationScenario in scenario) {
                 _simulationManager.EnqueueScenario(simulationScenario);
             }
@@ -81,7 +82,7 @@ namespace Maes {
             _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
 
-        public SimulationManager<TSimulation, TAlgorithm> GetSimulationManager() {
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> GetSimulationManager() {
             return _simulationManager;
         }
     }

@@ -16,11 +16,12 @@ using UnityEngine;
 
 namespace MAES.Simulation
 {
-    public interface ISimulation<TSimulation, TAlgorithm> : ISimulation
-    where TSimulation : ISimulation<TSimulation, TAlgorithm>
+    public interface ISimulation<TSimulation, TAlgorithm, TScenario> : ISimulation
+    where TSimulation : ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
+    where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        void SetScenario(SimulationScenario<TSimulation, TAlgorithm> scenario);
+        void SetScenario(TScenario scenario);
     }
     public interface ISimulation : ISimulationUnit
     {

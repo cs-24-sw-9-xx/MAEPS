@@ -1,9 +1,11 @@
 using Maes;
 using Maes.Algorithms;
 
+using MAES.Simulation.SimulationScenarios;
+
 namespace MAES.UI.SimulationInfoUIControllers
 {
-    public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm>
+    public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         protected override void AfterStart()
         {

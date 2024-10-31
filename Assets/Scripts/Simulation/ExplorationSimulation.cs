@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace Maes
 {
-    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm>
+    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
         public ExplorationTracker ExplorationTracker { get; set; }
 
@@ -30,7 +30,7 @@ namespace Maes
             RobotSpawner = gameObject.AddComponent<ExplorationRobotSpawner>();
         }
 
-        public override void SetScenario(SimulationScenario<ExplorationSimulation, IExplorationAlgorithm> scenario)
+        public override void SetScenario(ExplorationSimulationScenario scenario)
         {
             base.SetScenario(scenario);
             
