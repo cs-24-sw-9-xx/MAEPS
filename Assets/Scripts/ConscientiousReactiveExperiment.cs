@@ -75,6 +75,7 @@ namespace Maes
                 slamUpdateIntervalInTicks: 1,
                 slamSynchronizeIntervalInTicks: 10,
                 slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
                 distributeSlam: false,
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 7f,
@@ -94,6 +95,7 @@ namespace Maes
                 slamUpdateIntervalInTicks: 1,
                 slamSynchronizeIntervalInTicks: 10,
                 slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
                 distributeSlam: false,
                 environmentTagReadRange: 100.0f,
                 slamRayTraceRange: 7f,
@@ -110,6 +112,7 @@ namespace Maes
                 slamUpdateIntervalInTicks: 1,
                 slamSynchronizeIntervalInTicks: 10,
                 slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
                 distributeSlam: false,
                 environmentTagReadRange: 100.0f,
                 slamRayTraceRange: 7f,
@@ -137,7 +140,7 @@ namespace Maes
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-
+            
             var buildingConfigList50 = new List<BuildingMapConfig>();
             var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
