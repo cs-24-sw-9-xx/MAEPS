@@ -4,17 +4,17 @@ namespace Maes.UI
     {
         protected override void AfterStart()
         {
-            throw new System.NotImplementedException();
+            //TODO: Implement
         }
 
         protected override void NotifyNewSimulation(PatrollingSimulation newSimulation)
         {
-            throw new System.NotImplementedException();
+            //TODO: Implement
         }
 
         protected override void UpdateStatistics(PatrollingSimulation simulation)
         {
-            throw new System.NotImplementedException();
+            //TODO: Implement
         }
     }
 }

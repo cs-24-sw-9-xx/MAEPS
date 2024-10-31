@@ -9,6 +9,7 @@ namespace Maes
 {
     public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController>
     {
+        public GameObject patrollingVisualizerPrefab;
         public PatrollingVisualizer patrollingVisualizer;
 
         public PatrollingTracker PatrollingTracker;
@@ -16,12 +17,18 @@ namespace Maes
         public override PatrollingVisualizer Visualizer => patrollingVisualizer;
 
         public override PatrollingTracker Tracker => PatrollingTracker;
+        
+        protected override void AfterStart()
+        {
+            patrollingVisualizerPrefab = Resources.Load<GameObject>("PatrollingVisualizer");
+            patrollingVisualizer = Instantiate(patrollingVisualizerPrefab).GetComponent<PatrollingVisualizer>();
+        }
 
         public override void SetScenario(SimulationScenario<PatrollingSimulation> scenario)
         {
             base.SetScenario(scenario);
 
-            PatrollingTracker = new PatrollingTracker();
+            PatrollingTracker = new PatrollingTracker(scenario.RobotConstraints);
             patrollingVisualizer.SetMap(_collisionMap, _collisionMap.ScaledOffset);
         }
 
@@ -38,7 +45,12 @@ namespace Maes
 
         public override ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject)
         {
-            throw new System.NotImplementedException();
+            var patrollingInfoUIController = gameObject.AddComponent<PatrollingInfoUIController>();
+            patrollingInfoUIController.Simulation = this;
+
+            SimInfoUIController = patrollingInfoUIController;
+
+            return patrollingInfoUIController;
         }
     }
 }
