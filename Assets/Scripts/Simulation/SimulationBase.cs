@@ -43,15 +43,16 @@ using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
-    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario>
+    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
+    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
+    where TRobotSpawner : RobotSpawner<TAlgorithm>
     {
-        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario> SingletonInstance;
+        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> SingletonInstance;
         
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
@@ -59,7 +60,7 @@ namespace Maes.Simulation
 
         public MapSpawner MapGenerator;
         
-        public RobotSpawner<TAlgorithm> RobotSpawner;
+        public TRobotSpawner RobotSpawner;
 
         public abstract TVisualizer Visualizer { get; }
         
@@ -121,13 +122,19 @@ namespace Maes.Simulation
             RobotSpawner.CommunicationManager = _communicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
             _communicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
+
+            SpawnRobots(scenario);
             foreach (var robot in Robots)
                 robot.OnRobotSelected = SetSelectedRobot;
 
             _communicationManager.SetRobotReferences(Robots);
 
+        }
+
+        protected virtual void SpawnRobots(TScenario scenario)
+        {
+            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)

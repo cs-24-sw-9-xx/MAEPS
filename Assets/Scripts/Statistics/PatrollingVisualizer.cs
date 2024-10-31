@@ -21,11 +21,13 @@ namespace Maes.Statistics {
             // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;
             foreach (var visualizer in _visualizers) {
-                GameObject.Destroy(visualizer);
+                Destroy(visualizer);
             }
+        }
 
-            _patrollingMap = new PatrollingMap(simulationMap);
-
+        public void SetPatrollingMap(PatrollingMap patrollingMap)
+        {
+            _patrollingMap = patrollingMap;
             CreateVisualizers();
         }
 
