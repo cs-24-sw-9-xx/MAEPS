@@ -379,7 +379,7 @@ namespace Maes.Robot
             }
             #region DrawPath
             Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (int i = 0; i < _currentPath.Count-1; i++)
+            for (int i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToList();
                 if (i == 0)

@@ -239,28 +239,28 @@ namespace Maes.ExplorationAlgorithm.Greed
     }
 
     public class HeartbeatMessage
+    {
+        internal SlamMap map;
+
+        public HeartbeatMessage(SlamMap map)
         {
-            internal SlamMap map;
+            this.map = map;
+        }
 
-            public HeartbeatMessage(SlamMap map)
+        public HeartbeatMessage Combine(HeartbeatMessage otherMessage)
+        {
+            if (otherMessage is HeartbeatMessage heartbeatMessage)
             {
-                this.map = map;
-            }
-
-            public HeartbeatMessage Combine(HeartbeatMessage otherMessage)
-            {
-                if (otherMessage is HeartbeatMessage heartbeatMessage)
-                {
-                    List<SlamMap> maps = new() { heartbeatMessage.map, map };
-                    SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
-                    return this;
-                }
-                return null;
-            }
-
-            public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat
-            {
+                List<SlamMap> maps = new() { heartbeatMessage.map, map };
+                SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
                 return this;
             }
+            return null;
         }
+
+        public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat
+        {
+            return this;
+        }
+    }
 }

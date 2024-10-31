@@ -373,7 +373,7 @@ namespace Maes.Map.MapGen
             }
 
             innerWallsMesh.subMeshCount = wallIndexType.Keys.Count;
-            
+
             // Debug variables
             _gizmoWallVertices = wallVertices;
             _gizmoWallTriangles = wallTriangles;
@@ -794,7 +794,7 @@ namespace Maes.Map.MapGen
                 var maxType = types.Max();
 
                 // Should not work, type should be the bottom left control node but it breaks where walls are on the slam map
-                Center = new Node(new Vector3(centerX, topLeft.Position.y, centerZ), maxType); 
+                Center = new Node(new Vector3(centerX, topLeft.Position.y, centerZ), maxType);
 
                 // There are only 16 possible configurations
                 // Consider them in binary xxxx

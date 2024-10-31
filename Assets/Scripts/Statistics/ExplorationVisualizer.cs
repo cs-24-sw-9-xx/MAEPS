@@ -269,7 +269,8 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogOfWarPlane != null) {
+                if (_fogOfWarPlane != null)
+                {
                     for (int i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
                         Ray r = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);

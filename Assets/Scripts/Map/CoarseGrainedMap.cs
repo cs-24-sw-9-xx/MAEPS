@@ -160,7 +160,7 @@ namespace Maes.Map
 
         public bool IsCoordWithinBounds(Vector2Int coordinate)
         {
-             return (coordinate.x >= 0 && coordinate.x < _width && coordinate.y >= 0 && coordinate.y < _height) && !CheckIfAnyIsStatus(coordinate, SlamMap.SlamTileStatus.Solid);
+            return (coordinate.x >= 0 && coordinate.x < _width && coordinate.y >= 0 && coordinate.y < _height) && !CheckIfAnyIsStatus(coordinate, SlamMap.SlamTileStatus.Solid);
         }
 
         delegate SlamMap.SlamTileStatus StatusAggregator(SlamMap.SlamTileStatus s1, SlamMap.SlamTileStatus s2);
@@ -507,13 +507,14 @@ namespace Maes.Map
             var open = SlamMap.SlamTileStatus.Open;
 
             // If all SLAM tiles are solid, just return solid
-            if (CheckIfAnyIsStatus(nextCoordinate, solid) || CheckIfAnyIsStatus(currentCoordinate, solid) || CheckIfAllSlamStatusesSolid(nextCoordinate) || CheckIfAllSlamStatusesSolid(currentCoordinate)) {
+            if (CheckIfAnyIsStatus(nextCoordinate, solid) || CheckIfAnyIsStatus(currentCoordinate, solid) || CheckIfAllSlamStatusesSolid(nextCoordinate) || CheckIfAllSlamStatusesSolid(currentCoordinate))
+            {
                 return true;
             }
             if (CheckIfAnyIsStatus(currentCoordinate, open) && CheckIfAnyIsStatus(nextCoordinate, open))
-                {
-                    return false;
-                }
+            {
+                return false;
+            }
             return true;
         }
 
@@ -521,15 +522,18 @@ namespace Maes.Map
         {
             var statuses = GetSlamTileStatuses(coordinate);
             int solids = 0;
-            foreach (var coord in statuses) {
-                    if (coord != SlamMap.SlamTileStatus.Open) {
-                            solids++;
-                        }
+            foreach (var coord in statuses)
+            {
+                if (coord != SlamMap.SlamTileStatus.Open)
+                {
+                    solids++;
                 }
+            }
 
-            if (solids == 4) {
-                    return true;
-                }
+            if (solids == 4)
+            {
+                return true;
+            }
 
             return false;
         }
@@ -537,8 +541,10 @@ namespace Maes.Map
         private bool CheckIfAnyIsStatus(Vector2Int coordinate, SlamMap.SlamTileStatus status)
         {
             var statuses = GetSlamTileStatuses(coordinate);
-            foreach (var coord in statuses) {
-                if (coord == status) {
+            foreach (var coord in statuses)
+            {
+                if (coord == status)
+                {
                     return true;
                 }
             }

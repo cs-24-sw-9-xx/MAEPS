@@ -24,9 +24,11 @@ using Maes.Map;
 using Maes.Robot;
 using UnityEngine;
 
-namespace Maes {
-    internal class DebuggingVisualizer : ISimulationUnit {
-        
+namespace Maes
+{
+    internal class DebuggingVisualizer : ISimulationUnit
+    {
+
         private Queue<CommunicationLink> _links = new Queue<CommunicationLink>();
         private Color _linkColor = new Color(50f / 255f, 120f / 255f, 255f / 255f);
         private int _currentTick = 0;
@@ -39,13 +41,15 @@ namespace Maes {
         private readonly Color _tagColor = new Color(50f / 255f, 120f / 255f, 255f / 255f);
         private readonly Color _readableTagColor = new Color(255f / 255f, 150f / 255f, 255f / 255f);
 
-        private readonly struct CommunicationLink {
+        private readonly struct CommunicationLink
+        {
             public readonly MonaRobot RobotOne;
             public readonly MonaRobot RobotTwo;
             public readonly int EndPhysicsTick;
             public readonly LineRenderer LineRenderer;
 
-            public CommunicationLink(MonaRobot robotOne, MonaRobot robotTwo, int endPhysicsTick) {
+            public CommunicationLink(MonaRobot robotOne, MonaRobot robotTwo, int endPhysicsTick)
+            {
                 RobotOne = robotOne;
                 RobotTwo = robotTwo;
                 EndPhysicsTick = endPhysicsTick;
@@ -56,20 +60,23 @@ namespace Maes {
                 LineRenderer.name = ToString();
             }
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"LineRenderer {RobotOne.id} - {RobotTwo.id}";
             }
         }
 
         // Debugging measure to visualize all environment tags
-        public void AddEnvironmentTag(EnvironmentTag tag) {
+        public void AddEnvironmentTag(EnvironmentTag tag)
+        {
             _environmentTags.Add(tag);
         }
 
         // Debugging measure to visualize communication between robots
-        public void AddCommunicationTrail(MonaRobot robot1, MonaRobot robot2) {
+        public void AddCommunicationTrail(MonaRobot robot1, MonaRobot robot2)
+        {
             _links.Enqueue(new CommunicationLink(robot1, robot2, _currentTick + 10));
-            
+
         }
 
         /*public void Render() {
@@ -84,22 +91,28 @@ namespace Maes {
                 placedTag.tag.DrawTag(placedTag.WorldPosition);
         }*/
 
-        public void RenderVisibleTags() {
-            foreach (var tag in _environmentTags) {
+        public void RenderVisibleTags()
+        {
+            foreach (var tag in _environmentTags)
+            {
                 tag.SetVisibility(true);
             }
         }
 
-        public void RenderSelectedVisibleTags(int id) {
-            foreach (var tag in _environmentTags) {
+        public void RenderSelectedVisibleTags(int id)
+        {
+            foreach (var tag in _environmentTags)
+            {
                 tag.SetVisibility(tag.sender == id);
             }
         }
 
-        public void PhysicsUpdate() {
+        public void PhysicsUpdate()
+        {
             _currentTick++;
             // Remove old links
-            while (_links.Count != 0 && _links.Peek().EndPhysicsTick < _currentTick) {
+            while (_links.Count != 0 && _links.Peek().EndPhysicsTick < _currentTick)
+            {
                 var link = _links.Dequeue();
                 Object.Destroy(GameObject.Find(link.ToString()));
             }
@@ -107,15 +120,19 @@ namespace Maes {
 
         public void LogicUpdate() { }
 
-        public void HideAllTags() {
-            foreach (var tag in _environmentTags) {
+        public void HideAllTags()
+        {
+            foreach (var tag in _environmentTags)
+            {
                 tag.SetVisibility(false);
             }
         }
 
-        public void RenderCommunicationLines() {
-            foreach (var link in _links) {
-                link.LineRenderer.SetPositions(new Vector3[] {link.RobotOne.transform.position + new Vector3(0, 0, -.2f), link.RobotTwo.transform.position + new Vector3(0, 0, -.2f)});
+        public void RenderCommunicationLines()
+        {
+            foreach (var link in _links)
+            {
+                link.LineRenderer.SetPositions(new Vector3[] { link.RobotOne.transform.position + new Vector3(0, 0, -.2f), link.RobotTwo.transform.position + new Vector3(0, 0, -.2f) });
             }
         }
     }

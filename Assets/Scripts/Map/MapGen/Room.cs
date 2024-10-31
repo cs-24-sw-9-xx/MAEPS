@@ -88,7 +88,7 @@ namespace Maes.Map.MapGen
             foreach (var tile in Tiles)
                 for (var x = -wallThickness; x < wallThickness; x++)
                     for (var y = -wallThickness; y < wallThickness; y++)
-                        outsideTiles.Add(new Vector2Int(tile.x+x, tile.y+y));
+                        outsideTiles.Add(new Vector2Int(tile.x + x, tile.y + y));
 
             return outsideTiles.Where(vec => IsInMapRange(vec.x, vec.y, TilesAsArray)).Distinct().ToList();
         }
