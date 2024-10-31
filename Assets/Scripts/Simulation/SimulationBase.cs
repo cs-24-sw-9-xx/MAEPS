@@ -19,37 +19,46 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
 using Maes.Map.MapGen;
-using Maes.Map.Visualization;
+
+using MAES.Map.RobotSpawners;
+
 using Maes.Robot;
 using MAES.Simulation;
-using Maes.Statistics;
+using MAES.Simulation.SimulationScenarios;
+
 using Maes.Trackers;
 using Maes.UI;
+
+using MAES.UI.SimulationInfoUIControllers;
+
 using Maes.Visualizer;
 using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController> : MonoBehaviour, ISimulation<TSimulation>
-    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController>
+    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm>
+    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm>
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
-    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation>
+    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm>
+    where TAlgorithm : IAlgorithm
     {
-        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController> SingletonInstance;
+        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm> SingletonInstance;
         
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
         public float SimulateTimeSeconds { get; private set; } = 0;
 
         public MapSpawner MapGenerator;
-        public RobotSpawner RobotSpawner;
+        
+        public RobotSpawner<TAlgorithm> RobotSpawner;
 
         public abstract TVisualizer Visualizer { get; }
         
@@ -57,7 +66,7 @@ namespace Maes.Simulation
         
         ITracker ISimulation.Tracker => Tracker;
 
-        protected SimulationScenario<TSimulation> _scenario;
+        protected SimulationScenario<TSimulation, TAlgorithm> _scenario;
         protected SimulationMap<Tile> _collisionMap;
         public List<MonaRobot> Robots;
 
@@ -73,7 +82,7 @@ namespace Maes.Simulation
         // The debugging visualizer provides 
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
-        protected SimulationInfoUIControllerBase<TSimulation> SimInfoUIController;
+        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm> SimInfoUIController;
 
         private bool _started;
 
@@ -90,10 +99,9 @@ namespace Maes.Simulation
             }
             
             MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
-            RobotSpawner = GameObject.Find("RobotSpawner").GetComponent<RobotSpawner>();
             var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
             SimInfoUIController = simInfoUIControllerGameObject
-                .GetComponent<SimulationInfoUIControllerBase<TSimulation>>();
+                .GetComponent<SimulationInfoUIControllerBase<TSimulation, TAlgorithm>>();
             
             AfterStart();
             
@@ -101,7 +109,7 @@ namespace Maes.Simulation
         }
 
         // Sets up the simulation by generating the map and spawning the robots
-        public virtual void SetScenario(SimulationScenario<TSimulation> scenario)
+        public virtual void SetScenario(SimulationScenario<TSimulation, TAlgorithm> scenario)
         {
             Start();
             _scenario = scenario;
@@ -172,7 +180,7 @@ namespace Maes.Simulation
             var res = true;
             foreach (var monaRobot in Robots)
             {
-                res &= (monaRobot.ExplorationAlgorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true;
+                res &= (monaRobot.Algorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true;
             }
 
             return res;
@@ -184,12 +192,12 @@ namespace Maes.Simulation
             {
                 if (GlobalSettings.IsRosMode)
                 {
-                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.ExplorationAlgorithm.GetDebugInfo());
+                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.Algorithm.GetDebugInfo());
                     // SimInfoUIController.UpdateControllerDebugInfo(_selectedRobot.Controller.GetDebugInfo());
                 }
                 else
                 {
-                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.ExplorationAlgorithm.GetDebugInfo());
+                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.Algorithm.GetDebugInfo());
                     SimInfoUIController.UpdateControllerDebugInfo(_selectedRobot.Controller.GetDebugInfo());
                 }
 

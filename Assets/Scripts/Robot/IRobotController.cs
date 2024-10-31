@@ -187,11 +187,5 @@ namespace Maes.Robot
         /// </summary>
         /// <returns>a reference to the robots <see cref="SlamMap"/></returns>
         SlamMap GetSlamMap();
-
-        /// <summary>
-        /// Gets all verticies on the map.
-        /// </summary>
-        /// <returns></returns>
-        IReadOnlyList<Vertex> GetVerticies();
     }
 }

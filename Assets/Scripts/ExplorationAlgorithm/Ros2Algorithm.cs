@@ -23,23 +23,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Maes.Map;
+
+using Maes.Algorithms;
 using Maes.Robot;
 using Maes.Robot.Task;
 using Maes.Utilities;
-using Maes.YamlConfig;
-using RosMessageTypes.BuiltinInterfaces;
+
 using RosMessageTypes.Geometry;
 using RosMessageTypes.Maes;
-using RosMessageTypes.Rosgraph;
-using RosMessageTypes.Sensor;
-using RosMessageTypes.Std;
-using Unity.Robotics.Core;
+
 using Unity.Robotics.ROSTCPConnector;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
-using UnityEngine.UIElements;
 
 namespace Maes.ExplorationAlgorithm {
     internal class Ros2Algorithm : IExplorationAlgorithm {

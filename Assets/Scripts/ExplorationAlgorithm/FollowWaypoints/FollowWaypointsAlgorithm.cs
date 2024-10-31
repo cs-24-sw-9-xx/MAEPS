@@ -1,5 +1,6 @@
 using System.Collections.Generic;
-using Maes.ExplorationAlgorithm;
+
+using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
 using UnityEngine;

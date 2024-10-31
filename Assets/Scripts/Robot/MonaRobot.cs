@@ -21,6 +21,8 @@
 
 using System;
 using System.Collections.Generic;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm;
 using MAES.Simulation;
 using Maes.UI;
@@ -45,7 +47,7 @@ namespace Maes.Robot {
         public OnRobotSelectedDelegate OnRobotSelected = (r) => { };
 
         // The algorithm that controls the logic of the robot
-        public IExplorationAlgorithm ExplorationAlgorithm { get; set; }
+        public IAlgorithm Algorithm { get; set; }
 
         public List<GameObject> _collidingGameObjects = new List<GameObject>();
 
@@ -56,7 +58,7 @@ namespace Maes.Robot {
         }
 
         public void LogicUpdate() {
-            ExplorationAlgorithm.UpdateLogic();
+            Algorithm.UpdateLogic();
             Controller.UpdateLogic();
         }
 

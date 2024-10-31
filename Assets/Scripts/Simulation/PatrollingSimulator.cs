@@ -1,11 +1,13 @@
 using Maes;
+using Maes.Algorithms;
+
 using UnityEngine;
 
 namespace MAES.Simulation
 {
-    public class PatrollingSimulator : Simulator<PatrollingSimulation>
+    public class PatrollingSimulator : Simulator<PatrollingSimulation, IPatrollingAlgorithm>
     {
-        protected override SimulationManager<PatrollingSimulation> AddSimulationManager(GameObject gameObject)
+        protected override SimulationManager<PatrollingSimulation, IPatrollingAlgorithm> AddSimulationManager(GameObject gameObject)
         {
             return gameObject.AddComponent<PatrollingSimulationManager>();
         }

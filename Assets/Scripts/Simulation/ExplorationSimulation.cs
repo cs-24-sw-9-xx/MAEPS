@@ -1,13 +1,17 @@
+using Maes.Algorithms;
+using MAES.Map.RobotSpawners;
 using Maes.Simulation;
+using MAES.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.UI;
-using MAES.UI.RestartRemakeContollers;
+
+using MAES.UI.SimulationInfoUIControllers;
+
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Maes
 {
-    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController>
+    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm>
     {
         public ExplorationTracker ExplorationTracker { get; set; }
 
@@ -22,9 +26,11 @@ namespace Maes
         {
             explorationVisualizerPrefab = Resources.Load<GameObject>("ExplorationVisualizer");
             explorationVisualizer = Instantiate(explorationVisualizerPrefab).GetComponent<ExplorationVisualizer>();
+            
+            RobotSpawner = gameObject.AddComponent<ExplorationRobotSpawner>();
         }
 
-        public override void SetScenario(SimulationScenario<ExplorationSimulation> scenario)
+        public override void SetScenario(SimulationScenario<ExplorationSimulation, IExplorationAlgorithm> scenario)
         {
             base.SetScenario(scenario);
             
@@ -57,6 +63,7 @@ namespace Maes
         public override void OnDestory()
         {
             DestroyImmediate(explorationVisualizer.gameObject);
+            DestroyImmediate(RobotSpawner.gameObject);
         }
 
         private void CreateStatisticsFile() {

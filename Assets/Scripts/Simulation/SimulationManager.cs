@@ -21,25 +21,31 @@
 
 using System;
 using System.Collections.Generic;
-using Maes.Simulation;
+
+using Maes.Algorithms;
+
 using MAES.Simulation;
-using Maes.Statistics;
+using MAES.Simulation.SimulationScenarios;
+
 using Maes.UI;
-using MAES.UI.RestartRemakeContollers;
+
+using MAES.UI.SimulationInfoUIControllers;
+
 using Maes.Utilities;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace Maes {
-    public abstract class SimulationManager<TSimulation> : MonoBehaviour, ISimulationManager
-    where TSimulation : class, ISimulation<TSimulation> {
+    public abstract class SimulationManager<TSimulation, TAlgorithm> : MonoBehaviour, ISimulationManager
+    where TSimulation : class, ISimulation<TSimulation, TAlgorithm>
+    where TAlgorithm : IAlgorithm
+    {
         private SimulationPlayState _playState = SimulationPlayState.Paused;
 
         public GameObject SimulationPrefab;
-        public Queue<SimulationScenario<TSimulation>> _scenarios = new Queue<SimulationScenario<TSimulation>>();
+        public Queue<SimulationScenario<TSimulation, TAlgorithm>> _scenarios = new();
 
-        public Queue<SimulationScenario<TSimulation>> _initialScenarios = new Queue<SimulationScenario<TSimulation>>();
+        public Queue<SimulationScenario<TSimulation, TAlgorithm>> _initialScenarios = new();
         public SimulationSpeedController UISpeedController;
         public GameObject UIControllerDebugTitle;
         public GameObject UIControllerDebugInfo;
@@ -49,7 +55,7 @@ namespace Maes {
         public ISimulationInfoUIController SimulationInfoUIController;
         ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
 
-        public SimulationScenario<TSimulation> _currentScenario;
+        public SimulationScenario<TSimulation, TAlgorithm> _currentScenario;
         public TSimulation CurrentSimulation;
 
         ISimulation ISimulationManager.CurrentSimulation => CurrentSimulation;
@@ -263,7 +269,7 @@ namespace Maes {
             return shouldContinueSim;
         }
 
-        private void CreateSimulation(SimulationScenario<TSimulation> scenario) {
+        private void CreateSimulation(SimulationScenario<TSimulation, TAlgorithm> scenario) {
             _currentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = AddSimulation(_simulationGameObject);
@@ -293,7 +299,7 @@ namespace Maes {
 
         public ISimulationScenario CurrentScenario => _currentScenario;
 
-        public void EnqueueScenario(SimulationScenario<TSimulation> simulationScenario) {
+        public void EnqueueScenario(SimulationScenario<TSimulation, TAlgorithm> simulationScenario) {
             if (!_started)
             {
                 Start();

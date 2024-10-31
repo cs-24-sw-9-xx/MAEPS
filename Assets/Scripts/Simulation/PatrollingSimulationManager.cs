@@ -1,10 +1,12 @@
 using Maes;
+using Maes.Algorithms;
+
 using MAES.UI.RestartRemakeContollers;
 using UnityEngine;
 
 namespace MAES.Simulation
 {
-    public class PatrollingSimulationManager : SimulationManager<PatrollingSimulation>
+    public class PatrollingSimulationManager : SimulationManager<PatrollingSimulation, IPatrollingAlgorithm>
     {
         public override void AddRestartRemakeController(GameObject restartRemakePanel)
         {

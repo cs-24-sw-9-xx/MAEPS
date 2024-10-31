@@ -1,11 +1,12 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 
 namespace Maes.Map {
-    public class Vertex
+    public class Vertex : ICloneable
     {
         private readonly HashSet<Vertex> _neighbors = new HashSet<Vertex>();
         public float Weight { get; }
@@ -28,7 +29,7 @@ namespace Maes.Map {
         }
 
         public void AddNeighbor(Vertex neighbor){
-            if (neighbor != this) {
+            if (!Equals(neighbor, this)) {
                 _neighbors.Add(neighbor);
             }
         }
@@ -49,6 +50,17 @@ namespace Maes.Map {
         public override int GetHashCode()
         {
             return Position.GetHashCode();
+        }
+
+        public object Clone()
+        {
+            var vertex = new Vertex(Weight, Position, Color);
+            foreach (var neighbor in _neighbors)
+            {
+                vertex.AddNeighbor(neighbor);
+            }
+            
+            return vertex;
         }
     }
 }

@@ -19,6 +19,7 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using Maes.Algorithms;
 using Maes.Robot;
 using Maes.Robot.Task;
 using Random = System.Random;

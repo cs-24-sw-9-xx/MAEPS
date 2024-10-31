@@ -1,6 +1,9 @@
-namespace Maes.UI
+using Maes;
+using Maes.Algorithms;
+
+namespace MAES.UI.SimulationInfoUIControllers
 {
-    public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation>
+    public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm>
     {
         protected override void AfterStart()
         {

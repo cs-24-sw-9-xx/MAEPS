@@ -54,8 +54,6 @@ namespace Maes.Robot
         private Queue<Vector2Int> _currentPath = new();
         private Vector2Int _currentTarget = new();
 
-        public PatrollingMap PatrollingMap {get; set;}
-
         // Returns the counterclockwise angle in degrees between the forward orientation of the robot and the x-axis
         public float GetForwardAngleRelativeToXAxis()
         {
@@ -537,11 +535,6 @@ namespace Maes.Robot
                 AssertRobotIsInIdleState("Differential movement");
                 CurrentTask = new InfiniteDifferentialMovementTask(leftWheelForce, rightWheelForce);
             }
-        }
-
-        public IReadOnlyList<Vertex> GetVerticies()
-        {
-            return PatrollingMap.Verticies;
         }
     }
 }

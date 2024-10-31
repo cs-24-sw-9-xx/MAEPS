@@ -19,10 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System.Collections.Generic;
-using Maes.Map;
-using UnityEngine;
-
 namespace Maes.ExplorationAlgorithm.BrickAndMortar {
     /*public class BrickAndMortarTag: EnvironmentTaggingMap.ITag {
 

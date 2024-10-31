@@ -20,15 +20,6 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Maes.Robot;
-using Maes.Robot.Task;
-using Maes.Utilities;
-using UnityEngine;
-using Random = System.Random;
-
 namespace Maes.ExplorationAlgorithm.BrickAndMortar {
     /*public class BrickAndMortar: IExplorationAlgorithm {
 

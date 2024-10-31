@@ -24,6 +24,9 @@ using Maes.Robot;
 using System;
 using System.Linq;
 using System.Collections.Generic;
+
+using Maes.Algorithms;
+
 using UnityEngine;
 using Maes.Utilities;
 using static Maes.Map.SlamMap;

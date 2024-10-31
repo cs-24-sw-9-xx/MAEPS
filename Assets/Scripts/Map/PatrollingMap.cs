@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Maes.Map.MapGen;
@@ -7,9 +8,14 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class PatrollingMap
+    public class PatrollingMap : ICloneable
     {
         public readonly IReadOnlyList<Vertex> Verticies;
+
+        private PatrollingMap(IEnumerable<Vertex> verticies)
+        {
+            Verticies = verticies.ToList();
+        }
 
         public PatrollingMap(SimulationMap<Tile> simulationMap)
         {
@@ -279,6 +285,11 @@ namespace Maes.Map
                 Tiles = tiles;
                 FromWhichAlgo = algo;
             }
+        }
+
+        public object Clone()
+        {
+            return new PatrollingMap(this.Verticies.Select(v => (Vertex)v.Clone()).ToArray());
         }
     }
 }

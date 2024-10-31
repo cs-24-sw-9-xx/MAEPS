@@ -22,25 +22,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Maes.ExplorationAlgorithm;
+
+using Maes;
+using Maes.Algorithms;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Utilities;
+
 using UnityEngine;
+
 using static Maes.Utilities.Geometry;
 
-namespace Maes.Map
+namespace MAES.Map.RobotSpawners
 {
-    public class RobotSpawner : MonoBehaviour
+    public abstract class RobotSpawner<TAlgorithm> : MonoBehaviour
+    where TAlgorithm : IAlgorithm
     {
-        public delegate IExplorationAlgorithm CreateAlgorithmDelegate(int randomSeed);
+        public delegate TAlgorithm CreateAlgorithmDelegate(int randomSeed);
 
         public GameObject robotPrefab;
 
         internal CommunicationManager CommunicationManager;
 
         public RobotConstraints RobotConstraints;
+
+        public void Awake()
+        {
+            robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
+        }
 
 
         public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
@@ -325,9 +335,9 @@ namespace Maes.Map
 
             return robots;
         }
-
-        private MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
-            IExplorationAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
+        
+        protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
+            TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {
             var robotID = robotId;
             var robotGameObject = Instantiate(robotPrefab, parent: transform);
@@ -357,10 +367,9 @@ namespace Maes.Map
 
 
             robot.id = robotID;
-            robot.ExplorationAlgorithm = algorithm;
+            robot.Algorithm = algorithm;
             robot.Controller.CommunicationManager = CommunicationManager;
             robot.Controller.SlamMap = new SlamMap(collisionMap, RobotConstraints, seed);
-            robot.Controller.PatrollingMap = new PatrollingMap(collisionMap);
             robot.Controller.Constraints = RobotConstraints;
             algorithm.SetController(robot.Controller);
 

@@ -19,31 +19,30 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using Maes.ExplorationAlgorithm.Minotaur;
-using System.Collections;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
-using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
-using Maes.Utilities.Files;
+
 using UnityEngine;
-using Maes.Robot;
-using Maes.ExplorationAlgorithm.Movement;
+
 using System.Collections.Generic;
-using Maes.UI;
-using UnityEditor;
 using System.Linq;
 using Maes.ExplorationAlgorithm.Greed;
 using System.Text.RegularExpressions;
 using System.IO;
+
+using Maes.Algorithms;
+
+using MAES.Map.RobotSpawners;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
 
 namespace Maes.ExperimentSimulations
 {
     using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
+    using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     public class ExplorationTimeoutTest : MonoBehaviour
     {
         private MySimulator _simulator;
