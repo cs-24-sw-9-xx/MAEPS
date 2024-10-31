@@ -16,8 +16,8 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
         private bool _isPatrolling = false;
         public string GetDebugInfo()
         {
-            return 
-            "Conscientious Reactive Algorithm\n" + 
+            return
+            "Conscientious Reactive Algorithm\n" +
             $"Coordinate: {_currentVertex.Position}\n" +
             $"Init done:  {_isPatrolling}\n";
         }
@@ -31,19 +31,21 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
         public void UpdateLogic()
         {
             UpdateVerticesIdleness();
-            if(!_isPatrolling){
+            if (!_isPatrolling)
+            {
                 var vertex = GetClosestVertex();
-                _currentVertex = vertex; 
+                _currentVertex = vertex;
                 _isPatrolling = true;
             }
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
-            if(currentPosition != _currentVertex.Position){
+            if (currentPosition != _currentVertex.Position)
+            {
                 _controller.PathAndMoveTo(_currentVertex.Position);
                 return;
             }
 
             _currentVertex.ResetIdleness();
-            _currentVertex = _currentVertex.Neighbors.OrderByDescending((x)=>x.Idleness).First();
+            _currentVertex = _currentVertex.Neighbors.OrderByDescending((x) => x.Idleness).First();
         }
 
         private void UpdateVerticesIdleness()
@@ -54,13 +56,16 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
             }
         }
 
-        private Vertex GetClosestVertex(){
+        private Vertex GetClosestVertex()
+        {
             Vertex closestVertex = null;
             float closestDistance = float.MaxValue;
             Vector2Int myPossition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
-            foreach (var vertex in _vertices){
+            foreach (var vertex in _vertices)
+            {
                 float distance = Vector2Int.Distance(myPossition, vertex.Position);
-                if (distance < closestDistance){
+                if (distance < closestDistance)
+                {
                     closestDistance = distance;
                     closestVertex = vertex;
                 }

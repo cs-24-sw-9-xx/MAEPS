@@ -29,26 +29,28 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Maes.UI {
+namespace Maes.UI
+{
     public abstract class SimulationInfoUIControllerBase<TSimulation> : MonoBehaviour, ISimulationInfoUIController
-    where TSimulation : class, ISimulation<TSimulation> {
+    where TSimulation : class, ISimulation<TSimulation>
+    {
 
         public Text AlgorithmDebugText;
         public Text ControllerDebugText;
         public Text TagDebugText;
 
         public Text MouseCoordinateText;
-        
-        
+
+
         public Button AllVisualizeTagsButton;
         private bool _visualizingAllTags = false;
         public Button VisualizeTagsButton;
         private bool _visualizingSelectedTags = false;
 
         public Button StickyCameraButton;
-        
+
         public TSimulation? Simulation { get; set; }
-        
+
 
         public SimulationManager<TSimulation> simulationManager;
         // Represents a function that modifies the given simulation in some way
@@ -56,7 +58,7 @@ namespace Maes.UI {
         protected delegate void SimulationModification(TSimulation? simulation);
 
         protected SimulationModification? _mostRecentMapVisualizationModification;
-        
+
         protected readonly Color _mapVisualizationColor = Color.white;
         protected readonly Color _mapVisualizationSelectedColor = new Color(150 / 255f, 200 / 255f, 150 / 255f);
 
@@ -65,7 +67,7 @@ namespace Maes.UI {
         private void Start()
         {
             simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation>>();
-            
+
             AlgorithmDebugText = GameObject.Find("AlgorithmDebugInfo").GetComponent<Text>();
             ControllerDebugText = GameObject.Find("ControllerDebugInfo").GetComponent<Text>();
             TagDebugText = GameObject.Find("TagDebugInfo").GetComponent<Text>();
@@ -73,69 +75,86 @@ namespace Maes.UI {
             AllVisualizeTagsButton = GameObject.Find("AllVisualizeTags").GetComponent<Button>();
             VisualizeTagsButton = GameObject.Find("VisualizeTags").GetComponent<Button>();
             StickyCameraButton = GameObject.Find("StickyCamera").GetComponent<Button>();
-            
-            
+
+
             // Set listeners for Tag visualization buttons 
-            AllVisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
+            AllVisualizeTagsButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberTagVisualization(sim =>
+                {
+                    if (sim != null)
+                    {
                         ToggleVisualizeTagsButtons(AllVisualizeTagsButton);
                     }
                 });
             });
-            
-            VisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
-                        if (sim.HasSelectedRobot()) {
+
+            VisualizeTagsButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberTagVisualization(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (sim.HasSelectedRobot())
+                        {
                             ToggleVisualizeTagsButtons(VisualizeTagsButton);
                         }
                     }
                 });
             });
-            
-            StickyCameraButton.onClick.AddListener(() => {
+
+            StickyCameraButton.onClick.AddListener(() =>
+            {
                 CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
                 StickyCameraButton.image.color = CameraController.singletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             });
-            
+
             AfterStart();
         }
 
-        public void Update() {
-            if (Simulation is not null) {
-                if (_visualizingAllTags) {
+        public void Update()
+        {
+            if (Simulation is not null)
+            {
+                if (_visualizingAllTags)
+                {
                     Simulation.ShowAllTags();
                 }
-                else if (_visualizingSelectedTags) {
+                else if (_visualizingSelectedTags)
+                {
                     Simulation.ShowSelectedTags();
                 }
                 Simulation.RenderCommunicationLines();
             }
         }
 
-        public void ClearSelectedRobot() {
+        public void ClearSelectedRobot()
+        {
             _visualizingSelectedTags = false;
             CameraController.singletonInstance.stickyCam = false;
             StickyCameraButton.image.color = _mapVisualizationColor;
             VisualizeTagsButton.image.color = _mapVisualizationColor;
         }
 
-        public void UpdateMouseCoordinates(Vector2 mousePosition) {
+        public void UpdateMouseCoordinates(Vector2 mousePosition)
+        {
             var xNumberString = $"{mousePosition.x:00.00}".PadLeft(6);
             var yNumberString = $"{mousePosition.y:00.00}".PadLeft(6);
             MouseCoordinateText.text = $"(x: {xNumberString}, y: {yNumberString})";
         }
 
-        private void ToggleVisualizeTagsButtons(Button button) {
+        private void ToggleVisualizeTagsButtons(Button button)
+        {
             simulationManager.CurrentSimulation.ClearVisualTags();
-            if (button.name == "AllVisualizeTags") {
+            if (button.name == "AllVisualizeTags")
+            {
                 _visualizingSelectedTags = false;
                 VisualizeTagsButton.image.color = _mapVisualizationColor;
                 _visualizingAllTags = !_visualizingAllTags;
                 button.image.color = _visualizingAllTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             }
-            else {
+            else
+            {
                 _visualizingAllTags = false;
                 AllVisualizeTagsButton.image.color = _mapVisualizationColor;
                 _visualizingSelectedTags = !_visualizingSelectedTags;
@@ -145,25 +164,30 @@ namespace Maes.UI {
 
         // This function executes the given map visualization change and remembers it.
         // Whenever the simulator creates a new simulation the most recent visualization change is repeated 
-        protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc) {
+        protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc)
+        {
             _mostRecentMapVisualizationModification = modificationFunc;
             modificationFunc(Simulation);
         }
 
-        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc) {
+        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc)
+        {
             modificationFunc(Simulation);
         }
 
-        public void UpdateAlgorithmDebugInfo(string info) {
+        public void UpdateAlgorithmDebugInfo(string info)
+        {
             AlgorithmDebugText.text = info;
         }
 
 
-        public void UpdateControllerDebugInfo(string info) {
+        public void UpdateControllerDebugInfo(string info)
+        {
             ControllerDebugText.text = info;
         }
 
-        public void UpdateTagDebugInfo(string info) {
+        public void UpdateTagDebugInfo(string info)
+        {
             TagDebugText.text = info;
         }
 
@@ -172,14 +196,14 @@ namespace Maes.UI {
 
         public void NotifyNewSimulation(ISimulation? simulation)
         {
-            NotifyNewSimulation((TSimulation?) simulation);
+            NotifyNewSimulation((TSimulation?)simulation);
         }
 
         protected abstract void UpdateStatistics(TSimulation? simulation);
 
         public void UpdateStatistics(ISimulation? simulation)
-        { 
-            UpdateStatistics((TSimulation?) simulation);
+        {
+            UpdateStatistics((TSimulation?)simulation);
         }
     }
 }

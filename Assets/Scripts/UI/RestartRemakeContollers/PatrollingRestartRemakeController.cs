@@ -4,6 +4,6 @@ namespace MAES.UI.RestartRemakeContollers
 {
     public class PatrollingRestartRemakeController : RestartRemakeController<PatrollingSimulation>
     {
-        
+
     }
 }

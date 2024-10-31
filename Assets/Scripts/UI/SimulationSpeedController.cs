@@ -23,8 +23,10 @@ using MAES.Simulation;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.UI {
-    public class SimulationSpeedController : MonoBehaviour {
+namespace Maes.UI
+{
+    public class SimulationSpeedController : MonoBehaviour
+    {
         private ISimulationManager simulationManager;
         public Button pauseButton;
         public Button playButton;
@@ -32,9 +34,10 @@ namespace Maes.UI {
         public Button fastAsPossibleButton;
         public Button stepperButton;
 
-        private void Start() {
+        private void Start()
+        {
             simulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
-            
+
             pauseButton.onClick.AddListener(Pause);
             playButton.onClick.AddListener(Play);
             fastForwardButton.onClick.AddListener(FastForward);
@@ -42,7 +45,8 @@ namespace Maes.UI {
             stepperButton.onClick.AddListener(Step);
         }
 
-        public void UpdateButtonsUI(SimulationPlayState currentState) {
+        public void UpdateButtonsUI(SimulationPlayState currentState)
+        {
             // Do not change ui for the duration of the step
             if (currentState == SimulationPlayState.Step) return;
 
@@ -54,28 +58,34 @@ namespace Maes.UI {
                 (currentState == SimulationPlayState.FastAsPossible) ? Color.green : Color.white;
         }
 
-        public void Pause() {
+        public void Pause()
+        {
             AttemptSwitchState(SimulationPlayState.Paused);
         }
 
-        public void Play() {
+        public void Play()
+        {
             AttemptSwitchState(SimulationPlayState.Play);
         }
 
-        public void FastForward() {
+        public void FastForward()
+        {
             AttemptSwitchState(SimulationPlayState.FastForward);
         }
 
-        public void FastAsPossible() {
+        public void FastAsPossible()
+        {
             AttemptSwitchState(SimulationPlayState.FastAsPossible);
         }
 
         // Perform a single logic step then stop again
-        public void Step() {
+        public void Step()
+        {
             AttemptSwitchState(SimulationPlayState.Step);
         }
 
-        private void AttemptSwitchState(SimulationPlayState newPlayState) {
+        private void AttemptSwitchState(SimulationPlayState newPlayState)
+        {
             var actualState = simulationManager.AttemptSetPlayState(newPlayState);
             UpdateButtonsUI(actualState);
         }

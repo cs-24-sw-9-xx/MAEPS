@@ -33,8 +33,8 @@ internal class ROSClockPublisher : MonoBehaviour
 
     [SerializeField, HideInInspector]
     Clock.ClockMode m_LastSetClockMode;
-    
-    [SerializeField] 
+
+    [SerializeField]
     double m_PublishRateHz = 100f;
 
     double m_LastPublishTimeSeconds;
@@ -60,7 +60,7 @@ internal class ROSClockPublisher : MonoBehaviour
             Debug.LogWarning("Can't change ClockMode during simulation! Setting it back...");
             m_ClockMode = m_LastSetClockMode;
         }
-        
+
         SetClockMode(m_ClockMode);
     }
 

@@ -30,49 +30,49 @@ using UnityEngine;
 
 namespace Maes
 {
-    
+
     // A function that generates, initializes and returns a world map
     public delegate SimulationMap<Tile> MapFactory(MapSpawner generator);
     // A function that spawns and returns a group of robots
     public delegate List<MonaRobot> RobotFactory(SimulationMap<Tile> map, RobotSpawner spawner);
-    
+
     // A function that returns true if the given simulation has been completed
     public delegate bool SimulationEndCriteriaDelegate<TSimulation>(TSimulation simulationBase)
         where TSimulation : ISimulation;
-    
+
     // Contains all information needed for simulating a single simulation scenario
     // (One map, one type of robots)
     public class SimulationScenario<TSimulation> : ISimulationScenario
     where TSimulation : ISimulation
     {
         private readonly int Seed;
-        public readonly SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim; 
-        
+        public readonly SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim;
+
         public MapFactory MapSpawner { get; }
         public RobotFactory RobotSpawner { get; }
         public RobotConstraints RobotConstraints { get; }
         public string StatisticsFileName { get; }
 
         public SimulationScenario(
-            int seed, 
-            SimulationEndCriteriaDelegate<TSimulation> hasFinishedSim=null, 
-            MapFactory mapSpawner=null, 
-            RobotFactory robotSpawner=null, 
-            RobotConstraints? robotConstraints=null, 
-            string statisticsFileName=null
+            int seed,
+            SimulationEndCriteriaDelegate<TSimulation> hasFinishedSim = null,
+            MapFactory mapSpawner = null,
+            RobotFactory robotSpawner = null,
+            RobotConstraints? robotConstraints = null,
+            string statisticsFileName = null
             )
         {
             Seed = seed;
             HasFinishedSim = hasFinishedSim ?? (simulation => simulation.HasFinishedSim() || simulation.SimulatedLogicTicks > 3600 * 10);
             // Default to generating a cave map when no map generator is specified
             MapSpawner = mapSpawner ?? (generator => generator.GenerateMap(new CaveMapConfig(seed)));
-            RobotSpawner = robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether( map, seed, 2, 
+            RobotSpawner = robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 2,
                 Vector2Int.zero, (robotSeed) => new RandomExplorationAlgorithm(robotSeed)));
             RobotConstraints = robotConstraints ?? new RobotConstraints();
-            StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/','-')}" +
-                $"_{DateTime.Now.ToLongTimeString().Replace(' ','-').Replace(':','-')}";
-            
+            StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/', '-')}" +
+                $"_{DateTime.Now.ToLongTimeString().Replace(' ', '-').Replace(':', '-')}";
+
         }
-        
+
     }
 }

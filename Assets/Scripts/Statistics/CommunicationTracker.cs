@@ -27,36 +27,46 @@ using UnityEngine;
 using static Maes.Robot.CommunicationManager;
 using static Maes.Statistics.ExplorationTracker;
 
-namespace Maes.Statistics {
-    internal class CommunicationTracker {
+namespace Maes.Statistics
+{
+    internal class CommunicationTracker
+    {
         public readonly Dictionary<int, SnapShot<bool>> InterconnectionSnapShot = new Dictionary<int, SnapShot<bool>>();
         public readonly Dictionary<int, SnapShot<float>> BiggestClusterPercentageSnapshots = new Dictionary<int, SnapShot<float>>();
         public Dictionary<(int, int), CommunicationInfo> AdjacencyMatrixRef;
-        public List<HashSet<int>> CommunicationGroups = null; 
+        public List<HashSet<int>> CommunicationGroups = null;
         private RobotConstraints _robotConstraints;
 
-        public CommunicationTracker(RobotConstraints constraints) {
+        public CommunicationTracker(RobotConstraints constraints)
+        {
             _robotConstraints = constraints;
         }
 
-        public void CreateSnapshot(int tick) {
+        public void CreateSnapshot(int tick)
+        {
             if (tick == 0) return;
             CreateInterconnectedSnapShot(tick);
             CreateClusterSizeSnapShot(tick);
         }
 
-        private void CreateClusterSizeSnapShot(int tick) {
-            if (CommunicationGroups != null) {
+        private void CreateClusterSizeSnapShot(int tick)
+        {
+            if (CommunicationGroups != null)
+            {
                 // if we have exactly one group, then every agent must be in it!
-                if (CommunicationGroups.Count == 1) {
+                if (CommunicationGroups.Count == 1)
+                {
                     BiggestClusterPercentageSnapshots[tick] = new SnapShot<float>(tick, 100.0f);
                 }
-                else {
+                else
+                {
                     // Supposed to sort descending
-                    CommunicationGroups.Sort((e1, e2) => {
+                    CommunicationGroups.Sort((e1, e2) =>
+                    {
                         return e2.Count.CompareTo(e1.Count);
                     });
-                    var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) => {
+                    var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) =>
+                    {
                         return sum + e1.Count;
                     });
                     float percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * (float)100;
@@ -65,8 +75,10 @@ namespace Maes.Statistics {
             }
         }
 
-        private void CreateInterconnectedSnapShot(int tick) {
-            if (AdjacencyMatrixRef != null && CommunicationGroups != null) {
+        private void CreateInterconnectedSnapShot(int tick)
+        {
+            if (AdjacencyMatrixRef != null && CommunicationGroups != null)
+            {
                 if (AreAllAgentsConnected(tick))
                     InterconnectionSnapShot[tick] = new SnapShot<bool>(tick, true);
                 else
@@ -74,8 +86,10 @@ namespace Maes.Statistics {
             }
         }
 
-        private bool AreAllAgentsConnected(int tick) {
-            if (CommunicationGroups.Count == 1) {
+        private bool AreAllAgentsConnected(int tick)
+        {
+            if (CommunicationGroups.Count == 1)
+            {
                 return true;
             }
 

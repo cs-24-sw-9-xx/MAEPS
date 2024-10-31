@@ -21,8 +21,10 @@
 
 using System;
 
-namespace Maes {
-    public interface ISimulationUnit {
+namespace Maes
+{
+    public interface ISimulationUnit
+    {
         void LogicUpdate();
 
         void PhysicsUpdate();

@@ -259,7 +259,7 @@ namespace PlayModeTests
                 yield return null;
             }
 
-            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0, 1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }

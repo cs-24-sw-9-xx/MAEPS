@@ -43,7 +43,7 @@ namespace Maes.Simulation
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation>
     {
         public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController> SingletonInstance;
-        
+
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
         public float SimulateTimeSeconds { get; private set; } = 0;
@@ -52,9 +52,9 @@ namespace Maes.Simulation
         public RobotSpawner RobotSpawner;
 
         public abstract TVisualizer Visualizer { get; }
-        
+
         public abstract TTracker Tracker { get; }
-        
+
         ITracker ISimulation.Tracker => Tracker;
 
         protected SimulationScenario<TSimulation> _scenario;
@@ -88,15 +88,15 @@ namespace Maes.Simulation
             {
                 return;
             }
-            
+
             MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
             RobotSpawner = GameObject.Find("RobotSpawner").GetComponent<RobotSpawner>();
             var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
             SimInfoUIController = simInfoUIControllerGameObject
                 .GetComponent<SimulationInfoUIControllerBase<TSimulation>>();
-            
+
             AfterStart();
-            
+
             _started = true;
         }
 
@@ -231,7 +231,7 @@ namespace Maes.Simulation
         public abstract bool HasFinishedSim();
 
         public abstract ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
-        
+
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();
@@ -249,7 +249,8 @@ namespace Maes.Simulation
 
         private void OnDrawGizmos()
         {
-            if (_collisionMap == null) {
+            if (_collisionMap == null)
+            {
                 return;
             }
 

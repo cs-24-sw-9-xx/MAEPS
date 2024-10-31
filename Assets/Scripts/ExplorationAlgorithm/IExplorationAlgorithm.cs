@@ -21,8 +21,10 @@
 
 using Maes.Robot;
 
-namespace Maes.ExplorationAlgorithm {
-    public interface IExplorationAlgorithm {
+namespace Maes.ExplorationAlgorithm
+{
+    public interface IExplorationAlgorithm
+    {
         public void UpdateLogic();
 
         public void SetController(Robot2DController controller);

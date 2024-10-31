@@ -23,15 +23,19 @@ using System;
 using System.IO;
 using JetBrains.Annotations;
 
-namespace Maes.Utilities.Files {
-    internal class InputFileLoader {
+namespace Maes.Utilities.Files
+{
+    internal class InputFileLoader
+    {
 
-        public static string GetDefaultInputPath() {
+        public static string GetDefaultInputPath()
+        {
             return Path.Join(Path.Join(Directory.GetCurrentDirectory(), "Assets"), "Maps");
         }
 
         [CanBeNull]
-        public static StreamReader ReadInputFile(string fileName) {
+        public static StreamReader ReadInputFile(string fileName)
+        {
             return new StreamReader(Path.Join(GetDefaultInputPath(), fileName));
         }
 

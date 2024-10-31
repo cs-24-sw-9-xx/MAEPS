@@ -26,8 +26,10 @@ using Maes.UI;
 using UnityEditor;
 using UnityEngine;
 
-namespace Maes.Robot {
-    public class MonaRobot : MonoBehaviour, ISimulationUnit {
+namespace Maes.Robot
+{
+    public class MonaRobot : MonoBehaviour, ISimulationUnit
+    {
         public Transform leftWheelTransform;
         public Transform rightWheelTransform;
         public Outline outLine;
@@ -46,51 +48,60 @@ namespace Maes.Robot {
 
         public List<GameObject> _collidingGameObjects = new List<GameObject>();
 
-        private void Awake() {
+        private void Awake()
+        {
             var rigidBody = GetComponent<Rigidbody2D>();
             Controller = new Robot2DController(rigidBody, transform, leftWheelTransform, rightWheelTransform, this);
         }
 
-        public void LogicUpdate() {
+        public void LogicUpdate()
+        {
             ExplorationAlgorithm.UpdateLogic();
             Controller.UpdateLogic();
         }
 
-        public void PhysicsUpdate() {
+        public void PhysicsUpdate()
+        {
             Controller.UpdateMotorPhysics();
         }
 
-        private void OnCollisionEnter2D(Collision2D other) {
+        private void OnCollisionEnter2D(Collision2D other)
+        {
             if (!_collidingGameObjects.Contains(other.gameObject))
                 _collidingGameObjects.Add(other.gameObject);
 
             Controller.NotifyCollided();
         }
 
-        private void OnCollisionExit2D(Collision2D other) {
+        private void OnCollisionExit2D(Collision2D other)
+        {
             _collidingGameObjects.Remove(other.gameObject);
 
             if (_collidingGameObjects.Count == 0)
                 Controller.NotifyCollisionExit();
         }
 
-        public void OnMouseDown() {
+        public void OnMouseDown()
+        {
             CameraController.singletonInstance.movementTransform = transform;
             OnRobotSelected(this);
         }
 
-        public void OnMouseEnter() {
+        public void OnMouseEnter()
+        {
             Tooltip.ShowTooltip_Static($"robot{id}");
         }
 
-        public void OnMouseExit() {
+        public void OnMouseExit()
+        {
             Tooltip.HideTooltip_Static();
         }
 
-        public GameObject ClaimTag() {
+        public GameObject ClaimTag()
+        {
             var envTagHolder = GameObject.Find("EnvTagHolder");
             var gameObj = Instantiate(Resources.Load<GameObject>("TagPost"), envTagHolder.transform);
-            gameObj.transform.position = this.transform.position + new Vector3(0,0,-0.1f);
+            gameObj.transform.position = this.transform.position + new Vector3(0, 0, -0.1f);
             gameObj.SetActive(false);
             gameObj.name = $"robot{0}-" + gameObj.name;
             return gameObj;
@@ -99,7 +110,7 @@ namespace Maes.Robot {
         private void OnDrawGizmos()
         {
             Gizmos.color = Color.yellow;
-            foreach (var (point,radius) in Controller.DebugCircle)
+            foreach (var (point, radius) in Controller.DebugCircle)
             {
                 Gizmos.DrawWireSphere(point, radius);
             }

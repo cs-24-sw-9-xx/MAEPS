@@ -53,17 +53,19 @@ internal class LaserScanSensor : MonoBehaviour
 
     bool isScanning = false;
     double m_TimeLastScanBeganSeconds = -1;
-    
+
     [SerializeField]
     public GameObject m_WrapperObject;
 
-    private void Awake() {
+    private void Awake()
+    {
         // This module should not be enabled (i.e. run start) until explicitly told so
         // This allows for setting parameters before start runs.
         this.enabled = false;
     }
 
-    protected virtual void Start() {
+    protected virtual void Start()
+    {
         ScanTopic = "/" + m_WrapperObject.name + ScanTopic; // Prepend robot name as namespace
         m_Ros = ROSConnection.GetOrCreateInstance();
         m_Ros.RegisterPublisher<LaserScanMsg>(ScanTopic);
@@ -128,7 +130,7 @@ internal class LaserScanSensor : MonoBehaviour
             intensities = new float[ranges.Count],
             ranges = ranges.ToArray(),
         };
-        
+
         m_Ros.Publish(ScanTopic, msg);
 
         m_NumMeasurementsTaken = 0;
@@ -196,7 +198,7 @@ internal class LaserScanSensor : MonoBehaviour
             // Even if Raycast didn't find a valid hit, we still count it as a measurement
             ++m_NumMeasurementsTaken;
         }
-        
+
         if (m_NumMeasurementsTaken >= NumMeasurementsPerScan)
         {
             if (m_NumMeasurementsTaken > NumMeasurementsPerScan)

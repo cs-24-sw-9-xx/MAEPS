@@ -107,7 +107,7 @@ namespace Maes.Utilities
                     if (minDistance > distance)
                     {
                         minDistance = distance;
-                        result = (point, otherPoint); 
+                        result = (point, otherPoint);
                     }
                 }
             }

@@ -268,7 +268,7 @@ namespace Maes.UI
         private void OnNewMouseWorldPosition(Vector2 mouseWorldPosition)
         {
             SimulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
-            
+
             // Update the UI to show the current position of the mouse in world space
             // (The frame of reference changes between ros and maes mode)
             if (GlobalSettings.IsRosMode)

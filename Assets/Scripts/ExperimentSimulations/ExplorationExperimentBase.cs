@@ -48,7 +48,7 @@ namespace Maes.ExperimentSimulations
     public class ExplorationExperimentBase : MonoBehaviour
     {
         private MySimulator _simulator;
-        
+
         /// <summary>
         /// This class will run mostly all configurations, it is written fast and loose.
         /// </summary>

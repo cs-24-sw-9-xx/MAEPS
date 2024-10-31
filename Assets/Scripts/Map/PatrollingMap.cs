@@ -61,7 +61,8 @@ namespace Maes.Map
                         vertex.AddNeighbor(otherVertex);
                     }
 
-                    if (DoRoomsOverlap(room, otherRoom)) {
+                    if (DoRoomsOverlap(room, otherRoom))
+                    {
                         Debug.LogError($"Room {room.FromWhichAlgo} overlaps with Room {otherRoom.FromWhichAlgo}");
                     }
                 }
@@ -264,7 +265,8 @@ namespace Maes.Map
             return Vector2Int.Distance(first, second) <= 1.0f;
         }
 
-        private static bool DoRoomsOverlap(SplitRoom first, SplitRoom second) {
+        private static bool DoRoomsOverlap(SplitRoom first, SplitRoom second)
+        {
             return first.Tiles.Any(f => second.Tiles.Any(s => f == s));
         }
 

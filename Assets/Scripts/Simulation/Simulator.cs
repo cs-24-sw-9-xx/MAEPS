@@ -29,7 +29,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
-namespace Maes {
+namespace Maes
+{
     public abstract class Simulator<TSimulation>
         where TSimulation : class, ISimulation<TSimulation>
     {
@@ -37,7 +38,8 @@ namespace Maes {
         private GameObject _maesGameObject;
         protected SimulationManager<TSimulation> _simulationManager;
 
-        protected Simulator() {
+        protected Simulator()
+        {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = Resources.Load("MAES", typeof(GameObject)) as GameObject;
             _maesGameObject = Object.Instantiate(prefab);
@@ -48,24 +50,30 @@ namespace Maes {
         protected abstract SimulationManager<TSimulation> AddSimulationManager(GameObject gameObject);
 
         // Clears the singleton instance and removes the simulator game object
-        public static void Destroy() {
-            if (_instance != null) {
+        public static void Destroy()
+        {
+            if (_instance != null)
+            {
                 Object.Destroy(_instance._maesGameObject);
                 _instance = null;
             }
         }
-        
-        public void EnqueueScenario(SimulationScenario<TSimulation> scenario) {
+
+        public void EnqueueScenario(SimulationScenario<TSimulation> scenario)
+        {
             _simulationManager.EnqueueScenario(scenario);
             _simulationManager._initialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<SimulationScenario<TSimulation>> scenario) {
-            foreach (var simulationScenario in scenario) {
+        public void EnqueueScenarios(IEnumerable<SimulationScenario<TSimulation>> scenario)
+        {
+            foreach (var simulationScenario in scenario)
+            {
                 _simulationManager.EnqueueScenario(simulationScenario);
             }
         }
-        
-        public void PressPlayButton() {
+
+        public void PressPlayButton()
+        {
             if (_simulationManager.PlayState == SimulationPlayState.Play)
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
             if (!_simulationManager.HasActiveScenario())
@@ -76,7 +84,8 @@ namespace Maes {
             _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
 
-        public SimulationManager<TSimulation> GetSimulationManager() {
+        public SimulationManager<TSimulation> GetSimulationManager()
+        {
             return _simulationManager;
         }
     }

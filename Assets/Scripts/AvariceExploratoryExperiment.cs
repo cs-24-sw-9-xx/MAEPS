@@ -42,7 +42,7 @@ namespace Maes
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
     using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
-    
+
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
         private Simulator<ExplorationSimulation> _simulator;

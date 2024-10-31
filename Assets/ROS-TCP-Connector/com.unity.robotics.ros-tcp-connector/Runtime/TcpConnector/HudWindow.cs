@@ -88,7 +88,7 @@ namespace Unity.Robotics.ROSTCPConnector
 
             public void AddItem(GUIContent name, bool selected, Action callback)
             {
-                m_Menu.AddItem(name, selected, ()=>callback());
+                m_Menu.AddItem(name, selected, () => callback());
             }
 
             public void Show(Vector2 position)
@@ -111,7 +111,7 @@ namespace Unity.Robotics.ROSTCPConnector
 #if UNITY_EDITOR
                     EditorMenuBuilder menuBuilder = new EditorMenuBuilder();
                     m_GuiMenu(menuBuilder);
-                    menuBuilder.Show(new Vector2(scrollRect.xMin, scrollRect.yMin+70));
+                    menuBuilder.Show(new Vector2(scrollRect.xMin, scrollRect.yMin + 70));
 #endif
                 }
             }

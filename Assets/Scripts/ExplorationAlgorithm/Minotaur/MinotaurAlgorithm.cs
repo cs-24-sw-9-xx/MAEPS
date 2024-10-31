@@ -476,7 +476,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             var slamMap = _controller.GetSlamMap();
             var slamPosition = slamMap.GetCurrentPosition();
             var wall = slamWalls.FirstOrDefault(wall => wall.Start != wall.End && (wall.Start == point.point || wall.End == point.point));
-            if (wall == default) 
+            if (wall == default)
                 return false;
             var thirdPoint = wall.Rasterize().OrderBy(wallPoint => Vector2.Distance(wallPoint, slamPosition)).First();
             var towardRobotVector = CardinalDirection.VectorToDirection(slamPosition - thirdPoint).Vector;
@@ -865,7 +865,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 {
                     var opening = new Line2D(start, end);
                     var doorDirection = CardinalDirection.VectorToDirection(start - end);
-                    var extended = new Line2D(start*doorDirection.Vector*VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
+                    var extended = new Line2D(start * doorDirection.Vector * VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
                     var closestToRobot = GetClosestPoints(new List<Line2D> { extended }, slamPosition);
                     var newDoorway = new Doorway(opening, center, CardinalDirection.VectorToDirection(closestToRobot.First() - slamPosition));
                     var otherDoorway = _doorways.FirstOrDefault(doorway => doorway.Equals(newDoorway));

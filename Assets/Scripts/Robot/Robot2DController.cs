@@ -54,7 +54,7 @@ namespace Maes.Robot
         private Queue<Vector2Int> _currentPath = new();
         private Vector2Int _currentTarget = new();
 
-        public PatrollingMap PatrollingMap {get; set;}
+        public PatrollingMap PatrollingMap { get; set; }
 
         // Returns the counterclockwise angle in degrees between the forward orientation of the robot and the x-axis
         public float GetForwardAngleRelativeToXAxis()
@@ -382,7 +382,7 @@ namespace Maes.Robot
             }
             #region DrawPath
             Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (int i = 0; i < _currentPath.Count-1; i++)
+            for (int i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToList();
                 if (i == 0)

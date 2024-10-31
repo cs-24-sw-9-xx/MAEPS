@@ -81,7 +81,7 @@ namespace ExplorationAlgorithm
                 _points.Add(position);
             }
             // Add a point if we have created a half circle assuming it starts at y=0
-            if (_controller.Transform.position.y < 0) 
+            if (_controller.Transform.position.y < 0)
             {
                 _points.Add(position);
             }

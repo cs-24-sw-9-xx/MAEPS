@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Maes.Map {
+namespace Maes.Map
+{
     public class Vertex
     {
         private HashSet<Vertex> _neighbors = new HashSet<Vertex>();
@@ -63,23 +64,28 @@ namespace Maes.Map {
             _idleness = 0;
         }
 
-        public void AddNeighbor(Vertex neighbor){
-            if (neighbor != this) {
+        public void AddNeighbor(Vertex neighbor)
+        {
+            if (neighbor != this)
+            {
                 _neighbors.Add(neighbor);
             }
         }
 
-        public void RemoveNeighbor(Vertex neighbor) {
+        public void RemoveNeighbor(Vertex neighbor)
+        {
             _neighbors.Remove(neighbor);
         }
 
-        public void UpdateIdleness(){
+        public void UpdateIdleness()
+        {
             _idleness++;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is not Vertex v) {
+            if (obj is not Vertex v)
+            {
                 return false;
             }
 

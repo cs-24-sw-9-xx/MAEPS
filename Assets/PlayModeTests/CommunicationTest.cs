@@ -34,7 +34,7 @@ namespace PlayModeTests
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
     using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
-    
+
     public class CommunicationTest
     {
 
@@ -81,7 +81,8 @@ namespace PlayModeTests
                 hasFinishedSim: simulation => false,
                 robotConstraints: new RobotConstraints(materialCommunication: false, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 2,
-                    robotSeed => {
+                    robotSeed =>
+                    {
                         var algorithm = new TestingAlgorithm();
                         _robotTestAlgorithms.Add(algorithm);
                         return algorithm;
@@ -92,12 +93,14 @@ namespace PlayModeTests
             _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
 
             // The first robot will broadcast immediatealy
-            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {
+            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast("Test Message");
             };
 
             // The second robot will continuously receive broadcasts
-            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {
+            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
+            {
                 controller.ReceiveBroadcast();
             };
         }
@@ -115,11 +118,13 @@ namespace PlayModeTests
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
-            algorithm1.UpdateFunction = (tick, controller) => {
+            algorithm1.UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (tick, controller) => {
+            algorithm2.UpdateFunction = (tick, controller) =>
+            {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -146,11 +151,13 @@ namespace PlayModeTests
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
-            algorithm1.UpdateFunction = (tick, controller) => {
+            algorithm1.UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (tick, controller) => {
+            algorithm2.UpdateFunction = (tick, controller) =>
+            {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -171,7 +178,8 @@ namespace PlayModeTests
             float foundWallDistance = float.PositiveInfinity;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => {
+                (distance, wallDistance) =>
+                {
                     foundWallDistance = wallDistance;
                     return true;
                 },
@@ -202,7 +210,8 @@ namespace PlayModeTests
             float actualDistance = (firstRobotPosition - secondRobotPosition).magnitude;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => {
+                (distance, wallDistance) =>
+                {
                     transmissionDistance = distance;
                     return true;
                 },
@@ -231,7 +240,8 @@ namespace PlayModeTests
             InitSimulator(
                 generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
                     transmissionSuccessCalculatorFunc:
-                    (distance, wallDistance) => {
+                    (distance, wallDistance) =>
+                    {
                         foundWallDistance = wallDistance;
                         return true;
                     },

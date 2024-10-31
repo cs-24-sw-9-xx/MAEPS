@@ -11,16 +11,16 @@ namespace Maes.UI
         public Image ExplorationBarMask, CoverageBarMask;
         public Text ProgressPercentageText, CoveragePercentageText;
         public Text ExplorationRateText;
-        
+
         public Button AllExplorationButton;
         public Button AllCoverageButton;
         public Button AllExplorationHeatMapButton;
         public Button AllCoverageHeatMapButton;
         public Button SelectVisibleAreaButton;
         public Button SelectedSlamMapButton;
-        
+
         private List<Button> _mapVisualizationToggleGroup;
-        
+
 
         protected override void AfterStart()
         {
@@ -36,60 +36,73 @@ namespace Maes.UI
             AllCoverageHeatMapButton = GameObject.Find("AllHeatMapCoverage").GetComponent<Button>();
             SelectVisibleAreaButton = GameObject.Find("SelectedCurrentlyVisible").GetComponent<Button>();
             SelectedSlamMapButton = GameObject.Find("SelectedSlamMap").GetComponent<Button>();
-            
+
             _mapVisualizationToggleGroup = new List<Button>() {
                 AllExplorationButton, AllCoverageButton, AllExplorationHeatMapButton, AllCoverageHeatMapButton,
                 SelectVisibleAreaButton, SelectedSlamMapButton
             };
             SelectVisualizationButton(AllExplorationButton);
-            
+
             // Set listeners for all map visualization buttons
-            AllExplorationButton.onClick.AddListener(() => {
+            AllExplorationButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotExploration());
             });
-            
-            AllCoverageButton.onClick.AddListener(() => {
+
+            AllCoverageButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotCoverage());
             });
-            
-            AllExplorationHeatMapButton.onClick.AddListener(() => {
+
+            AllExplorationHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotExplorationHeatMap());
             });
-            
-            AllCoverageHeatMapButton.onClick.AddListener(() => {
+
+            AllCoverageHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification((sim) => sim?.ExplorationTracker.ShowAllRobotCoverageHeatMap());
             });
-            
-            SelectVisibleAreaButton.onClick.AddListener(() => {
-                ExecuteAndRememberMapVisualizationModification((sim) => {
-                    if (sim != null) {
+
+            SelectVisibleAreaButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification((sim) =>
+                {
+                    if (sim != null)
+                    {
                         if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
-                        sim.ExplorationTracker.ShowSelectedRobotVisibleArea();    
+                        sim.ExplorationTracker.ShowSelectedRobotVisibleArea();
                     }
                 });
             });
-            
-            SelectedSlamMapButton.onClick.AddListener(() => {
-                ExecuteAndRememberMapVisualizationModification((sim) => {
-                    if (sim != null) {
+
+            SelectedSlamMapButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification((sim) =>
+                {
+                    if (sim != null)
+                    {
                         if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
-                        sim.ExplorationTracker.ShowSelectedRobotSlamMap();    
+                        sim.ExplorationTracker.ShowSelectedRobotSlamMap();
                     }
                 });
             });
         }
 
-        public void SetExplorationProgress(float progress) {
+        public void SetExplorationProgress(float progress)
+        {
             ExplorationBarMask.fillAmount = progress;
             ProgressPercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
-        public void SetCoverageProgress(float progress) {
+        public void SetCoverageProgress(float progress)
+        {
             CoverageBarMask.fillAmount = progress;
-            CoveragePercentageText.text = (progress * 100f).ToString("#.00") + "%";            
+            CoveragePercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
-        protected override void UpdateStatistics(ExplorationSimulation explorationSimulation) {
+        protected override void UpdateStatistics(ExplorationSimulation explorationSimulation)
+        {
             SetExplorationProgress(explorationSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(explorationSimulation.ExplorationTracker.CoverageProportion);
             ExplorationRateText.text = "Exploration rate (cells/minute): " +
@@ -102,34 +115,51 @@ namespace Maes.UI
         }
 
         // Highlights the selected map visualization button
-        private void SelectVisualizationButton(Button selectedButton) {
-            foreach (var button in _mapVisualizationToggleGroup) 
+        private void SelectVisualizationButton(Button selectedButton)
+        {
+            foreach (var button in _mapVisualizationToggleGroup)
                 button.image.color = _mapVisualizationColor;
 
             selectedButton.image.color = _mapVisualizationSelectedColor;
         }
 
-        private void OnMapVisualizationModeChanged(VisualizationMode mode) {
-            if (mode is AllRobotsExplorationVisualization) {
+        private void OnMapVisualizationModeChanged(VisualizationMode mode)
+        {
+            if (mode is AllRobotsExplorationVisualization)
+            {
                 SelectVisualizationButton(AllExplorationButton);
-            } else if (mode is AllRobotsCoverageVisualization) {
+            }
+            else if (mode is AllRobotsCoverageVisualization)
+            {
                 SelectVisualizationButton(AllCoverageButton);
-            } else if (mode is ExplorationHeatMapVisualization) {
+            }
+            else if (mode is ExplorationHeatMapVisualization)
+            {
                 SelectVisualizationButton(AllExplorationHeatMapButton);
-            } else if (mode is CoverageHeatMapVisualization) {
+            }
+            else if (mode is CoverageHeatMapVisualization)
+            {
                 SelectVisualizationButton(AllCoverageHeatMapButton);
-            } else if (mode is CurrentlyVisibleAreaVisualization) {
+            }
+            else if (mode is CurrentlyVisibleAreaVisualization)
+            {
                 SelectVisualizationButton(SelectVisibleAreaButton);
-            } else if (mode is SelectedRobotSlamMapVisualization) {
+            }
+            else if (mode is SelectedRobotSlamMapVisualization)
+            {
                 SelectVisualizationButton(SelectedSlamMapButton);
-            } else {
+            }
+            else
+            {
                 throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
             }
-            
+
         }
-        
-        protected override void NotifyNewSimulation(ExplorationSimulation? newSimulation) {
-            if (newSimulation != null) {
+
+        protected override void NotifyNewSimulation(ExplorationSimulation? newSimulation)
+        {
+            if (newSimulation != null)
+            {
                 newSimulation.ExplorationTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }

@@ -34,7 +34,7 @@ namespace Unity.Robotics.Visualizations
                 if (idParts.Length < 5) // not sure how this would happen, but just in case
                     m_ID = fullID;
                 else
-                    m_ID = idParts[3]+"-"+idParts[4];
+                    m_ID = idParts[3] + "-" + idParts[4];
                 m_LastSetID = m_ID;
             }
         }

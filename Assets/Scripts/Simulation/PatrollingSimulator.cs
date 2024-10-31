@@ -9,9 +9,10 @@ namespace MAES.Simulation
         {
             return gameObject.AddComponent<PatrollingSimulationManager>();
         }
-        
-        public static PatrollingSimulator GetInstance() {
-            return (PatrollingSimulator) (_instance ??= new PatrollingSimulator());
+
+        public static PatrollingSimulator GetInstance()
+        {
+            return (PatrollingSimulator)(_instance ??= new PatrollingSimulator());
         }
     }
 }

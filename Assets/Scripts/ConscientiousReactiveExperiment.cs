@@ -55,7 +55,7 @@ namespace Maes
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
     using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
-    
+
     internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
         private Simulator<ExplorationSimulation> _simulator;
@@ -140,7 +140,7 @@ namespace Maes
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-            
+
             var buildingConfigList50 = new List<BuildingMapConfig>();
             var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
@@ -175,7 +175,7 @@ namespace Maes
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size/2, size/2), random.Next(-size/2, size/2)),
+                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)

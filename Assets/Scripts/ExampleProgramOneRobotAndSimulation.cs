@@ -62,13 +62,13 @@ namespace Maes
             var random = new System.Random(randomSeed);
             const int robotCount = 1;
             const int size = 75;
-            
+
             var randVal = random.Next(0, 1000000);
             var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
 
             const string algorithmName = "FollowWaypoints";
-            var algorithm = new RobotSpawner.CreateAlgorithmDelegate(_ => new FollowWaypointsAlgorithm()); 
-            
+            var algorithm = new RobotSpawner.CreateAlgorithmDelegate(_ => new FollowWaypointsAlgorithm());
+
 
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)

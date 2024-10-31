@@ -27,7 +27,7 @@ namespace Maes
         public override void SetScenario(SimulationScenario<ExplorationSimulation> scenario)
         {
             base.SetScenario(scenario);
-            
+
             ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
         }
 
@@ -59,8 +59,9 @@ namespace Maes
             DestroyImmediate(explorationVisualizer.gameObject);
         }
 
-        private void CreateStatisticsFile() {
-            var csvWriter = new ExplorationStatisticsCSVWriter(this,$"{_scenario.StatisticsFileName}");
+        private void CreateStatisticsFile()
+        {
+            var csvWriter = new ExplorationStatisticsCSVWriter(this, $"{_scenario.StatisticsFileName}");
             csvWriter.CreateCSVFile(",");
         }
     }

@@ -23,7 +23,8 @@ using System.Collections.Generic;
 using Maes.Map;
 using UnityEngine;
 
-namespace Maes.ExplorationAlgorithm.BrickAndMortar {
+namespace Maes.ExplorationAlgorithm.BrickAndMortar
+{
     /*public class BrickAndMortarTag: EnvironmentTaggingMap.ITag {
 
         public BrickAndMortar.TileStatus Status;
