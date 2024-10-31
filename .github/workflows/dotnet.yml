@@ -7,21 +7,26 @@ on:
     branches: [ main ]
 
 jobs:
-  format:
+  build:
 
-    runs-on: ubuntu-latest
+    name: build-${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Log the current path
-      run: pwd
-    - name: Run ls
-      run: ls
+    - uses: actions/checkout@v3
     - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+      uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
+
     - name: Restore dependencies
       run: dotnet restore MAEPS.sln
+
     - name: Format
       run: dotnet format MAEPS.sln --verify-no-changes --verbosity diagnostic
+
+    - name: Build
+      run: dotnet build MAEPS.sln --configuration Release --no-restore
