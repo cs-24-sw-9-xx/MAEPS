@@ -31,7 +31,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.PatrollingAlgorithm.ConscientiousReactive;
 using Maes.Map.MapGen;
 using Maes.Robot;
 
@@ -42,6 +41,7 @@ using System.Collections.Generic;
 using Maes.Algorithms;
 
 using MAES.Map.RobotSpawners;
+using MAES.PatrollingAlgorithms;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 

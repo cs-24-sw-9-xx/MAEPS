@@ -8,49 +8,54 @@ using UnityEngine;
 
 namespace Maes.Trackers
 {
-    public class VertexDetails : Vertex
-    {
-        public int NumberOfVisits { get; set; } = 0;
-        public int MaxIdleness { get; private set; } = 0;
-        
-        public VertexDetails(float weight, Vector2Int position, Color? color = null) : base(weight, position, color)
-        {
-        }
-        
-        public VertexDetails(Vertex vertex) : base(vertex.Weight, vertex.Position, vertex.Color) { }
-    }
-
     public class PatrollingTracker : ITracker
     {
-        private readonly RobotConstraints _constraints;
-        public PatrollingMap Map { get; private set; }
+        private RobotConstraints Constraints { get; }
+        private PatrollingSimulation PatrollingSimulation { get; }
+        private PatrollingMap Map { get;}
+        private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
         
-        public Dictionary<Vector2Int, VertexDetails> Vertices { get; }
-        public int WorstGraphIdleness { get; private set; } = 0;
+        public int WorstGraphIdleness { get; private set; }
+        // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; } = 0;
         public float CurrentGraphIdleness { get; private set; } = 0;
+        public float AverageGraphIdleness => GraphIdlenessList.Count != 0 ? GraphIdlenessList.Average() : 0;
 
-        private List<int> GraphIdlenessList { get; } = new();
-
-        public float AverageGraphIdleness =>
-            GraphIdlenessList.Count != 0 ? (float)GraphIdlenessList.Sum() / GraphIdlenessList.Count : 0;
+        private List<float> GraphIdlenessList { get; } = new();
         
-        public PatrollingTracker(RobotConstraints constraints, PatrollingMap map)
+        public PatrollingTracker(PatrollingSimulation patrollingSimulation, RobotConstraints constraints,
+            PatrollingMap map)
         {
-            _constraints = constraints;
+            PatrollingSimulation = patrollingSimulation;
+            Constraints = constraints;
+            Map = map;
             Vertices = map.Verticies.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
         }
 
-        public void OnReachedVertex(Vertex vertex)
+        public void OnReachedVertex(Vertex vertex, int atTick)
         {
-            Vertices[vertex.Position].NumberOfVisits++;
-            Vertices[vertex.Position].VisitedAtTick(Time.frameCount);
+            if (!Vertices.TryGetValue(vertex.Position, out var vertexDetails)) return;
+
+            var idleness = atTick - vertexDetails.LastTimeVisitedTick;
+            vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
+            vertexDetails.NumberOfVisits++;
+            vertexDetails.VisitedAtTick(atTick);
+                
+            WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
         }
         
         public void LogicUpdate(IReadOnlyList<MonaRobot> robots)
         {
+            var eachVertexIdleness = GetEachVertexIdleness();
             
-            if (_constraints.AutomaticallyUpdateSlam) {
+            WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, eachVertexIdleness.Max());
+            CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
+            GraphIdlenessList.Add(CurrentGraphIdleness);
+            
+            // TODO: Remove this when the code UI is set up, just for showing that it works
+            Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
+            
+            if (Constraints.AutomaticallyUpdateSlam) {
                 // Always update estimated robot position and rotation
                 // regardless of whether the slam map was updated this tick
                 foreach (var robot in robots) {
@@ -64,6 +69,12 @@ namespace Maes.Trackers
         public void SetVisualizedRobot(MonaRobot robot)
         {
             // TODO: Implement
+        }
+        
+        private IReadOnlyList<int> GetEachVertexIdleness()
+        {
+            var currentTick = PatrollingSimulation.SimulatedLogicTicks;
+            return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
     }
 }
