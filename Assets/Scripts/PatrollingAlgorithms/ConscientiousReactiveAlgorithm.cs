@@ -2,7 +2,6 @@ using System.Linq;
 using UnityEngine;
 
 using Maes.Map;
-using MAES.PatrollingAlgorithms;
 
 namespace Maes.PatrollingAlgorithms
 {
