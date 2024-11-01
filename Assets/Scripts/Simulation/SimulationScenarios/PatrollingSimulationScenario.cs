@@ -32,7 +32,7 @@ namespace MAES.Simulation.SimulationScenarios
                 robotConstraints,
                 statisticsFileName)
         {
-            PatrollingMapFactory = patrollingMapFactory ?? ((generator, map) => generator.GeneratePatrollingMapRetanglesBased(map));
+            PatrollingMapFactory = patrollingMapFactory ?? ((generator, map) => generator.GeneratePatrollingMapRectangleBased(map));
         }
     }
 }
