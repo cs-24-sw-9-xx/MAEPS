@@ -16,16 +16,18 @@ namespace Maes.Statistics {
 
         private List<GameObject> _visualizers = new List<GameObject>();
 
-        public void SetMap(SimulationMap<Tile> simulationMap, Vector3 offset)
+        public void SetSimulationMap(SimulationMap<Tile> simulationMap, Vector3 offset)
         {
             // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;
             foreach (var visualizer in _visualizers) {
-                GameObject.Destroy(visualizer);
+                Destroy(visualizer);
             }
+        }
 
-            _patrollingMap = new PatrollingMap(simulationMap);
-
+        public void SetPatrollingMap(PatrollingMap patrollingMap)
+        {
+            _patrollingMap = patrollingMap;
             CreateVisualizers();
         }
 

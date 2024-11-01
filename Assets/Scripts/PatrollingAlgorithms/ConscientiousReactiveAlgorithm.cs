@@ -1,28 +1,25 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Maes.Algorithms;
-using Maes.ExplorationAlgorithm;
-using Maes.Map;
-using Maes.Robot;
-using MAES.Simulation;
 using UnityEngine;
 
-namespace Maes.PatrollingAlgorithm.ConscientiousReactive
+using Maes.Map;
+using Maes.Robot;
+
+
+namespace Maes.PatrollingAlgorithms
 {
-    public class ConscientiousReactiveAlgorithm : IPatrollingAlgorithm
+    public class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
         private Robot2DController _controller;
         private IReadOnlyList<Vertex> _vertices;
         private Vertex _currentVertex;
         private bool _isPatrolling = false;
-        public void SetPatrollingMap(PatrollingMap map)
+        public override void SetPatrollingMap(PatrollingMap map)
         {
             _vertices = map.Verticies;
         }
 
-        public string GetDebugInfo()
+        public override string GetDebugInfo()
         {
             return 
             "Conscientious Reactive Algorithm\n" + 
@@ -30,12 +27,12 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
             $"Init done:  {_isPatrolling}\n";
         }
 
-        public void SetController(Robot2DController controller)
+        public override void SetController(Robot2DController controller)
         {
             _controller = controller;
         }
 
-        public void UpdateLogic()
+        public override void UpdateLogic()
         {
             if(!_isPatrolling){
                 var vertex = GetClosestVertex();

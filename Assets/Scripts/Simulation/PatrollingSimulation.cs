@@ -1,19 +1,19 @@
+using UnityEngine;
+
 using Maes.Algorithms;
+using Maes.Map;
 using Maes.Map.MapGen;
+using Maes.Map.MapPatrollingGen;
 using MAES.Map.RobotSpawners;
 using Maes.Simulation;
 using MAES.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Trackers;
-using Maes.UI;
-
 using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
 
 namespace Maes
 {
-    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario>
+    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
     {
         public GameObject patrollingVisualizerPrefab;
         public PatrollingVisualizer patrollingVisualizer;
@@ -23,6 +23,8 @@ namespace Maes
         public override PatrollingVisualizer Visualizer => patrollingVisualizer;
 
         public override PatrollingTracker Tracker => PatrollingTracker;
+        
+        private PatrollingMap _patrollingMap;
         
         protected override void AfterStart()
         {
@@ -35,9 +37,15 @@ namespace Maes
         public override void SetScenario(PatrollingSimulationScenario scenario)
         {
             base.SetScenario(scenario);
-
             PatrollingTracker = new PatrollingTracker(scenario.RobotConstraints);
-            patrollingVisualizer.SetMap(_collisionMap, _collisionMap.ScaledOffset);
+            patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
+            patrollingVisualizer.SetPatrollingMap(_patrollingMap);
+        }
+
+        protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
+        {
+            _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
+            RobotSpawner.SetPatrollingMap(_patrollingMap);
         }
 
         public override void OnDestory()

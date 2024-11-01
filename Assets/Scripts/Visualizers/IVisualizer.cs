@@ -6,6 +6,6 @@ namespace Maes.Visualizer
 {
     public interface IVisualizer<TVisualizerTile>
     {
-        void SetMap(SimulationMap<TVisualizerTile> newMap, Vector3 offset);
+        void SetSimulationMap(SimulationMap<TVisualizerTile> newMap, Vector3 offset);
     }
 }
