@@ -93,7 +93,7 @@ namespace Maes.Statistics {
             _currentVisualizationMode = new AllRobotsExplorationVisualization(_explorationMap);
             _totalExplorableTriangles = explorableTriangles;
             
-            _explorationVisualizer.SetMap(_explorationMap, collisionMap.ScaledOffset);
+            _explorationVisualizer.SetSimulationMap(_explorationMap, collisionMap.ScaledOffset);
             _rayTracingMap = new RayTracingMap<ExplorationCell>(_explorationMap);
 
             _coverageCalculator = new CoverageCalculator(_explorationMap, collisionMap);

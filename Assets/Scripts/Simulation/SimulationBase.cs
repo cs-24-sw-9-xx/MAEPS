@@ -117,14 +117,14 @@ namespace Maes.Simulation
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
-
+            AfterCollisionMapGenerated(scenario);
             _communicationManager = new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
             RobotSpawner.CommunicationManager = _communicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
             _communicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
 
-            SpawnRobots(scenario);
+            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
             foreach (var robot in Robots)
                 robot.OnRobotSelected = SetSelectedRobot;
 
@@ -132,9 +132,9 @@ namespace Maes.Simulation
 
         }
 
-        protected virtual void SpawnRobots(TScenario scenario)
+        protected virtual void AfterCollisionMapGenerated(TScenario scenario)
         {
-            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
+            
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)

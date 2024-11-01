@@ -46,15 +46,14 @@ namespace Maes
             base.SetScenario(scenario);
             
             PatrollingTracker = new PatrollingTracker(scenario.RobotConstraints);
-            patrollingVisualizer.SetMap(_collisionMap, _collisionMap.ScaledOffset);
+            patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
             patrollingVisualizer.SetPatrollingMap(_patrollingMap);
         }
 
-        protected override void SpawnRobots(PatrollingSimulationScenario scenario)
+        protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
             RobotSpawner.PatrollingMap = _patrollingMap;
-            base.SpawnRobots(scenario);
         }
 
         public override void OnDestory()

@@ -68,7 +68,7 @@ namespace Maes.Statistics
         public delegate Color32 CellToColor(ExplorationCell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
 
-        public void SetMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
+        public void SetSimulationMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
         {
             _map = newMap;
             _widthInTiles = _map.WidthInTiles;
