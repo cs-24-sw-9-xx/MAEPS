@@ -19,11 +19,10 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Experimental.AI;
-using YamlDotNet.Core.Tokens;
+
+using Maes.Algorithms;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {

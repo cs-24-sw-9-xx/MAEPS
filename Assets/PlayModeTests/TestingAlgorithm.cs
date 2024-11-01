@@ -19,7 +19,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm;
+using Maes.Algorithms;
 using Maes.Robot;
 
 namespace PlayModeTests {

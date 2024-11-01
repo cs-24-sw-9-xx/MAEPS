@@ -31,33 +31,28 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
-using Maes.ExplorationAlgorithm.Minotaur;
-using System.Collections;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.PatrollingAlgorithm.ConscientiousReactive;
-using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
-using Maes.Utilities.Files;
+
 using UnityEngine;
-using Maes.Robot;
-using Maes.ExplorationAlgorithm.Movement;
+
 using System.Collections.Generic;
-using Maes.UI;
-using UnityEditor;
-using System.Linq;
-using Maes.ExplorationAlgorithm.Greed;
+
+using Maes.Algorithms;
+
+using MAES.Map.RobotSpawners;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
 
 namespace Maes
 {
     using MySimulator = PatrollingSimulator;
-    using MySimulationScenario = SimulationScenario<PatrollingSimulation>;
+    using MySimulationScenario = PatrollingSimulationScenario;
     
     internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
-        private Simulator<PatrollingSimulation> _simulator;
+        private MySimulator _simulator;
 
         private void Start()
         {
@@ -151,7 +146,7 @@ namespace Maes
 
             var constraintIterator = 0;
             var mapSizes = new List<int> { 50, 75, 100 };
-            var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
+            var algorithms = new Dictionary<string, RobotSpawner<IPatrollingAlgorithm>.CreateAlgorithmDelegate>
                 {
                     { "conscientious_reactive", seed => new ConscientiousReactiveAlgorithm() },
                 };
@@ -210,7 +205,7 @@ namespace Maes
                                                                  seed: 123,
                                                                  numberOfRobots: 5,
                                                                  suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: (seed) => new MinotaurAlgorithm(robotConstraints, seed, 2)),
+                                                                 createAlgorithmDelegate: (seed) => new ConscientiousReactiveAlgorithm()),
                 statisticsFileName: $"delete-me",
                 robotConstraints: robotConstraints));
 

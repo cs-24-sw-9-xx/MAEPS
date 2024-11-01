@@ -25,7 +25,7 @@ using System.Linq;
 using UnityEngine;
 using Maes.Utilities;
 using static Maes.Map.SlamMap;
-using System;
+
 using Maes.Map.PathFinding;
 
 namespace Maes.ExplorationAlgorithm.Minotaur

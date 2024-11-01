@@ -21,20 +21,18 @@
 
 using System.Collections;
 using Maes;
-using Maes.ExplorationAlgorithm;
-using Maes.ExplorationAlgorithm.RandomBallisticWalk;
-using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Robot.Task;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
+
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
 namespace PlayModeTests {
     using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
     
     [TestFixture(1.0f)]
     [TestFixture(1.5f)]

@@ -1,13 +1,17 @@
 using System.Collections.Generic;
 using Maes;
+using Maes.Algorithms;
+
+using MAES.Simulation.SimulationScenarios;
+
 using Maes.UI;
 using UnityEngine;
 
 namespace MAES.Simulation
 {
-    public class ExplorationSimulator : Simulator<ExplorationSimulation>
+    public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        protected override SimulationManager<ExplorationSimulation> AddSimulationManager(GameObject gameObject)
+        protected override SimulationManager<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario> AddSimulationManager(GameObject gameObject)
         {
             return gameObject.AddComponent<ExplorationSimulationManager>();
         }
@@ -22,7 +26,7 @@ namespace MAES.Simulation
         /// </summary>	
         public void DefaultStart(bool isRosMode = false) {	
             GlobalSettings.IsRosMode = isRosMode;	
-            IEnumerable<SimulationScenario<ExplorationSimulation>> generatedScenarios;	
+            IEnumerable<ExplorationSimulationScenario> generatedScenarios;	
             if (GlobalSettings.IsRosMode) {	
                 generatedScenarios = ExplorationScenarioGenerator.GenerateROS2Scenario();	
             } else {	

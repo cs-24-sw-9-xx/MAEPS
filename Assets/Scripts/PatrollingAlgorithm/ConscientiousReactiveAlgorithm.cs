@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm;
 using Maes.Map;
 using Maes.Robot;
@@ -9,12 +11,17 @@ using UnityEngine;
 
 namespace Maes.PatrollingAlgorithm.ConscientiousReactive
 {
-    public class ConscientiousReactiveAlgorithm : IExplorationAlgorithm
+    public class ConscientiousReactiveAlgorithm : IPatrollingAlgorithm
     {
         private Robot2DController _controller;
         private IReadOnlyList<Vertex> _vertices;
         private Vertex _currentVertex;
         private bool _isPatrolling = false;
+        public void SetPatrollingMap(PatrollingMap map)
+        {
+            _vertices = map.Verticies;
+        }
+
         public string GetDebugInfo()
         {
             return 
@@ -26,7 +33,6 @@ namespace Maes.PatrollingAlgorithm.ConscientiousReactive
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
-            _vertices = _controller.GetVerticies();
         }
 
         public void UpdateLogic()

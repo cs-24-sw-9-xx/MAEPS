@@ -25,6 +25,8 @@ using Maes;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
+
 using NUnit.Framework;
 using UnityEngine;
 using Random = System.Random;
@@ -33,8 +35,8 @@ using Random = System.Random;
 namespace PlayModeTests
 {
     using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
+
     public class MaterialCommunicationTest
     {
         private const int MapWidth = 50, MapHeight = 50;

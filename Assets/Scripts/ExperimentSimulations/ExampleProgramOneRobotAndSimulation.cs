@@ -20,19 +20,23 @@
 // 
 // Original repository: https://github.com/cs-24-sw-9-xx/MAEPS
 
-using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using UnityEngine;
 using System.Collections.Generic;
+
+using Maes.Algorithms;
+
 using MAES.ExplorationAlgorithm.FollowWaypoints;
+using MAES.Map.RobotSpawners;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
 
 namespace Maes
 {
     using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
+    using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class ExampleProgramOneRobotAndSimulation : MonoBehaviour
     {
         private MySimulator _simulator;

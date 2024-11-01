@@ -19,10 +19,9 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.Collections.Generic;
-using Maes.Map;
-using UnityEngine;
+
+using Maes.Algorithms;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {

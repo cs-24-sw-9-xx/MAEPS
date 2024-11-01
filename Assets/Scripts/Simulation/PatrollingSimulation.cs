@@ -1,13 +1,19 @@
+using Maes.Algorithms;
 using Maes.Map.MapGen;
+using MAES.Map.RobotSpawners;
 using Maes.Simulation;
+using MAES.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Trackers;
 using Maes.UI;
+
+using MAES.UI.SimulationInfoUIControllers;
+
 using UnityEngine;
 
 namespace Maes
 {
-    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController>
+    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         public GameObject patrollingVisualizerPrefab;
         public PatrollingVisualizer patrollingVisualizer;
@@ -22,9 +28,11 @@ namespace Maes
         {
             patrollingVisualizerPrefab = Resources.Load<GameObject>("PatrollingVisualizer");
             patrollingVisualizer = Instantiate(patrollingVisualizerPrefab).GetComponent<PatrollingVisualizer>();
+            
+            RobotSpawner = gameObject.AddComponent<PatrollingRobotSpawner>();
         }
 
-        public override void SetScenario(SimulationScenario<PatrollingSimulation> scenario)
+        public override void SetScenario(PatrollingSimulationScenario scenario)
         {
             base.SetScenario(scenario);
 
@@ -35,6 +43,7 @@ namespace Maes
         public override void OnDestory()
         {
             DestroyImmediate(patrollingVisualizer.gameObject);
+            DestroyImmediate(RobotSpawner.gameObject);
         }
 
         public override bool HasFinishedSim()

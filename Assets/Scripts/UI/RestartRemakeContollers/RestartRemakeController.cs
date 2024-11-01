@@ -21,21 +21,27 @@
 
 using System.Collections.Generic;
 using Maes;
+using Maes.Algorithms;
+
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MAES.UI.RestartRemakeContollers
 {
-    public abstract class RestartRemakeController<TSimulation> : MonoBehaviour
-        where TSimulation : class, ISimulation<TSimulation>
+    public abstract class RestartRemakeController<TSimulation, TAlgorithm, TScenario> : MonoBehaviour
+        where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
+        where TAlgorithm : IAlgorithm
+        where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
 
         public Button RestartCurrentButton;
         public Button RestartAllButton;
         public Button MakeAndRunButton;
         public Button CreateBatchButton;
-        public SimulationManager<TSimulation> simulationManager;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
 
         private ISimulation _previousSimulationBase;
 
@@ -44,7 +50,7 @@ namespace MAES.UI.RestartRemakeContollers
         // Start is called before the first frame update
         void Start()
         {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation>>();
+            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             RestartCurrentButton = GameObject.Find("RestartCurrentButton").GetComponent<Button>();
             RestartAllButton = GameObject.Find("RestartAllButton").GetComponent<Button>();
             MakeAndRunButton = GameObject.Find("MakeAndRunButton").GetComponent<Button>();
@@ -69,7 +75,7 @@ namespace MAES.UI.RestartRemakeContollers
 
         private void RestartCurrentScenario() {
             simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
-            var newScenariosQueue = new Queue<SimulationScenario<TSimulation>>();
+            var newScenariosQueue = new Queue<TScenario>();
             newScenariosQueue.Enqueue(simulationManager._currentScenario);
             simulationManager.RemoveCurrentSimulation();
             if (simulationManager._scenarios.Count != 0) {
@@ -87,7 +93,7 @@ namespace MAES.UI.RestartRemakeContollers
         }
         private void RestartAllScenarios() {
             simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
-            Queue<SimulationScenario<TSimulation>> tempScenariosQueue = new Queue<SimulationScenario<TSimulation>>();
+            var tempScenariosQueue = new Queue<TScenario>();
             foreach (var scenario in simulationManager._initialScenarios){
                 tempScenariosQueue.Enqueue(scenario);
             }

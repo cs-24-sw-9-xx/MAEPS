@@ -1,8 +1,10 @@
 using JetBrains.Annotations;
+
 using MAES.Simulation;
+
 using UnityEngine;
 
-namespace Maes.UI
+namespace MAES.UI.SimulationInfoUIControllers
 {
     public interface ISimulationInfoUIController
     {

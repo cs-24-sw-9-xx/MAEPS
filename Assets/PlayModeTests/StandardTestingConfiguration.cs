@@ -19,8 +19,9 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes;
 using Maes.Map.MapGen;
+
+using MAES.Simulation.SimulationScenarios;
 
 namespace PlayModeTests {
     public class StandardTestingConfiguration {

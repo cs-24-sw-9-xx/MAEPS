@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
+
+using Maes;
+using Maes.Algorithms;
 using Maes.Map.Visualization;
+
+using MAES.Simulation.SimulationScenarios;
+
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.UI
+namespace MAES.UI.SimulationInfoUIControllers
 {
-    public sealed class ExplorationInfoUIController : SimulationInfoUIControllerBase<ExplorationSimulation>
+    public sealed class ExplorationInfoUIController : SimulationInfoUIControllerBase<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
         public Image ExplorationBarMask, CoverageBarMask;
         public Text ProgressPercentageText, CoveragePercentageText;

@@ -22,23 +22,27 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using UnityEngine;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm;
-using Maes.ExplorationAlgorithm.BrickAndMortar;
 using Maes.ExplorationAlgorithm.RandomBallisticWalk;
 using Maes.ExplorationAlgorithm.SSB;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.ExplorationAlgorithm.Voronoi;
 using Maes.Map.MapGen;
+using MAES.Map.RobotSpawners;
 using Maes.Robot;
-using Maes.UI;
+using MAES.Simulation.SimulationScenarios;
 using Maes.Utilities.Files;
 using Maes.YamlConfig;
-using UnityEngine;
-using static Maes.Map.RobotSpawner;
 
 namespace Maes {
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using RobotFactory = RobotFactory<IExplorationAlgorithm>;
+    using CreateAlgorithmDelegate = RobotSpawner<IExplorationAlgorithm>.CreateAlgorithmDelegate;
 
     public class ExplorationScenarioGenerator {
         

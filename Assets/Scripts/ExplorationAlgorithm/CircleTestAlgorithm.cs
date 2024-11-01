@@ -19,13 +19,13 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm;
 using Maes.Map;
 using Maes.Robot;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
+
+using Maes.Algorithms;
+
 using UnityEngine;
 
 namespace ExplorationAlgorithm

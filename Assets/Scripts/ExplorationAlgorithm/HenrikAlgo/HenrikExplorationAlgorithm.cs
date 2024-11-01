@@ -6,10 +6,11 @@
 //   - Proposed fix: When finding the nearest unexplored tile, the robot could exclude tiles which are close to other robots.
 // - The anti-wall collision 'CollisionCorrector()' is primitive.
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
 using Maes.Robot.Task;

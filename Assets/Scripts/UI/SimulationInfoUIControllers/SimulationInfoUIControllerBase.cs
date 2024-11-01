@@ -20,18 +20,23 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using System.Collections.Generic;
-using JetBrains.Annotations;
-using Maes.Map.Visualization;
+using Maes;
+using Maes.Algorithms;
+
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
+
+using Maes.UI;
+
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace Maes.UI {
-    public abstract class SimulationInfoUIControllerBase<TSimulation> : MonoBehaviour, ISimulationInfoUIController
-    where TSimulation : class, ISimulation<TSimulation> {
+namespace MAES.UI.SimulationInfoUIControllers {
+    public abstract class SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationInfoUIController
+    where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
+    where TAlgorithm : IAlgorithm
+    where TScenario : SimulationScenario<TSimulation, TAlgorithm>
+    {
 
         public Text AlgorithmDebugText;
         public Text ControllerDebugText;
@@ -50,7 +55,7 @@ namespace Maes.UI {
         public TSimulation? Simulation { get; set; }
         
 
-        public SimulationManager<TSimulation> simulationManager;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
         // Represents a function that modifies the given simulation in some way
         // (for example by changing map visualization mode)
         protected delegate void SimulationModification(TSimulation? simulation);
@@ -64,7 +69,7 @@ namespace Maes.UI {
 
         private void Start()
         {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation>>();
+            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             
             AlgorithmDebugText = GameObject.Find("AlgorithmDebugInfo").GetComponent<Text>();
             ControllerDebugText = GameObject.Find("ControllerDebugInfo").GetComponent<Text>();

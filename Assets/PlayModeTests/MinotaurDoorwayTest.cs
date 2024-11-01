@@ -29,12 +29,12 @@ using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.Utilities.Files;
 using System.Linq;
 using MAES.Simulation;
+using MAES.Simulation.SimulationScenarios;
 
 namespace PlayModeTests
 {
     using MySimulator = ExplorationSimulator;
-    using MySimulationScenario = SimulationScenario<ExplorationSimulation>;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
     public class MinotaurDoorwayMock : MinotaurAlgorithm
     {
         public MinotaurDoorwayMock(RobotConstraints robotConstraints, int seed, int doorWidth) : base(robotConstraints, seed, doorWidth)
