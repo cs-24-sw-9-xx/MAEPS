@@ -220,7 +220,7 @@ namespace Maes.Simulation
             // Override me for functionality.
         }
 
-        public virtual void OnDestory()
+        public virtual void OnDestroy()
         {
             // Override me for functionality.
         }

@@ -290,7 +290,7 @@ namespace Maes {
 
         public void RemoveCurrentSimulation()
         {
-            CurrentSimulation?.OnDestory();
+            CurrentSimulation?.OnDestroy();
             DestroyImmediate(_simulationGameObject);
             _currentScenario = null;
             CurrentSimulation = null;

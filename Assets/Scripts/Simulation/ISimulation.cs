@@ -57,6 +57,6 @@ namespace MAES.Simulation
         
         void OnSimulationFinished();
         
-        void OnDestory();
+        void OnDestroy();
     }
 }

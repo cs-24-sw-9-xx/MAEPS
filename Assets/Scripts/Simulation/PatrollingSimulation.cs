@@ -47,7 +47,7 @@ namespace Maes
             RobotSpawner.SetPatrolling(_patrollingMap, PatrollingTracker);
         }
 
-        public override void OnDestory()
+        public override void OnDestroy()
         {
             DestroyImmediate(patrollingVisualizer.gameObject);
             DestroyImmediate(RobotSpawner.gameObject);

@@ -60,7 +60,7 @@ namespace Maes
             }
         }
 
-        public override void OnDestory()
+        public override void OnDestroy()
         {
             DestroyImmediate(explorationVisualizer.gameObject);
             DestroyImmediate(RobotSpawner.gameObject);
