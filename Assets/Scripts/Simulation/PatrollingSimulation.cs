@@ -53,7 +53,7 @@ namespace Maes
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
-            RobotSpawner.PatrollingMap = _patrollingMap;
+            RobotSpawner.SetPatrollingMap(_patrollingMap);
         }
 
         public override void OnDestory()
