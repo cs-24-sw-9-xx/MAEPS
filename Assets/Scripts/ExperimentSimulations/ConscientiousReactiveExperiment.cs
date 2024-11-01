@@ -38,9 +38,7 @@ using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Algorithms;
 using MAES.Map.RobotSpawners;
-
 using Maes.PatrollingAlgorithms;
-
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 

@@ -122,9 +122,9 @@ namespace Maes.Simulation
             RobotSpawner.CommunicationManager = _communicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            _communicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
-
             Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
+            
+            _communicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
                 robot.OnRobotSelected = SetSelectedRobot;
 

@@ -1,22 +1,15 @@
-using System.Collections.Generic;
+using UnityEngine;
 
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-
 using MAES.Map.RobotSpawners;
-
-using Maes.Robot;
 using Maes.Simulation;
 using MAES.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Trackers;
-using Maes.UI;
-
 using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
 
 namespace Maes
 {
@@ -44,7 +37,6 @@ namespace Maes
         public override void SetScenario(PatrollingSimulationScenario scenario)
         {
             base.SetScenario(scenario);
-            
             PatrollingTracker = new PatrollingTracker(scenario.RobotConstraints);
             patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
             patrollingVisualizer.SetPatrollingMap(_patrollingMap);
