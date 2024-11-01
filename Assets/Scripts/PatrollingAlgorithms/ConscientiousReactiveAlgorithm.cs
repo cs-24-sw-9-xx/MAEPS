@@ -1,11 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 using Maes.Map;
-using Maes.Robot;
-
-using UnityEngine;
+using MAES.PatrollingAlgorithms;
 
 namespace Maes.PatrollingAlgorithms
 {

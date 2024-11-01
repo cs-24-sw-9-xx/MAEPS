@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
 {
-    public class PatrollingMapRetangleGen
+    public class PatrollingMapRectangleGen
     {
         public static PatrollingMap Generate(SimulationMap<Tile> simulationMap)
         {

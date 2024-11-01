@@ -44,8 +44,7 @@ namespace Maes
             patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
             patrollingVisualizer.SetPatrollingMap(_patrollingMap);
             
-            RobotSpawner.SetPatrollingMap(_patrollingMap);
-            RobotSpawner.Tracker = PatrollingTracker;
+            RobotSpawner.SetPatrolling(_patrollingMap, PatrollingTracker);
         }
 
         public override void OnDestory()
