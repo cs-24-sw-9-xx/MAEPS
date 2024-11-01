@@ -10,7 +10,7 @@ namespace Maes.Map {
     {
         private readonly HashSet<Vertex> _neighbors = new HashSet<Vertex>();
         public float Weight { get; }
-        public int Idleness { get; private set; }
+        public int LastTimeVisitedTick { get; private set; }
         public Vector2Int Position { get; }
         public Color Color { get; }
 
@@ -25,7 +25,7 @@ namespace Maes.Map {
         
         public void VisitedAtTick(int tick)
         {
-            Idleness = tick;
+            LastTimeVisitedTick = tick;
         }
 
         public void AddNeighbor(Vertex neighbor){

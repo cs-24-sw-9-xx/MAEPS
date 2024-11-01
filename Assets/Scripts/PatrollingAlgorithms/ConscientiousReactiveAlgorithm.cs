@@ -1,52 +1,35 @@
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 using Maes.Map;
-using Maes.Robot;
-
 
 namespace Maes.PatrollingAlgorithms
 {
     public class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
-        private Robot2DController _controller;
-        private IReadOnlyList<Vertex> _vertices;
-        private Vertex _currentVertex;
+        public override string AlgorithmName => "Conscientious Reactive Algorithm";
         private bool _isPatrolling = false;
-        public override void SetPatrollingMap(PatrollingMap map)
-        {
-            _vertices = map.Verticies;
-        }
 
         public override string GetDebugInfo()
         {
             return 
-            "Conscientious Reactive Algorithm\n" + 
-            $"Coordinate: {_currentVertex.Position}\n" +
-            $"Init done:  {_isPatrolling}\n";
+                base.GetDebugInfo() +
+                $"Init done:  {_isPatrolling}\n";
         }
 
-        public override void SetController(Robot2DController controller)
+
+        protected override void Preliminaries()
         {
-            _controller = controller;
+            if (_isPatrolling) return;
+
+            var vertex = GetClosestVertex();
+            TargetVertex = vertex; 
+            _isPatrolling = true;
         }
 
-        public override void UpdateLogic()
+        protected override Vertex NextVertex()
         {
-            if(!_isPatrolling){
-                var vertex = GetClosestVertex();
-                _currentVertex = vertex; 
-                _isPatrolling = true;
-            }
-            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
-            if(currentPosition != _currentVertex.Position){
-                _controller.PathAndMoveTo(_currentVertex.Position);
-                return;
-            }
-
-            _currentVertex.VisitedAtTick(_controller.GetRobot().Simulation.SimulatedLogicTicks);
-            _currentVertex = _currentVertex.Neighbors.OrderBy((x)=>x.Idleness).First();
+            return TargetVertex.Neighbors.OrderBy((x)=>x.LastTimeVisitedTick).First();
         }
 
         private Vertex GetClosestVertex(){

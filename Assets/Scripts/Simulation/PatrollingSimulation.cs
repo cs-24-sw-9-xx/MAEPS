@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 using Maes.Algorithms;
@@ -34,18 +35,16 @@ namespace Maes
             RobotSpawner = gameObject.AddComponent<PatrollingRobotSpawner>();
         }
 
-        public override void SetScenario(PatrollingSimulationScenario scenario)
-        {
-            base.SetScenario(scenario);
-            PatrollingTracker = new PatrollingTracker(scenario.RobotConstraints);
-            patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
-            patrollingVisualizer.SetPatrollingMap(_patrollingMap);
-        }
-
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
-            RobotSpawner.SetPatrollingMap(_patrollingMap);
+            
+            PatrollingTracker = new PatrollingTracker(this, scenario.RobotConstraints, _patrollingMap);
+            
+            patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
+            patrollingVisualizer.SetPatrollingMap(_patrollingMap);
+            
+            RobotSpawner.SetPatrolling(_patrollingMap, PatrollingTracker);
         }
 
         public override void OnDestory()
