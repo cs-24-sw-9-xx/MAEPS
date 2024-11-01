@@ -21,5 +21,10 @@ namespace Maes.Map
         {
             return new PatrollingMap(this.Verticies.Select(v => (Vertex)v.Clone()).ToArray());
         }
+
+        public object Clone()
+        {
+            return new PatrollingMap(this.Verticies.Select(v => (Vertex)v.Clone()).ToArray());
+        }
     }
 }
