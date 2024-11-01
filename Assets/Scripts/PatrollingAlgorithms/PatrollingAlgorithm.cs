@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;

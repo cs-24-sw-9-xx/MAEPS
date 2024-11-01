@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 using Maes.Map;
 using Maes.Robot;
 
 using UnityEngine;
 
-namespace MAES.PatrollingAlgorithms
+namespace Maes.PatrollingAlgorithms
 {
     public class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {

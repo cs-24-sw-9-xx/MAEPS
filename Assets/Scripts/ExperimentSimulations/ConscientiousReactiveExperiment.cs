@@ -31,17 +31,14 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map.MapGen;
-using Maes.Robot;
-
 using UnityEngine;
-
 using System.Collections.Generic;
 
+using Maes.Map.MapGen;
+using Maes.Robot;
 using Maes.Algorithms;
-
 using MAES.Map.RobotSpawners;
-using MAES.PatrollingAlgorithms;
+using Maes.PatrollingAlgorithms;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 

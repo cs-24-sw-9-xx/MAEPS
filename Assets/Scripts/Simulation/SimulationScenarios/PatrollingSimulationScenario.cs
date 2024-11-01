@@ -3,9 +3,7 @@ using Maes.Algorithms;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-
-using MAES.PatrollingAlgorithms;
-
+using Maes.PatrollingAlgorithms;
 using Maes.Robot;
 
 using UnityEngine;
@@ -34,7 +32,7 @@ namespace MAES.Simulation.SimulationScenarios
                 robotConstraints,
                 statisticsFileName)
         {
-            PatrollingMapFactory = patrollingMapFactory ?? ((generator, map) => generator.GeneratePatrollingMapRetanglesBased(map));
+            PatrollingMapFactory = patrollingMapFactory ?? ((generator, map) => generator.GeneratePatrollingMapRectangleBased(map));
         }
     }
 }
