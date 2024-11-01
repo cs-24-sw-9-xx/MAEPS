@@ -1,17 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms;
-using Maes.ExplorationAlgorithm;
 using Maes.Map;
 using Maes.Robot;
-using MAES.Simulation;
+
 using UnityEngine;
 
-namespace Maes.PatrollingAlgorithm.ConscientiousReactive
+namespace Maes.PatrollingAlgorithms
 {
-    public class ConscientiousReactiveAlgorithm : MAES.PatrollingAlgorithm.PatrollingAlgorithm
+    public class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
         private Robot2DController _controller;
         private IReadOnlyList<Vertex> _vertices;

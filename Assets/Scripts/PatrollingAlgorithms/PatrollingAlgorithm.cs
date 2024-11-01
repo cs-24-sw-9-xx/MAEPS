@@ -2,7 +2,7 @@ using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
 
-namespace MAES.PatrollingAlgorithm
+namespace Maes.PatrollingAlgorithms
 {
     public abstract class PatrollingAlgorithm : IPatrollingAlgorithm
     {

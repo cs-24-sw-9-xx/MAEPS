@@ -3,7 +3,7 @@ using Maes.Algorithms;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-using Maes.PatrollingAlgorithm.ConscientiousReactive;
+using Maes.PatrollingAlgorithms;
 using Maes.Robot;
 
 using UnityEngine;
