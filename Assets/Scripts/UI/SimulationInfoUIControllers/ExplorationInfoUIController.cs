@@ -30,19 +30,6 @@ namespace MAES.UI.SimulationInfoUIControllers
 
         protected override void AfterStart()
         {
-            ExplorationBarMask = GameObject.Find("ExplorationBarMask").GetComponent<Image>();
-            CoverageBarMask = GameObject.Find("CoverageBarMask").GetComponent<Image>();
-            ProgressPercentageText = GameObject.Find("ExplorationPercentage").GetComponent<Text>();
-            CoveragePercentageText = GameObject.Find("CoveragePercentage").GetComponent<Text>();
-            ExplorationRateText = GameObject.Find("ExplorationRateText").GetComponent<Text>();
-
-            AllExplorationButton = GameObject.Find("AllExplorationButton").GetComponent<Button>();
-            AllCoverageButton = GameObject.Find("AllCoverageButton").GetComponent<Button>();
-            AllExplorationHeatMapButton = GameObject.Find("AllHeatMapExploration").GetComponent<Button>();
-            AllCoverageHeatMapButton = GameObject.Find("AllHeatMapCoverage").GetComponent<Button>();
-            SelectVisibleAreaButton = GameObject.Find("SelectedCurrentlyVisible").GetComponent<Button>();
-            SelectedSlamMapButton = GameObject.Find("SelectedSlamMap").GetComponent<Button>();
-            
             _mapVisualizationToggleGroup = new List<Button>() {
                 AllExplorationButton, AllCoverageButton, AllExplorationHeatMapButton, AllCoverageHeatMapButton,
                 SelectVisibleAreaButton, SelectedSlamMapButton

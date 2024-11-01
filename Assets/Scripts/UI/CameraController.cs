@@ -19,6 +19,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MAES.Simulation;
@@ -38,7 +39,8 @@ namespace Maes.UI
         private List<CamAssembly> _cams;
         public Camera currentCam;
 
-        public ISimulationManager SimulationManager;
+        public GameObject simulationManagerGameObject;
+        private ISimulationManager _simulationManager;
 
         public float movementSpeed;
         public float movementTime;
@@ -64,14 +66,20 @@ namespace Maes.UI
         public bool stickyCam;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
+            _simulationManager = simulationManagerGameObject.GetComponent<ISimulationManager>();
             singletonInstance = this;
             var t = transform; // Temp storage of build-in is (apparently) more efficient than repeated access.
             newPosition = t.position;
             newRotation = t.rotation;
             CameraInitialization();
             stickyCam = false;
+        }
+
+        private void OnDestroy()
+        {
+            singletonInstance = null;
         }
 
         private void CameraInitialization()
@@ -109,9 +117,9 @@ namespace Maes.UI
             {
                 movementTransform = null;
                 // Notify current simulation that no robot is selected
-                SimulationManager.CurrentSimulation.SetSelectedRobot(null);
-                SimulationManager.CurrentSimulation.SetSelectedTag(null);
-                SimulationManager.CurrentSimulation.ClearVisualTags();
+                _simulationManager.CurrentSimulation.SetSelectedRobot(null);
+                _simulationManager.CurrentSimulation.SetSelectedTag(null);
+                _simulationManager.CurrentSimulation.ClearVisualTags();
             }
         }
 
@@ -267,18 +275,16 @@ namespace Maes.UI
 
         private void OnNewMouseWorldPosition(Vector2 mouseWorldPosition)
         {
-            SimulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
-            
             // Update the UI to show the current position of the mouse in world space
             // (The frame of reference changes between ros and maes mode)
             if (GlobalSettings.IsRosMode)
             {
-                SimulationManager.SimulationInfoUIController.UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
+                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
             }
-            else if (SimulationManager.CurrentSimulation != null)
+            else if (_simulationManager.CurrentSimulation != null)
             {
                 // var coord = SimulationManager.CurrentSimulation.WorldCoordinateToSlamCoordinate(mouseWorldPosition);
-                SimulationManager.SimulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition!);
+                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition!);
             }
         }
 

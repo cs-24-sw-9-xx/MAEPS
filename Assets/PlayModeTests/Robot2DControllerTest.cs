@@ -42,7 +42,7 @@ namespace PlayModeTests {
         private const int RandomSeed = 123;
         private MySimulator _maes;
         private TestingAlgorithm _testAlgorithm;
-        private ExplorationSimulation _simulationBase;
+        private ExplorationSimulation _explorationSimulation;
         private MonaRobot _robot;
 
         private float _relativeMoveSpeed;
@@ -65,8 +65,8 @@ namespace PlayModeTests {
             
             _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulationBase = _maes.GetSimulationManager().CurrentSimulation;
-            _robot = _simulationBase.Robots[0];
+            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
+            _robot = _explorationSimulation.Robots[0];
         }
 
         [TearDown]
@@ -101,9 +101,9 @@ namespace PlayModeTests {
             }
             
             //  Wait 1 second (10 ticks) for the robot to stand completely still
-            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
+            var movementTaskEndTick = _explorationSimulation.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_explorationSimulation.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
 
             // Assert that the actual final position approximately matches the expected final position
             var endingPosition = _robot.transform.position;
@@ -139,9 +139,9 @@ namespace PlayModeTests {
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle) 
                 yield return null;
             //  Wait 1 second (10 ticks) for the robot to stand completely still
-            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
+            var movementTaskEndTick = _explorationSimulation.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_explorationSimulation.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
             
             // Assert that the actual final rotation approximately matches the expected angle
             var actualAngle = _robot.transform.rotation.eulerAngles.z;

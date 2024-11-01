@@ -53,7 +53,7 @@ namespace Maes {
         public Text SimulationStatusText;
         private int _physicsTicksSinceUpdate = 0;
 
-        public ISimulationInfoUIController SimulationInfoUIController;
+        public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimulationInfoUIController;
         ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
 
         public TScenario _currentScenario;
@@ -72,24 +72,9 @@ namespace Maes {
         internal SimulationPlayState PlayState { get; } = SimulationPlayState.Paused;
         private int _logicTicksCurrentSim = 0;
 
-        private bool _started = false;
-
         // Runs once when starting the program
         private void Start()
         {
-            if (_started)
-            {
-                return;
-            }
-            
-            SimulationPrefab = Resources.Load<GameObject>("Simulation");
-            UISpeedController = GetComponent<SimulationSpeedController>();
-            SettingsPanel = GameObject.Find("SettingsPanel");
-            RestartRemakePanel = GameObject.Find("Restart and Remake Panel");
-            SimulationStatusText = GameObject.Find("StatusText").GetComponent<Text>();
-            UIControllerDebugTitle = GameObject.Find("ControllerTitle");
-            UIControllerDebugInfo = GameObject.Find("ControllerDebugInfo");
-            
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
@@ -102,10 +87,6 @@ namespace Maes {
                 UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
-            
-            AddRestartRemakeController(RestartRemakePanel);
-            
-            _started = true;
         }
 
         public void RemoveFastForwardButtonsFromControlPanel() {
@@ -172,9 +153,6 @@ namespace Maes {
                 }
             }
         }
-
-        protected abstract TSimulation AddSimulation(GameObject gameObject);
-        public abstract void AddRestartRemakeController(GameObject restartRemakePanel);
 
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
         private long _nextUpdateTimeMillis = 0;
@@ -273,9 +251,8 @@ namespace Maes {
         private void CreateSimulation(TScenario scenario) {
             _currentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
-            CurrentSimulation = AddSimulation(_simulationGameObject);
+            CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();
             CurrentSimulation.SetScenario(scenario);
-            SimulationInfoUIController = CurrentSimulation.AddSimulationInfoUIController(SettingsPanel);
             _logicTicksCurrentSim = 0;
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
@@ -290,8 +267,7 @@ namespace Maes {
 
         public void RemoveCurrentSimulation()
         {
-            CurrentSimulation?.OnDestory();
-            DestroyImmediate(_simulationGameObject);
+            Destroy(_simulationGameObject);
             _currentScenario = null;
             CurrentSimulation = null;
             _simulationGameObject = null;
@@ -301,11 +277,6 @@ namespace Maes {
         public ISimulationScenario CurrentScenario => _currentScenario;
 
         public void EnqueueScenario(TScenario simulationScenario) {
-            if (!_started)
-            {
-                Start();
-            }
-            
             if (HasActiveScenario()) {
                 _scenarios.Enqueue(simulationScenario);
             } else // This is the first scenario, initialize it immediately 

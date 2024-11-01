@@ -43,34 +43,35 @@ using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
-    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
-    where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
-    where TTracker : ITracker
-    where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
-    where TAlgorithm : IAlgorithm
-    where TScenario : SimulationScenario<TSimulation, TAlgorithm>
-    where TRobotSpawner : RobotSpawner<TAlgorithm>
+    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker,
+        TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour,
+        ISimulation<TSimulation, TAlgorithm, TScenario>
+        where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker,
+            TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
+        where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
+        where TTracker : ITracker
+        where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
+        where TAlgorithm : IAlgorithm
+        where TScenario : SimulationScenario<TSimulation, TAlgorithm>
+        where TRobotSpawner : RobotSpawner<TAlgorithm>
     {
-        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> SingletonInstance;
-        
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
         public float SimulateTimeSeconds { get; private set; } = 0;
 
         public MapSpawner MapGenerator;
-        
+
         public TRobotSpawner RobotSpawner;
 
         public abstract TVisualizer Visualizer { get; }
-        
+
         public abstract TTracker Tracker { get; }
-        
+
         ITracker ISimulation.Tracker => Tracker;
 
         protected TScenario _scenario;
         protected SimulationMap<Tile> _collisionMap;
-        public List<MonaRobot> Robots;
+        public List<MonaRobot> Robots { get; set; }
 
 
         IReadOnlyList<MonaRobot> ISimulation.Robots => Robots;
@@ -84,7 +85,7 @@ namespace Maes.Simulation
         // The debugging visualizer provides 
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController;
+        public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController;
 
         private bool _started;
 
@@ -95,30 +96,22 @@ namespace Maes.Simulation
 
         private void Start()
         {
-            if (_started)
-            {
-                return;
-            }
-            
-            MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
             var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
             SimInfoUIController = simInfoUIControllerGameObject
                 .GetComponent<SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>>();
-            
+
             AfterStart();
-            
-            _started = true;
         }
 
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
-            Start();
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
             AfterCollisionMapGenerated(scenario);
-            _communicationManager = new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
+            _communicationManager =
+                new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
             RobotSpawner.CommunicationManager = _communicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
@@ -133,7 +126,7 @@ namespace Maes.Simulation
 
         protected virtual void AfterCollisionMapGenerated(TScenario scenario)
         {
-            
+
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)
@@ -209,6 +202,7 @@ namespace Maes.Simulation
                 }
 
             }
+
             if (_selectedTag != null)
             {
                 SimInfoUIController.UpdateTagDebugInfo(_selectedTag.GetDebugInfo());
@@ -216,11 +210,6 @@ namespace Maes.Simulation
         }
 
         public virtual void OnSimulationFinished()
-        {
-            // Override me for functionality.
-        }
-
-        public virtual void OnDestory()
         {
             // Override me for functionality.
         }
@@ -245,16 +234,9 @@ namespace Maes.Simulation
 
         public abstract bool HasFinishedSim();
 
-        public abstract ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
-        
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();
-        }
-
-        public void Awake()
-        {
-            SingletonInstance = this;
         }
 
         public Vector2 WorldCoordinateToSlamPosition(Vector2 worldPosition)
@@ -264,7 +246,8 @@ namespace Maes.Simulation
 
         private void OnDrawGizmos()
         {
-            if (_collisionMap == null) {
+            if (_collisionMap == null)
+            {
                 return;
             }
 

@@ -31,8 +31,6 @@ namespace MAES.Simulation
         
         ITracker Tracker { get; }
         
-        ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
-        
         IReadOnlyList<MonaRobot> Robots { get; }
         
         void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot);
@@ -56,7 +54,5 @@ namespace MAES.Simulation
         void UpdateDebugInfo();
         
         void OnSimulationFinished();
-        
-        void OnDestory();
     }
 }

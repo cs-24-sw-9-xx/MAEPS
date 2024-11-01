@@ -39,27 +39,26 @@ namespace Maes {
         where TAlgorithm : IAlgorithm
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        protected static Simulator<TSimulation, TAlgorithm, TScenario> _instance = null;
         private GameObject _maesGameObject;
         protected SimulationManager<TSimulation, TAlgorithm, TScenario> _simulationManager;
 
         protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
-            var prefab = Resources.Load("MAES", typeof(GameObject)) as GameObject;
+            var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
             var simulationManagerGameObject = GameObject.Find("SimulationManager");
-            _simulationManager = AddSimulationManager(simulationManagerGameObject);
+            _simulationManager = simulationManagerGameObject.GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
         }
 
-        protected abstract SimulationManager<TSimulation, TAlgorithm, TScenario> AddSimulationManager(GameObject gameObject);
+        protected abstract GameObject LoadSimulatorGameObject();
 
-        // Clears the singleton instance and removes the simulator game object
-        public static void Destroy() {
-            if (_instance != null) {
-                Object.Destroy(_instance._maesGameObject);
-                _instance = null;
-            }
+        protected void DestroyMe()
+        {
+            // This is cursed, but if we do a normal destroy everything breaks.
+            // Thank you singletons and GameObject.Find :)
+            Object.DestroyImmediate(_maesGameObject);
         }
+
         
         public void EnqueueScenario(TScenario scenario) {
             _simulationManager.EnqueueScenario(scenario);

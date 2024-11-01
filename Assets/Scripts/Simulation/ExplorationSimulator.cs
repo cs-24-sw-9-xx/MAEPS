@@ -6,18 +6,32 @@ using MAES.Simulation.SimulationScenarios;
 
 using Maes.UI;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MAES.Simulation
 {
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        protected override SimulationManager<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario> AddSimulationManager(GameObject gameObject)
+        private static ExplorationSimulator _instance = null;
+        
+        protected override GameObject LoadSimulatorGameObject()
         {
-            return gameObject.AddComponent<ExplorationSimulationManager>();
+            return Resources.Load<GameObject>("Exploration_MAES");
         }
-
+        
         public static ExplorationSimulator GetInstance() {
-            return (ExplorationSimulator) (_instance ??= new ExplorationSimulator());
+            if (_instance == null)
+            {
+                _instance = new ExplorationSimulator();
+            }
+
+            return _instance;
+        }
+        
+        // Clears the singleton instance and removes the simulator game object
+        public static void Destroy() {
+            _instance.DestroyMe();
+            _instance = null;
         }
         
         /// <summary>
