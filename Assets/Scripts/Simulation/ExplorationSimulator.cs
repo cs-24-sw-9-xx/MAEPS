@@ -11,10 +11,7 @@ namespace MAES.Simulation
 {
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        protected override SimulationManager<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario> AddSimulationManager(GameObject gameObject)
-        {
-            return gameObject.AddComponent<ExplorationSimulationManager>();
-        }
+        protected override GameObject LoadSimulatorGameObject() => Resources.Load<GameObject>("Exploration_MAEPS");
 
         public static ExplorationSimulator GetInstance() {
             return (ExplorationSimulator) (_instance ??= new ExplorationSimulator());
@@ -37,5 +34,6 @@ namespace MAES.Simulation
                 _simulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);	
             }	
         }
+
     }
 }

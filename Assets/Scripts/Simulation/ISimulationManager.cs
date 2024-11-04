@@ -16,7 +16,5 @@ namespace MAES.Simulation
         ISimulationInfoUIController SimulationInfoUIController { get; }
 
         SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState);
-        
-        void AddRestartRemakeController(GameObject restartRemakePanel);
     }
 }

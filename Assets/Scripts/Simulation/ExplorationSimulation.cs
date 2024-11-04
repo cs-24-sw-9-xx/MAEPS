@@ -16,19 +16,9 @@ namespace Maes
         public ExplorationTracker ExplorationTracker { get; set; }
 
         public ExplorationVisualizer explorationVisualizer;
-
-        public GameObject explorationVisualizerPrefab;
         public override ExplorationVisualizer Visualizer => explorationVisualizer;
 
         public override ExplorationTracker Tracker => ExplorationTracker;
-
-        protected override void AfterStart()
-        {
-            explorationVisualizerPrefab = Resources.Load<GameObject>("ExplorationVisualizer");
-            explorationVisualizer = Instantiate(explorationVisualizerPrefab).GetComponent<ExplorationVisualizer>();
-            
-            RobotSpawner = gameObject.AddComponent<ExplorationRobotSpawner>();
-        }
 
         public override void SetScenario(ExplorationSimulationScenario scenario)
         {
@@ -42,28 +32,12 @@ namespace Maes
             return ExplorationTracker.ExploredProportion > 0.99f;
         }
 
-        public override ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject)
-        {
-            var explorationInfoUIController = gameObject.AddComponent<ExplorationInfoUIController>();
-            explorationInfoUIController.Simulation = this;
-
-            SimInfoUIController = explorationInfoUIController;
-
-            return explorationInfoUIController;
-        }
-
         public override void OnSimulationFinished()
         {
             if (GlobalSettings.ShouldWriteCSVResults)
             {
                 CreateStatisticsFile();
             }
-        }
-
-        public override void OnDestory()
-        {
-            DestroyImmediate(explorationVisualizer.gameObject);
-            DestroyImmediate(RobotSpawner.gameObject);
         }
 
         private void CreateStatisticsFile() {

@@ -9,14 +9,6 @@ namespace MAES.Simulation
 {
     public class ExplorationSimulationManager : SimulationManager<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        public override void AddRestartRemakeController(GameObject restartRemakePanel)
-        {
-            restartRemakePanel.AddComponent<ExplorationRestartRemakeController>();
-        }
-
-        protected override ExplorationSimulation AddSimulation(GameObject gameObject)
-        {
-            return gameObject.AddComponent<ExplorationSimulation>();
-        }
+       
     }
 }

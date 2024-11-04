@@ -95,11 +95,6 @@ namespace Maes.Simulation
 
         private void Start()
         {
-            if (_started)
-            {
-                return;
-            }
-            
             MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
             var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
             SimInfoUIController = simInfoUIControllerGameObject
@@ -113,7 +108,6 @@ namespace Maes.Simulation
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
-            Start();
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
@@ -129,6 +123,11 @@ namespace Maes.Simulation
 
             _communicationManager.SetRobotReferences(Robots);
 
+        }
+
+        public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)
+        {
+            SimInfoUIController = infoUIController;
         }
 
         protected virtual void AfterCollisionMapGenerated(TScenario scenario)
@@ -220,11 +219,6 @@ namespace Maes.Simulation
             // Override me for functionality.
         }
 
-        public virtual void OnDestory()
-        {
-            // Override me for functionality.
-        }
-
         public void ShowAllTags()
         {
             _debugVisualizer.RenderVisibleTags();
@@ -245,8 +239,6 @@ namespace Maes.Simulation
 
         public abstract bool HasFinishedSim();
 
-        public abstract ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
-        
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();
