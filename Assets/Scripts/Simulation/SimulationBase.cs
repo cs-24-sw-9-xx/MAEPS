@@ -86,25 +86,6 @@ namespace Maes.Simulation
 
         protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController;
 
-        private bool _started;
-
-        protected virtual void AfterStart()
-        {
-            // Override me
-        }
-
-        private void Start()
-        {
-            MapGenerator = Resources.Load<MapSpawner>("MapGenerator");
-            var simInfoUIControllerGameObject = GameObject.Find("SettingsPanel");
-            SimInfoUIController = simInfoUIControllerGameObject
-                .GetComponent<SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>>();
-            
-            AfterStart();
-            
-            _started = true;
-        }
-
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
