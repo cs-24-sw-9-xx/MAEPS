@@ -17,11 +17,12 @@ using UnityEngine;
 namespace MAES.Simulation
 {
     public interface ISimulation<TSimulation, TAlgorithm, TScenario> : ISimulation
-    where TSimulation : ISimulation<TSimulation, TAlgorithm, TScenario>
+    where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
         void SetScenario(TScenario scenario);
+        void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController);
     }
     public interface ISimulation : ISimulationUnit
     {
@@ -30,8 +31,6 @@ namespace MAES.Simulation
         float SimulateTimeSeconds { get; }
         
         ITracker Tracker { get; }
-        
-        ISimulationInfoUIController AddSimulationInfoUIController(GameObject gameObject);
         
         IReadOnlyList<MonaRobot> Robots { get; }
         
@@ -56,7 +55,5 @@ namespace MAES.Simulation
         void UpdateDebugInfo();
         
         void OnSimulationFinished();
-        
-        void OnDestory();
     }
 }

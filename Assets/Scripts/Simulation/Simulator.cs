@@ -45,13 +45,12 @@ namespace Maes {
 
         protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
-            var prefab = Resources.Load("MAES", typeof(GameObject)) as GameObject;
+            var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
-            var simulationManagerGameObject = GameObject.Find("SimulationManager");
-            _simulationManager = AddSimulationManager(simulationManagerGameObject);
+            _simulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
         }
 
-        protected abstract SimulationManager<TSimulation, TAlgorithm, TScenario> AddSimulationManager(GameObject gameObject);
+        protected abstract GameObject LoadSimulatorGameObject();
 
         // Clears the singleton instance and removes the simulator game object
         public static void Destroy() {

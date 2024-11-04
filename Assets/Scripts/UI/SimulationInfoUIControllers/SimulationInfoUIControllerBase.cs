@@ -51,8 +51,8 @@ namespace MAES.UI.SimulationInfoUIControllers {
         private bool _visualizingSelectedTags = false;
 
         public Button StickyCameraButton;
-        
-        public TSimulation? Simulation { get; set; }
+
+        public TSimulation? Simulation => simulationManager.CurrentSimulation;
         
 
         public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
