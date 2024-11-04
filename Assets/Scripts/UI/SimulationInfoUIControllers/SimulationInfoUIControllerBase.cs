@@ -69,17 +69,6 @@ namespace MAES.UI.SimulationInfoUIControllers {
 
         private void Start()
         {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
-            
-            AlgorithmDebugText = GameObject.Find("AlgorithmDebugInfo").GetComponent<Text>();
-            ControllerDebugText = GameObject.Find("ControllerDebugInfo").GetComponent<Text>();
-            TagDebugText = GameObject.Find("TagDebugInfo").GetComponent<Text>();
-            MouseCoordinateText = GameObject.Find("MouseCoordinateText").GetComponent<Text>();
-            AllVisualizeTagsButton = GameObject.Find("AllVisualizeTags").GetComponent<Button>();
-            VisualizeTagsButton = GameObject.Find("VisualizeTags").GetComponent<Button>();
-            StickyCameraButton = GameObject.Find("StickyCamera").GetComponent<Button>();
-            
-            
             // Set listeners for Tag visualization buttons 
             AllVisualizeTagsButton.onClick.AddListener(() => {
                 ExecuteAndRememberTagVisualization(sim => {
