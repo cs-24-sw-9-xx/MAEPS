@@ -50,12 +50,6 @@ namespace MAES.UI.RestartRemakeContollers
         // Start is called before the first frame update
         void Start()
         {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
-            RestartCurrentButton = GameObject.Find("RestartCurrentButton").GetComponent<Button>();
-            RestartAllButton = GameObject.Find("RestartAllButton").GetComponent<Button>();
-            MakeAndRunButton = GameObject.Find("MakeAndRunButton").GetComponent<Button>();
-            CreateBatchButton = GameObject.Find("CreateBatchButton").GetComponent<Button>();
-            
             RestartCurrentButton.onClick.AddListener(() => {
                 RestartCurrentScenario();
             });
