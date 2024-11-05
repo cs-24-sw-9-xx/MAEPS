@@ -74,7 +74,6 @@ maes-ros-slam-ws/.idea
 # Misc
 /.vscode
 /.vsconfig
-ProjectSettings/
 UserSettings/
 CodeCoverage/
 InitTestScene*
