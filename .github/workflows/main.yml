@@ -84,35 +84,7 @@ jobs:
       matrix:
         targetPlatform:
           - StandaloneLinux64
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          lfs: true
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-${{ matrix.targetPlatform }}
-      - uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          projectPath: .
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: build
-
-  buildForMac:
-    needs: build
-    name: Build for ${{ matrix.targetPlatform }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
+          - StandaloneWindows64
           - StandaloneOSX
     steps:
       - uses: actions/checkout@v3
@@ -122,37 +94,6 @@ jobs:
         with:
           path: Library
           key: Library-${{ matrix.targetPlatform }}
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          projectPath: .
-      - uses: actions/upload-artifact@v3
-        with:
-          name: Build-${{ matrix.targetPlatform }}
-          path: build
-
-  buildForWindows:
-    needs: buildForMac
-    name: Build for ${{ matrix.targetPlatform }}
-    runs-on: windows-2019
-    strategy:
-      fail-fast: false
-      matrix:
-        targetPlatform:
-          - StandaloneWindows
-          - StandaloneWindows64
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          lfs: true
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-${{ matrix.targetPlatform }}
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -165,3 +106,5 @@ jobs:
         with:
           name: Build-${{ matrix.targetPlatform }}
           path: build
+
+  
