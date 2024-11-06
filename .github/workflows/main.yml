@@ -106,5 +106,23 @@ jobs:
         with:
           name: Build-${{ matrix.targetPlatform }}
           path: build
-
+  
+  
+  format:
+    name: Check formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: true
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Format CustomScriptsAssembly.csproj
+      run: dotnet format CustomScriptsAssembly.csproj --verify-no-changes --verbosity diagnostic
+    - name: Format PlayModeTests.csproj
+      run: dotnet format PlayModeTests.csproj --verify-no-changes --verbosity diagnostic
+    - name: Format EditTests.csproj
+      run: dotnet format EditTests.csproj --verify-no-changes --verbosity diagnostic
   
