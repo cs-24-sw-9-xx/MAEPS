@@ -20,41 +20,39 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.Collections.Generic;
+
+using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
-namespace Maes.Map.Visualization {
-    internal class SelectedRobotSlamMapVisualization : VisualizationMode{
+using UnityEngine;
+
+namespace MAES.Map.Visualization.Exploration {
+    internal class CurrentlyVisibleAreaVisualization : IExplorationVisualizationMode {
         
         private SimulationMap<ExplorationCell> _explorationMap;
-        private Robot2DController _robot;
-        private SlamMap _map;
+        private Robot2DController _selectedRobot;
 
-        public SelectedRobotSlamMapVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController robot) {
+        public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) {
+            _selectedRobot = selectedRobot;
             _explorationMap = explorationMap;
-            _robot = robot;
-            _map = _robot.SlamMap;
         }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {
-            // Ignore since entire map is replaced every tick
+            /* Ignore new exploration data as we are interested in all VISIBLE cells */
         }
 
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells) {
-            // Ignore since entire map is replaced every tick
+            /* Coverage data not needed */
         }
 
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick) {
-            visualizer.SetAllColors((index) => {
-                var coordinate = _map.TriangleIndexToCoordinate(index);
-                var status = _map.GetTileStatus(coordinate);
-
-                return status switch {
-                    SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
-                    SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
-                    _ => ExplorationVisualizer.StandardCellColor
-                };
-            });
+            visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
+        }
+        
+        private Color32 ExplorationCellToColor(int index) {
+            return _selectedRobot.SlamMap._currentlyVisibleTriangles.Contains(index) ? 
+                    ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
         }
     }
 }

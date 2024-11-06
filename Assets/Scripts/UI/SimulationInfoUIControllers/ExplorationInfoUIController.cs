@@ -5,6 +5,7 @@ using Maes;
 using Maes.Algorithms;
 using Maes.Map.Visualization;
 
+using MAES.Map.Visualization.Exploration;
 using MAES.Simulation.SimulationScenarios;
 
 using UnityEngine;
@@ -102,7 +103,7 @@ namespace MAES.UI.SimulationInfoUIControllers
             selectedButton.image.color = _mapVisualizationSelectedColor;
         }
 
-        private void OnMapVisualizationModeChanged(VisualizationMode mode) {
+        private void OnMapVisualizationModeChanged(IExplorationVisualizationMode mode) {
             if (mode is AllRobotsExplorationVisualization) {
                 SelectVisualizationButton(AllExplorationButton);
             } else if (mode is AllRobotsCoverageVisualization) {
