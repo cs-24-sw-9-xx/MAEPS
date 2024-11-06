@@ -19,14 +19,17 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
 using System.Collections.Generic;
+
+using Maes;
+using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
+
 using UnityEngine;
 
-namespace Maes.Map.Visualization {
-    internal class ExplorationHeatMapVisualization : VisualizationMode {
+namespace MAES.Map.Visualization.Exploration {
+    internal class ExplorationHeatMapVisualization : IExplorationVisualizationMode {
 
         private SimulationMap<ExplorationCell> _explorationMap;
         private int _logicTicksBeforeCold = GlobalSettings.TicksBeforeExplorationHeatMapCold;

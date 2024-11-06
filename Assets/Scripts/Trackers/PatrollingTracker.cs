@@ -2,15 +2,20 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map;
+using Maes.Map.MapGen;
+using Maes.Map.Visualization;
 using Maes.Robot;
+using Maes.Statistics;
+
+using MAES.Trackers;
 
 using UnityEngine;
 
 namespace Maes.Trackers
 {
-    public class PatrollingTracker : ITracker
+    // TODO: Change Tile to another type, Implemented in the next PR
+    public class PatrollingTracker : Tracker<Tile, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
-        private RobotConstraints Constraints { get; }
         private PatrollingSimulation PatrollingSimulation { get; }
         private PatrollingMap Map { get;}
         private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
@@ -27,13 +32,14 @@ namespace Maes.Trackers
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; set; } = 10;
 
-        public PatrollingTracker(PatrollingSimulation patrollingSimulation, RobotConstraints constraints,
-            PatrollingMap map)
+        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulation patrollingSimulation, RobotConstraints constraints,
+            PatrollingMap map) : base(collisionMap, visualizer, constraints, tile => tile)
         {
             PatrollingSimulation = patrollingSimulation;
-            Constraints = constraints;
             Map = map;
             Vertices = map.Verticies.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
+            
+            _currentVisualizationMode = new PatrollingDummyVisualizationMode();
         }
 
         public void OnReachedVertex(Vertex vertex, int atTick)
@@ -49,7 +55,7 @@ namespace Maes.Trackers
             SetCompletedCycles();
         }
         
-        public void LogicUpdate(IReadOnlyList<MonaRobot> robots)
+        protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
         {
             var eachVertexIdleness = GetEachVertexIdleness();
             
@@ -59,23 +65,24 @@ namespace Maes.Trackers
             
             // TODO: Remove this when the code UI is set up, just for showing that it works
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
-            
-            if (Constraints.AutomaticallyUpdateSlam) {
-                // Always update estimated robot position and rotation
-                // regardless of whether the slam map was updated this tick
-                foreach (var robot in robots) {
-                    var slamMap = robot.Controller.SlamMap;
-                    slamMap.UpdateApproxPosition(robot.transform.position);
-                    slamMap.SetApproxRobotAngle(robot.Controller.GetForwardAngleRelativeToXAxis());
-                }
-            }
         }
 
-        public void SetVisualizedRobot(MonaRobot robot)
+        public override void SetVisualizedRobot(MonaRobot robot)
         {
             // TODO: Implement
         }
-        
+
+        protected override void CreateSnapShot()
+        {
+            // TODO: Implement
+        }
+
+        protected override RayTracingMap<Tile>.CellFunction RayTracingMapCellFunction(SlamMap slamMap)
+        {
+            // TODO: Implemented in the next PR
+            return (x, y) => true; 
+        }
+
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
             var currentTick = PatrollingSimulation.SimulatedLogicTicks;
@@ -85,6 +92,14 @@ namespace Maes.Trackers
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
+        }
+    }
+
+    public class PatrollingDummyVisualizationMode : IPatrollingVisualizationMode
+    {
+        public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
+        {
+            
         }
     }
 }

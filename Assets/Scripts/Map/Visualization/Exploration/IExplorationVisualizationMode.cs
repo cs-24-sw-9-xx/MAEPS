@@ -19,18 +19,17 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System.Collections;
 using System.Collections.Generic;
+
+using Maes.Map.Visualization;
 using Maes.Robot;
 using Maes.Statistics;
 
-namespace Maes.Map.Visualization {
-    public interface VisualizationMode {
+namespace MAES.Map.Visualization.Exploration {
+    public interface IExplorationVisualizationMode : IVisualizationMode<ExplorationCell, ExplorationVisualizer> {
         
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells);
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells);
-        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick);
-
     }
     
     public readonly struct VisibleCell {

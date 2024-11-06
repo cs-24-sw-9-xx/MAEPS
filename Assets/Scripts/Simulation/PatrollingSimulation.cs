@@ -30,7 +30,7 @@ namespace Maes
         {
             _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
             
-            PatrollingTracker = new PatrollingTracker(this, scenario.RobotConstraints, _patrollingMap);
+            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, _patrollingMap);
             
             patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
             patrollingVisualizer.SetPatrollingMap(_patrollingMap);
