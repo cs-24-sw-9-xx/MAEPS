@@ -20,44 +20,43 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.Collections.Generic;
+
+using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
-using UnityEngine;
 
-namespace Maes.Map.Visualization {
-    internal class AllRobotsExplorationVisualization : VisualizationMode {
-
+namespace MAES.Map.Visualization.Exploration {
+    internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode{
+        
         private SimulationMap<ExplorationCell> _explorationMap;
-        private HashSet<(int, ExplorationCell)> _newlyExploredCells = new HashSet<(int, ExplorationCell)>();
-        private bool _hasBeenInitialized = false;
+        private Robot2DController _robot;
+        private SlamMap _map;
 
-        public AllRobotsExplorationVisualization(SimulationMap<ExplorationCell> explorationMap) {
+        public SelectedRobotSlamMapVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController robot) {
             _explorationMap = explorationMap;
+            _robot = robot;
+            _map = _robot.SlamMap;
         }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {
-            foreach (var cellWithIndex in exploredCells)
-                _newlyExploredCells.Add(cellWithIndex);
+            // Ignore since entire map is replaced every tick
         }
 
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells) {
-            /* Ignore coverage */
+            // Ignore since entire map is replaced every tick
         }
 
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick) {
-            if (_hasBeenInitialized) {
-                visualizer.UpdateColors(_newlyExploredCells, ExplorationCellToColor);
-                _newlyExploredCells.Clear();
-            } else {
-                // In the first iteration of this visualizer overwrite all colors of previous visualization mode
-                visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
-                _hasBeenInitialized = true;
-            }
-        }
-        
-        private static Color32 ExplorationCellToColor(ExplorationCell cell) {
-            if (!cell.IsExplorable) return ExplorationVisualizer.SolidColor;
-            return (cell.IsExplored) ? ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
+            visualizer.SetAllColors((index) => {
+                var coordinate = _map.TriangleIndexToCoordinate(index);
+                var status = _map.GetTileStatus(coordinate);
+
+                return status switch {
+                    SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
+                    SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
+                    _ => ExplorationVisualizer.StandardCellColor
+                };
+            });
         }
     }
 }

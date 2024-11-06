@@ -20,36 +20,48 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.Collections.Generic;
+
+using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
+
 using UnityEngine;
 
-namespace Maes.Map.Visualization {
-    internal class CurrentlyVisibleAreaVisualization : VisualizationMode {
+namespace MAES.Map.Visualization.Exploration {
+    internal class AllRobotsCoverageVisualization : IExplorationVisualizationMode {
         
         private SimulationMap<ExplorationCell> _explorationMap;
-        private Robot2DController _selectedRobot;
+        private HashSet<(int, ExplorationCell)> _newlyCoveredCells = new HashSet<(int, ExplorationCell)>();
+        private bool _hasBeenInitialized = false;
 
-        public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) {
-            _selectedRobot = selectedRobot;
+        public AllRobotsCoverageVisualization(SimulationMap<ExplorationCell> explorationMap) {
             _explorationMap = explorationMap;
         }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {
-            /* Ignore new exploration data as we are interested in all VISIBLE cells */
+            /* Ignore exploration */
         }
 
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells) {
-            /* Coverage data not needed */
+            foreach (var cellWithIndex in coveredCells) {
+                _newlyCoveredCells.Add(cellWithIndex);
+            }
         }
 
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick) {
-            visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
+            if (_hasBeenInitialized) {
+                visualizer.UpdateColors(_newlyCoveredCells, ExplorationCellToColor);
+                _newlyCoveredCells.Clear();
+            } else {
+                // In the first iteration of this visualizer overwrite all colors of previous visualization mode
+                visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
+                _hasBeenInitialized = true;
+            }
         }
         
-        private Color32 ExplorationCellToColor(int index) {
-            return _selectedRobot.SlamMap._currentlyVisibleTriangles.Contains(index) ? 
-                    ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
+        private static Color32 ExplorationCellToColor(ExplorationCell cell) {
+            if (!cell.CanBeCovered) return ExplorationVisualizer.SolidColor;
+            return (cell.IsCovered) ? ExplorationVisualizer.CoveredColor : ExplorationVisualizer.StandardCellColor;
         }
     }
 }
