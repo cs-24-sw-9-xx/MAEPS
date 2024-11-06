@@ -24,7 +24,9 @@ namespace Maes.Trackers
         public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
 
         private List<float> GraphIdlenessList { get; } = new();
-        
+        //TODO: TotalCycles is not set any where in the code
+        public int TotalCycles { get; set; } = 10;
+
         public PatrollingTracker(PatrollingSimulation patrollingSimulation, RobotConstraints constraints,
             PatrollingMap map)
         {
