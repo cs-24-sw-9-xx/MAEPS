@@ -21,20 +21,24 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Maes;
-using Maes.Robot;
-using NUnit.Framework;
-using UnityEngine;
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.Utilities.Files;
 using System.Linq;
+
+using Maes;
+using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Robot;
+using Maes.Utilities.Files;
+
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using NUnit.Framework;
+
+using UnityEngine;
+
 namespace PlayModeTests
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     public class MinotaurDoorwayMock : MinotaurAlgorithm
     {
         public MinotaurDoorwayMock(RobotConstraints robotConstraints, int seed, int doorWidth) : base(robotConstraints, seed, doorWidth)
@@ -52,7 +56,7 @@ namespace PlayModeTests
         private const int RandomSeed = 123;
         private MySimulator _maes;
         private ExplorationSimulation _explorationSimulation;
-        private List<MinotaurDoorwayMock> _minotaurs = new();
+        private readonly List<MinotaurDoorwayMock> _minotaurs = new();
 
         [TearDown]
         public void ClearSimulator()

@@ -22,7 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 namespace Maes.Map.MapGen
@@ -95,7 +97,7 @@ namespace Maes.Map.MapGen
             var connectedRooms = new List<Room>();
             var nonConnectedRooms = new List<Room>();
 
-            var wallThickness = config.WallThickness+1;
+            var wallThickness = config.WallThickness + 1;
 
             foreach (var room in sortedRooms)
             {

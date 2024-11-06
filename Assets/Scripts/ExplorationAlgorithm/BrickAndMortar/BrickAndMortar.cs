@@ -20,7 +20,8 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 #nullable enable
-namespace Maes.ExplorationAlgorithm.BrickAndMortar {
+namespace Maes.ExplorationAlgorithm.BrickAndMortar
+{
     /*public class BrickAndMortar: IExplorationAlgorithm {
 
         private RobotConstraints _constraints;

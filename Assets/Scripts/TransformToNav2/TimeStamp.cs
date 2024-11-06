@@ -20,7 +20,7 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using UnityEngine;
+
 using RosMessageTypes.BuiltinInterfaces;
 
 namespace Unity.Robotics.Core

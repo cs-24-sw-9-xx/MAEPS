@@ -20,7 +20,7 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
+
 using Maes.YamlConfig;
 
 namespace Maes.Map.MapGen

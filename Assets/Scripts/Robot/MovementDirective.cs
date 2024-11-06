@@ -19,40 +19,48 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
 using UnityEngine;
 
-namespace Maes.Robot {
-    internal class MovementDirective {
+namespace Maes.Robot
+{
+    internal class MovementDirective
+    {
         public readonly float LeftWheelSpeed;
         public readonly float RightWheelSpeed;
-        
-        public static MovementDirective Left(float force) {
+
+        public static MovementDirective Left(float force)
+        {
             return new MovementDirective(-force, force);
         }
 
-        public static MovementDirective Right(float force) {
+        public static MovementDirective Right(float force)
+        {
             return new MovementDirective(force, -force);
         }
 
-        public static MovementDirective Forward(float force) {
+        public static MovementDirective Forward(float force)
+        {
             return new MovementDirective(force, force);
         }
-        
-        public static MovementDirective Reverse(float force) {
+
+        public static MovementDirective Reverse(float force)
+        {
             return new MovementDirective(-force, -force);
         }
-        
-        public static MovementDirective NoMovement() {
+
+        public static MovementDirective NoMovement()
+        {
             return new MovementDirective(0f, 0f);
         }
 
-        public MovementDirective(float leftWheelSpeed, float rightWheelSpeed) {
+        public MovementDirective(float leftWheelSpeed, float rightWheelSpeed)
+        {
             RightWheelSpeed = rightWheelSpeed;
             LeftWheelSpeed = leftWheelSpeed;
         }
 
-        public bool IsRotational() {
+        public bool IsRotational()
+        {
             return Mathf.Abs(LeftWheelSpeed - RightWheelSpeed) > 0.01f;
         }
     }

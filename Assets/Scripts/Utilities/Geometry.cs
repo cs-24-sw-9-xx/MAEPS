@@ -22,9 +22,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Maes.Utilities
 {
@@ -93,10 +92,10 @@ namespace Maes.Utilities
 
         public static (int minX, int maxX, int minY, int maxY) GetBoundingBox(Vector2Int point, Vector2Int perp, Vector2Int thirdPoint)
         {
-            var minX = Mathf.Min(point.x,perp.x,thirdPoint.x);
-            var maxX = Mathf.Max(point.x,perp.x,thirdPoint.x);
-            var minY = Mathf.Min(thirdPoint.y,perp.y,point.y);
-            var maxY = Mathf.Max(perp.y,thirdPoint.y,point.y);
+            var minX = Mathf.Min(point.x, perp.x, thirdPoint.x);
+            var maxX = Mathf.Max(point.x, perp.x, thirdPoint.x);
+            var minY = Mathf.Min(thirdPoint.y, perp.y, point.y);
+            var maxY = Mathf.Max(perp.y, thirdPoint.y, point.y);
             return (minX, maxX, minY, maxY);
         }
     }

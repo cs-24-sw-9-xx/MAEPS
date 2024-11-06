@@ -19,12 +19,12 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-using Maes.Robot;
 using System.Collections.Generic;
 using System.IO;
 
 using Maes.Algorithms;
+using Maes.Map;
+using Maes.Robot;
 
 using UnityEngine;
 
@@ -33,10 +33,10 @@ namespace ExplorationAlgorithm
     internal class CircleTestAlgorithm : IExplorationAlgorithm
     {
         private Robot2DController _controller;
-        private RobotConstraints _robotConstraints;
+        private readonly RobotConstraints _robotConstraints;
         private CoarseGrainedMap _map;
-        private List<Vector2Int> _points = new();
-        private float _leftForce, _rightForce;
+        private readonly List<Vector2Int> _points = new();
+        private readonly float _leftForce, _rightForce;
         private readonly float _size;
         private bool turning = false;
         private int _ticks = 0;
@@ -81,7 +81,7 @@ namespace ExplorationAlgorithm
                 _points.Add(position);
             }
             // Add a point if we have created a half circle assuming it starts at y=0
-            if (_controller.Transform.position.y < 0) 
+            if (_controller.Transform.position.y < 0)
             {
                 _points.Add(position);
             }

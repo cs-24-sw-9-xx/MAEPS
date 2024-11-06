@@ -1,18 +1,15 @@
 using System.Collections.Generic;
+
 using JetBrains.Annotations;
+
 using Maes;
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Trackers;
 
 using MAES.Simulation.SimulationScenarios;
-
-using Maes.Trackers;
-using Maes.UI;
-
 using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
 
 namespace MAES.Simulation
 {
@@ -29,16 +26,16 @@ namespace MAES.Simulation
         int SimulatedLogicTicks { get; }
         int SimulatedPhysicsTicks { get; }
         float SimulateTimeSeconds { get; }
-        
+
         ITracker Tracker { get; }
-        
+
         IReadOnlyList<MonaRobot> Robots { get; }
-        
+
         void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot);
-        
+
         // TODO: Remove this!
         void SetSelectedTag([CanBeNull] VisibleTagInfoHandler newSelectedTag);
-        
+
         // TODO: Remove this!
         void ClearVisualTags();
 
@@ -53,7 +50,7 @@ namespace MAES.Simulation
         void RenderCommunicationLines();
 
         void UpdateDebugInfo();
-        
+
         void OnSimulationFinished();
     }
 }

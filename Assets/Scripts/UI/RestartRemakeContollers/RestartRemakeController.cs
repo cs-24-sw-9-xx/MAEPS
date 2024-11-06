@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes;
 using Maes.Algorithms;
 
@@ -43,41 +44,50 @@ namespace MAES.UI.RestartRemakeContollers
         public Button CreateBatchButton;
         public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
 
-        private ISimulation _previousSimulationBase;
+        private readonly ISimulation _previousSimulationBase;
 
-    
+
 
         // Start is called before the first frame update
         void Start()
         {
-            RestartCurrentButton.onClick.AddListener(() => {
+            RestartCurrentButton.onClick.AddListener(() =>
+            {
                 RestartCurrentScenario();
             });
 
-            RestartAllButton.onClick.AddListener(() => {
+            RestartAllButton.onClick.AddListener(() =>
+            {
                 RestartAllScenarios();
             });
 
-            MakeAndRunButton.onClick.AddListener(() => {
+            MakeAndRunButton.onClick.AddListener(() =>
+            {
 
             });
 
-            CreateBatchButton.onClick.AddListener(() => {
+            CreateBatchButton.onClick.AddListener(() =>
+            {
 
             });
         }
 
-        private void RestartCurrentScenario() {
+        private void RestartCurrentScenario()
+        {
             simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var newScenariosQueue = new Queue<TScenario>();
             newScenariosQueue.Enqueue(simulationManager._currentScenario);
             simulationManager.RemoveCurrentSimulation();
-            if (simulationManager._scenarios.Count != 0) {
-                while (simulationManager._scenarios.Count != 0) {
+            if (simulationManager._scenarios.Count != 0)
+            {
+                while (simulationManager._scenarios.Count != 0)
+                {
                     newScenariosQueue.Enqueue(simulationManager._scenarios.Dequeue());
                 }
                 simulationManager._scenarios = newScenariosQueue;
-            } else {
+            }
+            else
+            {
                 simulationManager._scenarios = newScenariosQueue;
             }
 
@@ -85,20 +95,24 @@ namespace MAES.UI.RestartRemakeContollers
             //Second time it get a crash, for some reason
 
         }
-        private void RestartAllScenarios() {
+        private void RestartAllScenarios()
+        {
             simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var tempScenariosQueue = new Queue<TScenario>();
-            foreach (var scenario in simulationManager._initialScenarios){
+            foreach (var scenario in simulationManager._initialScenarios)
+            {
                 tempScenariosQueue.Enqueue(scenario);
             }
             simulationManager.RemoveCurrentSimulation();
 
             simulationManager._scenarios = tempScenariosQueue;
         }
-        private void MakeAndRunSinglePopup() {
+        private void MakeAndRunSinglePopup()
+        {
 
         }
-        private void MakeBatchPopup() {
+        private void MakeBatchPopup()
+        {
 
         }
     }

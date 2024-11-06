@@ -10,13 +10,13 @@ namespace MAES.Map.RobotSpawners
     {
         private PatrollingTracker _tracker;
         private PatrollingMap _patrollingMap;
-        
+
         public void SetPatrolling(PatrollingMap map, PatrollingTracker tracker)
         {
             _patrollingMap = map;
             _tracker = tracker;
         }
-        
+
         protected override MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId, IPatrollingAlgorithm algorithm,
             SimulationMap<Tile> collisionMap, int seed)
         {
@@ -24,7 +24,7 @@ namespace MAES.Map.RobotSpawners
 
             algorithm.SetPatrollingMap((PatrollingMap)_patrollingMap.Clone());
             algorithm.SubscribeOnReachVertex(_tracker.OnReachedVertex);
-            
+
             return robot;
         }
     }

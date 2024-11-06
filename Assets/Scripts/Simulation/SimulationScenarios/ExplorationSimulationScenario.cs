@@ -12,14 +12,14 @@ namespace MAES.Simulation.SimulationScenarios
         public ExplorationSimulationScenario(
             int seed,
             SimulationEndCriteriaDelegate<ExplorationSimulation>
-                hasFinishedSim=null, 
-            MapFactory mapSpawner=null,
-            RobotFactory<IExplorationAlgorithm> robotSpawner=null,
-            RobotConstraints? robotConstraints=null,
-            string statisticsFileName=null) 
+                hasFinishedSim = null,
+            MapFactory mapSpawner = null,
+            RobotFactory<IExplorationAlgorithm> robotSpawner = null,
+            RobotConstraints? robotConstraints = null,
+            string statisticsFileName = null)
             : base(seed,
                 robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, (robotSeed) => new RandomExplorationAlgorithm(robotSeed))),
-                hasFinishedSim, 
+                hasFinishedSim,
                 mapSpawner,
                 robotConstraints,
                 statisticsFileName)

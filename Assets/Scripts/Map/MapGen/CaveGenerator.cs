@@ -22,7 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
+
 using Quaternion = UnityEngine.Quaternion;
 using Random = System.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -82,7 +84,7 @@ namespace Maes.Map.MapGen
             var connectedMap = ConnectAllRoomsToMainRoom(survivingRooms, cleanedMap, caveConfig);
 
             //var ensuredTraversabilityMap = EnsureAllTilesArePathable(connectedMap, cleanedMap)
-            
+
             // Ensure a border around the map
             var borderedMap = CreateBorderedMap(connectedMap, caveConfig.BitMapWidth, caveConfig.BitMapHeight,
                 caveConfig.BorderSize);
@@ -135,9 +137,9 @@ namespace Maes.Map.MapGen
                     continue;
 
                 // Check 3 tiles horizontally
-                var horizontalClear = 
-                    IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room || 
-                    IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room && IsInMapRange(x + 2, y, newMap) && newMap[x + 2, y].Type == TileType.Room || 
+                var horizontalClear =
+                    IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room ||
+                    IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room && IsInMapRange(x + 2, y, newMap) && newMap[x + 2, y].Type == TileType.Room ||
                     IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x - 2, y, newMap) && newMap[x - 2, y].Type == TileType.Room;
 
                 // Check 3 tiles vertically
@@ -222,7 +224,7 @@ namespace Maes.Map.MapGen
                             var distanceBetweenRooms =
                                 (int)(Mathf.Pow(tileA.x - tileB.x, 2) + Mathf.Pow(tileA.y - tileB.y, 2));
 
-                            if (distanceBetweenRooms >= bestDistance && possibleConnectionFound) 
+                            if (distanceBetweenRooms >= bestDistance && possibleConnectionFound)
                                 continue;
 
                             bestDistance = distanceBetweenRooms;
@@ -236,7 +238,7 @@ namespace Maes.Map.MapGen
                 }
             }
 
-            if (!possibleConnectionFound) 
+            if (!possibleConnectionFound)
                 return connectedMap;
 
             CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB, connectedMap, passageWidth);
@@ -266,7 +268,7 @@ namespace Maes.Map.MapGen
             {
                 for (var y = -r; y <= r; y++)
                 {
-                    if (x * x + y * y > r * r) 
+                    if (x * x + y * y > r * r)
                         continue;
 
                     var drawX = c.x + x;
@@ -321,7 +323,7 @@ namespace Maes.Map.MapGen
                 }
 
                 gradientAccumulation += shortest;
-                if (gradientAccumulation < longest) 
+                if (gradientAccumulation < longest)
                     continue;
 
                 if (inverted)
@@ -388,7 +390,7 @@ namespace Maes.Map.MapGen
         private (int, TileType) GetSurroundingWallCount(int gridX, int gridY, Tile[,] map)
         {
             var wallCount = 0;
-            var wallTypes = new Dictionary<TileType,int>();
+            var wallTypes = new Dictionary<TileType, int>();
             for (var neighborX = gridX - 1; neighborX <= gridX + 1; neighborX++)
             {
                 for (var neighborY = gridY - 1; neighborY <= gridY + 1; neighborY++)
@@ -398,19 +400,19 @@ namespace Maes.Map.MapGen
                         if ((neighborX == gridX || neighborY == gridY) || !Tile.IsWall(map[neighborX, neighborY].Type))
                             continue;
                         wallCount += 1;
-                        wallTypes[map[neighborX, neighborY].Type] = wallTypes.GetValueOrDefault(map[neighborX, neighborY].Type)+1;
+                        wallTypes[map[neighborX, neighborY].Type] = wallTypes.GetValueOrDefault(map[neighborX, neighborY].Type) + 1;
                     }
                     else
                     {
                         wallCount++;
                         var tile = Tile.GetRandomWall();
-                        wallTypes[tile.Type] = wallTypes.GetValueOrDefault(tile.Type)+1;
+                        wallTypes[tile.Type] = wallTypes.GetValueOrDefault(tile.Type) + 1;
                     }
 
                 }
             }
-            
-            var mostCommonType = wallCount > 0 ? wallTypes.Aggregate((l,r) => l.Value > r.Value ? l : r).Key : TileType.Room;
+
+            var mostCommonType = wallCount > 0 ? wallTypes.Aggregate((l, r) => l.Value > r.Value ? l : r).Key : TileType.Room;
 
             return (wallCount, mostCommonType);
         }

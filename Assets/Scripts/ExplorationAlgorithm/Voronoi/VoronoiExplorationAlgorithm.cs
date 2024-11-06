@@ -29,8 +29,10 @@ using Maes.Map;
 using Maes.Robot;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 using UnityEngine.Assertions;
+
 using Debug = UnityEngine.Debug;
 using Random = System.Random;
 
@@ -43,7 +45,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private List<VoronoiRegion> _localVoronoiRegions = new List<VoronoiRegion>();
         private VoronoiRegion _currentRegion = new VoronoiRegion();
-        private int _voronoiRegionMaxDistance; // Measured in coarse tiles
+        private readonly int _voronoiRegionMaxDistance; // Measured in coarse tiles
         private static readonly Dictionary<Vector2Int, bool> _isExploredMap = new Dictionary<Vector2Int, bool>();
         private int _currentTick = 0;
 

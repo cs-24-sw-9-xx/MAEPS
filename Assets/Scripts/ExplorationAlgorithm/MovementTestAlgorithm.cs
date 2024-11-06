@@ -30,9 +30,9 @@ namespace Maes.ExplorationAlgorithm.Movement
     public class MovementTestAlgorithm : IExplorationAlgorithm
     {
         private Robot2DController _controller;
-        private RobotConstraints _robotConstraints;
+        private readonly RobotConstraints _robotConstraints;
         private CoarseGrainedMap _map;
-        private int _ticks = 0;
+        private readonly int _ticks = 0;
         private Vector2Int _targetTile;
         public MovementTestAlgorithm(Vector2Int targetTile)
         {

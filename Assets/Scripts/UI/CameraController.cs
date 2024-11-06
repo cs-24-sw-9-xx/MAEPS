@@ -21,10 +21,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using MAES.Simulation;
+
 using Maes.Utilities;
+
+using MAES.Simulation;
+
 using UnityEngine;
-using UnityEngine.Serialization;
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 

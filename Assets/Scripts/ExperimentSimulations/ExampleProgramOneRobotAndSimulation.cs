@@ -20,26 +20,27 @@
 // 
 // Original repository: https://github.com/cs-24-sw-9-xx/MAEPS
 
-using Maes.Map.MapGen;
-using Maes.Robot;
-using UnityEngine;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.Map.MapGen;
+using Maes.Robot;
 
 using MAES.ExplorationAlgorithm.FollowWaypoints;
 using MAES.Map.RobotSpawners;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class ExampleProgramOneRobotAndSimulation : MonoBehaviour
     {
-        private MySimulator _simulator;
+        private readonly MySimulator _simulator;
         /*
 */
         private void Start()
@@ -66,13 +67,13 @@ namespace Maes
             var random = new System.Random(randomSeed);
             const int robotCount = 1;
             const int size = 75;
-            
+
             var randVal = random.Next(0, 1000000);
             var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
 
             const string algorithmName = "FollowWaypoints";
-            var algorithm = new RobotSpawner.CreateAlgorithmDelegate(_ => new FollowWaypointsAlgorithm()); 
-            
+            var algorithm = new RobotSpawner.CreateAlgorithmDelegate(_ => new FollowWaypointsAlgorithm());
+
 
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)

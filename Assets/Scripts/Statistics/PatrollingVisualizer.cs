@@ -1,12 +1,16 @@
 
 using System.Collections.Generic;
+
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Visualizer;
+
 using UnityEngine;
 
-namespace Maes.Statistics {
-    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<Tile> {
+namespace Maes.Statistics
+{
+    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<Tile>
+    {
 
         public GameObject VertexVisualizer;
 
@@ -14,13 +18,14 @@ namespace Maes.Statistics {
 
         private PatrollingMap _patrollingMap;
 
-        private List<GameObject> _visualizers = new List<GameObject>();
+        private readonly List<GameObject> _visualizers = new List<GameObject>();
 
         public void SetSimulationMap(SimulationMap<Tile> simulationMap, Vector3 offset)
         {
             // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;
-            foreach (var visualizer in _visualizers) {
+            foreach (var visualizer in _visualizers)
+            {
                 Destroy(visualizer);
             }
         }
@@ -41,7 +46,8 @@ namespace Maes.Statistics {
                 meshRenderer.material.color = vertex.Color;
                 _visualizers.Add(vertexVisualizer);
 
-                foreach (var otherVertex in vertex.Neighbors) {
+                foreach (var otherVertex in vertex.Neighbors)
+                {
                     var edgeVisualizer = GameObject.Instantiate(EdgeVisualizer, transform);
                     var lineRenderer = edgeVisualizer.GetComponent<LineRenderer>();
                     lineRenderer.SetPosition(0, ((Vector3)(Vector2)vertex.Position) + transform.position + Vector3.back);

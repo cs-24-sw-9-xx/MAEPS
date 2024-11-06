@@ -20,11 +20,13 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
+
 using Maes.YamlConfig;
 
-namespace Maes.Map.MapGen {
-    public struct BuildingMapConfig {
+namespace Maes.Map.MapGen
+{
+    public struct BuildingMapConfig
+    {
         // Bitmap size is always +1 larger in both axis
         // due to the marching squares algorithm using 4 points per square
         public int WidthInTiles { get; }
@@ -59,25 +61,28 @@ namespace Maes.Map.MapGen {
             doorPadding: config.Map.BuildingConfig.DoorPadding,
             roomSplitChancePercent: config.Map.BuildingConfig.RoomSplitChance,
             borderSize: config.Map.BorderSize
-            ) {
+            )
+        {
         }
-        
+
         public BuildingMapConfig(
-            int randomSeed, int wallThickness = 1, int widthInTiles=50, int heightInTiles=50, 
-            float maxHallInPercent=20,
-            int hallWidth=4, 
-            int minRoomSideLength=6, 
-            uint doorWidth=2, 
-            int doorPadding=2, 
-            uint roomSplitChancePercent=85,
-            int borderSize=1)
+            int randomSeed, int wallThickness = 1, int widthInTiles = 50, int heightInTiles = 50,
+            float maxHallInPercent = 20,
+            int hallWidth = 4,
+            int minRoomSideLength = 6,
+            uint doorWidth = 2,
+            int doorPadding = 2,
+            uint roomSplitChancePercent = 85,
+            int borderSize = 1)
+        {
+            if ((2 * doorPadding + doorWidth) > minRoomSideLength)
             {
-            if ((2 * doorPadding + doorWidth) > minRoomSideLength) {
                 throw new ArgumentOutOfRangeException(
                     "Door width cannot be bigger than the smallest side lenght of rooms plus two times DoorPadding");
             }
 
-            if (roomSplitChancePercent > 100) {
+            if (roomSplitChancePercent > 100)
+            {
                 throw new ArgumentOutOfRangeException("roomSplitChance cannot be greater than 100");
             }
 

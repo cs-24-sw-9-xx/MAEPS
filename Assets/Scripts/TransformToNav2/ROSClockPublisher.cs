@@ -20,11 +20,14 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using UnityEngine;
-using Unity.Robotics.ROSTCPConnector;
+
 using RosMessageTypes.BuiltinInterfaces;
 using RosMessageTypes.Rosgraph;
+
 using Unity.Robotics.Core;
+using Unity.Robotics.ROSTCPConnector;
+
+using UnityEngine;
 
 internal class ROSClockPublisher : MonoBehaviour
 {
@@ -33,15 +36,15 @@ internal class ROSClockPublisher : MonoBehaviour
 
     [SerializeField, HideInInspector]
     Clock.ClockMode m_LastSetClockMode;
-    
-    [SerializeField] 
-    double m_PublishRateHz = 100f;
+
+    [SerializeField]
+    readonly double m_PublishRateHz = 100f;
 
     double m_LastPublishTimeSeconds;
 
     ROSConnection m_ROS;
 
-    private string m_ClockTopic = "/clock";
+    private readonly string m_ClockTopic = "/clock";
 
     double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
 
@@ -60,7 +63,7 @@ internal class ROSClockPublisher : MonoBehaviour
             Debug.LogWarning("Can't change ClockMode during simulation! Setting it back...");
             m_ClockMode = m_LastSetClockMode;
         }
-        
+
         SetClockMode(m_ClockMode);
     }
 

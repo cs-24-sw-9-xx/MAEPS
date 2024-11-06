@@ -23,9 +23,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Maes.Utilities;
 using Maes.Utilities.Priority_Queue;
+
 using UnityEngine;
+
 using static Maes.Map.SlamMap;
 
 namespace Maes.Map.PathFinding
@@ -108,8 +111,10 @@ namespace Maes.Map.PathFinding
                 {
                     Vector2Int candidateCoord = currentCoordinate + dir.Vector;
                     // Only consider non-solid tiles
-                    if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate) {
-                        if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate)){
+                    if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
+                    {
+                        if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate))
+                        {
                             continue;
                         }
                     }
@@ -119,13 +124,13 @@ namespace Maes.Map.PathFinding
                         // To travel diagonally, the two neighbouring tiles must also be free
                         if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic)
                         || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
+                        {
+                            if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate) ||
+                                pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Next().Vector, currentCoordinate))
                             {
-                                if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate) ||
-                                    pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Next().Vector, currentCoordinate))
-                                {
-                                    continue;
-                                }
+                                continue;
                             }
+                        }
                     }
 
                     var cost = currentTile.Cost + Vector2Int.Distance(currentCoordinate, candidateCoord);
@@ -197,20 +202,20 @@ namespace Maes.Map.PathFinding
         private bool IsSolid(Vector2Int coord, IPathFindingMap map, bool optimistic)
         {
             return optimistic
-                ? map.IsOptimisticSolid(coord) 
+                ? map.IsOptimisticSolid(coord)
                 : map.IsSolid(coord);
         }
         private bool IsAnyNeighborOpen(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool optimistic)
+        {
+            if (IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.left, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.up, pathFindingMap, optimistic) &&
+                IsSolid(targetCoordinate + Vector2Int.left, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.right, pathFindingMap, optimistic) &&
+                IsSolid(targetCoordinate + Vector2Int.right, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.left, pathFindingMap, optimistic) &&
+                IsSolid(targetCoordinate + Vector2Int.down, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.right, pathFindingMap, optimistic))
             {
-                if (IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.left, pathFindingMap, optimistic)  && IsSolid(targetCoordinate + Vector2Int.up, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.left, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.right, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.right, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.left, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.down, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.right, pathFindingMap, optimistic))
-                    {
-                        return false;
-                    }
-                return true;
+                return false;
             }
+            return true;
+        }
 
         private static float OctileHeuristic(Vector2Int from, Vector2Int to)
         {

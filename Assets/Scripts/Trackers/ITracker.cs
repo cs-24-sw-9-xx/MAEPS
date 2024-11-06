@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+
 using JetBrains.Annotations;
+
 using Maes.Robot;
 
 namespace Maes.Trackers

@@ -23,17 +23,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Maes.Map;
-using Maes.Map.MapGen;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Robot
 {
     public class Robot2DController : IRobotController
     {
-        private Rigidbody2D _rigidbody;
+        private readonly Rigidbody2D _rigidbody;
         public Transform Transform { get; private set; }
         public Transform LeftWheel { get; private set; }
         public Transform RightWheel { get; private set; }
@@ -45,7 +46,7 @@ namespace Maes.Robot
         private Vector3? _previousLeftWheelPosition = null;
         private Vector3? _previousRightWheelPosition = null;
 
-        private MonaRobot _robot;
+        private readonly MonaRobot _robot;
         private RobotStatus _currentStatus = RobotStatus.Idle;
         private ITask? CurrentTask;
 
@@ -94,7 +95,7 @@ namespace Maes.Robot
             RightWheel = rightWheel;
             _robot = robot;
         }
-        
+
         public MonaRobot GetRobot()
         {
             return _robot;
@@ -385,7 +386,7 @@ namespace Maes.Robot
             }
             #region DrawPath
             Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (int i = 0; i < _currentPath.Count-1; i++)
+            for (int i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToList();
                 if (i == 0)

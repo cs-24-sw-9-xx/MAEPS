@@ -21,21 +21,25 @@
 
 using System.Collections;
 using System.Collections.Generic;
+
 using Maes;
 using Maes.Map.MapGen;
 using Maes.Robot;
+
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
 using NUnit.Framework;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 
 namespace PlayModeTests
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
 
     public class MaterialCommunicationTest
     {
@@ -261,7 +265,7 @@ namespace PlayModeTests
                 yield return null;
             }
 
-            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0, 1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }

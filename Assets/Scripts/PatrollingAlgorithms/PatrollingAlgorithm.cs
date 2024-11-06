@@ -13,7 +13,7 @@ namespace Maes.PatrollingAlgorithms
         protected IReadOnlyList<Vertex> _vertices;
         protected Robot2DController _controller;
         protected event OnReachVertex OnReachVertexHandler;
-        
+
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
@@ -23,7 +23,7 @@ namespace Maes.PatrollingAlgorithms
         {
             _vertices = map.Verticies;
         }
-        
+
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
         {
             OnReachVertexHandler += onReachVertex;
@@ -40,7 +40,8 @@ namespace Maes.PatrollingAlgorithms
         {
             Preliminaries();
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
-            if(currentPosition != TargetVertex.Position){
+            if (currentPosition != TargetVertex.Position)
+            {
                 _controller.PathAndMoveTo(TargetVertex.Position);
                 return;
             }

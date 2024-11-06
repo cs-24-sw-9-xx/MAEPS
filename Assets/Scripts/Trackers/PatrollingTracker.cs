@@ -12,9 +12,9 @@ namespace Maes.Trackers
     {
         private RobotConstraints Constraints { get; }
         private PatrollingSimulation PatrollingSimulation { get; }
-        private PatrollingMap Map { get;}
+        private PatrollingMap Map { get; }
         private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
-        
+
         public int WorstGraphIdleness { get; private set; }
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; } = 0;
@@ -44,26 +44,28 @@ namespace Maes.Trackers
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
             vertexDetails.NumberOfVisits++;
             vertexDetails.VisitedAtTick(atTick);
-                
+
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
         }
-        
+
         public void LogicUpdate(IReadOnlyList<MonaRobot> robots)
         {
             var eachVertexIdleness = GetEachVertexIdleness();
-            
+
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, eachVertexIdleness.Max());
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             GraphIdlenessList.Add(CurrentGraphIdleness);
-            
+
             // TODO: Remove this when the code UI is set up, just for showing that it works
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
-            
-            if (Constraints.AutomaticallyUpdateSlam) {
+
+            if (Constraints.AutomaticallyUpdateSlam)
+            {
                 // Always update estimated robot position and rotation
                 // regardless of whether the slam map was updated this tick
-                foreach (var robot in robots) {
+                foreach (var robot in robots)
+                {
                     var slamMap = robot.Controller.SlamMap;
                     slamMap.UpdateApproxPosition(robot.transform.position);
                     slamMap.SetApproxRobotAngle(robot.Controller.GetForwardAngleRelativeToXAxis());
@@ -75,13 +77,13 @@ namespace Maes.Trackers
         {
             // TODO: Implement
         }
-        
+
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
             var currentTick = PatrollingSimulation.SimulatedLogicTicks;
             return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
-        
+
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();

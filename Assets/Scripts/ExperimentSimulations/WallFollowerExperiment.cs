@@ -19,30 +19,29 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+using System.Linq;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.ExplorationAlgorithm.WallFollower;
 using Maes.Map.MapGen;
 using Maes.Robot;
 
-using UnityEngine;
-
-using System.Collections.Generic;
-using System.Linq;
-
-using Maes.Algorithms;
-
 using MAES.Map.RobotSpawners;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class WallFollowerExperiment : MonoBehaviour
     {
-        private MySimulator _simulator;
+        private readonly MySimulator _simulator;
         /*
 */
         private void Start()
@@ -156,7 +155,7 @@ namespace Maes
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size/2, size/2), random.Next(-size/2, size/2)),
+                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)

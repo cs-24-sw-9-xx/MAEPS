@@ -19,24 +19,25 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using Maes.ExplorationAlgorithm.Greed;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Utilities.Files;
-using UnityEngine;
 
-using Maes.ExplorationAlgorithm.Greed;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
-    
+    using MySimulator = ExplorationSimulator;
+
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
-        private MySimulator _simulator;
+        private readonly MySimulator _simulator;
         private void Start()
         {
             const int randomSeed = 12345;

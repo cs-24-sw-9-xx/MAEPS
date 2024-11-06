@@ -1,13 +1,10 @@
 using Maes.Algorithms;
-using MAES.Map.RobotSpawners;
 using Maes.Simulation;
-using MAES.Simulation.SimulationScenarios;
 using Maes.Statistics;
-using Maes.UI;
 
+using MAES.Map.RobotSpawners;
+using MAES.Simulation.SimulationScenarios;
 using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
 
 namespace Maes
 {
@@ -23,7 +20,7 @@ namespace Maes
         public override void SetScenario(ExplorationSimulationScenario scenario)
         {
             base.SetScenario(scenario);
-            
+
             ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
         }
 
@@ -40,8 +37,9 @@ namespace Maes
             }
         }
 
-        private void CreateStatisticsFile() {
-            var csvWriter = new ExplorationStatisticsCSVWriter(this,$"{_scenario.StatisticsFileName}");
+        private void CreateStatisticsFile()
+        {
+            var csvWriter = new ExplorationStatisticsCSVWriter(this, $"{_scenario.StatisticsFileName}");
             csvWriter.CreateCSVFile(",");
         }
     }

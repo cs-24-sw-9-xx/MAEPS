@@ -23,8 +23,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using UnityEngine;
-
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm;
 using Maes.ExplorationAlgorithm.RandomBallisticWalk;
@@ -32,172 +30,201 @@ using Maes.ExplorationAlgorithm.SSB;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.ExplorationAlgorithm.Voronoi;
 using Maes.Map.MapGen;
-using MAES.Map.RobotSpawners;
 using Maes.Robot;
-using MAES.Simulation.SimulationScenarios;
 using Maes.Utilities.Files;
 using Maes.YamlConfig;
 
-namespace Maes {
-    using MySimulationScenario = ExplorationSimulationScenario;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
-    using RobotFactory = RobotFactory<IExplorationAlgorithm>;
+using MAES.Map.RobotSpawners;
+using MAES.Simulation.SimulationScenarios;
+
+using UnityEngine;
+
+namespace Maes
+{
     using CreateAlgorithmDelegate = RobotSpawner<IExplorationAlgorithm>.CreateAlgorithmDelegate;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationScenario = ExplorationSimulationScenario;
+    using RobotFactory = RobotFactory<IExplorationAlgorithm>;
 
-    public class ExplorationScenarioGenerator {
-        
-         private const int Minute = 60;
-         
-         public static Queue<MySimulationScenario> GenerateROS2Scenario() {
-             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
-             var yamlConfig = MaesYamlConfigLoader.LoadConfig();
-             
-             // Number of robots
-             var numberOfRobots = yamlConfig.NumberOfRobots;
-             
-             // End criteria
-             MySimulationEndCriteriaDelegate shouldEndSim = simulation => false;
-             if (yamlConfig.EndCriteria != null) {
-                 if (yamlConfig.EndCriteria.CoveragePercent != null) {
-                     // End at coverage achieved
-                     shouldEndSim = (simulation) => (simulation.ExplorationTracker
-                         .CoverageProportion > yamlConfig.EndCriteria.CoveragePercent);
-                 }
-                 else if (yamlConfig.EndCriteria.ExplorationPercent != null) {
-                     // End at exploration achieved
-                     shouldEndSim = (simulation) => (simulation.ExplorationTracker
-                         .ExploredProportion > yamlConfig.EndCriteria.ExplorationPercent);
-                 }
-                 else if (yamlConfig.EndCriteria.Tick != null){
-                     // End at tick
-                     shouldEndSim = (simulation) => (simulation.SimulatedLogicTicks >= yamlConfig.EndCriteria.Tick);
-                 }
-             }
-             
+    public class ExplorationScenarioGenerator
+    {
 
-             var constraints = new RobotConstraints(
-                 senseNearbyAgentsRange: yamlConfig.RobotConstraints.SenseNearbyAgentsRange,
-                 senseNearbyAgentsBlockedByWalls: yamlConfig.RobotConstraints.SenseNearbyAgentsBlockedByWalls,
-                 automaticallyUpdateSlam: yamlConfig.RobotConstraints.AutomaticallyUpdateSlam,
-                 slamUpdateIntervalInTicks: yamlConfig.RobotConstraints.SlamUpdateIntervalInTicks,
-                 slamSynchronizeIntervalInTicks: yamlConfig.RobotConstraints.SlamSyncIntervalInTicks,
-                 slamPositionInaccuracy: yamlConfig.RobotConstraints.SlamPositionInaccuracy, 
-                 distributeSlam: yamlConfig.RobotConstraints.DistributeSlam,
-                 environmentTagReadRange: yamlConfig.RobotConstraints.EnvironmentTagReadRange,
-                 slamRayTraceRange: yamlConfig.RobotConstraints.SlamRaytraceRange,
-                 relativeMoveSpeed: yamlConfig.RobotConstraints.RelativeMoveSpeed,
-                 agentRelativeSize: yamlConfig.RobotConstraints.AgentRelativeSize,
-                 calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => {
-                     if (yamlConfig.RobotConstraints.BroadcastBlockedByWalls && distanceThroughWalls > 0) {
-                         return false;
-                     } else if (distanceTravelled > yamlConfig.RobotConstraints.BroadcastRange) {
-                         return false;
-                     }
+        private const int Minute = 60;
 
-                     return true;
-                 }
-             );
+        public static Queue<MySimulationScenario> GenerateROS2Scenario()
+        {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var yamlConfig = MaesYamlConfigLoader.LoadConfig();
 
-             foreach (var seed in yamlConfig.RandomSeeds) {
-                 MapFactory mapSpawner = generator => generator.GenerateMap(new CaveMapConfig(0));
-                 if (yamlConfig.Map != null) {
-                     if (yamlConfig.Map.CustomMapFilename != null) {
-                         // Load custom map from file
-                         var bitmap = PgmMapFileLoader.LoadMapFromFileIfPresent(yamlConfig.Map.CustomMapFilename);
-                         mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(bitmap, seed, yamlConfig.Map.WallHeight, yamlConfig.Map.BorderSize);
-                     } else if (yamlConfig.Map.CaveConfig != null) { 
-                         // Generate Cave Map
-                         var caveConfig = new CaveMapConfig(yamlConfig, seed);
-                         mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(caveConfig, yamlConfig.Map.WallHeight);
-                     } else if (yamlConfig.Map.BuildingConfig != null){  
-                         // Building type
-                         var buildingConfig = new BuildingMapConfig(yamlConfig, seed);
-                         mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, yamlConfig.Map.WallHeight);
-                     }
-                 }
-                 
-                 // Default value 
-                 RobotFactory robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                     collisionMap: map,
-                     seed: seed,
-                     numberOfRobots: numberOfRobots,
-                     suggestedStartingPoint: new Vector2Int(0,0),
-                     (seed) => new Ros2Algorithm());
-                 if (yamlConfig.RobotSpawnConfig != null) {
-                     if (yamlConfig.RobotSpawnConfig.BiggestRoom != null) {
-                         robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsInBiggestRoom(
-                             collisionMap: map,
-                             seed: seed,
-                             numberOfRobots: numberOfRobots,
-                             (seed) => new Ros2Algorithm());
-                     } else if (yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals != null) {
-                         if (yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count() !=
-                             yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals.Count())
-                             throw new Exception("Number of position x values does not match number of position y values");
-                         var positions = new List<Vector2Int>();
-                         for (int index = 0; index < yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count(); index++) {
-                             positions.Add(new Vector2Int(yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals[index], 
-                                 yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals[index]));
-                         }
-                     
-                         robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsAtPositions(
-                             spawnPositions: positions,
-                             collisionMap: map,
-                             seed: seed,
-                             numberOfRobots: numberOfRobots,
-                             createAlgorithmDelegate: (seed) => new Ros2Algorithm()
-                         );
-                     }
-                     else if (yamlConfig.RobotSpawnConfig.SpawnAtHallwayEnds != null) { // Spawn_at_hallway_ends
-                         robotSpawner = (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                             collisionMap: map,
-                             seed: seed,
-                             numberOfRobots: numberOfRobots,
-                             createAlgorithmDelegate: (seed) => new Ros2Algorithm()
-                         );
-                     }
-                     // If nothing given, just spawn the robots together
-                     else if (yamlConfig.RobotSpawnConfig.SpawnTogether != null){
-                         Vector2Int? suggestedStartingPoint = yamlConfig.RobotSpawnConfig.SpawnTogether.HasSuggestedStartingPoint 
-                             ? yamlConfig.RobotSpawnConfig.SpawnTogether.SuggestedStartingPointAsVector 
-                             : null;
-                         robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                             collisionMap: map,
-                             seed: seed,
-                             numberOfRobots: numberOfRobots,
-                             suggestedStartingPoint: suggestedStartingPoint,
-                             createAlgorithmDelegate: (seed) => new Ros2Algorithm()
-                         );
-                     }
-                 }
-                 
-                 
-                 scenarios.Enqueue(new MySimulationScenario(
-                     seed: 0,
-                     hasFinishedSim: shouldEndSim,
-                     mapSpawner: mapSpawner,
-                     robotSpawner: robotSpawner,
-                     robotConstraints: constraints,
-                     $"MAES-ROS-Statistics-{DateTimeOffset.Now.ToUnixTimeSeconds()}"
-                 ));
-             }
+            // Number of robots
+            var numberOfRobots = yamlConfig.NumberOfRobots;
 
-             return scenarios;
-         }
+            // End criteria
+            MySimulationEndCriteriaDelegate shouldEndSim = simulation => false;
+            if (yamlConfig.EndCriteria != null)
+            {
+                if (yamlConfig.EndCriteria.CoveragePercent != null)
+                {
+                    // End at coverage achieved
+                    shouldEndSim = (simulation) => (simulation.ExplorationTracker
+                        .CoverageProportion > yamlConfig.EndCriteria.CoveragePercent);
+                }
+                else if (yamlConfig.EndCriteria.ExplorationPercent != null)
+                {
+                    // End at exploration achieved
+                    shouldEndSim = (simulation) => (simulation.ExplorationTracker
+                        .ExploredProportion > yamlConfig.EndCriteria.ExplorationPercent);
+                }
+                else if (yamlConfig.EndCriteria.Tick != null)
+                {
+                    // End at tick
+                    shouldEndSim = (simulation) => (simulation.SimulatedLogicTicks >= yamlConfig.EndCriteria.Tick);
+                }
+            }
 
-         /// <summary>
-         /// Generates the scenarios used for the testing of LVD's long-range experiements.
-         /// </summary>
-         public static Queue<MySimulationScenario> GenerateVoronoiLongRangeScenarios() {
-             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+
+            var constraints = new RobotConstraints(
+                senseNearbyAgentsRange: yamlConfig.RobotConstraints.SenseNearbyAgentsRange,
+                senseNearbyAgentsBlockedByWalls: yamlConfig.RobotConstraints.SenseNearbyAgentsBlockedByWalls,
+                automaticallyUpdateSlam: yamlConfig.RobotConstraints.AutomaticallyUpdateSlam,
+                slamUpdateIntervalInTicks: yamlConfig.RobotConstraints.SlamUpdateIntervalInTicks,
+                slamSynchronizeIntervalInTicks: yamlConfig.RobotConstraints.SlamSyncIntervalInTicks,
+                slamPositionInaccuracy: yamlConfig.RobotConstraints.SlamPositionInaccuracy,
+                distributeSlam: yamlConfig.RobotConstraints.DistributeSlam,
+                environmentTagReadRange: yamlConfig.RobotConstraints.EnvironmentTagReadRange,
+                slamRayTraceRange: yamlConfig.RobotConstraints.SlamRaytraceRange,
+                relativeMoveSpeed: yamlConfig.RobotConstraints.RelativeMoveSpeed,
+                agentRelativeSize: yamlConfig.RobotConstraints.AgentRelativeSize,
+                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
+                {
+                    if (yamlConfig.RobotConstraints.BroadcastBlockedByWalls && distanceThroughWalls > 0)
+                    {
+                        return false;
+                    }
+                    else if (distanceTravelled > yamlConfig.RobotConstraints.BroadcastRange)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+            );
+
+            foreach (var seed in yamlConfig.RandomSeeds)
+            {
+                MapFactory mapSpawner = generator => generator.GenerateMap(new CaveMapConfig(0));
+                if (yamlConfig.Map != null)
+                {
+                    if (yamlConfig.Map.CustomMapFilename != null)
+                    {
+                        // Load custom map from file
+                        var bitmap = PgmMapFileLoader.LoadMapFromFileIfPresent(yamlConfig.Map.CustomMapFilename);
+                        mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(bitmap, seed, yamlConfig.Map.WallHeight, yamlConfig.Map.BorderSize);
+                    }
+                    else if (yamlConfig.Map.CaveConfig != null)
+                    {
+                        // Generate Cave Map
+                        var caveConfig = new CaveMapConfig(yamlConfig, seed);
+                        mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(caveConfig, yamlConfig.Map.WallHeight);
+                    }
+                    else if (yamlConfig.Map.BuildingConfig != null)
+                    {
+                        // Building type
+                        var buildingConfig = new BuildingMapConfig(yamlConfig, seed);
+                        mapSpawner = (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, yamlConfig.Map.WallHeight);
+                    }
+                }
+
+                // Default value 
+                RobotFactory robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
+                    collisionMap: map,
+                    seed: seed,
+                    numberOfRobots: numberOfRobots,
+                    suggestedStartingPoint: new Vector2Int(0, 0),
+                    (seed) => new Ros2Algorithm());
+                if (yamlConfig.RobotSpawnConfig != null)
+                {
+                    if (yamlConfig.RobotSpawnConfig.BiggestRoom != null)
+                    {
+                        robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsInBiggestRoom(
+                            collisionMap: map,
+                            seed: seed,
+                            numberOfRobots: numberOfRobots,
+                            (seed) => new Ros2Algorithm());
+                    }
+                    else if (yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals != null)
+                    {
+                        if (yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count() !=
+                            yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals.Count())
+                            throw new Exception("Number of position x values does not match number of position y values");
+                        var positions = new List<Vector2Int>();
+                        for (int index = 0; index < yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count(); index++)
+                        {
+                            positions.Add(new Vector2Int(yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals[index],
+                                yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals[index]));
+                        }
+
+                        robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsAtPositions(
+                            spawnPositions: positions,
+                            collisionMap: map,
+                            seed: seed,
+                            numberOfRobots: numberOfRobots,
+                            createAlgorithmDelegate: (seed) => new Ros2Algorithm()
+                        );
+                    }
+                    else if (yamlConfig.RobotSpawnConfig.SpawnAtHallwayEnds != null)
+                    { // Spawn_at_hallway_ends
+                        robotSpawner = (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
+                            collisionMap: map,
+                            seed: seed,
+                            numberOfRobots: numberOfRobots,
+                            createAlgorithmDelegate: (seed) => new Ros2Algorithm()
+                        );
+                    }
+                    // If nothing given, just spawn the robots together
+                    else if (yamlConfig.RobotSpawnConfig.SpawnTogether != null)
+                    {
+                        Vector2Int? suggestedStartingPoint = yamlConfig.RobotSpawnConfig.SpawnTogether.HasSuggestedStartingPoint
+                            ? yamlConfig.RobotSpawnConfig.SpawnTogether.SuggestedStartingPointAsVector
+                            : null;
+                        robotSpawner = (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
+                            collisionMap: map,
+                            seed: seed,
+                            numberOfRobots: numberOfRobots,
+                            suggestedStartingPoint: suggestedStartingPoint,
+                            createAlgorithmDelegate: (seed) => new Ros2Algorithm()
+                        );
+                    }
+                }
+
+
+                scenarios.Enqueue(new MySimulationScenario(
+                    seed: 0,
+                    hasFinishedSim: shouldEndSim,
+                    mapSpawner: mapSpawner,
+                    robotSpawner: robotSpawner,
+                    robotConstraints: constraints,
+                    $"MAES-ROS-Statistics-{DateTimeOffset.Now.ToUnixTimeSeconds()}"
+                ));
+            }
+
+            return scenarios;
+        }
+
+        /// <summary>
+        /// Generates the scenarios used for the testing of LVD's long-range experiements.
+        /// </summary>
+        public static Queue<MySimulationScenario> GenerateVoronoiLongRangeScenarios()
+        {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
             var numberOfRobots = 15;
             var runs = 20;
-            var sizes = new List<(int, int)>() {(200,200)};
+            var sizes = new List<(int, int)>() { (200, 200) };
             var maxRunTime = 60 * Minute;
             MySimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
                                                                             || simulation.ExplorationTracker
                                                                                 .CoverageProportion > 0.995f);
-            
+
             var robotConstraintsLVD = new RobotConstraints(
                 // broadcastRange: 0,
                 // broadcastBlockedByWalls: false,
@@ -206,7 +233,7 @@ namespace Maes {
                 automaticallyUpdateSlam: true,
                 slamUpdateIntervalInTicks: 10,
                 slamSynchronizeIntervalInTicks: 10,
-                slamPositionInaccuracy: 0.2f, 
+                slamPositionInaccuracy: 0.2f,
                 distributeSlam: false,
                 environmentTagReadRange: 0f,
                 slamRayTraceRange: 20f,
@@ -214,17 +241,19 @@ namespace Maes {
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (distance, walls) => false // Never allow communication 
             );
-            
-            for (int i = 0; i < runs; i++) { 
+
+            for (int i = 0; i < runs; i++)
+            {
                 int randomSeed = i;
                 var algorithmsAndFileNames = new List<(string, CreateAlgorithmDelegate, RobotConstraints)>()
                 {
                     ("LVD-long-range", (seed) => new VoronoiExplorationAlgorithm(seed, robotConstraintsLVD, 1), robotConstraintsLVD),
                 };
-                foreach (var (width, height) in sizes) {
+                foreach (var (width, height) in sizes)
+                {
                     var caveConfig = new CaveMapConfig(
                         randomSeed,
-                        width, 
+                        width,
                         height,
                         4,
                         4,
@@ -244,15 +273,16 @@ namespace Maes {
                         2,
                         85,
                         1);
-                    
-                    foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames) {
+
+                    foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames)
+                    {
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                                map, 
-                                randomSeed, 
+                                map,
+                                randomSeed,
                                 numberOfRobots,
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
@@ -263,10 +293,10 @@ namespace Maes {
                             hasFinishedSim: shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                                map, 
-                                randomSeed, 
+                                map,
+                                randomSeed,
                                 numberOfRobots,
-                                new Vector2Int(0,0),
+                                new Vector2Int(0, 0),
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
                             $"{algorithmName}-cave-{width}x{height}-spawnTogether-" + randomSeed
@@ -276,110 +306,114 @@ namespace Maes {
             }
 
             return scenarios;
-         }
-         
-         /// <summary>
-         /// Generates the scenarios used for the YouTube video recordings.
-         /// </summary>
-        public static Queue<MySimulationScenario> GenerateYoutubeVideoScenarios() {
-             // var bitmap = PgmMapFileLoader.LoadMapFromFileIfPresent("map.pgm");
-             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
-             var numberOfRobots = 2;
-             var maxRunTime = 60 * Minute;
-             var width = 50;
-             var height = 50;
-             MySimulationEndCriteriaDelegate hasFinishedFunc =
-                 (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime ||
-                                  simulation.ExplorationTracker.CoverageProportion > 0.995f);
+        }
 
-             var robotConstraints = new RobotConstraints(
-                 senseNearbyAgentsRange: 7f,
-                 senseNearbyAgentsBlockedByWalls: true,
-                 automaticallyUpdateSlam: true,
-                 slamUpdateIntervalInTicks: 10,
-                 slamSynchronizeIntervalInTicks: 10,
-                 slamPositionInaccuracy: 0.2f,
-                 distributeSlam: true,
-                 environmentTagReadRange: 4.0f,
-                 slamRayTraceRange: 7.0f,
-                 relativeMoveSpeed: 10f,
-                 agentRelativeSize: 0.6f,
-                 calculateSignalTransmissionProbability: (distance, walls) => true // Communication always gets through
-             );
+        /// <summary>
+        /// Generates the scenarios used for the YouTube video recordings.
+        /// </summary>
+        public static Queue<MySimulationScenario> GenerateYoutubeVideoScenarios()
+        {
+            // var bitmap = PgmMapFileLoader.LoadMapFromFileIfPresent("map.pgm");
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var numberOfRobots = 2;
+            var maxRunTime = 60 * Minute;
+            var width = 50;
+            var height = 50;
+            MySimulationEndCriteriaDelegate hasFinishedFunc =
+                (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime ||
+                                 simulation.ExplorationTracker.CoverageProportion > 0.995f);
 
-             for (int i = 0; i < 3; i++) {
-                 var randomSeed = i;
+            var robotConstraints = new RobotConstraints(
+                senseNearbyAgentsRange: 7f,
+                senseNearbyAgentsBlockedByWalls: true,
+                automaticallyUpdateSlam: true,
+                slamUpdateIntervalInTicks: 10,
+                slamSynchronizeIntervalInTicks: 10,
+                slamPositionInaccuracy: 0.2f,
+                distributeSlam: true,
+                environmentTagReadRange: 4.0f,
+                slamRayTraceRange: 7.0f,
+                relativeMoveSpeed: 10f,
+                agentRelativeSize: 0.6f,
+                calculateSignalTransmissionProbability: (distance, walls) => true // Communication always gets through
+            );
 
-                 var caveConfig = new CaveMapConfig(
-                     randomSeed,
-                     width,
-                     height,
-                     4,
-                     4,
-                     45,
-                     10,
-                     10,
-                     1);
-                 var buildingConfig = new BuildingMapConfig(
-                     randomSeed,
-                     1,
-                     width,
-                     height,
-                     20,
-                     4,
-                     6,
-                     2,
-                     2,
-                     85,
-                     1);
+            for (int i = 0; i < 3; i++)
+            {
+                var randomSeed = i;
 
-                 var algorithmsAndFileNames = new List<(CreateAlgorithmDelegate, string)>() {
+                var caveConfig = new CaveMapConfig(
+                    randomSeed,
+                    width,
+                    height,
+                    4,
+                    4,
+                    45,
+                    10,
+                    10,
+                    1);
+                var buildingConfig = new BuildingMapConfig(
+                    randomSeed,
+                    1,
+                    width,
+                    height,
+                    20,
+                    4,
+                    6,
+                    2,
+                    2,
+                    85,
+                    1);
+
+                var algorithmsAndFileNames = new List<(CreateAlgorithmDelegate, string)>() {
                      ((seed) => new SsbAlgorithm(robotConstraints, seed), "SSB"),
                      // ((seed) => new RandomExplorationAlgorithm(seed), "RBW"),
                      // ((seed) => new VoronoiExplorationAlgorithm(seed, robotConstraints, 1), "LVD"),
                  };
 
-                 foreach (var (createAlgorithmDelegate, algorithmName) in algorithmsAndFileNames) {
-                     scenarios.Enqueue(new MySimulationScenario(
-                         seed: randomSeed,
-                         hasFinishedSim: hasFinishedFunc,
-                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
-                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                             map,
-                             randomSeed,
-                             numberOfRobots,
-                             createAlgorithmDelegate),
-                         robotConstraints: robotConstraints,
-                         $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
-                     ));
-                     // scenarios.Enqueue(new SimulationScenario(
-                     //     seed: RandomSeed,
-                     //     hasFinishedSim: hasFinishedFunc,
-                     //     mapSpawner: (mapGenerator) => mapGenerator.CreateMapFromBitMap(bitmap, 2.0f, 1),
-                     //     robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                     //         map,
-                     //         RandomSeed,
-                     //         numberOfRobots,
-                     //         new Vector2Int(0, 0),
-                     //         createAlgorithmDelegate),
-                     //     robotConstraints: robotConstraints,
-                     //     $"{algorithmName}-cave-{width}x{height}-spawnTogether-" + RandomSeed
-                     // ));
-                 }
-             }
+                foreach (var (createAlgorithmDelegate, algorithmName) in algorithmsAndFileNames)
+                {
+                    scenarios.Enqueue(new MySimulationScenario(
+                        seed: randomSeed,
+                        hasFinishedSim: hasFinishedFunc,
+                        mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
+                        robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
+                            map,
+                            randomSeed,
+                            numberOfRobots,
+                            createAlgorithmDelegate),
+                        robotConstraints: robotConstraints,
+                        $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
+                    ));
+                    // scenarios.Enqueue(new SimulationScenario(
+                    //     seed: RandomSeed,
+                    //     hasFinishedSim: hasFinishedFunc,
+                    //     mapSpawner: (mapGenerator) => mapGenerator.CreateMapFromBitMap(bitmap, 2.0f, 1),
+                    //     robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
+                    //         map,
+                    //         RandomSeed,
+                    //         numberOfRobots,
+                    //         new Vector2Int(0, 0),
+                    //         createAlgorithmDelegate),
+                    //     robotConstraints: robotConstraints,
+                    //     $"{algorithmName}-cave-{width}x{height}-spawnTogether-" + RandomSeed
+                    // ));
+                }
+            }
 
 
-             return scenarios;
-         }
-        
+            return scenarios;
+        }
+
         /// <summary>
         /// Generates the scenarios used for the main experiments of the MAES paper.
         /// </summary>
-        public static Queue<MySimulationScenario> GenerateArticleScenarios() {
+        public static Queue<MySimulationScenario> GenerateArticleScenarios()
+        {
             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
             var numberOfRobots = 1;
             var runs = 20;
-            var sizes = new List<(int, int)>() {(50, 50), (100,100), (200,200)};
+            var sizes = new List<(int, int)>() { (50, 50), (100, 100), (200, 200) };
             var maxRunTime = 60 * Minute;
             MySimulationEndCriteriaDelegate shouldEndSim = (simulation) => (simulation.SimulateTimeSeconds >= maxRunTime
                                                                              || simulation.ExplorationTracker
@@ -405,7 +439,7 @@ namespace Maes {
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (distance, walls) => false
             );
-            
+
             var robotConstraintsTNF = new RobotConstraints(
                 // broadcastRange: 15,
                 // broadcastBlockedByWalls: true,
@@ -414,31 +448,34 @@ namespace Maes {
                 automaticallyUpdateSlam: true,
                 slamUpdateIntervalInTicks: 10,
                 slamSynchronizeIntervalInTicks: 10,
-                slamPositionInaccuracy: 0.2f, 
+                slamPositionInaccuracy: 0.2f,
                 distributeSlam: false,
                 environmentTagReadRange: 0f,
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => {
-                    if (distanceThroughWalls > 0) {
+                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
+                {
+                    if (distanceThroughWalls > 0)
+                    {
                         return false;
                     }
-                    else if (15 < distanceTravelled) {
+                    else if (15 < distanceTravelled)
+                    {
                         return false;
                     }
 
                     return true;
                 }
             );
-            
+
             var robotConstraintsRBW = new RobotConstraints(
                 senseNearbyAgentsRange: 0,
                 senseNearbyAgentsBlockedByWalls: false,
                 automaticallyUpdateSlam: false,
                 slamUpdateIntervalInTicks: 10,
                 slamSynchronizeIntervalInTicks: 10,
-                slamPositionInaccuracy: 0.2f, 
+                slamPositionInaccuracy: 0.2f,
                 distributeSlam: false,
                 environmentTagReadRange: 0f,
                 slamRayTraceRange: 7f,
@@ -462,9 +499,10 @@ namespace Maes {
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (distance, walls) => true
-            ); 
+            );
 
-            for (int i = 0; i < runs; i++) { 
+            for (int i = 0; i < runs; i++)
+            {
                 int randomSeed = i;
                 var algorithmsAndFileNames = new List<(string, CreateAlgorithmDelegate, RobotConstraints)>()
                 {
@@ -473,7 +511,8 @@ namespace Maes {
                     ("SSB", (seed) => new SsbAlgorithm(robotConstraintsSSB, seed), robotConstraintsSSB),
                     ("TNF", (seed) => new TnfExplorationAlgorithm(8, 8, seed), robotConstraintsTNF)
                     };
-                foreach (var (width, height) in sizes) {
+                foreach (var (width, height) in sizes)
+                {
                     var caveConfig = new CaveMapConfig(
                         randomSeed,
                         width,
@@ -496,15 +535,16 @@ namespace Maes {
                         2,
                         85,
                         1);
-                    
-                    foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames) {
+
+                    foreach (var (algorithmName, createAlgorithmDelegate, constraints) in algorithmsAndFileNames)
+                    {
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
                             hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                                map, 
-                                randomSeed, 
+                                map,
+                                randomSeed,
                                 numberOfRobots,
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
@@ -515,10 +555,10 @@ namespace Maes {
                             hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
                             mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                                map, 
-                                randomSeed, 
+                                map,
+                                randomSeed,
                                 numberOfRobots,
-                                new Vector2Int(0,0),
+                                new Vector2Int(0, 0),
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
                             $"{algorithmName}-cave-{width}x{height}-spawnTogether-" + randomSeed
@@ -529,14 +569,16 @@ namespace Maes {
 
             return scenarios;
         }
-        
+
         /// <summary>
         /// Generates scenarios with the LVD algorithm.
         /// </summary>
-        public static Queue<MySimulationScenario> GenerateVoronoiScenarios() {
-           Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+        public static Queue<MySimulationScenario> GenerateVoronoiScenarios()
+        {
+            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 int randomSeed = i + 4 + 1;
                 int minute = 60;
                 var mapConfig = new CaveMapConfig(
@@ -568,7 +610,7 @@ namespace Maes {
                     automaticallyUpdateSlam: true,
                     slamUpdateIntervalInTicks: 10,
                     slamSynchronizeIntervalInTicks: 10,
-                    slamPositionInaccuracy: 0.2f, 
+                    slamPositionInaccuracy: 0.2f,
                     distributeSlam: true,
                     environmentTagReadRange: 4.0f,
                     slamRayTraceRange: 7f,
@@ -577,30 +619,32 @@ namespace Maes {
                     calculateSignalTransmissionProbability: (distance, walls) => true // Always higher than -1.0f, thus always succeeds
                 );
 
-                if (i % 2 != 0) {
+                if (i % 2 != 0)
+                {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                            map, 
-                            randomSeed, 
+                            map,
+                            randomSeed,
                             1,
                             (seed) => new VoronoiExplorationAlgorithm(seed, robotConstraints, 1)),
                         robotConstraints: robotConstraints,
                         "Voronoi-building-hallway-" + randomSeed
                     ));
                 }
-                else {
+                else
+                {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(mapConfig, 2.0f),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                            map, 
-                            randomSeed, 
+                            map,
+                            randomSeed,
                             1,
-                            new Vector2Int(0,0),
+                            new Vector2Int(0, 0),
                             (seed) => new VoronoiExplorationAlgorithm(seed, robotConstraints, 1)),
                         robotConstraints: robotConstraints,
                         "Voronoi-cave-together-" + randomSeed
@@ -608,16 +652,18 @@ namespace Maes {
                 }
             }
 
-            return scenarios; 
+            return scenarios;
         }
-        
+
         /// <summary>
         /// Generates scenarios with the RBW algorithm.
         /// </summary>
-        public static Queue<MySimulationScenario> GenerateBallisticScenarios() {
+        public static Queue<MySimulationScenario> GenerateBallisticScenarios()
+        {
             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; i++)
+            {
                 int randomSeed = i + 4 + 1;
                 int minute = 60;
                 var mapConfig = new CaveMapConfig(
@@ -643,7 +689,7 @@ namespace Maes {
                     75,
                     1);
 
-                
+
                 var robotConstraints = new RobotConstraints(
                     senseNearbyAgentsRange: 10f,
                     senseNearbyAgentsBlockedByWalls: true,
@@ -656,11 +702,14 @@ namespace Maes {
                     slamRayTraceRange: 7.0f,
                     relativeMoveSpeed: 1f,
                     agentRelativeSize: 0.6f,
-                    calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => {
-                        if (distanceThroughWalls > 0) {
+                    calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
+                    {
+                        if (distanceThroughWalls > 0)
+                        {
                             return false;
                         }
-                        else if (15.0f < distanceTravelled) {
+                        else if (15.0f < distanceTravelled)
+                        {
                             return false;
                         }
 
@@ -668,30 +717,32 @@ namespace Maes {
                     }
                 );
 
-                if (i % 2 == 0) {
+                if (i % 2 == 0)
+                {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 60 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(buildingConfig, 2.0f),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
-                            map, 
-                            randomSeed, 
+                            map,
+                            randomSeed,
                             2,
                             (seed) => new RandomExplorationAlgorithm(seed)),
                         robotConstraints: robotConstraints,
                         "RBW-building-" + randomSeed
                     ));
                 }
-                else {
+                else
+                {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
                         hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 20 * minute,
                         mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(mapConfig, 2.0f),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
-                            map, 
-                            randomSeed, 
+                            map,
+                            randomSeed,
                             1,
-                            new Vector2Int(0,0),
+                            new Vector2Int(0, 0),
                             (seed) => new VoronoiExplorationAlgorithm(seed, robotConstraints, 2)),
                         robotConstraints: robotConstraints,
                         "RBW-hallway-" + randomSeed
@@ -705,10 +756,12 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the SSB algorithm.
         /// </summary>
-         public static Queue<MySimulationScenario> GenerateSsbScenarios() {
+        public static Queue<MySimulationScenario> GenerateSsbScenarios()
+        {
             Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; i++)
+            {
                 int randomSeed = i + 4 + 1;
                 int minute = 60;
                 var caveConfig = new CaveMapConfig(
@@ -746,7 +799,7 @@ namespace Maes {
                     slamRayTraceRange: 7.0f,
                     relativeMoveSpeed: 1f,
                     agentRelativeSize: 0.6f,
-                    calculateSignalTransmissionProbability: (distance, walls) => true 
+                    calculateSignalTransmissionProbability: (distance, walls) => true
                 );
 
                 scenarios.Enqueue(new MySimulationScenario(
@@ -754,8 +807,8 @@ namespace Maes {
                     hasFinishedSim: (simulation) => simulation.SimulateTimeSeconds >= 60 * minute,
                     mapSpawner: (mapGenerator) => mapGenerator.GenerateMap(caveConfig, 2.0f),
                     robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsInBiggestRoom(
-                        map, 
-                        randomSeed, 
+                        map,
+                        randomSeed,
                         5,
                         (seed) => new SsbAlgorithm(robotConstraints, seed)),
                     robotConstraints: robotConstraints,
@@ -769,7 +822,8 @@ namespace Maes {
         /// <summary>
         /// Generates scenarios with the TNF algorithm.
         /// </summary>
-        public static Queue<MySimulationScenario> GenerateTnfScenarios() {
+        public static Queue<MySimulationScenario> GenerateTnfScenarios()
+        {
             var scenarios = new Queue<MySimulationScenario>();
 
             int randomSeed = 4 + 2;
@@ -790,7 +844,7 @@ namespace Maes {
                 200,
                 200,
                 58,
-                4,    
+                4,
                 5,
                 2,
                 1,
@@ -809,22 +863,25 @@ namespace Maes {
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => {
+                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
+                {
                     // Blocked by walls
-                    if (distanceThroughWalls > 0) {
+                    if (distanceThroughWalls > 0)
+                    {
                         return false;
                     }
                     // Max distance 15.0f
-                    else if (15.0f < distanceTravelled) {
+                    else if (15.0f < distanceTravelled)
+                    {
                         return false;
                     }
 
                     return true;
                 }
             );
-            
+
             scenarios.Enqueue(new MySimulationScenario(
-                seed: randomSeed, 
+                seed: randomSeed,
                 hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 60 * Minute,
                 mapSpawner: generator => generator.GenerateMap(buildingConfig, 2.0f),
                 robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(

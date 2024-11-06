@@ -22,13 +22,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+
 using Maes.Map.MapGen;
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 namespace Maes.Map
@@ -42,8 +44,8 @@ namespace Maes.Map
         private SlamTileStatus[,] _tiles;
         public Dictionary<Vector2Int, SlamTileStatus> _currentlyVisibleTiles;
         public HashSet<int> _currentlyVisibleTriangles = new();
-        private SimulationMap<Tile> _collisionMap;
-        private IPathFinder _pathFinder;
+        private readonly SimulationMap<Tile> _collisionMap;
+        private readonly IPathFinder _pathFinder;
 
         private readonly Vector2 _offset;
         private readonly RobotConstraints _robotConstraints;
@@ -53,15 +55,15 @@ namespace Maes.Map
         // Represents the current approximate position of the given robot
         public Vector2 ApproximatePosition { get; private set; }
         private float _robotAngle = 0;
-        private int _randomSeed;
-        private Random random;
+        private readonly int _randomSeed;
+        private readonly Random random;
 
         // Low resolution map
         internal CoarseGrainedMap CoarseMap;
         // Low resolution map only considering what is visible now
         internal VisibleTilesCoarseMap VisibleTilesCoarseMap;
 
-        private bool _mapKnown;
+        private readonly bool _mapKnown;
 
         public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
@@ -82,7 +84,7 @@ namespace Maes.Map
             VisibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
         }
-        
+
         private SlamTileStatus[,] SetTilesAsKnownMap(SimulationMap<Tile> collisionMap)
         {
             var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
@@ -103,7 +105,7 @@ namespace Maes.Map
 
             return tiles;
         }
-        
+
         private SlamTileStatus[,] EmptyMap()
         {
             var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
@@ -385,10 +387,10 @@ namespace Maes.Map
         }
 
         public bool IsUnseenSemiOpen(Vector2Int nextCoordinate, Vector2Int currentCoordinate)
-            {
-                return true;
-            }
-        
+        {
+            return true;
+        }
+
         // Returns position of the given tile relative to the current position of the robot
         public RelativePosition GetRelativeSlamPosition(Vector2Int slamTileTarget)
         {

@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
+
 using UnityEngine;
 
 namespace Maes.Map.MapGen

@@ -15,16 +15,17 @@ namespace MAES.UI.SimulationInfoUIControllers
         public TextMeshProUGUI ProgressText;
 
         public Toggle StoppingCriteriaToggle;
-        
+
         public TextMeshProUGUI DistanceTravelledText;
         public TextMeshProUGUI CurrentGraphIdlenessText;
         public TextMeshProUGUI WorstGraphIdlenessText;
         public TextMeshProUGUI AverageGraphIdlenessText;
-        
-        
+
+
         protected override void AfterStart()
         {
-            StoppingCriteriaToggle.onValueChanged.AddListener(delegate {
+            StoppingCriteriaToggle.onValueChanged.AddListener(delegate
+            {
                 //TODO: when the stopping criteria is toggled
             });
         }
@@ -43,23 +44,23 @@ namespace MAES.UI.SimulationInfoUIControllers
             SetWorstGraphIdleness(simulation.PatrollingTracker.WorstGraphIdleness);
             SetAverageGraphIdleness(simulation.PatrollingTracker.AverageGraphIdleness);
         }
-        
+
         private void SetProgress(int completed, int total)
         {
             ProgressBarMask.fillAmount = (float)completed / total;
             ProgressText.text = $"{completed}/{total}";
         }
-        
-        private void SetDistanceTravelled(float distance) => 
+
+        private void SetDistanceTravelled(float distance) =>
             DistanceTravelledText.text = $"The total patrolling distance traveled: {distance} meters";
-        
-        private void SetCurrentGraphIdleness(float idleness) => 
+
+        private void SetCurrentGraphIdleness(float idleness) =>
             CurrentGraphIdlenessText.text = $"Current graph idleness: {idleness} ticks";
-        
-        private void SetWorstGraphIdleness(float idleness) => 
+
+        private void SetWorstGraphIdleness(float idleness) =>
             WorstGraphIdlenessText.text = $"Worst graph idleness: {idleness} ticks";
-        
-        private void SetAverageGraphIdleness(float idleness) => 
+
+        private void SetAverageGraphIdleness(float idleness) =>
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
     }
 }

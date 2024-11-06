@@ -20,25 +20,22 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using JetBrains.Annotations;
 
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
 using Maes.Map.MapGen;
+using Maes.Robot;
+using Maes.Trackers;
+using Maes.Visualizer;
 
 using MAES.Map.RobotSpawners;
-
-using Maes.Robot;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
-
-using Maes.Trackers;
-using Maes.UI;
-
 using MAES.UI.SimulationInfoUIControllers;
 
-using Maes.Visualizer;
 using UnityEngine;
 
 namespace Maes.Simulation
@@ -53,19 +50,19 @@ namespace Maes.Simulation
     where TRobotSpawner : RobotSpawner<TAlgorithm>
     {
         public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> SingletonInstance;
-        
+
         public int SimulatedLogicTicks { get; private set; } = 0;
         public int SimulatedPhysicsTicks { get; private set; } = 0;
         public float SimulateTimeSeconds { get; private set; } = 0;
 
         public MapSpawner MapGenerator;
-        
+
         public TRobotSpawner RobotSpawner;
 
         public abstract TVisualizer Visualizer { get; }
-        
+
         public abstract TTracker Tracker { get; }
-        
+
         ITracker ISimulation.Tracker => Tracker;
 
         protected TScenario _scenario;
@@ -113,7 +110,7 @@ namespace Maes.Simulation
 
         protected virtual void AfterCollisionMapGenerated(TScenario scenario)
         {
-            
+
         }
 
         public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)
@@ -237,7 +234,8 @@ namespace Maes.Simulation
 
         private void OnDrawGizmos()
         {
-            if (_collisionMap == null) {
+            if (_collisionMap == null)
+            {
                 return;
             }
 

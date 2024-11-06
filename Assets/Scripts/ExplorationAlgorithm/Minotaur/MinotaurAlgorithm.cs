@@ -19,43 +19,44 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-using Maes.Robot;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms;
+using Maes.Map;
+using Maes.Map.PathFinding;
+using Maes.Robot;
+using Maes.Utilities;
 
 using UnityEngine;
-using Maes.Utilities;
+
 using static Maes.Map.SlamMap;
-using Maes.Map.PathFinding;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
     public partial class MinotaurAlgorithm : IExplorationAlgorithm
     {
         public int VisionRadius => (int)_robotConstraints.SlamRayTraceRange;
-        private int _doorWidth;
+        private readonly int _doorWidth;
 
         private IRobotController _controller;
-        private RobotConstraints _robotConstraints;
+        private readonly RobotConstraints _robotConstraints;
         private CoarseGrainedMap _map;
         private EdgeDetector _edgeDetector;
-        private int _seed;
+        private readonly int _seed;
         private Vector2Int _position => _map.GetCurrentPosition();
         protected List<Doorway> _doorways = new();
         private AlgorithmState _currentState = AlgorithmState.Idle;
         private Waypoint? _waypoint;
         private int _logicTicks = 0;
         private int _ticksSinceHeartbeat;
-        private HashSet<Vector2Int> _previousIntersections = new();
+        private readonly HashSet<Vector2Int> _previousIntersections = new();
         private int _deadlockTimer = 0;
         private Vector2Int _previousPosition;
         private Waypoint _previousWaypoint;
         private int _auctionTicks;
-        private Dictionary<int, (Vector2Int location, Vector2Int? destination)> _otherRobotPositions = new();
+        private readonly Dictionary<int, (Vector2Int location, Vector2Int? destination)> _otherRobotPositions = new();
         private HashSet<Vector2Int> _otherRobotDestinations => _otherRobotPositions.Values.Where(position => position.destination.HasValue)
                                                                                           .Select(position => position.destination.Value)
                                                                                           .ToHashSet();
@@ -479,7 +480,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             var slamMap = _controller.GetSlamMap();
             var slamPosition = slamMap.GetCurrentPosition();
             var wall = slamWalls.FirstOrDefault(wall => wall.Start != wall.End && (wall.Start == point.point || wall.End == point.point));
-            if (wall == default) 
+            if (wall == default)
                 return false;
             var thirdPoint = wall.Rasterize().OrderBy(wallPoint => Vector2.Distance(wallPoint, slamPosition)).First();
             var towardRobotVector = CardinalDirection.VectorToDirection(slamPosition - thirdPoint).Vector;
@@ -868,7 +869,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 {
                     var opening = new Line2D(start, end);
                     var doorDirection = CardinalDirection.VectorToDirection(start - end);
-                    var extended = new Line2D(start*doorDirection.Vector*VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
+                    var extended = new Line2D(start * doorDirection.Vector * VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
                     var closestToRobot = GetClosestPoints(new List<Line2D> { extended }, slamPosition);
                     var newDoorway = new Doorway(opening, center, CardinalDirection.VectorToDirection(closestToRobot.First() - slamPosition));
                     var otherDoorway = _doorways.FirstOrDefault(doorway => doorway.Equals(newDoorway));

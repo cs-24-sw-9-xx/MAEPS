@@ -31,25 +31,27 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using UnityEngine;
 using System.Collections.Generic;
 
-using Maes.Map.MapGen;
-using Maes.Robot;
 using Maes.Algorithms;
-using MAES.Map.RobotSpawners;
+using Maes.Map.MapGen;
 using Maes.PatrollingAlgorithms;
+using Maes.Robot;
+
+using MAES.Map.RobotSpawners;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes
 {
-    using MySimulator = PatrollingSimulator;
     using MySimulationScenario = PatrollingSimulationScenario;
-    
+    using MySimulator = PatrollingSimulator;
+
     internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
-        private MySimulator _simulator;
+        private readonly MySimulator _simulator;
 
         private void Start()
         {
@@ -130,7 +132,7 @@ namespace Maes
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-            
+
             var buildingConfigList50 = new List<BuildingMapConfig>();
             var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
@@ -165,7 +167,7 @@ namespace Maes
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size/2, size/2), random.Next(-size/2, size/2)),
+                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)

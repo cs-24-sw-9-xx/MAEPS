@@ -20,10 +20,10 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using Maes;
+
 using Maes.Map;
-using Maes.Robot;
 using Maes.Visualizer;
+
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -58,7 +58,7 @@ namespace Maes.Statistics
         private int _widthInVertices, _heightInVertices;
         private Vector3 _offset;
 
-        private List<Vector3> _vertices = new List<Vector3>();
+        private readonly List<Vector3> _vertices = new List<Vector3>();
         private List<int> _triangles = new List<int>();
         private Color32[] _colors;
 
@@ -270,7 +270,8 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogOfWarPlane != null) {
+                if (_fogOfWarPlane != null)
+                {
                     for (int i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
                         Ray r = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);

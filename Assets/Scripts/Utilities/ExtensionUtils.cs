@@ -20,8 +20,10 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes.Map;
 using Maes.Map.PathFinding;
+
 using UnityEngine;
 
 namespace Maes.Utilities

@@ -23,27 +23,28 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.UI;
 
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
-
-using Maes.UI;
 
 using UnityEngine;
 
 using Object = UnityEngine.Object;
 
-namespace Maes {
+namespace Maes
+{
     public abstract class Simulator<TSimulation, TAlgorithm, TScenario>
         where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
         where TAlgorithm : IAlgorithm
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
         protected static Simulator<TSimulation, TAlgorithm, TScenario> _instance = null;
-        private GameObject _maesGameObject;
+        private readonly GameObject _maesGameObject;
         protected SimulationManager<TSimulation, TAlgorithm, TScenario> _simulationManager;
 
-        protected Simulator() {
+        protected Simulator()
+        {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
@@ -53,24 +54,30 @@ namespace Maes {
         protected abstract GameObject LoadSimulatorGameObject();
 
         // Clears the singleton instance and removes the simulator game object
-        public static void Destroy() {
-            if (_instance != null) {
+        public static void Destroy()
+        {
+            if (_instance != null)
+            {
                 Object.Destroy(_instance._maesGameObject);
                 _instance = null;
             }
         }
-        
-        public void EnqueueScenario(TScenario scenario) {
+
+        public void EnqueueScenario(TScenario scenario)
+        {
             _simulationManager.EnqueueScenario(scenario);
             _simulationManager._initialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<TScenario> scenario) {
-            foreach (var simulationScenario in scenario) {
+        public void EnqueueScenarios(IEnumerable<TScenario> scenario)
+        {
+            foreach (var simulationScenario in scenario)
+            {
                 _simulationManager.EnqueueScenario(simulationScenario);
             }
         }
-        
-        public void PressPlayButton() {
+
+        public void PressPlayButton()
+        {
             if (_simulationManager.PlayState == SimulationPlayState.Play)
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
             if (!_simulationManager.HasActiveScenario())
@@ -81,7 +88,8 @@ namespace Maes {
             _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
 
-        public SimulationManager<TSimulation, TAlgorithm, TScenario> GetSimulationManager() {
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> GetSimulationManager()
+        {
             return _simulationManager;
         }
     }

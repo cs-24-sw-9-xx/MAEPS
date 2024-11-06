@@ -19,14 +19,13 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-
 using System.Collections.Generic;
-
-using UnityEngine;
 using System.Linq;
 
 using Maes.Algorithms;
+using Maes.Map;
+
+using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -86,4 +85,3 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         }
     }
 }
-

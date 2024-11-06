@@ -335,7 +335,7 @@ namespace MAES.Map.RobotSpawners
 
             return robots;
         }
-        
+
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {

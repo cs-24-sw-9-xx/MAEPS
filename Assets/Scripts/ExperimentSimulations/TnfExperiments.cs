@@ -19,33 +19,32 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map.MapGen;
 using Maes.Robot;
 
-using UnityEngine;
-
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
-
-using Maes.Algorithms;
-
 using MAES.Map.RobotSpawners;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
 
     internal class TnfExperiments : MonoBehaviour
     {
-        private MySimulator _simulator;
+        private readonly MySimulator _simulator;
         private void Start()
         {
             const int randomSeed = 12345;

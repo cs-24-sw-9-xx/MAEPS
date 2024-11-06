@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
 namespace Maes.Utilities
@@ -36,8 +37,8 @@ namespace Maes.Utilities
         private readonly bool _isHorizontal = false;
 
         // Describe line by ax + b
-        private float _a;
-        private float _b;
+        private readonly float _a;
+        private readonly float _b;
 
         public Line2D(Vector2 start, Vector2 end)
         {
@@ -107,7 +108,7 @@ namespace Maes.Utilities
                     if (minDistance > distance)
                     {
                         minDistance = distance;
-                        result = (point, otherPoint); 
+                        result = (point, otherPoint);
                     }
                 }
             }

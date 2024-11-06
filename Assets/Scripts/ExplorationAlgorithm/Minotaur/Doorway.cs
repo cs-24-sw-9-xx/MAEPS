@@ -19,11 +19,13 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-using Maes.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Maes.Map;
+using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
@@ -50,7 +52,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             if (obj is Doorway other)
             {
-                var squareTiles = Enumerable.Range(0, DoorWidth+1).SelectMany(i => Tiles.Select(doorTile => doorTile + ExitDirection.Vector * i)).ToList();
+                var squareTiles = Enumerable.Range(0, DoorWidth + 1).SelectMany(i => Tiles.Select(doorTile => doorTile + ExitDirection.Vector * i)).ToList();
                 //squareTiles.ToList().ForEach(tile => _map.FromSlamMapCoordinate(tile).DrawDebugLineFromRobot(_map, Color.cyan));
                 if (other.Tiles.Any(tile => squareTiles.Contains(tile)))
                 {
