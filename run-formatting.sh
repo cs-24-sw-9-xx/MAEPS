@@ -4,6 +4,6 @@ set -e
 set -u
 set -x
 
-dotnet format EditTests.csproj
-dotnet format PlayModeTests.csproj
-dotnet format CustomScriptsAssembly.csproj
+for filename in *.csproj; do
+  dotnet format "$filename" --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/"
+done
