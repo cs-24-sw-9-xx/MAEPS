@@ -1,7 +1,3 @@
 @echo off
 
-dotnet format EditTests.csproj
-dotnet format PlayModeTests.csproj
-dotnet format CustomScriptsAssembly.csproj
-
-echo Formatting completed successfully!
+dotnet format MAEPS.sln --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/"
