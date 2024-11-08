@@ -60,6 +60,7 @@ namespace Maes {
 
         public static readonly int TicksBeforeExplorationHeatMapCold = 10 * 60 * 4;
         public static readonly int TicksBeforeCoverageHeatMapCold = 10 * 60 * 4;
+        public static readonly int TicksBeforeWaypointCoverageHeatMapCold = 10 * 60 * 6;
 
         public static bool IsRosMode = false;
 

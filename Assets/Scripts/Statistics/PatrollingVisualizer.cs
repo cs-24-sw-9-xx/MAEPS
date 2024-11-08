@@ -16,6 +16,8 @@ namespace Maes.Statistics {
 
         private List<GameObject> _visualizers = new List<GameObject>();
 
+        private Dictionary<Vertex, GameObject> _vertexVisualizers = new Dictionary<Vertex, GameObject>();
+
         public void SetSimulationMap(SimulationMap<Tile> simulationMap, Vector3 offset)
         {
             // We have to offset this for some reason ¯\_(ツ)_/¯
@@ -40,6 +42,7 @@ namespace Maes.Statistics {
                 var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
                 meshRenderer.material.color = vertex.Color;
                 _visualizers.Add(vertexVisualizer);
+                _vertexVisualizers.Add(vertex, vertexVisualizer);
 
                 foreach (var otherVertex in vertex.Neighbors) {
                     var edgeVisualizer = GameObject.Instantiate(EdgeVisualizer, transform);
@@ -50,6 +53,18 @@ namespace Maes.Statistics {
 
                     _visualizers.Add(edgeVisualizer);
                 }
+            }
+        }
+
+        public void ShowWaypointHeatMap(int currentTick){
+
+            foreach (var vertex in _patrollingMap.Verticies)
+            {
+                if(vertex.NumberOfVisits == 0) continue;
+                var ticksSinceLastExplored = currentTick - vertex.LastTimeVisitedTick;
+                float coldness = Mathf.Min((float) ticksSinceLastExplored / (float) GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
+                var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
+                _vertexVisualizers[vertex].GetComponent<MeshRenderer>().material.color = color;
             }
         }
     }

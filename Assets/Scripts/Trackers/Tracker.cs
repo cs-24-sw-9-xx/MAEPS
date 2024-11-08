@@ -20,7 +20,7 @@ namespace MAES.Trackers
     {
         private CoverageCalculator _coverageCalculator;
         
-        private TVisualizer _visualizer;
+        protected TVisualizer _visualizer;
 
         protected SimulationMap<TCell> _map;
         private RayTracingMap<TCell> _rayTracingMap;

@@ -6,7 +6,6 @@ using Maes.Map.MapGen;
 using Maes.Map.Visualization;
 using Maes.Robot;
 using Maes.Statistics;
-
 using MAES.Trackers;
 
 using UnityEngine;
@@ -19,7 +18,7 @@ namespace Maes.Trackers
         private PatrollingSimulation PatrollingSimulation { get; }
         private PatrollingMap Map { get;}
         private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
-        
+
         public int WorstGraphIdleness { get; private set; }
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; } = 0;
@@ -39,7 +38,7 @@ namespace Maes.Trackers
             Map = map;
             Vertices = map.Verticies.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
             
-            _currentVisualizationMode = new PatrollingDummyVisualizationMode();
+            _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
 
         public void OnReachedVertex(Vertex vertex, int atTick)
@@ -48,7 +47,6 @@ namespace Maes.Trackers
 
             var idleness = atTick - vertexDetails.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
-            vertexDetails.NumberOfVisits++;
             vertexDetails.VisitedAtTick(atTick);
                 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
@@ -83,6 +81,10 @@ namespace Maes.Trackers
             return (x, y) => true; 
         }
 
+        public void ShowWaypointHeatMap()
+        {
+            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+        }
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
             var currentTick = PatrollingSimulation.SimulatedLogicTicks;
@@ -92,14 +94,6 @@ namespace Maes.Trackers
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
-        }
-    }
-
-    public class PatrollingDummyVisualizationMode : IPatrollingVisualizationMode
-    {
-        public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
-        {
-            
         }
     }
 }

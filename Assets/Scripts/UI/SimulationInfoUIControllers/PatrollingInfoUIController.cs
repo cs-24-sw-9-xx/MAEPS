@@ -21,11 +21,20 @@ namespace MAES.UI.SimulationInfoUIControllers
         public TextMeshProUGUI WorstGraphIdlenessText;
         public TextMeshProUGUI AverageGraphIdlenessText;
         
+        public Button WaypointHeatMapButton;
         
         protected override void AfterStart()
         {
             StoppingCriteriaToggle.onValueChanged.AddListener(delegate {
                 //TODO: when the stopping criteria is toggled
+            });
+
+            WaypointHeatMapButton.onClick.AddListener(() => {
+                ExecuteAndRememberMapVisualizationModification(sim => {
+                    if (sim != null) {
+                        sim.PatrollingTracker.ShowWaypointHeatMap();
+                    }
+                });
             });
         }
 
@@ -61,5 +70,7 @@ namespace MAES.UI.SimulationInfoUIControllers
         
         private void SetAverageGraphIdleness(float idleness) => 
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
+
+        
     }
 }
