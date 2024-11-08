@@ -2,14 +2,14 @@
     "name": "CustomScriptsAssembly",
     "rootNamespace": "MAES",
     "references": [
-        "GUID:bfd99b683f8b1eac1b2bc616755ef0b1",
         "GUID:acf5d101701ab1987b7babf0fae71e0a",
         "GUID:b3f49edfedc855a48aa1a9e5d3cba438",
         "GUID:625bfc588fb96c74696858f2c467e978",
         "GUID:ba58c43074cf72549aa2ac5937dae44b",
         "GUID:5db6cbfd5d0e86a46862a70f4b4067f2",
         "GUID:1da8e23352f14494396eac5033ba9894",
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:6a9ab44e5e0403d4ebaf2dee2f9f1172"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

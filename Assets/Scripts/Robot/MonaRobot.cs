@@ -26,6 +26,9 @@ using Maes.Algorithms;
 using Maes.ExplorationAlgorithm;
 using MAES.Simulation;
 using Maes.UI;
+
+using QuickOutline;
+
 using UnityEditor;
 using UnityEngine;
 
