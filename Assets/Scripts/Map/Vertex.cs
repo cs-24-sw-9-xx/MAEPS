@@ -13,6 +13,7 @@ namespace Maes.Map {
         public int LastTimeVisitedTick { get; private set; } = 0;
         public Vector2Int Position { get; }
         public Color Color { get; set;}
+        public int NumberOfVisits { get; private set; } = 0;
 
         public Vertex(float weight, Vector2Int position, Color? color = null)
         {
@@ -26,6 +27,7 @@ namespace Maes.Map {
         public void VisitedAtTick(int tick)
         {
             LastTimeVisitedTick = tick;
+            NumberOfVisits++;
         }
 
         public void AddNeighbor(Vertex neighbor){

@@ -60,6 +60,7 @@ namespace Maes.Statistics {
 
             foreach (var vertex in _patrollingMap.Verticies)
             {
+                if(vertex.NumberOfVisits == 0) continue;
                 var ticksSinceLastExplored = currentTick - vertex.LastTimeVisitedTick;
                 float coldness = Mathf.Min((float) ticksSinceLastExplored / (float) GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
                 var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
