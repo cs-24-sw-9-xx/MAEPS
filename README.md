@@ -442,7 +442,7 @@ Henrik Van Peet - [henneboycool@gmail.com](mailto:henneboycool@gmail.com?subject
 
 Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
-Mads Beyer Mogensen -[mads256h@gmail.com](mailto:mads256h@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Mads Beyer Mogensen -[mail@madsmogensen.dk](mailto:mail@madsmogensen.dk?subject=Regarding%20the%20MAES%20Project)
 
 Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvikaransanthirasegaram@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
