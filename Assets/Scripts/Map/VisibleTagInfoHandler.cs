@@ -21,6 +21,9 @@
 
 using System;
 using MAES.Simulation;
+
+using QuickOutline;
+
 using UnityEngine;
 using YamlDotNet.Core.Tokens;
 
