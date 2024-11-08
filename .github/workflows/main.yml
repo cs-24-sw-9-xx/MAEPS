@@ -67,7 +67,6 @@ jobs:
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: .
-          testMode: playmode
       - uses: actions/upload-artifact@v3
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
