@@ -5,6 +5,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
+
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Statistics;
@@ -39,6 +40,7 @@ namespace Maes.Trackers
             Map = map;
             Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
             
+            _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
 
@@ -82,13 +84,25 @@ namespace Maes.Trackers
             return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
         
-        public void ShowWaypointHeatMap()
-        {
-            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-        }
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
+        }
+        
+        public void ShowWaypointHeatMap()
+        {
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+        }
+
+        public void ShowAllRobotCoverageHeatMap() {
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new PatrollingCoverageHeatMapVisualizationMode(_map));
+        }
+
+        public void ShowAllRobotPatrollingHeatMap() {
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
         }
     }
 }

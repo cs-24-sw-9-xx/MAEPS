@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -59,12 +61,14 @@ namespace Maes.UI.SimulationInfoUIControllers {
         
         protected readonly Color _mapVisualizationColor = Color.white;
         protected readonly Color _mapVisualizationSelectedColor = new Color(150 / 255f, 200 / 255f, 150 / 255f);
+        
+        protected List<Button> _mapVisualizationToggleGroup = new();
 
         protected abstract void AfterStart();
 
         private void Start()
         {
-            // Set listeners for Tag visualization buttons 
+            /*// Set listeners for Tag visualization buttons 
             AllVisualizeTagsButton.onClick.AddListener(() => {
                 ExecuteAndRememberTagVisualization(sim => {
                     if (sim != null) {
@@ -81,7 +85,7 @@ namespace Maes.UI.SimulationInfoUIControllers {
                         }
                     }
                 });
-            });
+            });*/
             
             StickyCameraButton.onClick.AddListener(() => {
                 CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
@@ -169,6 +173,14 @@ namespace Maes.UI.SimulationInfoUIControllers {
         public void UpdateStatistics(ISimulation? simulation)
         { 
             UpdateStatistics((TSimulation?) simulation);
+        }
+
+        // Highlights the selected map visualization button
+        protected void SelectVisualizationButton(Button selectedButton) {
+            foreach (var button in _mapVisualizationToggleGroup) 
+                button.image.color = _mapVisualizationColor;
+
+            selectedButton.image.color = _mapVisualizationSelectedColor;
         }
     }
 }

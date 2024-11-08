@@ -23,9 +23,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button AllCoverageHeatMapButton = null!;
         public Button SelectVisibleAreaButton = null!;
         public Button SelectedSlamMapButton = null!;
-        
-        private List<Button>? _mapVisualizationToggleGroup;
-        
 
         protected override void AfterStart()
         {
@@ -94,14 +91,6 @@ namespace Maes.UI.SimulationInfoUIControllers
                                        (explorationSimulation.ExplorationTracker.CoveredMiniTiles * 2 /
                                         explorationSimulation.SimulateTimeSeconds).ToString("#.0");
             // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
-        }
-
-        // Highlights the selected map visualization button
-        private void SelectVisualizationButton(Button selectedButton) {
-            foreach (var button in _mapVisualizationToggleGroup ?? Enumerable.Empty<Button>()) 
-                button.image.color = _mapVisualizationColor;
-
-            selectedButton.image.color = _mapVisualizationSelectedColor;
         }
 
         private void OnMapVisualizationModeChanged(IExplorationVisualizationMode mode) {

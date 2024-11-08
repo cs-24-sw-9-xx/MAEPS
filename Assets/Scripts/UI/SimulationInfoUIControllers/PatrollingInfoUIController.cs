@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+
 using Maes.Algorithms;
+using Maes.Map.Visualization;
+using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
@@ -21,25 +26,52 @@ namespace Maes.UI.SimulationInfoUIControllers
         public TextMeshProUGUI AverageGraphIdlenessText = null!;
         
         public Button WaypointHeatMapButton = null!;
+        public Button CoverageHeatMapButton = null!;
+        public Button PatrollingHeatMapButton = null!;
         
         protected override void AfterStart()
         {
+            _mapVisualizationToggleGroup = new List<Button>() {
+                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton
+            };
+            SelectVisualizationButton(WaypointHeatMapButton);
+            
+            
             StoppingCriteriaToggle.onValueChanged.AddListener(delegate {
                 //TODO: when the stopping criteria is toggled
             });
 
             WaypointHeatMapButton.onClick.AddListener(() => {
-                ExecuteAndRememberMapVisualizationModification(sim => {
-                    if (sim != null) {
-                        sim.PatrollingTracker.ShowWaypointHeatMap();
-                    }
-                });
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowWaypointHeatMap());
+            });
+            
+            CoverageHeatMapButton.onClick.AddListener(() => {
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotCoverageHeatMap());
+            });
+            
+            PatrollingHeatMapButton.onClick.AddListener(() => {
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
             });
         }
+        
+        private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode) {
+            if (mode is WaypointHeatMapVisualizationMode) {
+                SelectVisualizationButton(WaypointHeatMapButton);
+            } else if (mode is PatrollingCoverageHeatMapVisualizationMode) {
+                SelectVisualizationButton(CoverageHeatMapButton);
+            } else if (mode is PatrollingHeatMapVisualizationMode) {
+                SelectVisualizationButton(PatrollingHeatMapButton);
+            } else {
+                throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
+            }
+            
+        }
 
-        protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation)
-        {
-            //TODO: Implement
+        protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation) {
+            if (newSimulation != null) {
+                newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
+                _mostRecentMapVisualizationModification?.Invoke(newSimulation);
+            }
         }
 
         protected override void UpdateStatistics(PatrollingSimulation? simulation)
