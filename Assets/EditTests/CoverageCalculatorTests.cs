@@ -30,7 +30,7 @@ using Random = System.Random;
 namespace EditTests {
     public class CoverageCalculatorTest {
 
-        private CoverageCalculator _coverageCalculator;
+        private CoverageCalculator<ExplorationCell> _coverageCalculator;
         private SimulationMap<Tile> _collisionMap;
         private SimulationMap<ExplorationCell> _explorationMap;
         private const int RandomSeed = 123;
@@ -40,7 +40,7 @@ namespace EditTests {
         public void InitializeCalculatorAndMaps() {
             _collisionMap = GenerateCollisionMap();
             _explorationMap = _collisionMap.FMap(tile => new ExplorationCell(!Tile.IsWall(tile.Type)));
-            _coverageCalculator = new CoverageCalculator(_explorationMap, _collisionMap);
+            _coverageCalculator = new CoverageCalculator<ExplorationCell>(_explorationMap, _collisionMap);
         }
 
         // Generates a collision map where only the edge tiles are solid
@@ -159,7 +159,7 @@ namespace EditTests {
                 }
             }
 
-            new CoverageCalculator(freshExplorationMap, _collisionMap);
+            new CoverageCalculator<ExplorationCell>(freshExplorationMap, _collisionMap);
             // Pass the new exploration map to the coverage calculator which should cause the solid tiles to be
             // marked as non-coverable
             for (int x = 0; x < Width; x++) {
