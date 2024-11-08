@@ -15,10 +15,11 @@ using Maes.Visualizer;
 namespace MAES.Trackers
 {
     public abstract class Tracker<TCell, TVisualizer, TVisualizationMode> : ITracker
+        where TCell : Cell
         where TVisualizer : IVisualizer<TCell>
         where TVisualizationMode : IVisualizationMode<TCell, TVisualizer>
     {
-        private CoverageCalculator _coverageCalculator;
+        protected CoverageCalculator<TCell> _coverageCalculator;
         
         protected TVisualizer _visualizer;
 
@@ -46,6 +47,8 @@ namespace MAES.Trackers
             
             _visualizer.SetSimulationMap(_map, collisionMap.ScaledOffset);
             _rayTracingMap = new RayTracingMap<TCell>(_map);
+            
+            _coverageCalculator = new CoverageCalculator<TCell>(_map, collisionMap);
         }
         
         public void LogicUpdate(IReadOnlyList<MonaRobot> robots) {
@@ -115,14 +118,34 @@ namespace MAES.Trackers
                     // Avoid ray casts that can be parallel to the lines of a triangle
                     if (angle % 45 == 0) angle += 0.5f;
 
-                    _rayTracingMap.Raytrace(robot.transform.position, angle, visibilityRange, RayTracingMapCellFunction(slamMap));
+                    _rayTracingMap.Raytrace(robot.transform.position, angle, visibilityRange, (index, cell) =>
+                    {
+                        if (cell.IsExplorable)
+                        {
+                            if (!cell.IsExplored)
+                            {
+                                cell.LastExplorationTimeInTicks = _currentTick;
+                                cell.ExplorationTimeInTicks += 1;
+                                OnNewlyExploredTriangles(index, cell);
+                            }
+
+                            cell.RegisterExploration(_currentTick);
+                        }
+
+                        // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
+                        slamMap?.SetExploredByTriangle(triangleIndex: index, isOpen: cell.IsExplorable);
+                        slamMap?.SetCurrentlyVisibleByTriangle(triangleIndex: index, isOpen: cell.IsExplorable);
+
+                        return cell.IsExplorable;
+                    });
                 }
 
                 AfterRayTracingARobot(robot);
             }
         }
 
-        protected abstract RayTracingMap<TCell>.CellFunction RayTracingMapCellFunction(SlamMap slamMap);
+        protected virtual void OnNewlyExploredTriangles(int index, TCell cell) { }
+        
         protected virtual void AfterRayTracingARobot(MonaRobot robot) { }
 
         protected void SetVisualizationMode(TVisualizationMode newMode) {

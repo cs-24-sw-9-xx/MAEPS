@@ -14,7 +14,7 @@ using MAES.UI.SimulationInfoUIControllers;
 
 namespace Maes
 {
-    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, Tile, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
+    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
     {
         public PatrollingVisualizer patrollingVisualizer;
 
@@ -32,7 +32,6 @@ namespace Maes
             
             PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, _patrollingMap);
             
-            patrollingVisualizer.SetSimulationMap(_collisionMap, _collisionMap.ScaledOffset);
             patrollingVisualizer.SetPatrollingMap(_patrollingMap);
             
             RobotSpawner.SetPatrolling(_patrollingMap, PatrollingTracker);

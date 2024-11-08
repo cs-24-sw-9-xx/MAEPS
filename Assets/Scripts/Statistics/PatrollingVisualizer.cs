@@ -6,7 +6,7 @@ using Maes.Visualizer;
 using UnityEngine;
 
 namespace Maes.Statistics {
-    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<Tile> {
+    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<PatrollingCell> {
 
         public GameObject VertexVisualizer;
 
@@ -18,7 +18,7 @@ namespace Maes.Statistics {
 
         private Dictionary<Vertex, GameObject> _vertexVisualizers = new Dictionary<Vertex, GameObject>();
 
-        public void SetSimulationMap(SimulationMap<Tile> simulationMap, Vector3 offset)
+        public void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
             // We have to offset this for some reason ¯\_(ツ)_/¯
             transform.position = simulationMap.ScaledOffset;

@@ -13,7 +13,7 @@ using UnityEngine;
 namespace Maes.Trackers
 {
     // TODO: Change Tile to another type, Implemented in the next PR
-    public class PatrollingTracker : Tracker<Tile, PatrollingVisualizer, IPatrollingVisualizationMode>
+    public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
         private PatrollingSimulation PatrollingSimulation { get; }
         private PatrollingMap Map { get;}
@@ -32,7 +32,7 @@ namespace Maes.Trackers
         public int TotalCycles { get; set; } = 10;
 
         public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulation patrollingSimulation, RobotConstraints constraints,
-            PatrollingMap map) : base(collisionMap, visualizer, constraints, tile => tile)
+            PatrollingMap map) : base(collisionMap, visualizer, constraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             PatrollingSimulation = patrollingSimulation;
             Map = map;
@@ -75,22 +75,16 @@ namespace Maes.Trackers
             // TODO: Implement
         }
 
-        protected override RayTracingMap<Tile>.CellFunction RayTracingMapCellFunction(SlamMap slamMap)
-        {
-            // TODO: Implemented in the next PR
-            return (x, y) => true; 
-        }
-
-        public void ShowWaypointHeatMap()
-        {
-            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-        }
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
             var currentTick = PatrollingSimulation.SimulatedLogicTicks;
             return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
         
+        public void ShowWaypointHeatMap()
+        {
+            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+        }
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();

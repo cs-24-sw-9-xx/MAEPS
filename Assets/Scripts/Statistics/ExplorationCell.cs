@@ -23,16 +23,26 @@ using System;
 using System.Collections.Generic;
 
 namespace Maes.Statistics {
-    public class ExplorationCell {
-        
+
+    public interface ICell
+    {
+        bool IsExplorable { get; } 
+        bool IsExplored { get; } 
+        bool IsCovered { get; }
+        bool CanBeCovered { get; set; }
+        void RegisterExploration(int currentTimeTicks);
+        void RegisterCoverage(int currenTimeTicks);
+    }
+
+    public abstract class Cell : ICell
+    {
         // --- Exploration over time --- 
-        public readonly bool IsExplorable; 
-        public bool IsExplored = false; 
+        public bool IsExplorable { get; } 
+        public bool IsExplored { get; private set; } 
 
         // --- Coverage over time  ---
-        public bool IsCovered = false;
-        public bool CanBeCovered = true;
-        private HashSet<int> _robotsThatVisited = new HashSet<int>(); 
+        public bool IsCovered { get; private set; } = false;
+        public bool CanBeCovered { get; set; } = true;
         
         // --- Redundant Coverage ---
         public int CoverageTimeInTicks = 0; // The amount of ticks that this cell has been covered
@@ -40,9 +50,8 @@ namespace Maes.Statistics {
         
         //  --- Heatmap ---
         public int LastExplorationTimeInTicks = 0; // The last time that this cell was seen by a robot 
-        public int LastCoverageTimeInTicks = 0; // The last time that this cell was covered by a robot 
-
-
+        public int LastCoverageTimeInTicks = 0; // The last time that this cell was covered by a robot
+        
         /// <summary>
         /// Called to register that a robot has seen this tile this tick
         /// </summary>
@@ -62,9 +71,22 @@ namespace Maes.Statistics {
             IsCovered = true;
         }
 
-        public ExplorationCell(bool isExplorable) {
+        protected Cell(bool isExplorable) {
             IsExplorable = isExplorable;
         }
+    }
+    
+    public class ExplorationCell : Cell {
+        private HashSet<int> _robotsThatVisited = new HashSet<int>();
 
+        public ExplorationCell(bool isExplorable) : base(isExplorable)
+        {
+        }
+    }
+    
+    public class PatrollingCell : Cell {
+        public PatrollingCell(bool isExplorable) : base(isExplorable)
+        {
+        }
     }
 }

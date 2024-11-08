@@ -40,8 +40,6 @@ using UnityEngine;
 namespace Maes.Statistics {
     public class ExplorationTracker : Tracker<ExplorationCell, ExplorationVisualizer, IExplorationVisualizationMode>
     {
-        private CoverageCalculator _coverageCalculator;
-        
         // The low-resolution collision map used to create the smoothed map that robots are navigating 
         private SimulationMap<Tile> _collisionMap;
 
@@ -76,8 +74,6 @@ namespace Maes.Statistics {
             
             _currentVisualizationMode = new AllRobotsExplorationVisualization(_map);
             _totalExplorableTriangles = collisionMap.Count(x => !Tile.IsWall(x.Item2.Type));
-
-            _coverageCalculator = new CoverageCalculator(_map, collisionMap);
         }
 
         protected override void CreateSnapShot() {
@@ -137,30 +133,10 @@ namespace Maes.Statistics {
             newlyExploredTriangles.Clear();
         }
 
-        protected override RayTracingMap<ExplorationCell>.CellFunction RayTracingMapCellFunction(SlamMap slamMap)
+        protected override void OnNewlyExploredTriangles(int index, ExplorationCell cell)
         {
-            return (index, cell) =>
-            {
-                if (cell.IsExplorable)
-                {
-                    if (!cell.IsExplored)
-                    {
-                        cell.IsExplored = true;
-                        cell.LastExplorationTimeInTicks = _currentTick;
-                        cell.ExplorationTimeInTicks += 1;
-                        newlyExploredTriangles.Add((index, cell));
-                        ExploredTriangles++;
-                    }
-
-                    cell.RegisterExploration(_currentTick);
-                }
-
-                // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
-                slamMap?.SetExploredByTriangle(triangleIndex: index, isOpen: cell.IsExplorable);
-                slamMap?.SetCurrentlyVisibleByTriangle(triangleIndex: index, isOpen: cell.IsExplorable);
-
-                return cell.IsExplorable;
-            };
+            newlyExploredTriangles.Add((index, cell));
+            ExploredTriangles++;
         }
 
         public override void SetVisualizedRobot([CanBeNull] MonaRobot robot) {

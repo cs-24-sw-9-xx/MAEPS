@@ -33,6 +33,7 @@ using Maes.Robot;
 using MAES.Simulation;
 using MAES.Simulation.SimulationScenarios;
 
+using Maes.Statistics;
 using Maes.Trackers;
 using Maes.UI;
 
@@ -45,6 +46,7 @@ namespace Maes.Simulation
 {
     public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
+    where TVisualizerTile : ICell
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
