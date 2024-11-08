@@ -3,7 +3,7 @@ using Maes.Statistics;
 
 namespace Maes.Map.Visualization
 {
-    public interface IPatrollingVisualizationMode : IVisualizationMode<Tile, PatrollingVisualizer>
+    public interface IPatrollingVisualizationMode : IVisualizationMode<PatrollingCell, PatrollingVisualizer>
     {
         
     }
