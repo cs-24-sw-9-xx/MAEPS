@@ -47,7 +47,6 @@ namespace Maes.Trackers
 
             var idleness = atTick - vertexDetails.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
-            vertexDetails.NumberOfVisits++;
             vertexDetails.VisitedAtTick(atTick);
                 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
