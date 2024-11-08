@@ -7,7 +7,7 @@ using Maes.Visualizers;
 using UnityEngine;
 
 namespace Maes.Statistics {
-    public class PatrollingVisualizer : MonoBehaviour, IVisualizer<PatrollingCell> {
+    public class PatrollingVisualizer : Visualizer<PatrollingCell> {
 
         public GameObject VertexVisualizer = null!;
         public GameObject EdgeVisualizer = null!;
@@ -19,10 +19,10 @@ namespace Maes.Statistics {
 
         private readonly Dictionary<Vertex, GameObject> _vertexVisualizers = new();
 
-        public void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
+        public override void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
-            // We have to offset this for some reason ¯\_(ツ)_/¯
-            transform.position = simulationMap.ScaledOffset;
+            base.SetSimulationMap(simulationMap, Vector3.zero);
+            
             foreach (var visualizer in _visualizers) {
                 Destroy(visualizer);
             }
