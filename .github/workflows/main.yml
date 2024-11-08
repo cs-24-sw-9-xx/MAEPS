@@ -9,43 +9,7 @@ on:
  
 ### Refer to https://game.ci/docs/github/getting-started
 jobs:
-  checklicense:
-    name: Check for UNITY_LICENSE in GitHub Secrets
-    runs-on: ubuntu-latest
-    outputs:
-      is_unity_license_set: ${{ steps.checklicense_job.outputs.is_unity_license_set }}
-    steps:
-      - name: Check whether unity activation requests should be done
-        id: checklicense_job
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        run: |
-          echo "Skip activation job: ${{ env.UNITY_LICENSE != '' }}"
-          export is_unity_license_set="${{ env.UNITY_LICENSE != '' }}"
-          echo "is_unity_license_set=$is_unity_license_set" >> $GITHUB_OUTPUT
-
-  activation:
-    needs: checklicense
-    if: needs.checklicense.outputs.is_unity_license_set == 'false'
-    name: Request manual activation file 🔑
-    runs-on: ubuntu-latest
-    steps:
-      # Request manual activation file
-      - name: Request manual activation file
-        id: getManualLicenseFile
-        uses: game-ci/unity-request-activation-file@v2
-      # Upload artifact (Unity_v20XX.X.XXXX.alf)
-      - name: Expose as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.getManualLicenseFile.outputs.filePath }}
-          path: ${{ steps.getManualLicenseFile.outputs.filePath }}
-
   test:
-    needs: checklicense
-    if: needs.checklicense.outputs.is_unity_license_set == 'true'
     permissions:
       checks: write
     name: Run all tests ✨
@@ -105,23 +69,27 @@ jobs:
         with:
           name: Build-${{ matrix.targetPlatform }}
           path: build
-  
-  
-  format:
-    name: Check formatting
+
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
+    container: unityci/editor:ubuntu-2022.3.51f1-linux-il2cpp-3.1.0
     steps:
-    - uses: actions/checkout@v3
-      with:
-        lfs: true
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Format CustomScriptsAssembly.csproj
-      run: dotnet format CustomScriptsAssembly.csproj --verify-no-changes --verbosity diagnostic
-    - name: Format PlayModeTests.csproj
-      run: dotnet format PlayModeTests.csproj --verify-no-changes --verbosity diagnostic
-    - name: Format EditTests.csproj
-      run: dotnet format EditTests.csproj --verify-no-changes --verbosity diagnostic
-  
+      - uses: actions/checkout@v1
+      - name: Generate Solution
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          unity-editor -nographics -logFile /dev/stdout -quit -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" -serial "$UNITY_SERIAL"
+          unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
+      - name: Print the files in the folder
+        run: ls
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Format
+        run: dotnet format MAEPS.sln --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/" --verify-no-changes
