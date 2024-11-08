@@ -107,16 +107,16 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}
           path: build
       - name: Check formatting
-        if: ${{ matrix.targetPlatform }} == StandaloneLinux64
+        if: ${{ matrix.targetPlatform }} == 'StandaloneLinux64'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
       - name: Format CustomScriptsAssembly.csproj
-        if: ${{ matrix.targetPlatform }} == StandaloneLinux64
+        if: ${{ matrix.targetPlatform }} == 'StandaloneLinux64'
         run: dotnet format CustomScriptsAssembly.csproj --verify-no-changes --verbosity diagnostic
       - name: Format PlayModeTests.csproj
-        if: ${{ matrix.targetPlatform }} == StandaloneLinux64
+        if: ${{ matrix.targetPlatform }} == 'StandaloneLinux64'
         run: dotnet format PlayModeTests.csproj --verify-no-changes --verbosity diagnostic
       - name: Format EditTests.csproj
-        if: ${{ matrix.targetPlatform }} == StandaloneLinux64
+        if: ${{ matrix.targetPlatform }} == 'StandaloneLinux64'
         run: dotnet format EditTests.csproj --verify-no-changes --verbosity diagnostic
