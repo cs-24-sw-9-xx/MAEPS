@@ -19,9 +19,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.IO;
-using JetBrains.Annotations;
 
 namespace Maes.Utilities.Files {
     internal class InputFileLoader {
@@ -30,7 +28,6 @@ namespace Maes.Utilities.Files {
             return Path.Join(Path.Join(Directory.GetCurrentDirectory(), "Assets"), "Maps");
         }
 
-        [CanBeNull]
         public static StreamReader ReadInputFile(string fileName) {
             return new StreamReader(Path.Join(GetDefaultInputPath(), fileName));
         }

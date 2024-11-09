@@ -40,10 +40,6 @@ namespace Maes.Map.MapGen
         public bool IsMainRoom { get; set; }
         public bool IsHallWay { get; set; }
 
-        public Room()
-        {
-        }
-
         public Room(List<Vector2Int> roomTiles, Tile[,] map)
         {
             Tiles = roomTiles;

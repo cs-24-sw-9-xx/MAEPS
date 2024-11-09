@@ -32,12 +32,12 @@ namespace Maes.Utilities
         private readonly float _minY, _maxY;
         private readonly float _minX, _maxX;
 
-        public readonly bool IsVertical = false;
-        private readonly bool _isHorizontal = false;
+        public readonly bool IsVertical;
+        private readonly bool _isHorizontal;
 
         // Describe line by ax + b
-        private float _a;
-        private float _b;
+        private readonly float _a;
+        private readonly float _b;
 
         public Line2D(Vector2 start, Vector2 end)
         {
@@ -55,7 +55,7 @@ namespace Maes.Utilities
             _maxX = Mathf.Max(start.x, end.x);
 
             IsVertical = Mathf.Approximately(_minX, _maxX);
-            if (!IsVertical) _isHorizontal = Mathf.Approximately(_minY, _maxY);
+            _isHorizontal = !IsVertical && Mathf.Approximately(_minY, _maxY);
 
             if (!IsVertical)
             {
@@ -96,7 +96,7 @@ namespace Maes.Utilities
         public (Vector2 linePoint, Vector2 otherLinePoint) GetClosestPoints(Line2D otherLine)
         {
             var linePoints = Rasterize();
-            var otherLinePoints = otherLine.Rasterize();
+            var otherLinePoints = otherLine.Rasterize().ToArray();
             (Vector2 linePoint, Vector2 otherLinePoint) result = (Vector2.zero, Vector2.zero);
             float minDistance = float.MaxValue;
             foreach (var point in linePoints)
@@ -238,10 +238,12 @@ namespace Maes.Utilities
 
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
-            if (obj == null) return false;
-            var otherLine = obj as Line2D;
+            if (obj is not Line2D otherLine)
+            {
+                return false;
+            }
 
             return Mathf.Approximately(_a, otherLine._a) &&
                    Mathf.Approximately(_b, otherLine._b) &&

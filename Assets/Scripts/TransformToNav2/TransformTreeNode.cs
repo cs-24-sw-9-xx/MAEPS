@@ -20,21 +20,19 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+
 using RosMessageTypes.Geometry;
-using RosMessageTypes.Std;
-using Unity.Robotics.Core;
 
 using UnityEngine;
 
-namespace Unity.Robotics.SlamExample
+namespace Maes.TransformToNav2
 {
     internal class TransformTreeNode
     {
         public readonly GameObject SceneObject;
         public readonly List<TransformTreeNode> Children;
         public Transform Transform => SceneObject.transform;
-        public string name => SceneObject.name;
+        public string Name => SceneObject.name;
         public bool IsALeafNode => Children.Count == 0;
 
         public TransformTreeNode(GameObject sceneObject)

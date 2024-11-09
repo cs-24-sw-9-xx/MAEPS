@@ -22,9 +22,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
+
 using Maes.Map.MapGen;
 using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Map {
@@ -39,14 +40,14 @@ namespace Maes.Map {
 
         // These rooms do not include the passages between them.
         // They are used for robot spawning
-        public readonly List<Room> rooms;
+        public readonly List<Room> Rooms = new();
 
         // The tiles of the map (each tile containing 8 triangle cells) 
         private readonly SimulationMapTile<TCell>[,] _tiles;
 
         public SimulationMap(Functional.Factory<TCell> cellFactory, int widthInTiles, int heightInTiles,
             Vector2 scaledOffset, List<Room> rooms) {
-            this.rooms = rooms;
+            Rooms = rooms;
             ScaledOffset = scaledOffset;
             WidthInTiles = widthInTiles;
             HeightInTiles = heightInTiles;

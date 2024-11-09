@@ -20,12 +20,10 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using Maes.Map.MapGen;
-
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation.SimulationScenarios;
 
 namespace PlayModeTests {
     public class StandardTestingConfiguration {
-
         public static MapFactory EmptyCaveMapSpawner(int randomSeed) {
             var mapConfiguration = new CaveMapConfig(randomSeed: randomSeed, 
                 widthInTiles: 50, 
@@ -36,7 +34,7 @@ namespace PlayModeTests {
                 wallThresholdSize: 10, 
                 roomThresholdSize: 10,
                 borderSize: 1);
-            return (generator => generator.GenerateMap(mapConfiguration, 2f));
+            return (generator => generator.GenerateMap(mapConfiguration));
         }
 
     }

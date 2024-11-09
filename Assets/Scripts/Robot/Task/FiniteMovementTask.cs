@@ -30,7 +30,7 @@ namespace Maes.Robot.Task {
 
         private readonly Vector2 _startingPosition;
         private Vector2 _previousPosition;
-        private bool _isCompleted = false;
+        private bool _isCompleted;
         private readonly float _force;
 
         public FiniteMovementTask(Transform robotTransform, float targetDistance, float force, bool reverse = false) {

@@ -569,7 +569,9 @@ PlayerSettings:
   scriptingDefineSymbols:
     Server: ROS2
     Standalone: ROS2
-  additionalCompilerArguments: {}
+  additionalCompilerArguments:
+    Server: []
+    Standalone: []
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

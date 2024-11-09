@@ -5,13 +5,14 @@ using Maes.Robot;
 using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.WallFollower {
-    public partial class WallFollowerAlgorithm : IExplorationAlgorithm
+    public class WallFollowerAlgorithm : IExplorationAlgorithm
     {
-        private Robot2DController _controller;
+        // Set by SetController
+        private Robot2DController _controller = null!;
 
-        private bool _hasTurnedLeft = false;
+        private bool _hasTurnedLeft;
 
-        private float _gridSpacing = 1.8f;
+        private const float GridSpacing = 1.8f;
 
         private float _angle;
 
@@ -21,17 +22,17 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
         private bool _rightWall;
         private bool _behindWall;
 
-        private float _targetAngle => DirectionToAngle(_direction);
+        private float TargetAngle => DirectionToAngle(_direction);
 
-        private bool _collided = false;
+        private bool _collided;
 
-        private bool _positionSet = false;
+        private bool _positionSet;
         private Vector2Int _targetPosition;
 
-        private const float NORTH = 90.0f;
-        private const float EAST = 0.0f;
-        private const float SOUTH = 270.0f;
-        private const float WEST = 180.0f;
+        private const float North = 90.0f;
+        private const float East = 0.0f;
+        private const float South = 270.0f;
+        private const float West = 180.0f;
 
         private Direction _direction = Direction.North;
 
@@ -53,7 +54,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
                 $"Status: {_controller.GetStatus()}\n" +
                 $"HasTurnedLeft: {_hasTurnedLeft}\n" +
                 $"Walls: {(_forwardWall ? 'F' : '_')}{(_leftWall ? 'L' : '_')}{(_behindWall ? 'B' : '_')}{(_rightWall ? 'R' : '_')}\n" +
-                $"Angle: {_angle} Target: {_targetAngle}\n"+
+                $"Angle: {_angle} Target: {TargetAngle}\n"+
                 $"Collided: {_collided}\n" +
                 $"Pos: {_controller.GetSlamMap().GetCoarseMap().GetCurrentPosition()}\n" +
                 $"TPos: {_targetPosition} Dir: {_direction}"
@@ -100,10 +101,10 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
                 return;
             }
 
-            var testAngle = WrapAngle(_angle - _targetAngle);
+            var testAngle = WrapAngle(_angle - TargetAngle);
             if (testAngle < -epsilon || testAngle > epsilon) {
-                var rotateAngle = -WrapAngle(_angle - _targetAngle);
-                Debug.Log($"angle: {_angle} target: {_targetAngle} rotating: {rotateAngle}");
+                var rotateAngle = -WrapAngle(_angle - TargetAngle);
+                Debug.Log($"angle: {_angle} target: {TargetAngle} rotating: {rotateAngle}");
                 _controller.Rotate(rotateAngle);
                 return;
             }
@@ -172,10 +173,10 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
         private float DirectionToAngle(Direction direction) {
             return direction switch
             {
-                Direction.North => NORTH,
-                Direction.East => EAST,
-                Direction.South => SOUTH,
-                Direction.West => WEST,
+                Direction.North => North,
+                Direction.East => East,
+                Direction.South => South,
+                Direction.West => West,
                 _ => throw new InvalidOperationException($"INVALID DIRECTION: {direction}"),
             };
         }
@@ -194,13 +195,13 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
         private void TurnLeft() {
             Debug.Log("TurnLeft");
 
-            _direction = (Direction)mod((int)_direction - 1, (int)Direction.End);
+            _direction = (Direction)Mod((int)_direction - 1, (int)Direction.End);
         }
 
         private void TurnRight() {
             Debug.Log("TurnRight");
 
-            _direction = (Direction)mod((int)_direction + 1, (int)Direction.End);
+            _direction = (Direction)Mod((int)_direction + 1, (int)Direction.End);
         }
 
         private void GoForward() {
@@ -215,7 +216,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
             {
                 return false;
             }
-            return wall.Value.distance <= _gridSpacing;
+            return wall.Value.distance <= GridSpacing;
         }
 
         private bool IsWallLeft() {
@@ -224,7 +225,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
             {
                 return false;
             }
-            return wall.Value.distance <= _gridSpacing;
+            return wall.Value.distance <= GridSpacing;
         }
 
         private bool IsWallRight() {
@@ -233,7 +234,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
             {
                 return false;
             }
-            return wall.Value.distance <= _gridSpacing;
+            return wall.Value.distance <= GridSpacing;
         }
 
         private bool IsWallBehind() {
@@ -242,10 +243,10 @@ namespace Maes.ExplorationAlgorithm.WallFollower {
             {
                 return false;
             }
-            return wall.Value.distance <= _gridSpacing;
+            return wall.Value.distance <= GridSpacing;
         }
 
-        int mod(int x, int m) {
+        private static int Mod(int x, int m) {
             return (x%m + m)%m;
         }
 

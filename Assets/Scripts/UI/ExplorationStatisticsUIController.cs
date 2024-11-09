@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using Maes.Simulation;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,17 +28,17 @@ namespace Maes.UI
 {
     internal class ExplorationStatisticsUIController : MonoBehaviour
     {
-        public Image Mask;
-        public Text ProgressPercentageText;
+        public Image Mask = null!;
+        public Text ProgressPercentageText = null!;
+        public Text ExplorationRateText = null!;
 
-        public Text ExplorationRateText;
-
-        public void SetExplorationProgress(float progress)
+        private void SetExplorationProgress(float progress)
         {
             Mask.fillAmount = progress;
             ProgressPercentageText.text = (progress * 100f).ToString("#.00") + "%";
         }
 
+        // TODO: Why is this never called?
         public void UpdateStatistics(ExplorationSimulation currentExplorationSimulation)
         {
             SetExplorationProgress(currentExplorationSimulation.ExplorationTracker.ExploredProportion);

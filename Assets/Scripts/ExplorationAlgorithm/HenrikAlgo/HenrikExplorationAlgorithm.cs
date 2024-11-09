@@ -20,21 +20,14 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
 {
     public class HenrikExplorationAlgorithm : IExplorationAlgorithm
     {
-        private IRobotController _robotController;
-        private Vector2Int? _targetTile = null;
-        private uint _ticksSinceHeartbeat = 0;
-        public HenrikExplorationAlgorithm()
-        {
-        }
-
-        public HenrikExplorationAlgorithm(Robot2DController robotControllerController)
-        {
-            _robotController = robotControllerController;
-        }
-
+        // HACK
+        private IRobotController _robotController = null!;
+        private Vector2Int? _targetTile;
+        private uint _ticksSinceHeartbeat;
+        
         public void SetController(Robot2DController controller)
         {
-            this._robotController = controller;
+            _robotController = controller;
         }
 
         public void UpdateLogic()
@@ -51,9 +44,7 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
                 {
                     _targetTile = null;
                     _robotController.StopCurrentTask();
-                    return;
                 }
-                return;
             }
         }
 
@@ -66,12 +57,12 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
                 _ticksSinceHeartbeat = 0;
                 _robotController.Broadcast(ownHeartbeat);
             }
-            var receivedHeartbeat = new Queue<HeartbeatMessage>(_robotController.ReceiveBroadcast().OfType<HeartbeatMessage>());
-            if (receivedHeartbeat.Count > 1)
+            var receivedHeartbeats = _robotController.ReceiveBroadcast().OfType<HeartbeatMessage>().ToArray();
+            if (receivedHeartbeats.Length > 1)
             {
-                Debug.Log("Recieved slam");
-                var combinedMessage = receivedHeartbeat.Dequeue();
-                foreach (var message in receivedHeartbeat)
+                Debug.Log("Received slam");
+                var combinedMessage = receivedHeartbeats[0];
+                foreach (var message in receivedHeartbeats[1..])
                 {
                     combinedMessage = combinedMessage.Combine(message);
                 }
@@ -92,22 +83,18 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
 
     public class HeartbeatMessage
     {
-        internal SlamMap map;
+        private readonly SlamMap _map;
 
         public HeartbeatMessage(SlamMap map)
         {
-            this.map = map;
+            _map = map;
         }
 
-        public HeartbeatMessage Combine(HeartbeatMessage otherMessage)
+        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
         {
-            if (otherMessage is HeartbeatMessage heartbeatMessage)
-            {
-                List<SlamMap> maps = new() { heartbeatMessage.map, map };
-                SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
-                return this;
-            }
-            return null;
+            List<SlamMap> maps = new() { heartbeatMessage._map, _map };
+            SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+            return this;
         }
 
         public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat

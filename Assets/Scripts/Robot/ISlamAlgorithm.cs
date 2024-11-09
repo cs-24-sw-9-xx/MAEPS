@@ -21,7 +21,6 @@
 
 using System.Collections.Generic;
 using Maes.Map;
-using Maes.Map.PathFinding;
 using UnityEngine;
 
 namespace Maes.Robot {
@@ -69,13 +68,13 @@ namespace Maes.Robot {
         /// <param name="slamTileTo"> The target slam tile of the path </param>
         /// <param name="acceptPartialPaths"> if true the method will return the path to the closest available tile if a full path is not available</param>
         /// <returns>A path represented as a list of tiles that make up the path</returns>
-        public List<Vector2Int> GetPath(Vector2Int slamTileFrom, Vector2Int slamTileTo, bool acceptPartialPaths = false);
+        public List<Vector2Int>? GetPath(Vector2Int slamTileFrom, Vector2Int slamTileTo, bool acceptPartialPaths = false);
         
-        /// <param name="slamTileFrom"> The starting slam tile of the path</param>
-        /// <param name="slamTileTo"> The target slam tile of the path </param>
+        /// <param name="coarseTileFrom"> The starting slam tile of the path</param>
+        /// <param name="coarseTileTo"> The target slam tile of the path </param>
         /// <param name="acceptPartialPaths"> if true the method will return the path to the closest available tile if a full path is not available </param>
         /// <returns> An optimistic path (partially unknown tiles are considered to be open) path represented as a list of tiles that make up the path </returns>
-        public List<Vector2Int> GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false);
+        public List<Vector2Int>? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false);
         
         /// <param name="slamTileTarget"> The slam tile to find the relative position of </param>
         /// <returns> Returns the relative position of the center of the given tiles </returns>

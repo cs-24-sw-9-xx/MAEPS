@@ -1,4 +1,4 @@
-// Copyright 2022 MAES
+// Copyright 2024 MAES
 // 
 // This file is part of MAES
 // 
@@ -15,14 +15,19 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard
 // 
-// Original repository: https://github.com/MalteZA/MAES
+// Original repository: https://github.com/Molitany/MAES
 
-namespace Maes {
-    public interface ISimulationUnit {
-        void LogicUpdate();
+using Maes.ExperimentSimulations;
 
-        void PhysicsUpdate();
+namespace Maes
+{
+    public class MinotaurDemo : ExplorationExperimentBase
+    {
+        void Start()
+        {
+            RunSimulation("building", "minotaur", "Material", "100", 100, 775411, 9);
+        }
     }
 }

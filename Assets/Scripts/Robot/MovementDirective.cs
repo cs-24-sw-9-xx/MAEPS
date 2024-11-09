@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
 using UnityEngine;
 
 namespace Maes.Robot {

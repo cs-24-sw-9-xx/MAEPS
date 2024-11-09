@@ -21,17 +21,16 @@
 
 using System.Collections.Generic;
 
-using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
 using UnityEngine;
 
-namespace MAES.Map.Visualization.Exploration {
+namespace Maes.Map.Visualization.Exploration {
     internal class CurrentlyVisibleAreaVisualization : IExplorationVisualizationMode {
         
-        private SimulationMap<ExplorationCell> _explorationMap;
-        private Robot2DController _selectedRobot;
+        private readonly SimulationMap<ExplorationCell> _explorationMap;
+        private readonly Robot2DController _selectedRobot;
 
         public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) {
             _selectedRobot = selectedRobot;
@@ -51,7 +50,7 @@ namespace MAES.Map.Visualization.Exploration {
         }
         
         private Color32 ExplorationCellToColor(int index) {
-            return _selectedRobot.SlamMap._currentlyVisibleTriangles.Contains(index) ? 
+            return _selectedRobot.SlamMap.CurrentlyVisibleTriangles.Contains(index) ? 
                     ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
         }
     }

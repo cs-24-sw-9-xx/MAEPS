@@ -94,7 +94,7 @@ namespace Maes.Map.MapGen
             survivingRooms.ForEach(r => r.OffsetCoordsBy(caveConfig.BorderSize, caveConfig.BorderSize));
 
             var meshGen = GetComponent<MeshGenerator>();
-            var collisionMap = meshGen.GenerateMesh(borderedMap.Clone() as Tile[,], wallHeight,
+            var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), wallHeight,
                 true, survivingRooms);
 
             // Rotate to fit 2D view
@@ -108,7 +108,7 @@ namespace Maes.Map.MapGen
          * - Every tile has 1 horizontal neighbour to each side, or 2 in either direction
          * - Every tile has 1 vertical neighbour to each side, or 2 in either direction
          * - Every tile has at least one diagonal neighbor on the line from bottom left to top right and top left to bottom right.
-         * This is due to some algorithms (e.g. B&M) assuming that any partially covered tile is completely covered
+         * This is due to some algorithms (e.g. B&amp;M) assuming that any partially covered tile is completely covered
          * This assumption leads to some narrow corridors traversable.
          * If we block the corridors with walls in this function, the algorithm will consider them two separate rooms later on
          * which will cause the algorithm to create a corridor of width n between them. This ensures traversability of all tiles. 
@@ -180,7 +180,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] ConnectAllRoomsToMainRoom(List<Room> survivingRooms, Tile[,] map, CaveMapConfig config)
         {
-            var connectedMap = map.Clone() as Tile[,];
+            var connectedMap = (Tile[,])map.Clone();
             survivingRooms.Sort();
             survivingRooms[0].IsMainRoom = true;
             survivingRooms[0].IsAccessibleFromMainRoom = true;
@@ -190,7 +190,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] ConnectClosestRooms(List<Room> allRooms, Tile[,] map, int passageWidth)
         {
-            var connectedMap = map.Clone() as Tile[,];
+            var connectedMap = (Tile[,])map.Clone();
             var roomListA = new List<Room>();
             var roomListB = new List<Room>();
 
@@ -207,8 +207,8 @@ namespace Maes.Map.MapGen
             var bestDistance = 0;
             var bestTileA = new Vector2Int();
             var bestTileB = new Vector2Int();
-            var bestRoomA = new Room();
-            var bestRoomB = new Room();
+            Room? bestRoomA = null;
+            Room? bestRoomB = null;
             var possibleConnectionFound = false;
 
             foreach (var roomA in roomListA)
@@ -239,10 +239,13 @@ namespace Maes.Map.MapGen
             if (!possibleConnectionFound) 
                 return connectedMap;
 
-            CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB, connectedMap, passageWidth);
-            connectedMap = ConnectClosestRooms(allRooms, connectedMap, passageWidth);
+            if (bestRoomA == null || bestRoomB == null)
+            {
+                throw new InvalidOperationException("bestRoomA and / or bestRoomB are null");
+            }
 
-            return connectedMap;
+            CreatePassage(bestRoomA, bestRoomB, bestTileA, bestTileB, connectedMap, passageWidth);
+            return ConnectClosestRooms(allRooms, connectedMap, passageWidth);
         }
 
         void CreatePassage(Room roomA, Room roomB, Vector2Int tileA, Vector2Int tileB, Tile[,] map, int passageWidth)
@@ -368,7 +371,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] SmoothMap(Tile[,] map, CaveMapConfig config)
         {
-            var smoothedMap = map.Clone() as Tile[,];
+            var smoothedMap = (Tile[,])map.Clone();
             for (var x = 0; x < config.BitMapWidth; x++)
             {
                 for (var y = 0; y < config.BitMapHeight; y++)
@@ -376,9 +379,9 @@ namespace Maes.Map.MapGen
                     var (neighborWallTiles, neighborWallType) = GetSurroundingWallCount(x, y, map);
 
                     if (neighborWallTiles >= config.NeighbourWallsNeededToStayWall)
-                        smoothedMap![x, y] = new Tile(neighborWallType);
+                        smoothedMap[x, y] = new Tile(neighborWallType);
                     else
-                        smoothedMap![x, y] = new Tile(TileType.Room);
+                        smoothedMap[x, y] = new Tile(TileType.Room);
                 }
             }
 
@@ -417,7 +420,10 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            base.DrawMap(MapToDraw);
+            if (MapToDraw != null)
+            {
+                DrawMap(MapToDraw);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace Maes.PatrollingAlgorithms
     public class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Conscientious Reactive Algorithm";
-        private bool _isPatrolling = false;
+        private bool _isPatrolling;
 
         public override string GetDebugInfo()
         {
@@ -33,17 +34,17 @@ namespace Maes.PatrollingAlgorithms
         }
 
         private Vertex GetClosestVertex(){
-            Vertex closestVertex = null;
-            float closestDistance = float.MaxValue;
-            Vector2Int myPossition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            Vertex? closestVertex = null;
+            var closestDistance = float.MaxValue;
+            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
             foreach (var vertex in _vertices){
-                float distance = Vector2Int.Distance(myPossition, vertex.Position);
+                var distance = Vector2Int.Distance(position, vertex.Position);
                 if (distance < closestDistance){
                     closestDistance = distance;
                     closestVertex = vertex;
                 }
             }
-            return closestVertex;
+            return closestVertex ?? throw new InvalidOperationException("There are no vertices!");
         }
     }
 }

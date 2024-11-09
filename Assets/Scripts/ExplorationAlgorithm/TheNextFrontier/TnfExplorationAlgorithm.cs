@@ -59,20 +59,23 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             OutOfFrontiers
         }
 
-        private IRobotController _robotController;
+        // Set by SetController
+        private IRobotController _robotController = null!;
+        
+        // Set by SetController
+        private CoarseGrainedMap _map = null!;
+        
         private TnfStatus _robotTnfStatus;
-        private CoarseGrainedMap _map;
         private int Alpha { get; }
         private int Beta { get; }
 
-        private List<Frontier> _frontiers;
-        private List<SensedObject<int>> _lastSeenNeighbours;
+        private List<Frontier>? _frontiers;
 
-        private Vector2 _robotPos = new Vector2(0, 0);
-        private Vector2Int _robotPosInt = new Vector2Int(0, 0);
+        private Vector2 _robotPos;
+        private Vector2Int _robotPosInt;
         private int _robotId = -1;
-        private LinkedList<PathStep> _path;
-        private PathStep _nextTileInPath;
+        private LinkedList<PathStep>? _path;
+        private PathStep? _nextTileInPath;
         private const float AngleDelta = .5f;
         private const float MinimumMoveDistance = .3f;
 
@@ -81,14 +84,14 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
         private readonly System.Random _random;
         private bool _isCommunicating;
         private int _ticksSpentColliding;
-        private List<(int, Vector2)> _currentDestinations = new List<(int, Vector2)>{};
+        private readonly List<(int, Vector2)> _currentDestinations = new();
 
 
         private class Frontier {
-            public readonly List<(Vector2Int, float)> cells;
+            public readonly List<(Vector2Int, float)> Cells;
 
             public Frontier(List<(Vector2Int, float)> cells) {
-                this.cells = cells;
+                Cells = cells;
                 UtilityValue = -1;
             }
 
@@ -107,7 +110,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
         }
 
         private float InformationFactor(Frontier frontier) {
-            return frontier.cells.Sum(c => InformationPotential(c, GetNeighbouringCells(c))) / _frontiers.Count;
+            return frontier.Cells.Sum(c => InformationPotential(c, GetNeighbouringCells(c))) / _frontiers!.Count;
         }
 
         private List<(Vector2Int, float)> GetNeighbouringCells((Vector2Int, float) cell) {
@@ -139,19 +142,19 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
         }
 
         private IEnumerable<float> Wavefront(Frontier frontier, Vector2 fromPosition) {
-            return frontier.cells.Select(cell => Vector2.Distance(fromPosition, cell.Item1));
+            return frontier.Cells.Select(cell => Vector2.Distance(fromPosition, cell.Item1));
         }
 
         private float CoordinationFactor(Frontier frontier) {
-            _lastSeenNeighbours = _robotController.SenseNearbyRobots();
-            if (_lastSeenNeighbours.Count <= 0) {
+            var lastSeenNeighbours = _robotController.SenseNearbyRobots();
+            if (lastSeenNeighbours.Count <= 0) {
                 return 0;
             }
 
             var sum = 0f;
-            foreach (var neighbour in _lastSeenNeighbours) {
+            foreach (var neighbour in lastSeenNeighbours) {
                 var pos = _robotPos + Geometry.VectorFromDegreesAndMagnitude(neighbour.Angle, neighbour.Distance);
-                var normalizerConstant = _frontiers.Max(f => f.cells.Select(c => Vector2.Distance(pos, c.Item1)).Max());
+                var normalizerConstant = _frontiers!.Max(f => f.Cells.Select(c => Vector2.Distance(pos, c.Item1)).Max());
                 sum += WavefrontNormalized(frontier, pos, normalizerConstant);
             }
             return sum;
@@ -166,8 +169,8 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             _robotPosInt = Vector2Int.RoundToInt(_robotPos);
 
             if (_logicTicksSinceLastCommunication == 0) {
-                _lastSeenNeighbours = _robotController.SenseNearbyRobots();
-                if (_lastSeenNeighbours.Any()) {
+                var lastSeenNeighbours = _robotController.SenseNearbyRobots();
+                if (lastSeenNeighbours.Any()) {
                     _robotController.StopCurrentTask();
                     _isCommunicating = true;
                     if (_path != null && _path.Count > 0) {
@@ -271,10 +274,10 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             if (!received.Any()) {
                 return;
             }
-            var newMaps = new List<SlamMap> {_robotController.GetSlamMap() as SlamMap};
+            var newMaps = new List<SlamMap> {_robotController.GetSlamMap()};
             foreach (var package in received) {
                 var pack = ((SlamMap, int, Vector2)) package;
-                newMaps.Add(pack.Item1 as SlamMap);
+                newMaps.Add(pack.Item1);
                 if (_currentDestinations.Any(dict => dict.Item1 == pack.Item2)){
                     var index = _currentDestinations.FindIndex(dict => dict.Item1 == pack.Item2);
                     _currentDestinations[index] = (pack.Item2, pack.Item3);
@@ -299,7 +302,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             if (_frontiers.Count <= 0) {
                 return null;
             }
-            var normalizerConstant = _frontiers.Max(f => f.cells.Select(c => Vector2.Distance(currentPosition, c.Item1)).Max());
+            var normalizerConstant = _frontiers.Max(f => f.Cells.Select(c => Vector2.Distance(currentPosition, c.Item1)).Max());
             foreach (var frontier in _frontiers) {
                 frontier.UtilityValue = UtilityFunction(frontier, normalizerConstant);
             }
@@ -311,7 +314,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             var targetCell = GetFrontierMoveTarget(bestFrontier);
             var path = _map.GetTnfPathAsPathSteps(targetCell);
             if (path == null) {
-                _frontiers.Remove(bestFrontier);
+                _frontiers!.Remove(bestFrontier);
                 if (!_frontiers.Any()) {
                     _robotTnfStatus = TnfStatus.OutOfFrontiers;
                     return;
@@ -334,18 +337,18 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
         }
 
         private Vector2Int GetFrontierMoveTarget(Frontier frontier) {
-            var count = frontier.cells.Count;
+            var count = frontier.Cells.Count;
             var first = 0;
             var middle = count / 2;
             var last = count - 1;
             var dest = new Vector2Int(
-                (frontier.cells[first].Item1.x + frontier.cells[middle].Item1.x + frontier.cells[last].Item1.x) / 3,
-                (frontier.cells[first].Item1.y + frontier.cells[middle].Item1.y + frontier.cells[last].Item1.y) / 3
+                (frontier.Cells[first].Item1.x + frontier.Cells[middle].Item1.x + frontier.Cells[last].Item1.x) / 3,
+                (frontier.Cells[first].Item1.y + frontier.Cells[middle].Item1.y + frontier.Cells[last].Item1.y) / 3
             );
-            return _map.GetTileCenterRelativePosition(dest).Distance < MinimumMoveDistance ? frontier.cells[middle].Item1 : dest;
+            return _map.GetTileCenterRelativePosition(dest).Distance < MinimumMoveDistance ? frontier.Cells[middle].Item1 : dest;
         }
 
-        private void DoMovement(LinkedList<PathStep> path) {
+        private void DoMovement(LinkedList<PathStep>? path) {
             if (_robotController.GetStatus() == RobotStatus.Idle) {
                 if (path != null && path.Count > 0) {
                     if (_robotTnfStatus != TnfStatus.AwaitRotating) {

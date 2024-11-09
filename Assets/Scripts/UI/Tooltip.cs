@@ -19,19 +19,14 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Maes.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes {
+namespace Maes.UI {
     internal class Tooltip : MonoBehaviour {
-        private Text _text;
-        private RectTransform _backgroundTransform;
-        private static Tooltip _instance;
+        private Text _text = null!;
+        private RectTransform _backgroundTransform = null!;
+        private static Tooltip _instance = null!;
 
         private void Awake() {
             _instance = this;

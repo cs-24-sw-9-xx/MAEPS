@@ -22,7 +22,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Maes.Map.MapGen;
 using Maes.Map.PathFinding;
@@ -40,46 +39,41 @@ namespace Maes.Map
         private readonly int _widthInTiles, _heightInTiles;
 
         private SlamTileStatus[,] _tiles;
-        public Dictionary<Vector2Int, SlamTileStatus> _currentlyVisibleTiles;
-        public HashSet<int> _currentlyVisibleTriangles = new();
-        private SimulationMap<Tile> _collisionMap;
-        private IPathFinder _pathFinder;
+        public Dictionary<Vector2Int, SlamTileStatus> CurrentlyVisibleTiles;
+        public readonly HashSet<int> CurrentlyVisibleTriangles = new();
+        private readonly SimulationMap<Tile> _collisionMap;
+        private readonly IPathFinder _pathFinder;
 
         private readonly Vector2 _offset;
         private readonly RobotConstraints _robotConstraints;
-        private float _lastInaccuracyX = 0f;
-        private float _lastInaccuracyY = 0f;
+        private float _lastInaccuracyX ;
+        private float _lastInaccuracyY;
 
         // Represents the current approximate position of the given robot
         public Vector2 ApproximatePosition { get; private set; }
-        private float _robotAngle = 0;
-        private int _randomSeed;
-        private Random random;
+        private float _robotAngle;
+        private readonly Random _random;
 
         // Low resolution map
-        internal CoarseGrainedMap CoarseMap;
+        internal readonly CoarseGrainedMap CoarseMap;
         // Low resolution map only considering what is visible now
-        internal VisibleTilesCoarseMap VisibleTilesCoarseMap;
-
-        private bool _mapKnown;
+        private readonly VisibleTilesCoarseMap _visibleTilesCoarseMap;
 
         public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
             _collisionMap = collisionMap;
             _robotConstraints = robotConstraints;
-            _randomSeed = randomSeed;
             _widthInTiles = collisionMap.WidthInTiles * 2;
             _heightInTiles = collisionMap.HeightInTiles * 2;
             _offset = collisionMap.ScaledOffset;
 
-            _currentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
-            this.random = new Random(randomSeed);
+            CurrentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
+            _random = new Random(randomSeed);
             _pathFinder = new AStar();
-            _mapKnown = robotConstraints.MapKnown;
 
-            _tiles = _mapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
-            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, _mapKnown);
-            VisibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
+            _tiles = robotConstraints.MapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
+            CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, robotConstraints.MapKnown);
+            _visibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
         }
         
@@ -156,25 +150,25 @@ namespace Maes.Map
 
         public void ResetRobotVisibility()
         {
-            _currentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
-            _currentlyVisibleTriangles.Clear();
+            CurrentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
+            CurrentlyVisibleTriangles.Clear();
         }
 
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, bool isOpen)
         {
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
-            _currentlyVisibleTriangles.Add(triangleIndex);
+            CurrentlyVisibleTriangles.Add(triangleIndex);
 
-            if (!_currentlyVisibleTiles.ContainsKey(localCoordinate))
+            if (!CurrentlyVisibleTiles.ContainsKey(localCoordinate))
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                _currentlyVisibleTiles[localCoordinate] = newStatus;
+                CurrentlyVisibleTiles[localCoordinate] = newStatus;
                 CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
-            else if (_currentlyVisibleTiles[localCoordinate] != SlamTileStatus.Solid)
+            else if (CurrentlyVisibleTiles[localCoordinate] != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                _currentlyVisibleTiles[localCoordinate] = newStatus;
+                CurrentlyVisibleTiles[localCoordinate] = newStatus;
                 CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
 
@@ -183,7 +177,7 @@ namespace Maes.Map
         public SlamTileStatus GetVisibleTileByTriangleIndex(int triangleIndex)
         {
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
-            return _currentlyVisibleTiles.ContainsKey(localCoordinate) ? _currentlyVisibleTiles[localCoordinate] : SlamTileStatus.Unseen;
+            return CurrentlyVisibleTiles.GetValueOrDefault(localCoordinate, SlamTileStatus.Unseen);
         }
 
         public SlamTileStatus GetTileByTriangleIndex(int triangleIndex)
@@ -208,16 +202,16 @@ namespace Maes.Map
             }
 
 
-            var sign = random.Next(2) == 1 ? -1 : 1;
-            var multiplier = random.NextDouble() * sign;
+            var sign = _random.Next(2) == 1 ? -1 : 1;
+            var multiplier = _random.NextDouble() * sign;
             var newInaccuracy = _lastInaccuracyX + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
             newInaccuracy = MathUtilities.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
                 _robotConstraints.SlamPositionInaccuracy);
             var newXAprox = (float)newInaccuracy + worldPosition.x;
             _lastInaccuracyX = (float)newInaccuracy;
 
-            sign = random.Next(2) == 1 ? -1 : 1;
-            multiplier = random.NextDouble() * sign;
+            sign = _random.Next(2) == 1 ? -1 : 1;
+            multiplier = _random.NextDouble() * sign;
             newInaccuracy = _lastInaccuracyY + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
             newInaccuracy = MathUtilities.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
                 _robotConstraints.SlamPositionInaccuracy);
@@ -245,7 +239,7 @@ namespace Maes.Map
             }
 
             foreach (var map in maps)
-                map._tiles = globalMap.Clone() as SlamTileStatus[,];
+                map._tiles = (SlamTileStatus[,])globalMap.Clone();
 
             // Synchronize coarse maps
             CoarseGrainedMap.Synchronize(maps.Select(m => m.CoarseMap).ToList(), globalMap);
@@ -272,7 +266,7 @@ namespace Maes.Map
                 }
             }
 
-            target._tiles = globalMap.Clone() as SlamTileStatus[,];
+            target._tiles = (SlamTileStatus[,])globalMap.Clone();
             CoarseGrainedMap.Combine(target.CoarseMap, others.Select(o => o.GetCoarseMap()).ToList(), globalMap);
         }
 
@@ -299,7 +293,7 @@ namespace Maes.Map
 
         public Dictionary<Vector2Int, SlamTileStatus> GetCurrentlyVisibleTiles()
         {
-            return _currentlyVisibleTiles;
+            return CurrentlyVisibleTiles;
         }
 
         public SlamTileStatus GetTileStatus(Vector2Int tile, bool optimistic = false)
@@ -307,7 +301,7 @@ namespace Maes.Map
             return _tiles[tile.x, tile.y];
         }
 
-        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamMap.SlamTileStatus lookupStatus, HashSet<Vector2Int> excludedTiles = null)
+        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
         {
             return _pathFinder.GetNearestTileFloodFill(this, targetCoordinate, lookupStatus, excludedTiles);
         }
@@ -394,7 +388,7 @@ namespace Maes.Map
         {
             // Convert to local coordinate
             var robotPosition = GetCurrentPosition();
-            var distance = Vector2.Distance(robotPosition, (Vector2)slamTileTarget);
+            var distance = Vector2.Distance(robotPosition, slamTileTarget);
             var angle = Vector2.SignedAngle(Geometry.DirectionAsVector(GetRobotAngleDeg()), slamTileTarget - robotPosition);
             return new RelativePosition(distance, angle);
         }
@@ -413,12 +407,12 @@ namespace Maes.Map
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
-            path[path.Count - 1] = coarseTileTo;
+            path[^1] = coarseTileTo;
 
             return path;
         }
 
-        public List<Vector2Int> GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
+        public List<Vector2Int>? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
 
@@ -427,7 +421,7 @@ namespace Maes.Map
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
-            path[path.Count - 1] = coarseTileTo;
+            path[^1] = coarseTileTo;
 
             return path;
         }
@@ -441,7 +435,7 @@ namespace Maes.Map
 
         public VisibleTilesCoarseMap GetVisibleTilesCoarseMap()
         {
-            return VisibleTilesCoarseMap;
+            return _visibleTilesCoarseMap;
         }
         public Vector2 SlamToWorldCoordinate(Vector2Int slamCoordinate)
         {

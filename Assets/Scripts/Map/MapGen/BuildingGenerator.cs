@@ -31,7 +31,7 @@ namespace Maes.Map.MapGen
     {
         private BuildingMapConfig _config;
         private float _wallHeight;
-        private static Tile _type;
+        private static Tile? _type;
 
         /// <summary>
         /// Generates a building map using the unity game objects Plane, InnerWalls and WallRoof.
@@ -74,7 +74,7 @@ namespace Maes.Map.MapGen
             // The rooms should now reflect their relative shifted positions after adding borders round map.
             rooms.ForEach(r => r.OffsetCoordsBy(_config.BorderSize, _config.BorderSize));
             var meshGen = GetComponent<MeshGenerator>();
-            var collisionMap = meshGen.GenerateMesh(borderedMap.Clone() as Tile[,], _wallHeight, true,
+            var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), _wallHeight, true,
                 rooms);
 
             // Rotate to fit 2D view
@@ -90,7 +90,7 @@ namespace Maes.Map.MapGen
         private static Tile[,] ConnectRoomsWithDoors(List<Room> sortedRooms, Tile[,] oldMap, Random random,
             BuildingMapConfig config)
         {
-            var connectedMap = oldMap.Clone() as Tile[,];
+            var connectedMap = (Tile[,])oldMap.Clone();
             // Whether the given room is connected to the main room
             var connectedRooms = new List<Room>();
             var nonConnectedRooms = new List<Room>();
@@ -146,7 +146,7 @@ namespace Maes.Map.MapGen
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
                             for (var j = 0; j < wallThickness; j++)
-                                connectedMap![doorStartingPoint.x + i, doorStartingPoint.y + j] = new Tile(TileType.Room);
+                                connectedMap[doorStartingPoint.x + i, doorStartingPoint.y + j] = new Tile(TileType.Room);
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
@@ -164,7 +164,7 @@ namespace Maes.Map.MapGen
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
                             for (var j = -1; j < wallThickness; j++)
-                                connectedMap![doorStartingPoint.x + i, doorStartingPoint.y - j] = new Tile(TileType.Room);
+                                connectedMap[doorStartingPoint.x + i, doorStartingPoint.y - j] = new Tile(TileType.Room);
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
@@ -182,7 +182,7 @@ namespace Maes.Map.MapGen
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
                             for (var j = 0; j < wallThickness; j++)
-                                connectedMap![doorStartingPoint.x + j, doorStartingPoint.y + i] = new Tile(TileType.Room);
+                                connectedMap[doorStartingPoint.x + j, doorStartingPoint.y + i] = new Tile(TileType.Room);
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
@@ -200,7 +200,7 @@ namespace Maes.Map.MapGen
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
                             for (var j = -1; j < wallThickness; j++)
-                                connectedMap![doorStartingPoint.x - j, doorStartingPoint.y + i] = new Tile(TileType.Room);
+                                connectedMap[doorStartingPoint.x - j, doorStartingPoint.y + i] = new Tile(TileType.Room);
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                     }
@@ -250,7 +250,7 @@ namespace Maes.Map.MapGen
 
             var mapWidth = map!.GetLength(0);
             var mapHeight = map.GetLength(1);
-            var tileType = _type;
+            var tileType = _type ?? throw new InvalidOperationException("_type is null");
             for (var x = 0; x < mapWidth; x++)
             {
                 for (var y = 0; y < mapHeight; y++)
@@ -267,7 +267,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] GenerateRoomsBetweenHalls(Tile[,] oldMap, BuildingMapConfig config, Random random)
         {
-            var mapWithRooms = oldMap.Clone() as Tile[,];
+            var mapWithRooms = (Tile[,])oldMap.Clone();
 
             var roomRegions = GetRegions(mapWithRooms, TileType.Room);
 
@@ -320,7 +320,7 @@ namespace Maes.Map.MapGen
             var selectedIndex = random.Next(filteredCoordinates.Count);
             var wallStartCoordinate = filteredCoordinates[selectedIndex];
 
-            var tileType = _type;
+            var tileType = _type ?? throw new InvalidOperationException("_type is null");
             // Create wall
             if (splitOnXAxis)
             {
@@ -360,7 +360,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] AddWallAroundRoomRegions(Tile[,] oldMap, int wallThickness)
         {
-            var mapWithRoomWalls = oldMap.Clone() as Tile[,];
+            var mapWithRoomWalls = (Tile[,])oldMap.Clone();
             var roomRegions = GetRegions(mapWithRoomWalls, TileType.Room);
 
             foreach (var region in roomRegions)
@@ -370,27 +370,28 @@ namespace Maes.Map.MapGen
                 var biggestX = region.Select(coordinate => coordinate.x).Max();
                 var smallestY = region.Select(coordinate => coordinate.y).Min();
                 var biggestY = region.Select(coordinate => coordinate.y).Max();
-                var tile = _type;
-                var innerTile = _type;
+                var tile= _type ?? throw new InvalidOperationException("_type is null");
+                var innerTile = _type ?? throw new InvalidOperationException("_type is null");
                 //while (innerTile.Type == tile.Type)
                 //    innerTile = _type;
 
                 for (var i = 0; i < wallThickness; i++)
                 {
-                    var box = region.Where(coordinate => coordinate.x == smallestX + i ||
-                                                                 coordinate.x == biggestX - i ||
-                                                                 coordinate.y == smallestY + i ||
-                                                                 coordinate.y == biggestY - i &&
-                                                                 coordinate.y >= smallestY + i && coordinate.y <= biggestY + i &&
-                                                                 coordinate.x >= smallestX + i && coordinate.x <= biggestX + i);
+                    var iCopy = i;
+                    var box = region.Where(coordinate => coordinate.x == smallestX + iCopy ||
+                                                                 coordinate.x == biggestX - iCopy ||
+                                                                 coordinate.y == smallestY + iCopy ||
+                                                                 coordinate.y == biggestY - iCopy &&
+                                                                 coordinate.y >= smallestY + iCopy && coordinate.y <= biggestY + iCopy &&
+                                                                 coordinate.x >= smallestX + iCopy && coordinate.x <= biggestX + iCopy);
 
                     foreach (var coordinate in box)
                     {
                         if (!IsInMapRange(coordinate.x, coordinate.y, mapWithRoomWalls)) continue;
                         if (i == 0 || i == wallThickness - 1)
-                            mapWithRoomWalls![coordinate.x, coordinate.y] = tile;
+                            mapWithRoomWalls[coordinate.x, coordinate.y] = tile;
                         else
-                            mapWithRoomWalls![coordinate.x, coordinate.y] = innerTile;
+                            mapWithRoomWalls[coordinate.x, coordinate.y] = innerTile;
                     }
                 }
             }
@@ -400,7 +401,7 @@ namespace Maes.Map.MapGen
 
         private Tile[,] GenerateMapWithHalls(Tile[,] map, BuildingMapConfig config, Random random)
         {
-            var mapWithHalls = map.Clone() as Tile[,];
+            var mapWithHalls = (Tile[,])map.Clone();
 
             // Rotate 90 degrees every time a hallway is generated
             var usingXAxis = true;
@@ -438,7 +439,7 @@ namespace Maes.Map.MapGen
                     // Fill with hall tiles
                     foreach (var c in biggestRoom.Where(c => hallStartCoordinate <= c.x && c.x < hallStartCoordinate + config.HallWidth))
                     {
-                        mapWithHalls![c.x, c.y] = new Tile(TileType.Hall);
+                        mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
                     }
 
                     usingXAxis = false;
@@ -448,7 +449,7 @@ namespace Maes.Map.MapGen
                     // Fill with hall tiles
                     foreach (var c in biggestRoom.Where(c => hallStartCoordinate <= c.y && c.y < hallStartCoordinate + config.HallWidth))
                     {
-                        mapWithHalls![c.x, c.y] = new Tile(TileType.Hall);
+                        mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
                     }
 
                     usingXAxis = true;

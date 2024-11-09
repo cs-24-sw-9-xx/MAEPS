@@ -21,14 +21,12 @@
 
 using System.Collections.Generic;
 
-using Maes;
-using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
 using UnityEngine;
 
-namespace MAES.Map.Visualization.Exploration {
+namespace Maes.Map.Visualization.Exploration {
     internal class CoverageHeatMapVisualization : IExplorationVisualizationMode {
 
         private SimulationMap<ExplorationCell> _explorationMap;

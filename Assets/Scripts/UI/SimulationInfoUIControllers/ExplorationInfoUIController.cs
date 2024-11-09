@@ -1,32 +1,30 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-using Maes;
 using Maes.Algorithms;
-using Maes.Map.Visualization;
+using Maes.Map.Visualization.Exploration;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
-using MAES.Map.Visualization.Exploration;
-using MAES.Simulation.SimulationScenarios;
-
-using UnityEngine;
 using UnityEngine.UI;
 
-namespace MAES.UI.SimulationInfoUIControllers
+namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class ExplorationInfoUIController : SimulationInfoUIControllerBase<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        public Image ExplorationBarMask, CoverageBarMask;
-        public Text ProgressPercentageText, CoveragePercentageText;
-        public Text ExplorationRateText;
+        public Image ExplorationBarMask = null!, CoverageBarMask = null!;
+        public Text ProgressPercentageText = null!, CoveragePercentageText = null!;
+        public Text ExplorationRateText = null!;
         
-        public Button AllExplorationButton;
-        public Button AllCoverageButton;
-        public Button AllExplorationHeatMapButton;
-        public Button AllCoverageHeatMapButton;
-        public Button SelectVisibleAreaButton;
-        public Button SelectedSlamMapButton;
+        public Button AllExplorationButton = null!;
+        public Button AllCoverageButton = null!;
+        public Button AllExplorationHeatMapButton = null!;
+        public Button AllCoverageHeatMapButton = null!;
+        public Button SelectVisibleAreaButton = null!;
+        public Button SelectedSlamMapButton = null!;
         
-        private List<Button> _mapVisualizationToggleGroup;
+        private List<Button>? _mapVisualizationToggleGroup;
         
 
         protected override void AfterStart()
@@ -83,7 +81,10 @@ namespace MAES.UI.SimulationInfoUIControllers
             CoveragePercentageText.text = (progress * 100f).ToString("#.00") + "%";            
         }
 
-        protected override void UpdateStatistics(ExplorationSimulation explorationSimulation) {
+        protected override void UpdateStatistics(ExplorationSimulation? explorationSimulation)
+        {
+            if (explorationSimulation == null) return;
+            
             SetExplorationProgress(explorationSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(explorationSimulation.ExplorationTracker.CoverageProportion);
             ExplorationRateText.text = "Exploration rate (cells/minute): " +
@@ -97,7 +98,7 @@ namespace MAES.UI.SimulationInfoUIControllers
 
         // Highlights the selected map visualization button
         private void SelectVisualizationButton(Button selectedButton) {
-            foreach (var button in _mapVisualizationToggleGroup) 
+            foreach (var button in _mapVisualizationToggleGroup ?? Enumerable.Empty<Button>()) 
                 button.image.color = _mapVisualizationColor;
 
             selectedButton.image.color = _mapVisualizationSelectedColor;

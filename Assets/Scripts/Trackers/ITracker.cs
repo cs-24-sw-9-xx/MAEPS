@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using JetBrains.Annotations;
+
 using Maes.Robot;
 
 namespace Maes.Trackers
@@ -8,6 +8,6 @@ namespace Maes.Trackers
     {
         void LogicUpdate(IReadOnlyList<MonaRobot> robots);
 
-        void SetVisualizedRobot([CanBeNull] MonaRobot robot);
+        void SetVisualizedRobot(MonaRobot? robot);
     }
 }

@@ -1,6 +1,6 @@
 using Maes.Algorithms;
 
-namespace MAES.Map.RobotSpawners
+namespace Maes.Map.RobotSpawners
 {
     public class ExplorationRobotSpawner : RobotSpawner<IExplorationAlgorithm>
     {

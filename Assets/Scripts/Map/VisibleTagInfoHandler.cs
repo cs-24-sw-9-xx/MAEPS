@@ -19,22 +19,25 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using MAES.Simulation;
+using Maes.Simulation;
+using Maes.UI;
 
 using QuickOutline;
 
 using UnityEngine;
-using YamlDotNet.Core.Tokens;
 
 namespace Maes.Map {
     public class VisibleTagInfoHandler : MonoBehaviour {
-        private EnvironmentTag _environmentTag;
+        public Outline outline = null!;
+        public ExplorationSimulation Simulation = null!;
+        
+        // Set by SetTag
+        private EnvironmentTag _environmentTag = null!;
+        // Set by SetTag
+        private OnVisibleTagSelectedDelegate _onVisibleTagSelected = null!;
+        
         private delegate void OnVisibleTagSelectedDelegate(VisibleTagInfoHandler t);
-        public Outline outline;
-        private OnVisibleTagSelectedDelegate _onVisibleTagSelected;
 
-        public ISimulation Simulation;
 
         public void SetTag(EnvironmentTag t) {
             _environmentTag = t;

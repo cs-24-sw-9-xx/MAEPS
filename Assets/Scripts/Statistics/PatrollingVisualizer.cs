@@ -1,22 +1,23 @@
 
 using System.Collections.Generic;
+
 using Maes.Map;
-using Maes.Map.MapGen;
-using Maes.Visualizer;
+using Maes.Visualizers;
+
 using UnityEngine;
 
 namespace Maes.Statistics {
     public class PatrollingVisualizer : MonoBehaviour, IVisualizer<PatrollingCell> {
 
-        public GameObject VertexVisualizer;
+        public GameObject VertexVisualizer = null!;
+        public GameObject EdgeVisualizer = null!;
 
-        public GameObject EdgeVisualizer;
+        // Set by SetPatrollingMap
+        private PatrollingMap _patrollingMap = null!;
 
-        private PatrollingMap _patrollingMap;
+        private readonly List<GameObject> _visualizers = new();
 
-        private List<GameObject> _visualizers = new List<GameObject>();
-
-        private Dictionary<Vertex, GameObject> _vertexVisualizers = new Dictionary<Vertex, GameObject>();
+        private readonly Dictionary<Vertex, GameObject> _vertexVisualizers = new();
 
         public void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
@@ -35,7 +36,7 @@ namespace Maes.Statistics {
 
         private void CreateVisualizers()
         {
-            foreach (var vertex in _patrollingMap.Verticies)
+            foreach (var vertex in _patrollingMap.Vertices)
             {
                 var vertexVisualizer = GameObject.Instantiate(VertexVisualizer, transform);
                 vertexVisualizer.transform.localPosition = (Vector2)vertex.Position;
@@ -58,7 +59,7 @@ namespace Maes.Statistics {
 
         public void ShowWaypointHeatMap(int currentTick){
 
-            foreach (var vertex in _patrollingMap.Verticies)
+            foreach (var vertex in _patrollingMap.Vertices)
             {
                 if(vertex.NumberOfVisits == 0) continue;
                 var ticksSinceLastExplored = currentTick - vertex.LastTimeVisitedTick;

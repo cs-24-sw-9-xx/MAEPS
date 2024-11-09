@@ -20,10 +20,9 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using Maes;
 using Maes.Map;
-using Maes.Robot;
-using Maes.Visualizer;
+using Maes.Visualizers;
+
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -31,20 +30,16 @@ namespace Maes.Statistics
 {
     public class ExplorationVisualizer : MonoBehaviour, IVisualizer<ExplorationCell>
     {
-        public MeshRenderer meshRenderer;
-        public MeshFilter meshFilter;
-        //public RobotSpawner robotSpawner;
-        private GameObject _fogOfWarPlane;
-        //private List<Transform> _fogRobots = new();
+        public MeshFilter meshFilter = null!;
         public LayerMask _foglayer;
+        
+        private GameObject? _fogOfWarPlane;
+        private Mesh? _fogMesh;
+        private Vector3[]? _fogVertices;
+        private Color[]? _fogColors;
 
-        private Mesh _fogMesh;
-        private Vector3[] _fogVertices;
-        private Color[] _fogColors;
-        //private float _revealRadius;
-        //private float _revealRadiusSqr;
-
-        private Mesh mesh;
+        // Set in SetSimulationMap
+        private Mesh _mesh = null!;
 
         public static readonly Color32 SolidColor = new Color32(0, 0, 0, 255);
         public static readonly Color32 ExploredColor = new Color32(32, 130, 57, 255);
@@ -55,15 +50,17 @@ namespace Maes.Statistics
         public static readonly Color32 ColdColor = new Color32(50, 120, 180, 255);
 
         private int _widthInTiles, _heightInTiles;
-        private int _widthInVertices, _heightInVertices;
         private Vector3 _offset;
 
-        private List<Vector3> _vertices = new List<Vector3>();
-        private List<int> _triangles = new List<int>();
-        private Color32[] _colors;
+        private readonly List<Vector3> _vertices = new List<Vector3>();
+        private readonly List<int> _triangles = new List<int>();
+        
+        // Set in SetSimulationMap
+        private SimulationMap<ExplorationCell> _map = null!;
+        // Set in SetSimulationMap
+        private Color32[] _colors = null!;
 
         private const int ResolutionMultiplier = 2;
-        private SimulationMap<ExplorationCell> _map;
 
         public delegate Color32 CellToColor(ExplorationCell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
@@ -74,8 +71,6 @@ namespace Maes.Statistics
             _widthInTiles = _map.WidthInTiles;
             _heightInTiles = _map.HeightInTiles;
             _offset = offset;
-            _widthInVertices = _widthInTiles * ResolutionMultiplier + 1;
-            _heightInVertices = _heightInTiles * ResolutionMultiplier + 1;
 
             // GenerateVertices();
             GenerateTriangleVertices();
@@ -83,14 +78,16 @@ namespace Maes.Statistics
             _colors = new Color32[_vertices.Count];
             InitializeColors(_map);
 
-            mesh = new Mesh();
-            mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = _vertices.ToArray();
-            mesh.triangles = _triangles.ToArray();
-            mesh.RecalculateNormals();
+            _mesh = new Mesh
+            {
+                indexFormat = IndexFormat.UInt32,
+                vertices = _vertices.ToArray(),
+                triangles = _triangles.ToArray(),
+                colors32 = _colors
+            };
+            _mesh.RecalculateNormals();
 
-            mesh.colors32 = _colors;
-            meshFilter.mesh = mesh;
+            meshFilter.mesh = _mesh;
 
             //Fog of War related stuff below
             _fogOfWarPlane = GameObject.Find("FogPlaneBetter");
@@ -178,7 +175,6 @@ namespace Maes.Statistics
         {
             _triangles.Clear();
             // The vertices are already arranged in the correct order (ie. triangle 0 has vertices indexed 0, 1, 2)
-            _triangles = new List<int>();
             for (int i = 0; i < _vertices.Count; i++)
                 _triangles.Add(i);
         }
@@ -186,7 +182,6 @@ namespace Maes.Statistics
         // Colors each triangle depending on its current state
         public void InitializeColors(SimulationMap<ExplorationCell> newMap)
         {
-            int count = 0;
             foreach (var (index, explorationCell) in newMap)
             {
                 var vertexIndex = index * 3;
@@ -196,7 +191,6 @@ namespace Maes.Statistics
                 _colors[vertexIndex] = color;
                 _colors[vertexIndex + 1] = color;
                 _colors[vertexIndex + 2] = color;
-                if (!explorationCell.IsExplorable) count++;
             }
         }
 
@@ -216,7 +210,7 @@ namespace Maes.Statistics
                 _colors[vertexIndex + 2] = color;
             }
 
-            mesh.colors32 = _colors;
+            _mesh.colors32 = _colors;
         }
 
         /// <summary>
@@ -226,7 +220,7 @@ namespace Maes.Statistics
         /// </summary>
         public void SetAllColors(SimulationMap<ExplorationCell> map, CellIndexToColor cellToColor)
         {
-            foreach (var (index, cell) in map)
+            foreach (var (index, _) in map)
             {
                 var vertexIndex = index * 3;
                 var color = cellToColor(index);
@@ -235,7 +229,7 @@ namespace Maes.Statistics
                 _colors[vertexIndex + 2] = color;
             }
 
-            mesh.colors32 = _colors;
+            _mesh.colors32 = _colors;
         }
 
         public void SetAllColors(CellIndexToColor getColorByIndex)
@@ -244,7 +238,7 @@ namespace Maes.Statistics
             {
                 SetCellColor(index, getColorByIndex(index));
             }
-            mesh.colors32 = _colors;
+            _mesh.colors32 = _colors;
         }
 
         private void SetCellColor(int triangleIndex, Color32 color)
@@ -270,13 +264,11 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogOfWarPlane != null) {
+                if (_fogMesh != null && _fogColors != null) {
                     for (int i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
-                        Ray r = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);
-                        RaycastHit hit;
-                        bool raytrue = Physics.Raycast(r, out hit, 1000, _foglayer, QueryTriggerInteraction.Collide);
-                        if (Physics.Raycast(r, out hit, 1000, _foglayer, QueryTriggerInteraction.Collide))
+                        var ray = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);
+                        if (Physics.Raycast(ray, out var hit, 1000, _foglayer, QueryTriggerInteraction.Collide))
                         {
                             int vertexIndexHit = GetClosestVertex(hit, _fogMesh.triangles);
                             _fogColors[vertexIndexHit].a = 0;
@@ -286,19 +278,22 @@ namespace Maes.Statistics
                 }
             }
 
-            mesh.colors32 = _colors;
+            _mesh.colors32 = _colors;
         }
 
         void UpdateFogColor()
         {
-            _fogMesh.colors = _fogColors;
+            if (_fogMesh != null)
+            {
+                _fogMesh.colors = _fogColors;
+            }
         }
 
         public static int GetClosestVertex(RaycastHit aHit, int[] aTriangles)
         {
             var b = aHit.barycentricCoordinate;
             int index = aHit.triangleIndex * 3;
-            if (aTriangles == null || index < 0 || index + 2 >= aTriangles.Length)
+            if (index < 0 || index + 2 >= aTriangles.Length)
                 return -1;
 
             if (b.x > b.y)

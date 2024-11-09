@@ -27,17 +27,11 @@ using UnityEngine;
 namespace Maes {
     public class DebuggingVisualizer : ISimulationUnit {
         
-        private Queue<CommunicationLink> _links = new Queue<CommunicationLink>();
-        private Color _linkColor = new Color(50f / 255f, 120f / 255f, 255f / 255f);
-        private int _currentTick = 0;
-
-        private bool _shouldRenderAllTags = false;
+        private readonly Queue<CommunicationLink> _links = new();
+        private int _currentTick;
 
         // Environment tags
-        private readonly List<EnvironmentTag> _environmentTags = new List<EnvironmentTag>();
-
-        private readonly Color _tagColor = new Color(50f / 255f, 120f / 255f, 255f / 255f);
-        private readonly Color _readableTagColor = new Color(255f / 255f, 150f / 255f, 255f / 255f);
+        private readonly List<EnvironmentTag> _environmentTags = new();
 
         private readonly struct CommunicationLink {
             public readonly MonaRobot RobotOne;
@@ -49,7 +43,7 @@ namespace Maes {
                 RobotOne = robotOne;
                 RobotTwo = robotTwo;
                 EndPhysicsTick = endPhysicsTick;
-                LineRenderer = GameObject.Instantiate(Resources.Load<LineRenderer>("LineRendererPrefab"));
+                LineRenderer = Object.Instantiate(Resources.Load<LineRenderer>("LineRendererPrefab"));
                 LineRenderer.positionCount = 2;
                 LineRenderer.widthMultiplier = .03f;
                 LineRenderer.startColor = Color.yellow;
@@ -92,7 +86,7 @@ namespace Maes {
 
         public void RenderSelectedVisibleTags(int id) {
             foreach (var tag in _environmentTags) {
-                tag.SetVisibility(tag.sender == id);
+                tag.SetVisibility(tag.Sender == id);
             }
         }
 
@@ -115,7 +109,7 @@ namespace Maes {
 
         public void RenderCommunicationLines() {
             foreach (var link in _links) {
-                link.LineRenderer.SetPositions(new Vector3[] {link.RobotOne.transform.position + new Vector3(0, 0, -.2f), link.RobotTwo.transform.position + new Vector3(0, 0, -.2f)});
+                link.LineRenderer.SetPositions(new[] {link.RobotOne.transform.position + new Vector3(0, 0, -.2f), link.RobotTwo.transform.position + new Vector3(0, 0, -.2f)});
             }
         }
     }

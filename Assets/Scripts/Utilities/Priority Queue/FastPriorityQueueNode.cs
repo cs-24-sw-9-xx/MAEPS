@@ -38,7 +38,7 @@ namespace Maes.Utilities.Priority_Queue
         /// <summary>
         /// The queue this node is tied to. Used only for debug builds.
         /// </summary>
-        public object Queue { get; internal set; }
+        public object? Queue { get; internal set; }
 #endif
     }
 }

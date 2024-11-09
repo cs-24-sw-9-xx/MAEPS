@@ -50,41 +50,41 @@ namespace Maes.Robot {
     
     // Messages sent through this class will be subject to communication range and line of sight.
     // Communication is non-instantaneous. Messages will be received by other robots after one logic tick. 
-    internal class CommunicationManager : ISimulationUnit {
-        private RobotConstraints _robotConstraints;
-        private DebuggingVisualizer _visualizer;
+    public class CommunicationManager : ISimulationUnit {
+        private readonly RobotConstraints _robotConstraints;
+        private readonly DebuggingVisualizer _visualizer;
 
         // Messages that will sent during the next logic update
-        private List<Message> _queuedMessages = new();
+        private readonly List<Message> _queuedMessages = new();
         
         // Messages that were sent last tick and can now be read 
-        private List<Message> _readableMessages = new();
+        private readonly List<Message> _readableMessages = new();
 
         private readonly RayTracingMap<Tile> _rayTracingMap;
-        private List<MonaRobot> _robots;
+        private IReadOnlyList<MonaRobot> _robots = Array.Empty<MonaRobot>();
 
         // Map for storing and retrieving all tags deposited by robots
         private readonly EnvironmentTaggingMap _environmentTaggingMap;
         
-        private int _localTickCounter = 0;
+        private int _localTickCounter;
         
-        private Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = null;
+        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix;
 
-        private List<HashSet<int>> _communicationGroups = null; 
+        private List<HashSet<int>>? _communicationGroups; 
 
         private float _robotRelativeSize;
 
-        public CommunicationTracker CommunicationTracker;
+        public readonly CommunicationTracker CommunicationTracker;
 
         private readonly struct Message {
             public readonly object Contents;
             public readonly MonaRobot Sender;
-            public readonly Vector2 broadcastCenter;
+            public readonly Vector2 BroadcastCenter;
 
             public Message(object contents, MonaRobot sender, Vector2 broadcastCenter) {
                 Contents = contents;
                 Sender = sender;
-                this.broadcastCenter = broadcastCenter;
+                BroadcastCenter = broadcastCenter;
             }
         }
 
@@ -113,7 +113,7 @@ namespace Maes.Robot {
             _visualizer = visualizer;
             _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
             _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
-            CommunicationTracker = new CommunicationTracker(robotConstraints);
+            CommunicationTracker = new CommunicationTracker();
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize) {
@@ -127,14 +127,13 @@ namespace Maes.Robot {
 
         // Returns a list of messages sent by other robots
         public List<object> ReadMessages(MonaRobot receiver) {
-            this.PopulateAdjacencyMatrix();
+            PopulateAdjacencyMatrix();
             List<object> messages = new List<object>();
-            Vector2 receiverPosition = receiver.transform.position;
             foreach (var message in _readableMessages) {
                 // The robot will not receive its own messages
                 if (message.Sender.id == receiver.id) continue;
                 
-                var communicationTrace = _adjacencyMatrix[(message.Sender.id, receiver.id)];
+                var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
                 // If the transmission probability is above the specified threshold then the message will be sent
                 // otherwise it is discarded
                 if (communicationTrace.TransmissionSuccessful) {
@@ -203,7 +202,7 @@ namespace Maes.Robot {
                 SynchronizeSlamMaps();
             }
 
-            if (GlobalSettings.ShouldWriteCSVResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0) {
+            if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0) {
                 CommunicationTracker.AdjacencyMatrixRef = _adjacencyMatrix;
                 if (_communicationGroups == null) _communicationGroups = GetCommunicationGroups();
                 CommunicationTracker.CommunicationGroups = _communicationGroups;
@@ -215,11 +214,11 @@ namespace Maes.Robot {
         }
 
         private void SynchronizeSlamMaps() {
-            this._communicationGroups = GetCommunicationGroups();
+            _communicationGroups = GetCommunicationGroups();
 
             foreach (var group in _communicationGroups) {
                 var slamMaps = group
-                    .Select(id => _robots.Find(r => r.id == id))
+                    .Select(id => _robots.Single(r => r.id == id))
                     .Select(r => r.Controller.SlamMap)
                     .ToList();
                 
@@ -283,7 +282,7 @@ namespace Maes.Robot {
             while (keys.Count > 0) {
                 var currentKey = keys.Dequeue();
 
-                var inRange = _adjacencyMatrix
+                var inRange = _adjacencyMatrix!
                     .Where((kv) => kv.Key.Item1 == currentKey && kv.Value.TransmissionSuccessful)
                     .Select((e) => e.Key.Item2);
 
@@ -316,9 +315,8 @@ namespace Maes.Robot {
 
             foreach (var robot in _robots) {
                 if(robot.id == id) continue;
-
                 
-                var comInfo = _adjacencyMatrix[(id, robot.id)];
+                var comInfo = _adjacencyMatrix![(id, robot.id)];
                 if ((comInfo.Distance > _robotConstraints.SenseNearbyAgentsRange && !_robotConstraints.MaterialCommunication) || 
                    (comInfo.WallsCellsPassedThrough > 0 && _robotConstraints.SenseNearbyAgentsBlockedByWalls) ||
                    (!comInfo.TransmissionSuccessful && _robotConstraints.MaterialCommunication))
@@ -330,8 +328,8 @@ namespace Maes.Robot {
             return sensedObjects;
         } 
 
-        public void SetRobotReferences(List<MonaRobot> robots) {
-            this._robots = robots;
+        public void SetRobotReferences(IReadOnlyList<MonaRobot> robots) {
+            _robots = robots;
         }
 
         
@@ -345,7 +343,7 @@ namespace Maes.Robot {
             var robotPosition = robot.transform.position;
             
             // Perform trace from the center of the robot
-            var result1 = _rayTracingMap.FindIntersection(robot.transform.position, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result1 = _rayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance1 = result1 == null ? float.MaxValue : Vector2.Distance(robotPosition, result1.Value.Item1);
             var robotSize = _robotRelativeSize;
             

@@ -26,16 +26,12 @@ using Random = System.Random;
 
 namespace Maes.ExplorationAlgorithm.RandomBallisticWalk {
     public class RandomExplorationAlgorithm : IExplorationAlgorithm {
-        private IRobotController _robotController;
+        // Set by SetController
+        private IRobotController _robotController = null!;
         private bool _hasJustRotated = true;
         private readonly Random _random;
 
         public RandomExplorationAlgorithm(int randomSeed) {
-            _random = new Random(randomSeed);
-        }
-
-        public RandomExplorationAlgorithm(Robot2DController robotControllerController, int randomSeed) {
-            _robotController = robotControllerController;
             _random = new Random(randomSeed);
         }
 
@@ -57,7 +53,7 @@ namespace Maes.ExplorationAlgorithm.RandomBallisticWalk {
         }
 
         public void SetController(Robot2DController controller) {
-            this._robotController = controller;
+            _robotController = controller;
         }
 
         public string GetDebugInfo() {

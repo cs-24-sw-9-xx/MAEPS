@@ -21,14 +21,16 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Maes;
+
 using Maes.Map.MapGen;
 using Maes.Robot;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using NUnit.Framework;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 namespace PlayModeTests
@@ -79,10 +81,10 @@ namespace PlayModeTests
             _robotTestAlgorithms = new List<TestingAlgorithm>();
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
-                hasFinishedSim: simulation => false,
+                hasFinishedSim: _ => false,
                 robotConstraints: new RobotConstraints(materialCommunication: false, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 2,
-                    robotSeed => {
+                    _ => {
                         var algorithm = new TestingAlgorithm();
                         _robotTestAlgorithms.Add(algorithm);
                         return algorithm;
@@ -98,7 +100,7 @@ namespace PlayModeTests
             };
 
             // The second robot will continuously receive broadcasts
-            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {
+            _robotTestAlgorithms[0].UpdateFunction = (_, controller) => {
                 controller.ReceiveBroadcast();
             };
         }
@@ -108,8 +110,8 @@ namespace PlayModeTests
         public IEnumerator Broadcast_TransmissionSuccessTest()
         {
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => true,
-                new List<Vector2Int> { new Vector2Int(2, 2), new Vector2Int(6, 6) });
+                (_, _) => true,
+                new List<Vector2Int> { new(2, 2), new(6, 6) });
 
             string receivedMessage = null;
             string sentMessage = "message sent between robots 1 and 2";
@@ -120,7 +122,7 @@ namespace PlayModeTests
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (tick, controller) => {
+            algorithm2.UpdateFunction = (_, controller) => {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -139,8 +141,8 @@ namespace PlayModeTests
         public IEnumerator Broadcast_TransmissionFailedTest()
         {
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => false, // Always fail communication
-                new List<Vector2Int> { new Vector2Int(2, 2), new Vector2Int(6, 6) });
+                (_, _) => false, // Always fail communication
+                new List<Vector2Int> { new(2, 2), new(6, 6) });
 
             string receivedMessage = null;
             string sentMessage = "message sent between robots 1 and 2";
@@ -151,7 +153,7 @@ namespace PlayModeTests
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (tick, controller) => {
+            algorithm2.UpdateFunction = (_, controller) => {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -172,11 +174,11 @@ namespace PlayModeTests
             float foundWallDistance = float.PositiveInfinity;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => {
+                (_, wallDistance) => {
                     foundWallDistance = wallDistance;
                     return true;
                 },
-                new List<Vector2Int> { new Vector2Int(-10, -10), new Vector2Int(10, 10) });
+                new List<Vector2Int> { new(-10, -10), new(10, 10) });
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast
@@ -198,12 +200,12 @@ namespace PlayModeTests
         public IEnumerator Broadcast_CorrectDistanceCalculation(int secondRobotX, int secondRobotY)
         {
             float transmissionDistance = float.PositiveInfinity;
-            Vector2Int firstRobotPosition = new Vector2Int(0, 0);
-            Vector2Int secondRobotPosition = new Vector2Int(secondRobotX, secondRobotY);
+            var firstRobotPosition = new Vector2Int(0, 0);
+            var secondRobotPosition = new Vector2Int(secondRobotX, secondRobotY);
             float actualDistance = (firstRobotPosition - secondRobotPosition).magnitude;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, wallDistance) => {
+                (distance, _) => {
                     transmissionDistance = distance;
                     return true;
                 },
@@ -232,11 +234,11 @@ namespace PlayModeTests
             InitSimulator(
                 generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
                     transmissionSuccessCalculatorFunc:
-                    (distance, wallDistance) => {
+                    (_, wallDistance) => {
                         foundWallDistance = wallDistance;
                         return true;
                     },
-                new List<Vector2Int> { new Vector2Int(0, -2), new Vector2Int(0, 3 + wallThickness) });
+                new List<Vector2Int> { new(0, -2), new(0, 3 + wallThickness) });
 
             _maes.PressPlayButton();
             // Wait until the message has been broadcast

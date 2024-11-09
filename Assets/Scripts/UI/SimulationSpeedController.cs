@@ -19,21 +19,24 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using MAES.Simulation;
+using Maes.Simulation;
+
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Maes.UI {
     public class SimulationSpeedController : MonoBehaviour {
-        private ISimulationManager simulationManager;
-        public Button pauseButton;
-        public Button playButton;
-        public Button fastForwardButton;
-        public Button fastAsPossibleButton;
-        public Button stepperButton;
+        public Button pauseButton = null!;
+        public Button playButton = null!;
+        public Button fastForwardButton = null!;
+        public Button fastAsPossibleButton = null!;
+        public Button stepperButton = null!;
+        
+        // Set by Start
+        private ISimulationManager _simulationManager = null!;
 
         private void Start() {
-            simulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
+            _simulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
             
             pauseButton.onClick.AddListener(Pause);
             playButton.onClick.AddListener(Play);
@@ -76,7 +79,7 @@ namespace Maes.UI {
         }
 
         private void AttemptSwitchState(SimulationPlayState newPlayState) {
-            var actualState = simulationManager.AttemptSetPlayState(newPlayState);
+            var actualState = _simulationManager.AttemptSetPlayState(newPlayState);
             UpdateButtonsUI(actualState);
         }
     }

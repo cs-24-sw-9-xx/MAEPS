@@ -1,7 +1,6 @@
-using Maes.Map.MapGen;
 using Maes.Statistics;
 
-namespace Maes.Map.Visualization
+namespace Maes.Map.Visualization.Patrolling
 {
     public interface IPatrollingVisualizationMode : IVisualizationMode<PatrollingCell, PatrollingVisualizer>
     {

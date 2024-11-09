@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,21 +35,20 @@ namespace Maes.Map.PathFinding
         private class AStarTile
         {
             public readonly int X, Y;
-            public AStarTile? Parent;
             public readonly float Heuristic;
             public readonly float Cost;
             public readonly float TotalCost;
-            public readonly int TotalCostInt;
+            
+            private readonly AStarTile? _parent;
 
             public AStarTile(int x, int y, AStarTile? parent, float heuristic, float cost)
             {
                 X = x;
                 Y = y;
-                this.Parent = parent;
+                _parent = parent;
                 Heuristic = heuristic;
-                this.Cost = cost;
-                this.TotalCost = cost + heuristic;
-                this.TotalCostInt = (int)(TotalCost * 1000f);
+                Cost = cost;
+                TotalCost = cost + heuristic;
             }
 
             public List<Vector2Int> Path()
@@ -61,7 +59,7 @@ namespace Maes.Map.PathFinding
                 while (current != null)
                 {
                     path.Add(new Vector2Int(current.X, current.Y));
-                    current = current.Parent;
+                    current = current._parent;
                 }
 
                 path.Reverse();
@@ -119,13 +117,13 @@ namespace Maes.Map.PathFinding
                         // To travel diagonally, the two neighbouring tiles must also be free
                         if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic)
                         || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
+                        {
+                            if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate) ||
+                                pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Next().Vector, currentCoordinate))
                             {
-                                if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate) ||
-                                    pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Next().Vector, currentCoordinate))
-                                {
-                                    continue;
-                                }
+                                continue;
                             }
+                        }
                     }
 
                     var cost = currentTile.Cost + Vector2Int.Distance(currentCoordinate, candidateCoord);
@@ -166,9 +164,9 @@ namespace Maes.Map.PathFinding
                     }
                 }
 
-                var closestTile = bestCandidateOnTile[lowestHeuristicKey.Value];
+                var closestTile = bestCandidateOnTile[lowestHeuristicKey!.Value];
                 return GetPath(startCoordinate, new Vector2Int(closestTile.X, closestTile.Y),
-                    pathFindingMap, beOptimistic, false);
+                    pathFindingMap, beOptimistic);
             }
             return null;
         }
@@ -201,16 +199,12 @@ namespace Maes.Map.PathFinding
                 : map.IsSolid(coord);
         }
         private bool IsAnyNeighborOpen(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool optimistic)
-            {
-                if (IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.left, pathFindingMap, optimistic)  && IsSolid(targetCoordinate + Vector2Int.up, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.left, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.right, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.right, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.left, pathFindingMap, optimistic) &&
-                    IsSolid(targetCoordinate + Vector2Int.down, pathFindingMap, optimistic) && IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.right, pathFindingMap, optimistic))
-                    {
-                        return false;
-                    }
-                return true;
-            }
+        {
+            return !IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.left, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.up, pathFindingMap, optimistic) ||
+                   !IsSolid(targetCoordinate + Vector2Int.left, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.right, pathFindingMap, optimistic) ||
+                   !IsSolid(targetCoordinate + Vector2Int.right, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.left, pathFindingMap, optimistic) ||
+                   !IsSolid(targetCoordinate + Vector2Int.down, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.right, pathFindingMap, optimistic);
+        }
 
         private static float OctileHeuristic(Vector2Int from, Vector2Int to)
         {
@@ -268,13 +262,12 @@ namespace Maes.Map.PathFinding
             }
         }
 
-        public Vector2Int? GetNearestTileFloodFill(IPathFindingMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int> excludedTiles = null)
+        public Vector2Int? GetNearestTileFloodFill(IPathFindingMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
         {
             var targetQueue = new Queue<Vector2Int>();
             var visitedTargetsList = new HashSet<Vector2Int>();
             targetQueue.Enqueue(targetCoordinate);
 
-            int stepCount = 0;
             while (targetQueue.Any())
             {
                 var target = targetQueue.Dequeue();
@@ -283,29 +276,27 @@ namespace Maes.Map.PathFinding
                 {
                     return neighborHit.Value;
                 }
-                else
+                
+                var directions = CardinalDirection.GetCardinalDirections().Select(dir => dir.Vector);
+                foreach (var dir in directions)
                 {
-                    var directions = CardinalDirection.GetCardinalDirections().Select(dir => dir.Vector);
-                    foreach (var dir in directions)
+                    if (!pathFindingMap.IsWithinBounds(target + dir)
+                        || (excludedTiles != null && excludedTiles.Contains(target + dir))
+                        || pathFindingMap.GetTileStatus(target + dir) == SlamTileStatus.Solid)
+                        continue;
+
+                    neighborHit = IsAnyNeighborStatus(target + dir, pathFindingMap, lookupStatus);
+                    if (neighborHit.HasValue && pathFindingMap.IsWithinBounds(target + dir))
                     {
-                        if (!pathFindingMap.IsWithinBounds(target + dir)
-                            || (excludedTiles != null && excludedTiles.Contains(target + dir))
-                            || pathFindingMap.GetTileStatus(target + dir) == SlamTileStatus.Solid)
-                            continue;
-
-                        neighborHit = IsAnyNeighborStatus(target + dir, pathFindingMap, lookupStatus);
-                        if (neighborHit.HasValue && pathFindingMap.IsWithinBounds(target + dir))
-                        {
-                            return neighborHit.Value;
-                        }
-
-                        if (visitedTargetsList.Contains(target + dir) || !pathFindingMap.IsWithinBounds(target + dir))
-                        {
-                            continue;
-                        }
-                        targetQueue.Enqueue(target + dir);
-                        visitedTargetsList.Add(target + dir);
+                        return neighborHit.Value;
                     }
+
+                    if (visitedTargetsList.Contains(target + dir) || !pathFindingMap.IsWithinBounds(target + dir))
+                    {
+                        continue;
+                    }
+                    targetQueue.Enqueue(target + dir);
+                    visitedTargetsList.Add(target + dir);
                 }
             }
 

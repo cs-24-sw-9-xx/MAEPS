@@ -1,16 +1,14 @@
-using JetBrains.Annotations;
-
-using MAES.Simulation;
+using Maes.Simulation;
 
 using UnityEngine;
 
-namespace MAES.UI.SimulationInfoUIControllers
+namespace Maes.UI.SimulationInfoUIControllers
 {
     public interface ISimulationInfoUIController
     {
-        void NotifyNewSimulation([CanBeNull] ISimulation simulation);
+        void NotifyNewSimulation(ISimulation? simulation);
 
-        void UpdateStatistics([CanBeNull] ISimulation simulation);
+        void UpdateStatistics(ISimulation? simulation);
 
         void UpdateMouseCoordinates(Vector2 mousePosition);
     }

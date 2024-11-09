@@ -26,7 +26,8 @@ namespace Maes.Map.MapGen
 {
     public class BitMapGenerator : MapGenerator
     {
-        private Tile[,] _bitmap;
+        // Set by CreateMapFromBitMap
+        private Tile[,] _bitmap = null!;
         private float _wallHeight;
         private int _borderSize;
 
@@ -58,7 +59,7 @@ namespace Maes.Map.MapGen
 
             // Create mesh
             MeshGenerator meshGen = GetComponent<MeshGenerator>();
-            var collisionMap = meshGen.GenerateMesh(cleanedMap.Clone() as Tile[,], _wallHeight,
+            var collisionMap = meshGen.GenerateMesh((Tile[,])cleanedMap.Clone(), _wallHeight,
                 true, survivingRooms);
 
             // Rotate to fit 2D view
@@ -71,7 +72,10 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            DrawMap(MapToDraw);
+            if (MapToDraw != null) 
+            {
+                DrawMap(MapToDraw);
+            }
         }
     }
 }

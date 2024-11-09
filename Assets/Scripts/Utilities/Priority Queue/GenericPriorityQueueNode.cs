@@ -27,7 +27,7 @@ namespace Maes.Utilities.Priority_Queue
         /// The Priority to insert this node at.
         /// Cannot be manually edited - see queue.Enqueue() and queue.UpdatePriority() instead
         /// </summary>
-        public TPriority Priority { get; protected internal set; }
+        public TPriority Priority { get; protected internal set; } = default!;
 
         /// <summary>
         /// Represents the current position in the queue
@@ -44,7 +44,7 @@ namespace Maes.Utilities.Priority_Queue
         /// <summary>
         /// The queue this node is tied to. Used only for debug builds.
         /// </summary>
-        public object Queue { get; internal set; }
+        public object? Queue { get; internal set; }
 #endif
     }
 }

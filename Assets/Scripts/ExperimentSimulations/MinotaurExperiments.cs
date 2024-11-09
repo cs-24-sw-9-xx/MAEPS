@@ -19,35 +19,30 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.Map.MapGen;
-using Maes.Robot;
-
-using UnityEngine;
-
-using System.Linq;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 using Maes.Algorithms;
+using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Map.MapGen;
+using Maes.Map.RobotSpawners;
+using Maes.Robot;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
-using MAES.Map.RobotSpawners;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using UnityEngine;
 
-namespace Maes
+namespace Maes.ExperimentSimulations
 {
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class MinotaurExperiments : MonoBehaviour
     {
-        private MySimulator _simulator;
         private void Start()
         {
-            const int randomSeed = 12345;
-
             var constraintsDict = new Dictionary<string, RobotConstraints>();
 
             //var constraintsGlobalCommunication = new RobotConstraints(
@@ -63,11 +58,7 @@ namespace Maes
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, _) => true);
 
             //var constraintsMaterials = new RobotConstraints(
             constraintsDict["Material"] = new RobotConstraints(
@@ -98,32 +89,24 @@ namespace Maes
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    // Blocked by walls
-                    if (distanceThroughWalls > 0)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) =>
+                    distanceThroughWalls <= 0);
 
             var simulator = MySimulator.GetInstance();
 
 
             var random = new System.Random(1234);
-            List<int> rand_numbers = new List<int>();
+            var randNumbers = new List<int>();
             for (int i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
-                rand_numbers.Add(val);
+                randNumbers.Add(val);
             }
 
             var buildingConfigList50 = new List<BuildingMapConfig>();
             var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
-            foreach (int val in rand_numbers)
+            foreach (int val in randNumbers)
             {
                 buildingConfigList50.Add(new BuildingMapConfig(val, widthInTiles: 50, heightInTiles: 50));
                 buildingConfigList75.Add(new BuildingMapConfig(val, widthInTiles: 75, heightInTiles: 75));
@@ -131,24 +114,9 @@ namespace Maes
             }
 
             var previousSimulations = Directory.GetFiles(Path.GetFullPath("./" + GlobalSettings.StatisticsOutPutPath));
-            var constraintIterator = 0;
-            foreach (var constraint in constraintsDict)
+            foreach (var (constraintName, constraint) in constraintsDict)
             {
-                var constraintName = "";
-                switch (constraintIterator)
-                {
-                    case 0:
-                        constraintName = "Global";
-                        break;
-                    case 1:
-                        constraintName = "Material";
-                        break;
-                    default:
-                        constraintName = "LOS";
-                        break;
-                }
-                RobotSpawner.CreateAlgorithmDelegate algorithm = seed => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2);
-                constraintIterator++;
+                RobotSpawner.CreateAlgorithmDelegate algorithm = _ => new MinotaurAlgorithm(constraint, 2);
                 var buildingMaps = buildingConfigList50.Union(buildingConfigList75.Union(buildingConfigList100));
                 foreach (var mapConfig in buildingMaps)
                 {
@@ -168,7 +136,7 @@ namespace Maes
                                                                                  suggestedStartingPoint: new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"minotaur-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                                                                             robotConstraints: constraintsDict[constraintName])
+                                                                             robotConstraints: constraint)
                             );
                         }
                         var spawningPosHashSet = new HashSet<Vector2Int>();
@@ -189,7 +157,7 @@ namespace Maes
                                                                              spawnPositions: spawningPosHashSet.ToList(),
                                                                              createAlgorithmDelegate: algorithm),
                                                                          statisticsFileName: $"minotaur-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                                                         robotConstraints: constraintsDict[constraintName])
+                                                                         robotConstraints: constraint)
                             );
                         }
                     }
@@ -205,8 +173,8 @@ namespace Maes
                                                                  seed: 123,
                                                                  numberOfRobots: 5,
                                                                  suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: (seed) => new MinotaurAlgorithm(constraintsDict["Global"], seed, 2)),
-                statisticsFileName: $"delete-me",
+                                                                 createAlgorithmDelegate: _ => new MinotaurAlgorithm(constraintsDict["Global"], 2)),
+                statisticsFileName: "delete-me",
                 robotConstraints: constraintsDict["Global"]));
 
             simulator.PressPlayButton(); // Instantly enter play mode

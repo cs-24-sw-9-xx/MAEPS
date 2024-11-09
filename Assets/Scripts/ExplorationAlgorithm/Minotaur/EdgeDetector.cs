@@ -59,8 +59,6 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
         private EdgeState UpdateState()
         {
-            var tiles = GetTilesAroundPoint(_edgeSize, _defaultLimitors);
-            var angle = _coarseMap.GetApproximateGlobalDegrees();
             return EdgeState.ForwardRight;
         }
 

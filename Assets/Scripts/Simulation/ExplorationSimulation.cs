@@ -1,21 +1,17 @@
 using Maes.Algorithms;
-using MAES.Map.RobotSpawners;
-using Maes.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Map.RobotSpawners;
+using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
-using Maes.UI;
+using Maes.UI.SimulationInfoUIControllers;
 
-using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
-
-namespace Maes
+namespace Maes.Simulation
 {
     public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm, ExplorationSimulationScenario, ExplorationRobotSpawner>
     {
-        public ExplorationTracker ExplorationTracker { get; set; }
+        // Set by SetScenario
+        public ExplorationTracker ExplorationTracker { get; private set; } = null!;
 
-        public ExplorationVisualizer explorationVisualizer;
+        public ExplorationVisualizer explorationVisualizer = null!;
         public override ExplorationVisualizer Visualizer => explorationVisualizer;
 
         public override ExplorationTracker Tracker => ExplorationTracker;
@@ -34,7 +30,7 @@ namespace Maes
 
         public override void OnSimulationFinished()
         {
-            if (GlobalSettings.ShouldWriteCSVResults)
+            if (GlobalSettings.ShouldWriteCsvResults)
             {
                 CreateStatisticsFile();
             }
@@ -42,7 +38,7 @@ namespace Maes
 
         private void CreateStatisticsFile() {
             var csvWriter = new ExplorationStatisticsCSVWriter(this,$"{_scenario.StatisticsFileName}");
-            csvWriter.CreateCSVFile(",");
+            csvWriter.CreateCsvFile(",");
         }
     }
 }
