@@ -21,18 +21,17 @@
 
 using System.Collections.Generic;
 
-using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
 using UnityEngine;
 
-namespace MAES.Map.Visualization.Exploration {
+namespace Maes.Map.Visualization.Exploration {
     internal class AllRobotsCoverageVisualization : IExplorationVisualizationMode {
         
-        private SimulationMap<ExplorationCell> _explorationMap;
-        private HashSet<(int, ExplorationCell)> _newlyCoveredCells = new HashSet<(int, ExplorationCell)>();
-        private bool _hasBeenInitialized = false;
+        private readonly SimulationMap<ExplorationCell> _explorationMap;
+        private readonly HashSet<(int, ExplorationCell)> _newlyCoveredCells = new();
+        private bool _hasBeenInitialized;
 
         public AllRobotsCoverageVisualization(SimulationMap<ExplorationCell> explorationMap) {
             _explorationMap = explorationMap;

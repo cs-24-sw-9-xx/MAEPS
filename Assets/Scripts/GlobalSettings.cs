@@ -19,39 +19,28 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using UnityEngine;
-using YamlDotNet.Core;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-using Maes.YamlConfig;
 
 namespace Maes {
 
     // This class contains all settings related to an instance of an simulation
     public static class GlobalSettings {
-        private static readonly string ConfigFileName;
-
         // Times per second that robot logic is updated
         public static readonly int LogicTickDeltaMillis = 100;
 
         // Amount of physics steps to calculate between each robot logic tick
         // Physics tick rate = LogicTickDelta / PhysicsTicksPerLogicUpdate
-        public static readonly int PhysicsTicksPerLogicUpdate = 10;
+        public const int PhysicsTicksPerLogicUpdate = 10;
 
         // Debug visualizer
-        public static readonly bool DrawCommunication = false;
+        public static readonly bool DrawCommunication;
 
         // Statistics
-        public static readonly bool ShouldWriteCSVResults = true;
+        public static readonly bool ShouldWriteCsvResults = true;
         public static readonly string StatisticsOutPutPath = "data/";
         public static readonly int TicksPerStatsSnapShot = 10;
-        public static readonly bool PopulateAdjacencyAndComGroupsEveryTick = false;
+        public static readonly bool PopulateAdjacencyAndComGroupsEveryTick;
 
 
         // The below constants depend on the above constants. Do not change this individually!
@@ -72,11 +61,17 @@ namespace Maes {
 
             var config = MaesYamlConfigLoader.LoadConfig();
 
+            if (config == null)
+            {
+                Debug.LogError("Could not load yaml config");
+                return;
+            }
+
             // Populating static GlobalSettings class.
             LogicTickDeltaMillis = config.GlobalSettings.LogicTicksDeltaMillis;
             PhysicsTickDeltaMillis = config.GlobalSettings.PhysicsTicksPerLogicUpdate;
             DrawCommunication = config.GlobalSettings.DrawCommunication;
-            ShouldWriteCSVResults = config.GlobalSettings.ShouldWriteCsvResults;
+            ShouldWriteCsvResults = config.GlobalSettings.ShouldWriteCsvResults;
             if (config.GlobalSettings.StatisticsResultPath.Length == 0) {
                 // Puts results file in same dir as the executable is run from
                 // If run from editor put the path will be path to project folder

@@ -136,7 +136,7 @@ namespace Maes.Robot
         /// Once placed a tag cannot be removed.
         /// </summary>
         /// <param name="tag">The tag of type ITag that will be deposited</param>
-        void DepositTag(String content);
+        void DepositTag(string content);
 
 
         /// <summary>

@@ -19,10 +19,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Utilities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Maes.Robot.Task
@@ -45,7 +41,6 @@ namespace Maes.Robot.Task
 
         public MovementDirective GetNextDirective()
         {
-
             var ratioBetweenWheelForces = GetRatioFromRadius();
             // Apply smaller force on inner wheel depending on direction
             var leftForce = _counterClockwise ? _force * ratioBetweenWheelForces : _force;

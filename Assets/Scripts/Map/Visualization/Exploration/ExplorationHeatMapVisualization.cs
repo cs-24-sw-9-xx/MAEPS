@@ -21,18 +21,16 @@
 
 using System.Collections.Generic;
 
-using Maes;
-using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
 using UnityEngine;
 
-namespace MAES.Map.Visualization.Exploration {
+namespace Maes.Map.Visualization.Exploration {
     internal class ExplorationHeatMapVisualization : IExplorationVisualizationMode {
 
-        private SimulationMap<ExplorationCell> _explorationMap;
-        private int _logicTicksBeforeCold = GlobalSettings.TicksBeforeExplorationHeatMapCold;
+        private readonly SimulationMap<ExplorationCell> _explorationMap;
+        private readonly int _logicTicksBeforeCold = GlobalSettings.TicksBeforeExplorationHeatMapCold;
 
         public ExplorationHeatMapVisualization(SimulationMap<ExplorationCell> explorationMap) {
             _explorationMap = explorationMap;

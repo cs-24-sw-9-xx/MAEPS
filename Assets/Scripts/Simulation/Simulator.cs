@@ -23,24 +23,21 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
-
+using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
 
 using UnityEngine;
 
 using Object = UnityEngine.Object;
 
-namespace Maes {
+namespace Maes.Simulation {
     public abstract class Simulator<TSimulation, TAlgorithm, TScenario>
         where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
         where TAlgorithm : IAlgorithm
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        protected static Simulator<TSimulation, TAlgorithm, TScenario> _instance = null;
-        private GameObject _maesGameObject;
+        protected static Simulator<TSimulation, TAlgorithm, TScenario>? _instance;
+        private readonly GameObject _maesGameObject;
         protected SimulationManager<TSimulation, TAlgorithm, TScenario> _simulationManager;
 
         protected Simulator() {
@@ -62,7 +59,7 @@ namespace Maes {
         
         public void EnqueueScenario(TScenario scenario) {
             _simulationManager.EnqueueScenario(scenario);
-            _simulationManager._initialScenarios.Enqueue(scenario);
+            _simulationManager.InitialScenarios.Enqueue(scenario);
         }
         public void EnqueueScenarios(IEnumerable<TScenario> scenario) {
             foreach (var simulationScenario in scenario) {

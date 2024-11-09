@@ -28,15 +28,13 @@ using UnityEngine;
 
 using System.Collections.Generic;
 using System.Linq;
-using Maes.ExplorationAlgorithm.Greed;
 using System.Text.RegularExpressions;
-using System.IO;
 
+using Maes.ExplorationAlgorithm.Greed;
 using Maes.Algorithms;
-
-using MAES.Map.RobotSpawners;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Map.RobotSpawners;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 namespace Maes.ExperimentSimulations
 {
@@ -45,8 +43,6 @@ namespace Maes.ExperimentSimulations
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     public class ExplorationTimeoutTest : MonoBehaviour
     {
-        private MySimulator _simulator;
-
         private void Start()
         {
             MinosVsGreedSimulation("Global", "100");
@@ -68,11 +64,7 @@ namespace Maes.ExperimentSimulations
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, _) => true);
 
             constraintsDict["Material"] = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
@@ -101,25 +93,17 @@ namespace Maes.ExperimentSimulations
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    // Blocked by walls
-                    if (distanceThroughWalls > 0)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
+            
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
                     { "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) },
-                    { "minotaur", seed => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2) },
-                    { "greed", seed => new GreedAlgorithm() }
+                    { "minotaur", _ => new MinotaurAlgorithm(constraintsDict[constraintName], 2) },
+                    { "greed", _ => new GreedAlgorithm() }
                 };
             var simulator = MySimulator.GetInstance();
             var random = new System.Random(1234);
-            List<int> randNumbers = new List<int>();
+            var randNumbers = new List<int>();
             for (int i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
@@ -147,11 +131,8 @@ namespace Maes.ExperimentSimulations
                         buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
                     }
                     break;
-                default:
-                    break;
             }
 
-            var previousSimulations = Directory.GetFiles(Path.GetFullPath("./" + GlobalSettings.StatisticsOutPutPath));
             var algorithmName = "minotaur";
             foreach (var mapConfig in buildingConfigList)
             {
@@ -175,6 +156,7 @@ namespace Maes.ExperimentSimulations
                     }
                     else
                     {
+                        simulator.EnqueueScenario(
                         new MySimulationScenario(seed: 123,
                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
@@ -184,7 +166,7 @@ namespace Maes.ExperimentSimulations
                                 suggestedStartingPoint: new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
                                 createAlgorithmDelegate: algorithms[algorithmName]),
                             statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                            robotConstraints: constraintsDict[constraintName]);
+                            robotConstraints: constraintsDict[constraintName]));
                     }
                     var spawningPosHashSet = new HashSet<Vector2Int>();
                     while (spawningPosHashSet.Count < amountOfRobots)
@@ -208,7 +190,7 @@ namespace Maes.ExperimentSimulations
                     }
                     else
                     {
-                        new MySimulationScenario(seed: 123,
+                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                             collisionMap: buildingConfig,
@@ -217,7 +199,7 @@ namespace Maes.ExperimentSimulations
                                             spawnPositions: spawningPosHashSet.ToList(),
                                             createAlgorithmDelegate: algorithms[algorithmName]),
                                         statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                        robotConstraints: constraintsDict[constraintName]);
+                                        robotConstraints: constraintsDict[constraintName]));
                     }
                 }
             }
@@ -231,7 +213,7 @@ namespace Maes.ExperimentSimulations
                                                                     seed: 123,
                                                                     numberOfRobots: 5,
                                                                     suggestedStartingPoint: Vector2Int.zero,
-                                                                    createAlgorithmDelegate: (seed) => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2)),
+                                                                    createAlgorithmDelegate: _ => new MinotaurAlgorithm(constraintsDict[constraintName], 2)),
                 statisticsFileName: $"delete-me",
                 robotConstraints: constraintsDict[constraintName]));
 

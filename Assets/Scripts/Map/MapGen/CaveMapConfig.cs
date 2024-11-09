@@ -20,8 +20,6 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
-using Maes.YamlConfig;
 
 namespace Maes.Map.MapGen
 {
@@ -59,9 +57,9 @@ namespace Maes.Map.MapGen
 
         internal CaveMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
             randomSeed: seed,
-            widthInTiles: config.Map.WidthInTiles,
+            widthInTiles: config.Map!.WidthInTiles,
             heightInTiles: config.Map.HeightInTiles,
-            smoothingRuns: config.Map.CaveConfig.SmoothingRuns,
+            smoothingRuns: config.Map.CaveConfig!.SmoothingRuns,
             connectionPassagesWidth: config.Map.CaveConfig.ConnectionPassageWidth,
             randomFillPercent: config.Map.CaveConfig.RandomFillPercent,
             wallThresholdSize: config.Map.CaveConfig.WallThresholdSize,
@@ -84,12 +82,12 @@ namespace Maes.Map.MapGen
             // Only fill percent between and including 0 to 100 are allowed
             if (0 > randomFillPercent || randomFillPercent >= 100)
             {
-                throw new ArgumentOutOfRangeException("RandomFillPercent must be between 0 and 100");
+                throw new ArgumentOutOfRangeException(nameof(randomFillPercent), "RandomFillPercent must be between 0 and 100");
             }
 
             if (smoothingRuns < 0)
             {
-                throw new ArgumentOutOfRangeException("SmoothingRuns must be a positive integer or 0");
+                throw new ArgumentOutOfRangeException(nameof(smoothingRuns), "SmoothingRuns must be a positive integer or 0");
             }
 
 

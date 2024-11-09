@@ -23,57 +23,55 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
-
+using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
-
-using MAES.UI.SimulationInfoUIControllers;
-
+using Maes.UI.SimulationInfoUIControllers;
 using Maes.Utilities;
+
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes {
+namespace Maes.Simulation {
     public abstract class SimulationManager<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationManager
     where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        private SimulationPlayState _playState = SimulationPlayState.Paused;
+        public Queue<TScenario> Scenarios = new();
+        public readonly Queue<TScenario> InitialScenarios = new();
 
-        public GameObject SimulationPrefab;
-        public Queue<TScenario> _scenarios = new();
+        public GameObject SimulationPrefab = null!;
+        public GameObject RosClockPrefab = null!;
+        public GameObject RosVisualizerPrefab = null!;
+        public SimulationSpeedController UISpeedController = null!;
+        public GameObject UIControllerDebugTitle = null!;
+        public GameObject UIControllerDebugInfo = null!;
+        public Text SimulationStatusText = null!;
 
-        public Queue<TScenario> _initialScenarios = new();
-        public SimulationSpeedController UISpeedController;
-        public GameObject UIControllerDebugTitle;
-        public GameObject UIControllerDebugInfo;
-        public Text SimulationStatusText;
-        private int _physicsTicksSinceUpdate = 0;
-
-        public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimulationInfoUIController;
+        public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimulationInfoUIController = null!;
         ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
 
-        public TScenario _currentScenario;
-        public TSimulation CurrentSimulation;
+        public TScenario? CurrentScenario { get; private set; }
+        ISimulationScenario? ISimulationManager.CurrentScenario => CurrentScenario;
 
-        ISimulation ISimulationManager.CurrentSimulation => CurrentSimulation;
+        public TSimulation? CurrentSimulation { get; private set; }
+        ISimulation? ISimulationManager.CurrentSimulation => CurrentSimulation;
         
-        private GameObject _simulationGameObject;
-        
-        public GameObject RosClockPrefab;
-        public GameObject RosVisualizerPrefab;
+        public SimulationPlayState PlayState { get; private set; } = SimulationPlayState.Paused;
 
-        internal SimulationPlayState PlayState { get; } = SimulationPlayState.Paused;
-        private int _logicTicksCurrentSim = 0;
+        private GameObject? _simulationGameObject;
+        
+        private int _physicsTicksSinceUpdate;
+
+        // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
+        private long _nextUpdateTimeMillis;
 
         // Runs once when starting the program
         private void Start()
         {
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
-            Physics.autoSimulation = false;
+            Physics.simulationMode = SimulationMode.Script;
+            //Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
             
             // Adapt UI for ros mode
@@ -86,7 +84,7 @@ namespace Maes {
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
         }
 
-        public void RemoveFastForwardButtonsFromControlPanel() {
+        private void RemoveFastForwardButtonsFromControlPanel() {
             // Deactivate fast forward buttons
             UISpeedController.stepperButton.gameObject.SetActive(false);
             UISpeedController.fastForwardButton.gameObject.SetActive(false);
@@ -114,17 +112,17 @@ namespace Maes {
         }
 
         public SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState) {
-            if (targetState == _playState) return _playState;
+            if (targetState == PlayState) return PlayState;
 
-            if (_currentScenario == null) {
+            if (CurrentScenario == null) {
                 targetState = SimulationPlayState.Paused;
             }
 
-            _playState = targetState;
+            PlayState = targetState;
             // Reset next update time when changing play mode to avoid skipping ahead
             _nextUpdateTimeMillis = TimeUtils.CurrentTimeMillis();
-            UISpeedController.UpdateButtonsUI(_playState);
-            return _playState;
+            UISpeedController.UpdateButtonsUI(PlayState);
+            return PlayState;
         }
 
 
@@ -151,13 +149,10 @@ namespace Maes {
             }
         }
 
-        // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
-        private long _nextUpdateTimeMillis = 0;
-
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
         // real time (or whatever speed setting is chosen)
         private void FixedUpdate() {
-            if (_playState == SimulationPlayState.Paused) {
+            if (PlayState == SimulationPlayState.Paused) {
                 if (Application.isBatchMode) {
                     // The simulation will only enter paused mode after finishing when in headless/batch mode
                     Application.Quit(0);
@@ -165,7 +160,7 @@ namespace Maes {
                 return;
             }
 
-            if (Application.isBatchMode && _playState != SimulationPlayState.FastAsPossible)
+            if (Application.isBatchMode && PlayState != SimulationPlayState.FastAsPossible)
             {
                 AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }
@@ -192,7 +187,7 @@ namespace Maes {
                 }
 
                 // The delay before simulating the next update is dependant on the current simulation play speed
-                int updateDelayMillis = physicsTickDeltaMillis / (int) _playState;
+                int updateDelayMillis = physicsTickDeltaMillis / (int) PlayState;
                 _nextUpdateTimeMillis = _nextUpdateTimeMillis + updateDelayMillis;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
@@ -202,37 +197,36 @@ namespace Maes {
 
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
         private bool UpdateSimulation() {
-            if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation))
+            if (CurrentScenario != null &&  CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation))
             {
                 CurrentSimulation.OnSimulationFinished();
                 
-                if (_scenarios.Count != 0) { //If last simulation, let us keep looking around in it
+                if (Scenarios.Count != 0) { //If last simulation, let us keep looking around in it
                     RemoveCurrentSimulation();
                 }
             }
 
-            if (_currentScenario == null) {
-                if (_scenarios.Count == 0) {
+            if (CurrentScenario == null || CurrentSimulation == null) {
+                if (Scenarios.Count == 0) {
                     // Indicate that no further updates are needed
                     return false;
                 }
 
                 // Otherwise continue to next simulation in the queue
-                CreateSimulation(_scenarios.Dequeue());
+                CreateSimulation(Scenarios.Dequeue());
             }
 
-            CurrentSimulation.PhysicsUpdate();
+            CurrentSimulation!.PhysicsUpdate();
             _physicsTicksSinceUpdate++;
             var shouldContinueSim = true;
             if (_physicsTicksSinceUpdate >= GlobalSettings.PhysicsTicksPerLogicUpdate) {
                 CurrentSimulation.LogicUpdate();
-                _logicTicksCurrentSim++;
                 _physicsTicksSinceUpdate = 0;
                 UpdateStatisticsUI();
                 
                 
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
-                if (_playState == SimulationPlayState.Step)
+                if (PlayState == SimulationPlayState.Step)
                     shouldContinueSim = false;
             }
 
@@ -246,12 +240,11 @@ namespace Maes {
         }
 
         private void CreateSimulation(TScenario scenario) {
-            _currentScenario = scenario;
+            CurrentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();
             CurrentSimulation.SetScenario(scenario);
             CurrentSimulation.SetInfoUIController(SimulationInfoUIController);
-            _logicTicksCurrentSim = 0;
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
         }
@@ -259,30 +252,26 @@ namespace Maes {
 
         private void UpdateStatisticsUI() {
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
-            if (CurrentSimulation != null)
-                CurrentSimulation.UpdateDebugInfo();
+            CurrentSimulation?.UpdateDebugInfo();
         }
 
         public void RemoveCurrentSimulation()
         {
             Destroy(_simulationGameObject);
-            _currentScenario = null;
+            CurrentScenario = null;
             CurrentSimulation = null;
             _simulationGameObject = null;
-            _logicTicksCurrentSim = 0;
         }
-
-        public ISimulationScenario CurrentScenario => _currentScenario;
 
         public void EnqueueScenario(TScenario simulationScenario) {
             if (HasActiveScenario()) {
-                _scenarios.Enqueue(simulationScenario);
+                Scenarios.Enqueue(simulationScenario);
             } else // This is the first scenario, initialize it immediately 
                 CreateSimulation(simulationScenario);
         }
 
         public bool HasActiveScenario() {
-            return _currentScenario is not null;
+            return CurrentScenario is not null;
         }
         
     }

@@ -1,11 +1,9 @@
-using Maes;
 using Maes.Algorithms;
-
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation.SimulationScenarios;
 
 using UnityEngine;
 
-namespace MAES.Simulation
+namespace Maes.Simulation
 {
     public class PatrollingSimulator : Simulator<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
@@ -14,6 +12,5 @@ namespace MAES.Simulation
         public static PatrollingSimulator GetInstance() {
             return (PatrollingSimulator) (_instance ??= new PatrollingSimulator());
         }
-
     }
 }

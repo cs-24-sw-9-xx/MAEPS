@@ -20,18 +20,15 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.IO;
-using JetBrains.Annotations;
+
 using Maes.Map.MapGen;
 
 namespace Maes.Utilities.Files
 {
-    internal class PgmMapFileLoader {
+    public static class PgmMapFileLoader {
 
-        [CanBeNull]
         public static Tile[,] LoadMapFromFileIfPresent(string fileName) {
             var stream = InputFileLoader.ReadInputFile(fileName);
-            if (stream == null) // File does not exist
-                return null;
 
             try {
                 // Read meta data and initialize map array based on found size

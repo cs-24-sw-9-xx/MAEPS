@@ -20,9 +20,10 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
-using System.Collections.Generic;
+
 using Maes.Map;
 using Maes.Map.MapGen;
+
 using UnityEngine;
 
 namespace Maes.Statistics {
@@ -32,12 +33,13 @@ namespace Maes.Statistics {
     {
         public delegate void MiniTileConsumer(int index1, TCell cell1, int index2, TCell cell2);
 
-        public int CoveredMiniTiles = 0;
-        private int CoverableTiles = 0;
+        public int CoveredMiniTiles;
         
-        private SimulationMap<TCell> _explorationMap;
+        private int _coverableTiles;
         
-        public float CoverageProportion => CoveredMiniTiles / (float) CoverableTiles;
+        private readonly SimulationMap<TCell> _explorationMap;
+        
+        public float CoverageProportion => CoveredMiniTiles / (float) _coverableTiles;
 
         public CoverageCalculator(SimulationMap<TCell> explorationMap, SimulationMap<Tile> collisionMap) {
             _explorationMap = explorationMap;
@@ -58,7 +60,7 @@ namespace Maes.Statistics {
                         var isSolid = Tile.IsWall(tileCells[i].Type) || Tile.IsWall(tileCells[i+1].Type);
                         explorationCells[i].CanBeCovered = !isSolid;
                         explorationCells[i+1].CanBeCovered = !isSolid;
-                        if (!isSolid) CoverableTiles++;
+                        if (!isSolid) _coverableTiles++;
                     }
                 }
             }

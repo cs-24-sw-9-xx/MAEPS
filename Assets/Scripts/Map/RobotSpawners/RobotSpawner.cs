@@ -23,29 +23,30 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes;
 using Maes.Algorithms;
-using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
+using Maes.TransformToNav2;
 using Maes.Utilities;
 
 using UnityEngine;
 
 using static Maes.Utilities.Geometry;
 
-namespace MAES.Map.RobotSpawners
+namespace Maes.Map.RobotSpawners
 {
     public abstract class RobotSpawner<TAlgorithm> : MonoBehaviour
     where TAlgorithm : IAlgorithm
     {
         public delegate TAlgorithm CreateAlgorithmDelegate(int randomSeed);
 
-        public GameObject robotPrefab;
+        public GameObject robotPrefab = null!;
 
-        internal CommunicationManager CommunicationManager;
+        // Set by SimulationBase
+        public CommunicationManager CommunicationManager = null!;
 
-        public RobotConstraints RobotConstraints;
+        // Set by SimulationBase
+        public RobotConstraints RobotConstraints = null!;
 
         public void Awake()
         {
@@ -128,10 +129,10 @@ namespace MAES.Map.RobotSpawners
             List<MonaRobot> robots = new List<MonaRobot>();
 
             // Sort by room size
-            collisionMap.rooms.Sort((r1, r2) =>
+            collisionMap.Rooms.Sort((r1, r2) =>
                 r2.RoomSizeExcludingEdgeTiles() - r1.RoomSizeExcludingEdgeTiles());
 
-            var biggestRoom = collisionMap.rooms[0];
+            var biggestRoom = collisionMap.Rooms[0];
 
             // We need to peel off two layers of edges to make sure, that no robot is on a partly covered tile
             var roomWithoutEdgeTiles = biggestRoom.Tiles.Except(biggestRoom.EdgeTiles).ToList();
@@ -288,7 +289,7 @@ namespace MAES.Map.RobotSpawners
         {
             var robots = new List<MonaRobot>();
 
-            var hallWays = collisionMap.rooms.FindAll(r => r.IsHallWay).ToList();
+            var hallWays = collisionMap.Rooms.FindAll(r => r.IsHallWay).ToList();
             List<Vector2Int> possibleSpawnTiles = new List<Vector2Int>();
             foreach (var hallWay in hallWays)
             {
@@ -339,7 +340,6 @@ namespace MAES.Map.RobotSpawners
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {
-            var robotID = robotId;
             var robotGameObject = Instantiate(robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
             var robot = robotGameObject.GetComponent<MonaRobot>();
@@ -362,11 +362,11 @@ namespace MAES.Map.RobotSpawners
 
             if (GlobalSettings.IsRosMode)
             {
-                AttachRosComponentsToRobot(robotGameObject, RobotConstraints);
+                AttachRosComponentsToRobot(robotGameObject);
             }
 
 
-            robot.id = robotID;
+            robot.id = robotId;
             robot.Algorithm = algorithm;
             robot.Controller.CommunicationManager = CommunicationManager;
             robot.Controller.SlamMap = new SlamMap(collisionMap, RobotConstraints, seed);
@@ -376,7 +376,7 @@ namespace MAES.Map.RobotSpawners
             return robot;
         }
 
-        private void AttachRosComponentsToRobot(GameObject robot, RobotConstraints constraints)
+        private static void AttachRosComponentsToRobot(GameObject robot)
         {
             // The components are disabled in their awake function to allow for
             // setting the parameters before calling the start method
@@ -406,7 +406,7 @@ namespace MAES.Map.RobotSpawners
             tfPublisher.enabled = true;
         }
 
-        private List<Vector2Int> FindEdgeTiles(List<Vector2Int> tiles, bool checkDiagonal)
+        private static List<Vector2Int> FindEdgeTiles(List<Vector2Int> tiles, bool checkDiagonal)
         {
             var tilesHashSet = new HashSet<Vector2Int>();
             foreach (var tile in tiles) tilesHashSet.Add(tile);

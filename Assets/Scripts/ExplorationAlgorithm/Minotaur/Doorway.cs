@@ -28,15 +28,17 @@ using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
+    // How da fuck does this code even work?
     public class Doorway
     {
         public readonly Vector2Int Center;
         public readonly Line2D Opening;
         public IEnumerable<Vector2Int> Tiles => Opening.Rasterize().Select(tile => Vector2Int.FloorToInt(tile));
         public bool Explored;
-        public CardinalDirection ExitDirection;
+        public readonly CardinalDirection ExitDirection;
         public static int DoorWidth;
-        public static CoarseGrainedMap _map;
+        // Set by MinotaurAlgorithm.SetController NOTE: Fuck this code :(
+        public static CoarseGrainedMap Map = null!;
 
         public Doorway(Line2D opening, Vector2Int center, CardinalDirection exitDirection)
         {
@@ -46,7 +48,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             ExitDirection = exitDirection;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Doorway other)
             {
@@ -62,7 +64,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Center, Explored, ExitDirection);
+            return HashCode.Combine(Center, ExitDirection);
         }
     }
 }

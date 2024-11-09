@@ -25,12 +25,10 @@ using System.Collections.Generic;
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Map.MapGen;
-
-using MAES.Map.RobotSpawners;
-
+using Maes.Map.RobotSpawners;
 using Maes.Robot;
 
-namespace MAES.Simulation.SimulationScenarios
+namespace Maes.Simulation.SimulationScenarios
 {
     
     // A function that generates, initializes and returns a world map
@@ -59,10 +57,10 @@ namespace MAES.Simulation.SimulationScenarios
         protected SimulationScenario(
             int seed, 
             RobotFactory<TAlgorithm> robotSpawner, 
-            SimulationEndCriteriaDelegate<TSimulation> hasFinishedSim=null, 
-            MapFactory mapSpawner=null, 
+            SimulationEndCriteriaDelegate<TSimulation>? hasFinishedSim=null, 
+            MapFactory? mapSpawner=null, 
             RobotConstraints? robotConstraints=null, 
-            string statisticsFileName=null
+            string? statisticsFileName=null
             )
         {
             Seed = seed;

@@ -21,10 +21,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using MAES.Simulation;
+
+using Maes.Simulation;
 using Maes.Utilities;
+
 using UnityEngine;
-using UnityEngine.Serialization;
 
 // ReSharper disable ConvertIfStatementToNullCoalescingAssignment
 
@@ -32,14 +33,16 @@ namespace Maes.UI
 {
     internal class CameraController : MonoBehaviour
     {
-        public static CameraController singletonInstance;
-        public Transform movementTransform;
+        // HACK
+        public static CameraController singletonInstance = null!;
+        public Transform? movementTransform;
 
-        private List<CamAssembly> _cams;
-        public Camera currentCam;
+        // HACK
+        private List<CamAssembly> _cams = null!;
+        public Camera currentCam = null!; // HACK!
 
-        public GameObject simulationManagerObject;
-        private ISimulationManager _simulationManager;
+        public GameObject simulationManagerObject = null!;
+        private ISimulationManager _simulationManager = null!;
 
         public float movementSpeed;
         public float movementTime;
@@ -58,9 +61,9 @@ namespace Maes.UI
         public Vector3 rotateStartPosition;
         public Vector3 rotateCurrentPosition;
 
-        public List<UIMovementButton> buttons;
+        public List<UIMovementButton> buttons = null!;
 
-        public List<RectTransform> uiPanels;
+        public List<RectTransform> uiPanels = null!;
 
         public bool stickyCam;
 
@@ -83,11 +86,11 @@ namespace Maes.UI
             foreach (var c in GetComponentsInChildren<Camera>(includeInactive: true))
             {
                 var ct = c.transform;
-                _cams.Add(new CamAssembly { camera = c, newZoom = ct.localPosition, zoomAmount = -1 * ct.up });
+                _cams.Add(new CamAssembly(ct.localPosition, -1 * ct.up, c));
                 c.gameObject.SetActive(false);
             }
 
-            currentCam = _cams.Find(c => c.camera.name == "Camera90").camera;
+            currentCam = _cams.Find(c => c.Camera.name == "Camera90").Camera;
             currentCam.gameObject.SetActive(true);
         }
 
@@ -111,9 +114,9 @@ namespace Maes.UI
             {
                 movementTransform = null;
                 // Notify current simulation that no robot is selected
-                _simulationManager.CurrentSimulation.SetSelectedRobot(null);
-                _simulationManager.CurrentSimulation.SetSelectedTag(null);
-                _simulationManager.CurrentSimulation.ClearVisualTags();
+                _simulationManager.CurrentSimulation?.SetSelectedRobot(null);
+                _simulationManager.CurrentSimulation?.SetSelectedTag(null);
+                _simulationManager.CurrentSimulation?.ClearVisualTags();
             }
         }
 
@@ -140,7 +143,7 @@ namespace Maes.UI
         private void SwitchCameraTo(string camName)
         {
             currentCam.gameObject.SetActive(false);
-            currentCam = _cams.Find(c => c.camera.name == camName).camera;
+            currentCam = _cams.Find(c => c.Camera.name == camName).Camera;
             currentCam.gameObject.SetActive(true);
         }
 
@@ -152,15 +155,11 @@ namespace Maes.UI
             t.position = Vector3.Lerp(t.position, newPosition, Time.deltaTime * movementTime);
             t.rotation = Quaternion.Lerp(t.rotation, newRotation, Time.deltaTime * movementTime);
 
-            if (_cams == null)
-            { // On a code hot-reload in unity, _cams is set to null.
-                CameraInitialization();
-            }
             foreach (var c in _cams)
             {
-                var ct = c.camera.transform;
+                var ct = c.Camera.transform;
                 ct.localPosition =
-                    Vector3.Lerp(ct.localPosition, c.newZoom, Time.deltaTime * movementTime);
+                    Vector3.Lerp(ct.localPosition, c.NewZoom, Time.deltaTime * movementTime);
             }
         }
 
@@ -226,31 +225,28 @@ namespace Maes.UI
         {
             foreach (var cam in _cams)
             {
-                if (cam.camera.orthographic)
+                if (cam.Camera.orthographic)
                 {
-                    if (cam.camera.orthographicSize - cam.zoomAmount.magnitude * direction > 0)
+                    if (cam.Camera.orthographicSize - cam.ZoomAmount.magnitude * direction > 0)
                     {
-                        cam.camera.orthographicSize -= cam.zoomAmount.magnitude * direction;
+                        cam.Camera.orthographicSize -= cam.ZoomAmount.magnitude * direction;
                     }
                 }
                 else
                 {
-                    cam.newZoom += direction * cam.zoomAmount;
+                    cam.NewZoom += direction * cam.ZoomAmount;
                 }
             }
         }
 
         public void Subscribe(UIMovementButton button)
         {
-            if (buttons == null) buttons = new List<UIMovementButton>();
-
             buttons.Add(button);
             buttons = buttons.OrderBy(b => b.direction).ToList();
         }
 
         public void Subscribe(RectTransform panel)
         {
-            if (uiPanels == null) uiPanels = new List<RectTransform>();
             uiPanels.Add(panel);
         }
 
@@ -278,7 +274,7 @@ namespace Maes.UI
             else if (_simulationManager.CurrentSimulation != null)
             {
                 // var coord = SimulationManager.CurrentSimulation.WorldCoordinateToSlamCoordinate(mouseWorldPosition);
-                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition!);
+                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(mouseWorldPosition);
             }
         }
 
@@ -347,9 +343,16 @@ namespace Maes.UI
 
         private class CamAssembly
         {
-            public Vector3 newZoom;
-            public Vector3 zoomAmount;
-            public Camera camera;
+            public Vector3 NewZoom;
+            public readonly Vector3 ZoomAmount;
+            public readonly Camera Camera;
+
+            public CamAssembly(Vector3 newZoom, Vector3 zoomAmount, Camera camera)
+            {
+                NewZoom = newZoom;
+                ZoomAmount = zoomAmount;
+                Camera = camera;
+            }
         }
     }
 }

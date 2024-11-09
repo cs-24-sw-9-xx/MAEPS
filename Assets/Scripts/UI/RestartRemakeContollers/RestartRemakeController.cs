@@ -20,16 +20,14 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using Maes;
 using Maes.Algorithms;
-
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MAES.UI.RestartRemakeContollers
+namespace Maes.UI.RestartRemakeContollers
 {
     public abstract class RestartRemakeController<TSimulation, TAlgorithm, TScenario> : MonoBehaviour
         where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
@@ -37,69 +35,65 @@ namespace MAES.UI.RestartRemakeContollers
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
 
-        public Button RestartCurrentButton;
-        public Button RestartAllButton;
-        public Button MakeAndRunButton;
-        public Button CreateBatchButton;
-        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
+        public Button RestartCurrentButton = null!;
+        public Button RestartAllButton = null!;
+        public Button MakeAndRunButton = null!;
+        public Button CreateBatchButton = null!;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager = null!;
 
-        private ISimulation _previousSimulationBase;
-
-    
 
         // Start is called before the first frame update
         void Start()
         {
-            RestartCurrentButton.onClick.AddListener(() => {
-                RestartCurrentScenario();
-            });
+            RestartCurrentButton.onClick.AddListener(RestartCurrentScenario);
 
-            RestartAllButton.onClick.AddListener(() => {
-                RestartAllScenarios();
-            });
+            RestartAllButton.onClick.AddListener(RestartAllScenarios);
 
             MakeAndRunButton.onClick.AddListener(() => {
-
+                Debug.LogWarning("Does nothing");
             });
 
             CreateBatchButton.onClick.AddListener(() => {
-
+                Debug.LogWarning("Does nothing");
             });
         }
 
         private void RestartCurrentScenario() {
-            simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
+            if (simulationManager.CurrentScenario == null)
+            {
+                Debug.LogWarning("There is no current scenario");
+                return;
+            }
+            
+            simulationManager.AttemptSetPlayState(SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var newScenariosQueue = new Queue<TScenario>();
-            newScenariosQueue.Enqueue(simulationManager._currentScenario);
+            newScenariosQueue.Enqueue(simulationManager.CurrentScenario);
             simulationManager.RemoveCurrentSimulation();
-            if (simulationManager._scenarios.Count != 0) {
-                while (simulationManager._scenarios.Count != 0) {
-                    newScenariosQueue.Enqueue(simulationManager._scenarios.Dequeue());
+            if (simulationManager.Scenarios.Count != 0)
+            {
+                while (simulationManager.Scenarios.Count != 0)
+                {
+                    newScenariosQueue.Enqueue(simulationManager.Scenarios.Dequeue());
                 }
-                simulationManager._scenarios = newScenariosQueue;
-            } else {
-                simulationManager._scenarios = newScenariosQueue;
             }
 
+            simulationManager.Scenarios = newScenariosQueue;
+            
             //Basically adds the same simulation to the front of the queue again
             //Second time it get a crash, for some reason
-
+            
+            // TODO: WTF is this comment talking about? ^
         }
+        
         private void RestartAllScenarios() {
-            simulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.Play); //Avoids a crash when restarting during pause
+            simulationManager.AttemptSetPlayState(SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var tempScenariosQueue = new Queue<TScenario>();
-            foreach (var scenario in simulationManager._initialScenarios){
+            foreach (var scenario in simulationManager.InitialScenarios){
                 tempScenariosQueue.Enqueue(scenario);
             }
             simulationManager.RemoveCurrentSimulation();
 
-            simulationManager._scenarios = tempScenariosQueue;
-        }
-        private void MakeAndRunSinglePopup() {
-
-        }
-        private void MakeBatchPopup() {
-
+            simulationManager.Scenarios = tempScenariosQueue;
         }
     }
 }

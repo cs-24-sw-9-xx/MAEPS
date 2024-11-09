@@ -20,42 +20,43 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+
 using Maes.Utilities.Files;
+
 using UnityEngine;
+
 using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Maes.YamlConfig {
+namespace Maes {
     internal static class MaesYamlConfigLoader {
 
-        private static MaesConfigType PreloadedConfig = null;
+        private static MaesConfigType? PreloadedConfig;
         
-        public static MaesConfigType LoadConfig() {
+        public static MaesConfigType? LoadConfig() {
             if (PreloadedConfig != null) return PreloadedConfig;
             
-            string ConfigFileName;
+            string configFileName;
             try {
                 var yFile = new DirectoryInfo(InputFileLoader.GetDefaultInputPath())
                     .GetFiles("*.y*ml")
                     .Where(f => f.Name.ToLower().Contains("config"))
                     .OrderByDescending(f => f.LastWriteTime)
                     .First();
-                ConfigFileName = yFile.FullName;
+                configFileName = yFile.FullName;
                 Debug.Log($"Found {yFile.Name} as config-file. ({yFile.FullName})");
                 
             }
-            catch (InvalidOperationException e) {
+            catch (InvalidOperationException) {
                 Debug.Log("No valid config-file found. Defaulting to hard-coded settings from GlobalSettings.cs");
-                ConfigFileName = null;
                 return null;
             }
 
-            var stream = new StreamReader(ConfigFileName);
+            var stream = new StreamReader(configFileName);
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
                 .Build(); 
@@ -85,10 +86,10 @@ namespace Maes.YamlConfig {
             public int NumberOfRobots { get; set; } = 1;
             public GlobalSettingsType GlobalSettings { get; set; } = new GlobalSettingsType();
             public RobotConstraintsType RobotConstraints { get; set; } = new RobotConstraintsType();
-            public EndCriteriaType EndCriteria { get; set; }
-            public RobotSpawnConfigType RobotSpawnConfig { get; set; }
+            public EndCriteriaType? EndCriteria { get; set; }
+            public RobotSpawnConfigType? RobotSpawnConfig { get; set; }
 
-            public MapType Map { get; set; } = null;
+            public MapType? Map { get; set; } = null;
 
             public override string ToString() {
                 return $"{nameof(RandomSeeds)}: {RandomSeeds}, {nameof(NumberOfRobots)}: {NumberOfRobots}, {nameof(GlobalSettings)}: {GlobalSettings}, {nameof(RobotConstraints)}: {RobotConstraints}, {nameof(EndCriteria)}: {EndCriteria}, {nameof(RobotSpawnConfig)}: {RobotSpawnConfig}, {nameof(Map)}: {Map}";
@@ -165,7 +166,7 @@ namespace Maes.YamlConfig {
             public bool HasSuggestedStartingPoint => this. SuggestedStartingPointX != null && this.SuggestedStartingPointY != null;
 
             public Vector2Int SuggestedStartingPointAsVector =>
-                new Vector2Int(SuggestedStartingPointX.Value, SuggestedStartingPointY.Value);
+                new(SuggestedStartingPointX!.Value, SuggestedStartingPointY!.Value);
             
             public override string ToString() {
                 return $"{nameof(SuggestedStartingPointX)}: {SuggestedStartingPointX}, {nameof(SuggestedStartingPointY)}: {SuggestedStartingPointY}, {nameof(HasSuggestedStartingPoint)}: {HasSuggestedStartingPoint}";
@@ -174,10 +175,10 @@ namespace Maes.YamlConfig {
 
         public class RobotSpawnConfigType {
             public bool? BiggestRoom { get; set; } = null;
-            public SpawnTogetherType SpawnTogether { get; set; } = null;
+            public SpawnTogetherType? SpawnTogether { get; set; } = null;
             public bool? SpawnAtHallwayEnds { get; set; } = null;
-            public int[] spawnAtPositionsXVals { get; set; } = null;
-            public int[] spawnAtPositionsYVals { get; set; } = null;
+            public int[]? spawnAtPositionsXVals { get; set; } = null;
+            public int[]? spawnAtPositionsYVals { get; set; } = null;
 
             public override string ToString() {
                 return $"{nameof(BiggestRoom)}: {BiggestRoom}, {nameof(SpawnTogether)}: {SpawnTogether}, " +
@@ -217,10 +218,10 @@ namespace Maes.YamlConfig {
             public int WidthInTiles { get; set; } = 30;
             public int HeightInTiles { get; set; } = 30;
             public int BorderSize { get; set; } = 2;
-            public BuildingConfigType BuildingConfig { get; set; } = null;
-            public CaveConfigType CaveConfig { get; set; } = null;
+            public BuildingConfigType? BuildingConfig { get; set; } = null;
+            public CaveConfigType? CaveConfig { get; set; } = null;
 
-            public string CustomMapFilename { get; set; } = null;
+            public string? CustomMapFilename { get; set; } = null;
 
             public override string ToString() {
                 return $"{nameof(WallHeight)}: {WallHeight}, {nameof(WidthInTiles)}: {WidthInTiles}, {nameof(HeightInTiles)}: {HeightInTiles}, {nameof(BorderSize)}: {BorderSize}, {nameof(BuildingConfig)}: {BuildingConfig}, {nameof(CaveConfig)}: {CaveConfig}";

@@ -1,6 +1,6 @@
 using Maes.Robot;
 
-namespace MAES.Simulation.SimulationScenarios
+namespace Maes.Simulation.SimulationScenarios
 {
     public interface ISimulationScenario
     {

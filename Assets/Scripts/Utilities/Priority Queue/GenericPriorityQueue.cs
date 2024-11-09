@@ -34,7 +34,7 @@ namespace Maes.Utilities.Priority_Queue
         where TItem : GenericPriorityQueueNode<TPriority>
     {
         private int _numNodes;
-        private TItem[] _nodes;
+        private TItem?[] _nodes;
         private long _numNodesEverEnqueued;
         private readonly Comparison<TPriority> _comparer;
 
@@ -186,7 +186,7 @@ namespace Maes.Utilities.Priority_Queue
             if (node.QueueIndex > 1)
             {
                 parent = node.QueueIndex >> 1;
-                TItem parentNode = _nodes[parent];
+                var parentNode = _nodes[parent]!;
                 if(HasHigherPriority(parentNode, node))
                     return;
 
@@ -203,7 +203,7 @@ namespace Maes.Utilities.Priority_Queue
             while(parent > 1)
             {
                 parent >>= 1;
-                TItem parentNode = _nodes[parent];
+                var parentNode = _nodes[parent]!;
                 if(HasHigherPriority(parentNode, node))
                     break;
 
@@ -233,7 +233,7 @@ namespace Maes.Utilities.Priority_Queue
 
             // Check if the left-child is higher-priority than the current node
             int childRightIndex = childLeftIndex + 1;
-            TItem childLeft = _nodes[childLeftIndex];
+            var childLeft = _nodes[childLeftIndex]!;
             if(HasHigherPriority(childLeft, node))
             {
                 // Check if there is a right child. If not, swap and finish.
@@ -246,7 +246,7 @@ namespace Maes.Utilities.Priority_Queue
                     return;
                 }
                 // Check if the left-child is higher-priority than the right-child
-                TItem childRight = _nodes[childRightIndex];
+                var childRight = _nodes[childRightIndex]!;
                 if(HasHigherPriority(childLeft, childRight))
                 {
                     // left is highest, move it up and continue
@@ -270,7 +270,7 @@ namespace Maes.Utilities.Priority_Queue
             else
             {
                 // Check if the right-child is higher-priority than the current node
-                TItem childRight = _nodes[childRightIndex];
+                var childRight = _nodes[childRightIndex]!;
                 if(HasHigherPriority(childRight, node))
                 {
                     childRight.QueueIndex = finalQueueIndex;
@@ -298,7 +298,7 @@ namespace Maes.Utilities.Priority_Queue
 
                 // Check if the left-child is higher-priority than the current node
                 childRightIndex = childLeftIndex + 1;
-                childLeft = _nodes[childLeftIndex];
+                childLeft = _nodes[childLeftIndex]!;
                 if(HasHigherPriority(childLeft, node))
                 {
                     // Check if there is a right child. If not, swap and finish.
@@ -311,7 +311,7 @@ namespace Maes.Utilities.Priority_Queue
                         break;
                     }
                     // Check if the left-child is higher-priority than the right-child
-                    TItem childRight = _nodes[childRightIndex];
+                    var childRight = _nodes[childRightIndex]!;
                     if(HasHigherPriority(childLeft, childRight))
                     {
                         // left is highest, move it up and continue
@@ -337,7 +337,7 @@ namespace Maes.Utilities.Priority_Queue
                 else
                 {
                     // Check if the right-child is higher-priority than the current node
-                    TItem childRight = _nodes[childRightIndex];
+                    var childRight = _nodes[childRightIndex]!;
                     if(HasHigherPriority(childRight, node))
                     {
                         childRight.QueueIndex = finalQueueIndex;
@@ -391,7 +391,7 @@ namespace Maes.Utilities.Priority_Queue
             }
 #endif
 
-            TItem returnMe = _nodes[1];
+            var returnMe = _nodes[1]!;
             //If the node is already the last node, we can remove it immediately
             if(_numNodes == 1)
             {
@@ -401,7 +401,7 @@ namespace Maes.Utilities.Priority_Queue
             }
 
             //Swap the node with the last node
-            TItem formerLastNode = _nodes[_numNodes];
+            var formerLastNode = _nodes[_numNodes]!;
             _nodes[1] = formerLastNode;
             formerLastNode.QueueIndex = 1;
             _nodes[_numNodes] = null;
@@ -453,7 +453,7 @@ namespace Maes.Utilities.Priority_Queue
                 }
 #endif
 
-                return _nodes[1];
+                return _nodes[1]!;
             }
         }
 
@@ -471,7 +471,7 @@ namespace Maes.Utilities.Priority_Queue
 #if DEBUG
             if(node == null)
             {
-                throw new ArgumentNullException("node");
+                throw new ArgumentNullException(nameof(node));
             }
             if (node.Queue != null && !Equals(node.Queue))
             {
@@ -495,7 +495,7 @@ namespace Maes.Utilities.Priority_Queue
             //Bubble the updated node up or down as appropriate
             int parentIndex = node.QueueIndex >> 1;
 
-            if(parentIndex > 0 && HasHigherPriority(node, _nodes[parentIndex]))
+            if(parentIndex > 0 && HasHigherPriority(node, _nodes[parentIndex]!))
             {
                 CascadeUp(node);
             }
@@ -540,7 +540,7 @@ namespace Maes.Utilities.Priority_Queue
             }
 
             //Swap the node with the last node
-            TItem formerLastNode = _nodes[_numNodes];
+            var formerLastNode = _nodes[_numNodes]!;
             _nodes[node.QueueIndex] = formerLastNode;
             formerLastNode.QueueIndex = node.QueueIndex;
             _nodes[_numNodes] = null;
@@ -587,7 +587,7 @@ namespace Maes.Utilities.Priority_Queue
             return e.GetEnumerator();
 #else
             for(int i = 1; i <= _numNodes; i++)
-                yield return _nodes[i];
+                yield return _nodes[i]!;
 #endif
         }
 
@@ -607,11 +607,11 @@ namespace Maes.Utilities.Priority_Queue
                 if(_nodes[i] != null)
                 {
                     int childLeftIndex = 2 * i;
-                    if(childLeftIndex < _nodes.Length && _nodes[childLeftIndex] != null && HasHigherPriority(_nodes[childLeftIndex], _nodes[i]))
+                    if(childLeftIndex < _nodes.Length && _nodes[childLeftIndex] != null && HasHigherPriority(_nodes[childLeftIndex]!, _nodes[i]!))
                         return false;
 
                     int childRightIndex = childLeftIndex + 1;
-                    if(childRightIndex < _nodes.Length && _nodes[childRightIndex] != null && HasHigherPriority(_nodes[childRightIndex], _nodes[i]))
+                    if(childRightIndex < _nodes.Length && _nodes[childRightIndex] != null && HasHigherPriority(_nodes[childRightIndex]!, _nodes[i]!))
                         return false;
                 }
             }

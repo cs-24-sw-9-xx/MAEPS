@@ -1,27 +1,26 @@
-using Maes;
 using Maes.Algorithms;
-
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using TMPro;
 
 using UnityEngine.UI;
 
-namespace MAES.UI.SimulationInfoUIControllers
+namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
-        public Image ProgressBarMask;
-        public TextMeshProUGUI ProgressText;
+        public Image ProgressBarMask = null!;
+        public TextMeshProUGUI ProgressText = null!;
 
-        public Toggle StoppingCriteriaToggle;
+        public Toggle StoppingCriteriaToggle = null!;
         
-        public TextMeshProUGUI DistanceTravelledText;
-        public TextMeshProUGUI CurrentGraphIdlenessText;
-        public TextMeshProUGUI WorstGraphIdlenessText;
-        public TextMeshProUGUI AverageGraphIdlenessText;
+        public TextMeshProUGUI DistanceTravelledText = null!;
+        public TextMeshProUGUI CurrentGraphIdlenessText = null!;
+        public TextMeshProUGUI WorstGraphIdlenessText = null!;
+        public TextMeshProUGUI AverageGraphIdlenessText = null!;
         
-        public Button WaypointHeatMapButton;
+        public Button WaypointHeatMapButton = null!;
         
         protected override void AfterStart()
         {
@@ -38,14 +37,14 @@ namespace MAES.UI.SimulationInfoUIControllers
             });
         }
 
-        protected override void NotifyNewSimulation(PatrollingSimulation newSimulation)
+        protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation)
         {
             //TODO: Implement
         }
 
-        protected override void UpdateStatistics(PatrollingSimulation simulation)
+        protected override void UpdateStatistics(PatrollingSimulation? simulation)
         {
-            if (!simulation) return;
+            if (simulation == null) return;
             SetProgress(simulation.PatrollingTracker.CompletedCycles, simulation.PatrollingTracker.TotalCycles);
             SetDistanceTravelled(simulation.PatrollingTracker.TotalDistanceTraveled);
             SetCurrentGraphIdleness(simulation.PatrollingTracker.CurrentGraphIdleness);

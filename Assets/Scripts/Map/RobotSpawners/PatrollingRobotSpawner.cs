@@ -1,15 +1,15 @@
 using Maes.Algorithms;
-using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Trackers;
 
-namespace MAES.Map.RobotSpawners
+namespace Maes.Map.RobotSpawners
 {
     public class PatrollingRobotSpawner : RobotSpawner<IPatrollingAlgorithm>
     {
-        private PatrollingTracker _tracker;
-        private PatrollingMap _patrollingMap;
+        // HACK!
+        private PatrollingTracker _tracker = null!;
+        private PatrollingMap _patrollingMap = null!;
         
         public void SetPatrolling(PatrollingMap map, PatrollingTracker tracker)
         {

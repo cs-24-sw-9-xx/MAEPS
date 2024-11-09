@@ -1,6 +1,6 @@
 {
     "name": "CustomScriptsAssembly",
-    "rootNamespace": "MAES",
+    "rootNamespace": "Maes",
     "references": [
         "GUID:acf5d101701ab1987b7babf0fae71e0a",
         "GUID:b3f49edfedc855a48aa1a9e5d3cba438",

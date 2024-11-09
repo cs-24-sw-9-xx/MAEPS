@@ -21,21 +21,15 @@
 
 using System.Collections.Generic;
 
-using Maes.Map;
 using Maes.Robot;
 using Maes.Statistics;
 
-namespace MAES.Map.Visualization.Exploration {
+namespace Maes.Map.Visualization.Exploration {
     internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode{
-        
-        private SimulationMap<ExplorationCell> _explorationMap;
-        private Robot2DController _robot;
-        private SlamMap _map;
+        private readonly SlamMap _map;
 
-        public SelectedRobotSlamMapVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController robot) {
-            _explorationMap = explorationMap;
-            _robot = robot;
-            _map = _robot.SlamMap;
+        public SelectedRobotSlamMapVisualization(Robot2DController robot) {
+            _map = robot.SlamMap;
         }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {

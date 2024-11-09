@@ -34,10 +34,9 @@ using System.IO;
 
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.Voronoi;
-
-using MAES.Map.RobotSpawners;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Map.RobotSpawners;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 namespace Maes.ExperimentSimulations
 {
@@ -46,8 +45,6 @@ namespace Maes.ExperimentSimulations
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     public class ExplorationExperimentBase : MonoBehaviour
     {
-        private MySimulator _simulator;
-        
         /// <summary>
         /// This class will run mostly all configurations, it is written fast and loose.
         /// </summary>
@@ -62,11 +59,7 @@ namespace Maes.ExperimentSimulations
             constraintsDict["Global"] = new RobotConstraints(
                 slamUpdateIntervalInTicks: 1,
                 slamRayTraceRange: 7f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, _) => true);
 
             constraintsDict["Material"] = new RobotConstraints(
                 slamUpdateIntervalInTicks: 1,
@@ -77,39 +70,26 @@ namespace Maes.ExperimentSimulations
             constraintsDict["LOS"] = new RobotConstraints(
                 slamUpdateIntervalInTicks: 1,
                 slamRayTraceRange: 7f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    // Blocked by walls
-                    if (distanceThroughWalls > 0)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
 
             constraintsDict["None"] = new RobotConstraints(
                 slamUpdateIntervalInTicks: 1,
                 slamRayTraceRange: 7f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    return false;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, _) => false);
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
                     { "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) },
-                    { "minotaur", seed => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2) },
-                    { "greed", seed => new GreedAlgorithm() },
-                    { "voronoi", seed => new VoronoiExplorationAlgorithm(seed, constraintsDict[constraintName], constraintsDict[constraintName].SlamRayTraceRange-1) }
+                    { "minotaur", _ => new MinotaurAlgorithm(constraintsDict[constraintName], 2) },
+                    { "greed", _ => new GreedAlgorithm() },
+                    { "voronoi", seed => new VoronoiExplorationAlgorithm(seed, constraintsDict[constraintName].SlamRayTraceRange-1) }
                 };
             var simulator = MySimulator.GetInstance();
             var random = new System.Random(1234);
-            List<int> rand_numbers = new List<int>();
+            var randNumbers = new List<int>();
             for (int i = 0; i < mapIterations; i++)
             {
                 var val = random.Next(0, 1000000);
-                rand_numbers.Add(val);
+                randNumbers.Add(val);
             }
 
 
@@ -121,24 +101,22 @@ namespace Maes.ExperimentSimulations
                 switch (mapSize)
                 {
                     case "50":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 50, heightInTiles: 50));
                         }
                         break;
                     case "75":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 75, heightInTiles: 75));
                         }
                         break;
                     case "100":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             buildingConfigList.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
                         }
-                        break;
-                    default:
                         break;
                 }
             }
@@ -147,24 +125,22 @@ namespace Maes.ExperimentSimulations
                 switch (mapSize)
                 {
                     case "50":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             caveConfigList.Add(new CaveMapConfig(val, widthInTiles: 50, heightInTiles: 50));
                         }
                         break;
                     case "75":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             caveConfigList.Add(new CaveMapConfig(val, widthInTiles: 75, heightInTiles: 75));
                         }
                         break;
                     case "100":
-                        foreach (var val in rand_numbers)
+                        foreach (var val in randNumbers)
                         {
                             caveConfigList.Add(new CaveMapConfig(val, widthInTiles: 100, heightInTiles: 100));
                         }
-                        break;
-                    default:
                         break;
                 }
 
@@ -195,16 +171,20 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new MySimulationScenario(seed: 123,
-                                                mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
-                                                    buildingConfig,
-                                                    seed: 123,
-                                                    numberOfRobots: robotCount,
-                                                    suggestedStartingPoint: new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
-                                                    createAlgorithmDelegate: algorithms[algorithmName]),
-                                                statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                                                robotConstraints: constraintsDict[constraintName]);
+                            simulator.EnqueueScenario(
+                                new MySimulationScenario(seed: 123,
+                                    mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
+                                        buildingConfig,
+                                        seed: 123,
+                                        numberOfRobots: robotCount,
+                                        suggestedStartingPoint: new Vector2Int(
+                                            random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2),
+                                            random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
+                                        createAlgorithmDelegate: algorithms[algorithmName]),
+                                    statisticsFileName:
+                                    $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                                    robotConstraints: constraintsDict[constraintName]));
                         }
 
                         var spawningPosHashSet = new HashSet<Vector2Int>();
@@ -231,7 +211,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new MySimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                     collisionMap: buildingConfig,
@@ -240,7 +220,7 @@ namespace Maes.ExperimentSimulations
                                                     spawnPositions: spawningPosHashSet.ToList(),
                                                     createAlgorithmDelegate: algorithms[algorithmName]),
                                                 statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                                robotConstraints: constraintsDict[constraintName]);
+                                                robotConstraints: constraintsDict[constraintName]));
                         }
                     }
                 }
@@ -269,7 +249,7 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new MySimulationScenario(seed: 123,
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                 mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                     buildingConfig,
@@ -278,7 +258,7 @@ namespace Maes.ExperimentSimulations
                                                     suggestedStartingPoint: new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
                                                     createAlgorithmDelegate: algorithms[algorithmName]),
                                                 statisticsFileName: $"{mapType}-{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                                                robotConstraints: constraintsDict[constraintName]);
+                                                robotConstraints: constraintsDict[constraintName]));
                         }
 
                         var spawningPosHashSet = new HashSet<Vector2Int>();
@@ -305,16 +285,17 @@ namespace Maes.ExperimentSimulations
                         }
                         else
                         {
-                            new MySimulationScenario(seed: 123,
-                                                mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                                                    collisionMap: buildingConfig,
-                                                    seed: 123,
-                                                    numberOfRobots: robotCount,
-                                                    spawnPositions: spawningPosHashSet.ToList(),
-                                                    createAlgorithmDelegate: algorithms[algorithmName]),
-                                                statisticsFileName: $"{mapType}-{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                                robotConstraints: constraintsDict[constraintName]);
+                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                                    collisionMap: buildingConfig,
+                                    seed: 123,
+                                    numberOfRobots: robotCount,
+                                    spawnPositions: spawningPosHashSet.ToList(),
+                                    createAlgorithmDelegate: algorithms[algorithmName]),
+                                statisticsFileName:
+                                $"{mapType}-{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
+                                robotConstraints: constraintsDict[constraintName]));
                         }
                     }
                 }
@@ -328,7 +309,7 @@ namespace Maes.ExperimentSimulations
                                                                  seed: 123,
                                                                  numberOfRobots: 5,
                                                                  suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: (seed) => new MinotaurAlgorithm(constraintsDict[constraintName], seed, 2)),
+                                                                 createAlgorithmDelegate: _ => new MinotaurAlgorithm(constraintsDict[constraintName], 2)),
                 statisticsFileName: $"delete-me",
                 robotConstraints: constraintsDict[constraintName]));
 

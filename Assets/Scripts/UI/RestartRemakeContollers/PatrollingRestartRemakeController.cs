@@ -1,9 +1,8 @@
-using Maes;
 using Maes.Algorithms;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
-using MAES.Simulation.SimulationScenarios;
-
-namespace MAES.UI.RestartRemakeContollers
+namespace Maes.UI.RestartRemakeContollers
 {
     public class PatrollingRestartRemakeController : RestartRemakeController<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {

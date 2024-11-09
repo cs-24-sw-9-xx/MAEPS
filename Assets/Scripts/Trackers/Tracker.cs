@@ -1,44 +1,41 @@
 using System;
 using System.Collections.Generic;
 
-using JetBrains.Annotations;
-
-using Maes;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization;
 using Maes.Robot;
 using Maes.Statistics;
-using Maes.Trackers;
-using Maes.Visualizer;
+using Maes.Visualizers;
 
-namespace MAES.Trackers
+namespace Maes.Trackers
 {
     public abstract class Tracker<TCell, TVisualizer, TVisualizationMode> : ITracker
         where TCell : Cell
         where TVisualizer : IVisualizer<TCell>
-        where TVisualizationMode : IVisualizationMode<TCell, TVisualizer>
+        where TVisualizationMode : class, IVisualizationMode<TCell, TVisualizer>
     {
-        protected CoverageCalculator<TCell> _coverageCalculator;
+        protected readonly CoverageCalculator<TCell> _coverageCalculator;
         
-        protected TVisualizer _visualizer;
+        protected readonly TVisualizer _visualizer;
 
-        protected SimulationMap<TCell> _map;
-        private RayTracingMap<TCell> _rayTracingMap;
+        protected readonly SimulationMap<TCell> _map;
+        private readonly RayTracingMap<TCell> _rayTracingMap;
         private readonly int _explorationMapWidth;
         private readonly int _explorationMapHeight;
 
         public delegate void VisualizationModeConsumer(TVisualizationMode mode);
-        public event VisualizationModeConsumer OnVisualizationModeChanged = delegate(TVisualizationMode mode) {  };
+        public event VisualizationModeConsumer? OnVisualizationModeChanged;
 
-        [CanBeNull] protected MonaRobot _selectedRobot;
+        protected MonaRobot? _selectedRobot;
 
-        protected int _currentTick = 0;
+        protected int _currentTick;
         
         private bool _isFirstTick = true;
         protected RobotConstraints _constraints;
         
-        protected TVisualizationMode _currentVisualizationMode;
+        // Set by derived class constructor.
+        protected TVisualizationMode _currentVisualizationMode = null!;
 
         protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, TCell> mapper) {
             _visualizer = visualizer;
@@ -79,7 +76,7 @@ namespace MAES.Trackers
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
             _currentTick++;
 
-            if (GlobalSettings.ShouldWriteCSVResults
+            if (GlobalSettings.ShouldWriteCsvResults
                 && _currentTick != 0
                 && _currentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
@@ -89,7 +86,7 @@ namespace MAES.Trackers
 
         protected virtual void OnLogicUpdate(IReadOnlyList<MonaRobot> robots) { }
 
-        public abstract void SetVisualizedRobot(MonaRobot robot);
+        public abstract void SetVisualizedRobot(MonaRobot? robot);
 
         protected virtual void OnFirstTick(IReadOnlyList<MonaRobot> robots) {
             _isFirstTick = false;
@@ -102,7 +99,7 @@ namespace MAES.Trackers
             float visibilityRange = _constraints.SlamRayTraceRange;
 
             foreach (var robot in robots) {
-                SlamMap slamMap = null;
+                SlamMap? slamMap = null;
 
                 if (shouldUpdateSlamMap) {
                     slamMap = robot.Controller.SlamMap;
@@ -151,7 +148,7 @@ namespace MAES.Trackers
         protected void SetVisualizationMode(TVisualizationMode newMode) {
             _currentVisualizationMode = newMode;
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
-            OnVisualizationModeChanged(_currentVisualizationMode);
+            OnVisualizationModeChanged?.Invoke(_currentVisualizationMode);
         }
     }
 }

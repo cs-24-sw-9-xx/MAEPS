@@ -19,14 +19,16 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System;
 using System.Collections;
-using Maes;
+
 using Maes.Robot;
 using Maes.Robot.Task;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using NUnit.Framework;
+
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -54,10 +56,10 @@ namespace PlayModeTests {
         public void InitializeTestingSimulator() {
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: simulation => false,
+                hasFinishedSim: _ => false,
                 robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether( map, RandomSeed, 1, 
-                    Vector2Int.zero, (robotSeed) => {
+                    Vector2Int.zero, _ => {
                         var algorithm = new TestingAlgorithm();
                         _testAlgorithm = algorithm;
                         return algorithm;
@@ -65,7 +67,7 @@ namespace PlayModeTests {
             
             _maes = MySimulator.GetInstance();
             _maes.EnqueueScenario(testingScenario);
-            _simulationBase = _maes.GetSimulationManager().CurrentSimulation;
+            _simulationBase = _maes.GetSimulationManager().CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
         }
 
@@ -77,11 +79,11 @@ namespace PlayModeTests {
         
         // Test that the robot is able to move the given distance
         [UnityTest]
-        [TestCase(1.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(2.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(5.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(10.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(20.0f, ExpectedResult = (IEnumerator) null)]
+        [TestCase(1.0f, ExpectedResult = null)]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(5.0f, ExpectedResult = null)]
+        [TestCase(10.0f, ExpectedResult = null)]
+        [TestCase(20.0f, ExpectedResult = null)]
         public IEnumerator MoveTo_IsDistanceCorrectTest(float movementDistance) {
             _testAlgorithm.UpdateFunction = (tick, controller) => {
                 if (tick == 0) controller.Move(movementDistance);
@@ -114,15 +116,15 @@ namespace PlayModeTests {
         }
 
         [UnityTest]
-        [TestCase(1.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(-1.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(2.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(5.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(10.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(20.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(-20.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(180.0f, ExpectedResult = (IEnumerator) null)]
-        [TestCase(-180.0f, ExpectedResult = (IEnumerator) null)]
+        [TestCase(1.0f, ExpectedResult = null)]
+        [TestCase(-1.0f, ExpectedResult = null)]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(5.0f, ExpectedResult = null)]
+        [TestCase(10.0f, ExpectedResult = null)]
+        [TestCase(20.0f, ExpectedResult = null)]
+        [TestCase(-20.0f, ExpectedResult = null)]
+        [TestCase(180.0f, ExpectedResult = null)]
+        [TestCase(-180.0f, ExpectedResult = null)]
         public IEnumerator Rotate_RotatesCorrectAmountOfDegrees(float degreesToRotate) {
             _testAlgorithm.UpdateFunction = (tick, controller) => { if(tick == 1) controller.Rotate(degreesToRotate); };
 

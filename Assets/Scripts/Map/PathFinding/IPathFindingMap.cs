@@ -40,7 +40,7 @@ namespace Maes.Map.PathFinding
 
         public SlamTileStatus GetTileStatus(Vector2Int coordinate, bool optimistic = false);
 
-        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int> excludedTiles = null);
+        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null);
 
         public Vector2Int GetCurrentPosition();
 

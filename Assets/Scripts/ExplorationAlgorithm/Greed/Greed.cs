@@ -33,21 +33,21 @@ using static Maes.Map.SlamMap;
 
 namespace Maes.ExplorationAlgorithm.Greed
 {
-    public partial class GreedAlgorithm : IExplorationAlgorithm
+    // TODO: Use constructors instead of SetController.
+    public class GreedAlgorithm : IExplorationAlgorithm
     {
-
-        private IRobotController _controller;
-        private CoarseGrainedMap _map;
-        private Dictionary<Vector2Int, SlamTileStatus> _visibleTiles => _controller.GetSlamMap().GetCurrentlyVisibleTiles();
+        // Set by SetController
+        private IRobotController _controller = null!;
+        // Set by SetController
+        private CoarseGrainedMap _map = null!;
         private Vector2Int _position => _map.GetCurrentPosition();
         private AlgorithmState _currentState = AlgorithmState.Idle;
 
         private Waypoint? _waypoint;
-        private int _logicTicks = 0;
+        private int _logicTicks;
         private int _ticksSinceHeartbeat;
-        private int _deadlockTimer = 0;
+        private int _deadlockTimer;
         private Vector2Int _previousPosition;
-        private Waypoint _previousWaypoint;
 
         private enum AlgorithmState
         {
@@ -56,7 +56,7 @@ namespace Maes.ExplorationAlgorithm.Greed
             Done
         }
 
-        private struct Waypoint
+        private struct Waypoint : IEquatable<Waypoint>
         {
             public Vector2Int Destination;
             public WaypointType Type;
@@ -72,19 +72,35 @@ namespace Maes.ExplorationAlgorithm.Greed
                 Type = type;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
-                if (obj is Waypoint other)
+                if (obj is not Waypoint other)
                 {
-                    return Destination == other.Destination
-                           && Type == other.Type;
+                    return false;
                 }
-                return false;
-            }
-        }
 
-        public GreedAlgorithm()
-        {
+                return Equals(other);
+            }
+
+            public bool Equals(Waypoint other)
+            {
+                return Destination.Equals(other.Destination) && Type == other.Type;
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Destination, (int) Type);
+            }
+
+            public static bool operator ==(Waypoint left, Waypoint right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(Waypoint left, Waypoint right)
+            {
+                return !left.Equals(right);
+            }
         }
 
         public string GetDebugInfo()
@@ -140,7 +156,7 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_deadlockTimer >= 5)
             {
                 var waypoint = _waypoint;
-                if (MoveToNearestUnseen()) ;
+                MoveToNearestUnseen();
                 if (waypoint.HasValue && waypoint.Equals(_waypoint))
                 {
                     MoveToNearestUnseen(new HashSet<Vector2Int> { waypoint.Value.Destination });
@@ -151,7 +167,7 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_waypoint.HasValue)
             {
                 var waypoint = _waypoint.Value;
-                if (_map.GetPath(waypoint.Destination, false, false) == null)
+                if (_map.GetPath(waypoint.Destination, false) == null)
                 {
                     MoveToNearestUnseen(new() { waypoint.Destination });
                     waypoint = _waypoint.Value;
@@ -187,13 +203,13 @@ namespace Maes.ExplorationAlgorithm.Greed
                 case AlgorithmState.ExploreRoom:
                     if (_controller.GetStatus() == Robot.Task.RobotStatus.Idle)
                     {
-                        if (MoveToNearestUnseen()) break;
-                        else _currentState = AlgorithmState.Done;
+                        if (!MoveToNearestUnseen())
+                        {
+                            _currentState = AlgorithmState.Done;
+                        }
                     }
                     break;
                 case AlgorithmState.Done:
-                    break;
-                default:
                     break;
             }
             if (_logicTicks % 10 == 0)
@@ -203,20 +219,18 @@ namespace Maes.ExplorationAlgorithm.Greed
                 else
                     _deadlockTimer = 0;
             }
-            if (_waypoint.HasValue)
-                _previousWaypoint = _waypoint.Value;
             _previousPosition = _position;
         }
 
-        private bool MoveToNearestUnseen(HashSet<Vector2Int> excludedTiles = null)
+        private bool MoveToNearestUnseen(HashSet<Vector2Int>? excludedTiles = null)
         {
             var startCoordinate = _position;
             if (_map.GetTileStatus(startCoordinate) == SlamTileStatus.Solid)
             {
-                var NearestOpenTile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Open, excludedTiles);
-                if (NearestOpenTile.HasValue)
+                var nearestOpenTile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Open, excludedTiles);
+                if (nearestOpenTile.HasValue)
                 {
-                    startCoordinate = NearestOpenTile.Value;
+                    startCoordinate = nearestOpenTile.Value;
                 }
             }
             var tile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Unseen, excludedTiles);
@@ -242,22 +256,18 @@ namespace Maes.ExplorationAlgorithm.Greed
 
     public class HeartbeatMessage
         {
-            internal SlamMap map;
+            private readonly SlamMap _map;
 
             public HeartbeatMessage(SlamMap map)
             {
-                this.map = map;
+                _map = map;
             }
 
-            public HeartbeatMessage Combine(HeartbeatMessage otherMessage)
+            public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
             {
-                if (otherMessage is HeartbeatMessage heartbeatMessage)
-                {
-                    List<SlamMap> maps = new() { heartbeatMessage.map, map };
-                    SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
-                    return this;
-                }
-                return null;
+                List<SlamMap> maps = new() { heartbeatMessage._map, _map };
+                SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+                return this;
             }
 
             public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat

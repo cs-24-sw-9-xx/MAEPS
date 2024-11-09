@@ -37,7 +37,7 @@ namespace Maes.UI {
             RRight
         }
 
-        public CameraController controller;
+        public CameraController controller = null!;
         public bool isActive;
         public Direction direction;
 

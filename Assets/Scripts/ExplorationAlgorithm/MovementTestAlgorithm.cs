@@ -20,20 +20,19 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using Maes.Algorithms;
-using Maes.Map;
 using Maes.Robot;
 
 using UnityEngine;
 
-namespace Maes.ExplorationAlgorithm.Movement
+namespace Maes.ExplorationAlgorithm
 {
     public class MovementTestAlgorithm : IExplorationAlgorithm
     {
-        private Robot2DController _controller;
-        private RobotConstraints _robotConstraints;
-        private CoarseGrainedMap _map;
-        private int _ticks = 0;
-        private Vector2Int _targetTile;
+        // Set by SetController
+        private Robot2DController _controller = null!;
+        
+        private readonly Vector2Int _targetTile;
+        
         public MovementTestAlgorithm(Vector2Int targetTile)
         {
             _targetTile = targetTile;
@@ -47,7 +46,6 @@ namespace Maes.ExplorationAlgorithm.Movement
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
-            _map = _controller.GetSlamMap().GetCoarseMap();
         }
 
         public void UpdateLogic()

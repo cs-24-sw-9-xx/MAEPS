@@ -21,15 +21,17 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Maes;
+using System.Linq;
+
 using Maes.Robot;
-using NUnit.Framework;
-using UnityEngine;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.Utilities.Files;
-using System.Linq;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
+
+using NUnit.Framework;
+
+using UnityEngine;
 
 namespace PlayModeTests
 {
@@ -37,10 +39,10 @@ namespace PlayModeTests
     using MySimulationScenario = ExplorationSimulationScenario;
     public class MinotaurDoorwayMock : MinotaurAlgorithm
     {
-        public MinotaurDoorwayMock(RobotConstraints robotConstraints, int seed, int doorWidth) : base(robotConstraints, seed, doorWidth)
+        public MinotaurDoorwayMock(RobotConstraints robotConstraints, int doorWidth) : base(robotConstraints, doorWidth)
         { }
 
-        public List<Doorway> GetDoorways()
+        public IReadOnlyList<Doorway> GetDoorways()
         {
             return _doorways;
         }
@@ -93,12 +95,12 @@ namespace PlayModeTests
             var map = PgmMapFileLoader.LoadMapFromFileIfPresent(mapName + ".pgm");
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(map, RandomSeed),
-                hasFinishedSim: simulation => false,
+                hasFinishedSim: _ => false,
                 robotConstraints: constraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 1,
-                    robotSeed =>
+                    _ =>
                     {
-                        var algorithm = new MinotaurDoorwayMock(constraints, RandomSeed, 4);
+                        var algorithm = new MinotaurDoorwayMock(constraints, 4);
                         _minotaurs.Add(algorithm);
                         return algorithm;
                     }));

@@ -41,17 +41,26 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 _doorway = doorway;
             }
 
-            public IMinotaurMessage Combine(IMinotaurMessage otherMessage, MinotaurAlgorithm minotaur)
+            public BiddingMessage Combine(BiddingMessage biddingMessage, MinotaurAlgorithm minotaur)
             {
-                if (otherMessage is BiddingMessage biddingMessage
-                && biddingMessage._doorway == _doorway
-                && biddingMessage._requestorRobotID == _requestorRobotID)
+                if (biddingMessage._doorway == _doorway && biddingMessage._requestorRobotID == _requestorRobotID)
                 {
                     foreach ((int key, int value) in biddingMessage._allBids)
                     {
                         _allBids[key] = value; //This would overwrite bid values for the requestor and doorway, if it somehow changes, through it shouldnt
                     }
                 }
+
+                return this;
+            }
+
+            public IMinotaurMessage Combine(IMinotaurMessage otherMessage, MinotaurAlgorithm minotaur)
+            {
+                if (otherMessage is BiddingMessage biddingMessage)
+                {
+                    return Combine(biddingMessage, minotaur);
+                }
+                
                 return this;
             }
             public IMinotaurMessage Process(MinotaurAlgorithm minotaur)

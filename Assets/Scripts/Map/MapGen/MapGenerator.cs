@@ -28,14 +28,15 @@ namespace Maes.Map.MapGen
 {
     public abstract class MapGenerator : MonoBehaviour
     {
-        protected Transform Plane;
-        protected Transform InnerWalls2D;
-        protected Transform InnerWalls3D;
-        protected Transform WallRoof;
-        private MeshGenerator _meshGenerator;
+        // Set by Awake
+        protected Transform Plane = null!;
+        protected Transform InnerWalls2D = null!;
+        protected Transform InnerWalls3D = null!;
+        protected Transform WallRoof = null!;
+        private MeshGenerator _meshGenerator = null!;
 
         // Variable used for drawing gizmos on selection for debugging.
-        protected Tile[,] MapToDraw = null;
+        protected Tile[,]? MapToDraw = null;
 
         public void Awake()
         {
@@ -164,12 +165,12 @@ namespace Maes.Map.MapGen
         protected (List<Room> surviningRooms, Tile[,] map) RemoveRoomsAndWallsBelowThreshold(int wallThreshold, int roomThreshold,
             Tile[,] map)
         {
-            var cleanedMap = map.Clone() as Tile[,];
+            var cleanedMap = (Tile[,])map.Clone();
             var wallRegions = GetRegions(cleanedMap, Tile.Walls());
 
             foreach (var tile in wallRegions.Where(wallRegion => wallRegion.Count < wallThreshold).SelectMany(wallRegion => wallRegion))
             {
-                cleanedMap![tile.x, tile.y] = new Tile(TileType.Room);
+                cleanedMap[tile.x, tile.y] = new Tile(TileType.Room);
             }
 
             var roomRegions = GetRegions(cleanedMap, TileType.Room);
@@ -182,7 +183,7 @@ namespace Maes.Map.MapGen
                     var tileType = Tile.GetRandomWall();
                     foreach (var tile in roomRegion)
                     {
-                        cleanedMap![tile.x, tile.y] = tileType;
+                        cleanedMap[tile.x, tile.y] = tileType;
                     }
                 }
                 else
@@ -226,7 +227,10 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            DrawMap(MapToDraw);
+            if (MapToDraw != null)
+            {
+                DrawMap(MapToDraw);
+            }
         }
     }
 }

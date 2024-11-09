@@ -4,9 +4,10 @@ using System.Linq;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization;
+using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Statistics;
-using MAES.Trackers;
 
 using UnityEngine;
 
@@ -21,10 +22,10 @@ namespace Maes.Trackers
 
         public int WorstGraphIdleness { get; private set; }
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
-        public float TotalDistanceTraveled { get; private set; } = 0;
-        public float CurrentGraphIdleness { get; private set; } = 0;
+        public float TotalDistanceTraveled { get; private set; }
+        public float CurrentGraphIdleness { get; private set; }
         public float AverageGraphIdleness => GraphIdlenessList.Count != 0 ? GraphIdlenessList.Average() : 0;
-        public int CompletedCycles { get; private set; } = 0;
+        public int CompletedCycles { get; private set; }
         public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
 
         private List<float> GraphIdlenessList { get; } = new();
@@ -36,7 +37,7 @@ namespace Maes.Trackers
         {
             PatrollingSimulation = patrollingSimulation;
             Map = map;
-            Vertices = map.Verticies.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
+            Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
             
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
@@ -65,7 +66,7 @@ namespace Maes.Trackers
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
         }
 
-        public override void SetVisualizedRobot(MonaRobot robot)
+        public override void SetVisualizedRobot(MonaRobot? robot)
         {
             // TODO: Implement
         }

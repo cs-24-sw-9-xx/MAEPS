@@ -78,7 +78,7 @@ namespace EditTests {
             Assert.IsFalse(cell2.IsCovered);
             
             // Register coverage for the testing robot 
-            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, 1, (_, __, ___, ____) => {
+            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, 1, (_, _, _, _) => {
             });
             
             // Assert that the status of the tiles has now changed
@@ -117,7 +117,7 @@ namespace EditTests {
                 Assert.IsFalse(cell.IsCovered);
             
             // Register coverage for the testing robot 
-            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, 1, (_, __, ___, ____) => {
+            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, 1, (_, _, _, _) => {
             });
             
             // Assert that the status of the tiles has now changed
@@ -135,7 +135,7 @@ namespace EditTests {
 
             const int coverageTick = 123456;
             // Register coverage for the testing robot 
-            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, coverageTick, (_, __, ___, ____) => {
+            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, coverageTick, (_, _, _, _) => {
             });
             
             // Assert the the coverage time is updated
@@ -143,7 +143,7 @@ namespace EditTests {
             Assert.AreEqual(cell2.LastCoverageTimeInTicks, coverageTick);
             
             // Cover again at one tick later
-            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, coverageTick + 1, (_, __, ___, ____) => {
+            _coverageCalculator.UpdateRobotCoverage(robotWorldPos, coverageTick + 1, (_, _, _, _) => {
             });
             Assert.AreEqual(cell1.LastCoverageTimeInTicks, coverageTick + 1);
             Assert.AreEqual(cell2.LastCoverageTimeInTicks, coverageTick + 1);

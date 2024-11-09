@@ -19,29 +19,26 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using Maes.ExplorationAlgorithm.Greed;
 using Maes.ExplorationAlgorithm.Minotaur;
 using Maes.Map.MapGen;
 using Maes.Robot;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 using Maes.Utilities.Files;
+
 using UnityEngine;
 
-using Maes.ExplorationAlgorithm.Greed;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
-
-namespace Maes
+namespace Maes.ExperimentSimulations
 {
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
     
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
-        private MySimulator _simulator;
         private void Start()
         {
-            const int randomSeed = 12345;
-
-            var LOS = new RobotConstraints(
+            var los = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
                 automaticallyUpdateSlam: true,
@@ -53,42 +50,34 @@ namespace Maes
                 slamRayTraceRange: 4f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    // Blocked by walls
-                    if (distanceThroughWalls > 0)
-                    {
-                        return false;
-                    }
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) =>
+                    distanceThroughWalls <= 0);
 
             var simulator = MySimulator.GetInstance();
 
-            var map = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
+            var mapFromFile = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);
             for (int i = 0; i < 10; i++)
             {
                 var val = random.Next(0, 1000000);
                 simulator.EnqueueScenario(new MySimulationScenario(val,
-                    mapSpawner: generator => generator.GenerateMap(map, val),
-                    robotConstraints: LOS,
+                    mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
+                    robotConstraints: los,
                     statisticsFileName: $"mino_blank_{val}",
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map,
                         val,
                         5,
                         new Vector2Int(0, 0),
-                        robotSeed => new MinotaurAlgorithm(LOS, val, 4))));
+                        _ => new MinotaurAlgorithm(los, 4))));
                 simulator.EnqueueScenario(new MySimulationScenario(val,
-                    mapSpawner: generator => generator.GenerateMap(map, val),
-                    robotConstraints: LOS,
+                    mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
+                    robotConstraints: los,
                     statisticsFileName: $"greed_blank_{val}",
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map,
                         val,
                         5,
                         new Vector2Int(0, 0),
-                        robotSeed => new GreedAlgorithm())));
+                        _ => new GreedAlgorithm())));
             }
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
@@ -99,9 +88,9 @@ namespace Maes
                                                                  seed: 123,
                                                                  numberOfRobots: 5,
                                                                  suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: (seed) => new MinotaurAlgorithm(LOS, seed, 4)),
-                statisticsFileName: $"delete-me",
-                robotConstraints: LOS));
+                                                                 createAlgorithmDelegate: _ => new MinotaurAlgorithm(los, 4)),
+                statisticsFileName: "delete-me",
+                robotConstraints: los));
 
             simulator.PressPlayButton(); // Instantly enter play mode
 
