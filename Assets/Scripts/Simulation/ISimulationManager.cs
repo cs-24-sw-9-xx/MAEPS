@@ -1,18 +1,14 @@
-using MAES.Simulation.SimulationScenarios;
-
+using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
+using Maes.UI.SimulationInfoUIControllers;
 
-using MAES.UI.SimulationInfoUIControllers;
-
-using UnityEngine;
-
-namespace MAES.Simulation
+namespace Maes.Simulation
 {
     public interface ISimulationManager
     {
-        ISimulationScenario CurrentScenario { get; }
+        ISimulationScenario? CurrentScenario { get; }
         
-        ISimulation CurrentSimulation { get; }
+        ISimulation? CurrentSimulation { get; }
         ISimulationInfoUIController SimulationInfoUIController { get; }
 
         SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState);

@@ -20,10 +20,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-#nullable enable
-using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 using Maes.Map.MapGen;
 
 namespace Maes.Robot
@@ -151,8 +148,7 @@ namespace Maes.Robot
             AgentRelativeSize = agentRelativeSize;
 
             // Communication/Broadcasting
-            IsTransmissionSuccessful = calculateSignalTransmissionProbability ?? ((distance, _) => true);
-
+            IsTransmissionSuccessful = calculateSignalTransmissionProbability ?? ((_, _) => true);
         }
     }
 }

@@ -1,25 +1,22 @@
-#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Maes.Map.MapGen;
-using UnityEngine;
 
 namespace Maes.Map
 {
     public class PatrollingMap : ICloneable
     {
-        public readonly IReadOnlyList<Vertex> Verticies;
+        public readonly IReadOnlyList<Vertex> Vertices;
 
-        public PatrollingMap(IEnumerable<Vertex> verticies)
+        public PatrollingMap(IEnumerable<Vertex> vertices)
         {
-            Verticies = verticies.ToList();
+            Vertices = vertices.ToList();
         }
 
         public object Clone()
         {
-            return new PatrollingMap(this.Verticies.Select(v => (Vertex)v.Clone()).ToArray());
+            return new PatrollingMap(this.Vertices.Select(v => (Vertex)v.Clone()).ToArray());
         }
     }
 }

@@ -20,9 +20,10 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
+
 using UnityEngine;
 
-namespace Unity.Robotics.Core
+namespace Maes.TransformToNav2
 {
     internal static class Clock
     {

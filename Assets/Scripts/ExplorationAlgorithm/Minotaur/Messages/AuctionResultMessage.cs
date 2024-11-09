@@ -29,7 +29,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
     {
         public class AuctionResultMessage : IMinotaurMessage
         {
-            private readonly List<int> _winnerList = new();
+            private readonly List<int> _winnerList;
             private readonly Doorway _doorway;
 
             public AuctionResultMessage(List<int> winners, Doorway doorway)

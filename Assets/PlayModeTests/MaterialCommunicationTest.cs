@@ -21,14 +21,16 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Maes;
+
 using Maes.Map.MapGen;
 using Maes.Robot;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using NUnit.Framework;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 
@@ -256,12 +258,12 @@ namespace PlayModeTests
 
             _maes.PressPlayButton();
             // Wait until the adjacency matrix has been created
-            while (_explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef == null)
+            while (_explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef == null)
             {
                 yield return null;
             }
 
-            var signalStrength = _explorationSimulation._communicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }

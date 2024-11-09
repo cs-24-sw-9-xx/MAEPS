@@ -106,7 +106,7 @@ namespace Maes.Utilities {
         }
 
         public static CardinalDirection[] GetCardinalAndOrdinalDirections() => Directions;
-        public static CardinalDirection[] GetCardinalDirections() => new CardinalDirection[] { East, South, West, North};
+        public static CardinalDirection[] GetCardinalDirections() => new[] { East, South, West, North};
 
 
         public static CardinalDirection FromVector(Vector2Int vector) {

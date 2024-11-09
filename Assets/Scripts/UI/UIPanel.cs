@@ -24,7 +24,7 @@ using UnityEngine;
 namespace Maes.UI {
     [RequireComponent(typeof(RectTransform))]
     internal class UIPanel : MonoBehaviour {
-        public CameraController cameraController;
+        public CameraController cameraController = null!;
 
         void Start() {
             var t = GetComponent<RectTransform>();

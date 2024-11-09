@@ -24,6 +24,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+
+using Maes.Simulation;
+
 using UnityEngine;
 using static Maes.Statistics.ExplorationTracker;
 
@@ -31,14 +34,12 @@ namespace Maes.Statistics
 {
     internal class ExplorationStatisticsCSVWriter
     {
-        private ExplorationSimulation ExplorationSimulation { get; }
-        private List<SnapShot<float>> _coverSnapShots { get; }
-        private List<SnapShot<float>> _exploreSnapShots { get; }
-        private List<SnapShot<float>> _distanceSnapShots { get; }
-        private Dictionary<int, SnapShot<bool>> _allAgentsConnectedSnapShots { get; }
-        private Dictionary<int, SnapShot<float>> _biggestClusterPercentageSnapShots { get; }
-        private string _path { get; }
-
+        private readonly List<SnapShot<float>> _coverSnapShots;
+        private readonly List<SnapShot<float>> _exploreSnapShots;
+        private readonly List<SnapShot<float>> _distanceSnapShots;
+        private readonly Dictionary<int, SnapShot<bool>> _allAgentsConnectedSnapShots;
+        private readonly Dictionary<int, SnapShot<float>> _biggestClusterPercentageSnapShots;
+        private readonly string _path;
 
         public ExplorationStatisticsCSVWriter(ExplorationSimulation explorationSimulation, string fileNameWithoutExtension)
         {
@@ -48,16 +49,15 @@ namespace Maes.Statistics
             _coverSnapShots = explorationSimulation.ExplorationTracker._coverSnapshots;
             _exploreSnapShots = explorationSimulation.ExplorationTracker._exploreSnapshots;
             _distanceSnapShots = explorationSimulation.ExplorationTracker._distanceSnapshots;
-            _allAgentsConnectedSnapShots = explorationSimulation._communicationManager.CommunicationTracker.InterconnectionSnapShot;
-            _biggestClusterPercentageSnapShots = explorationSimulation._communicationManager.CommunicationTracker.BiggestClusterPercentageSnapshots;
+            _allAgentsConnectedSnapShots = explorationSimulation.CommunicationManager.CommunicationTracker.InterconnectionSnapShot;
+            _biggestClusterPercentageSnapShots = explorationSimulation.CommunicationManager.CommunicationTracker.BiggestClusterPercentageSnapshots;
 
-            ExplorationSimulation = explorationSimulation;
             var resultForFileName = "e??-c??";
             if (_exploreSnapShots.Any())
                 resultForFileName = $"e{(int)_exploreSnapShots[^1].Value}-c{(int)_coverSnapShots[^1].Value}";
             _path = GlobalSettings.StatisticsOutPutPath + fileNameWithoutExtension + "_" + resultForFileName + ".csv";
         }
-        public void CreateCSVFile(string separator)
+        public void CreateCsvFile(string separator)
         {
             using var csv = new StreamWriter(Path.GetFullPath(_path));
             csv.WriteLine("Tick,Covered,Explored,Average Agent Distance,Agents Interconnected, Biggest Cluster %");
@@ -67,7 +67,7 @@ namespace Maes.Statistics
                 var coverage = "" + _coverSnapShots[i].Value;
                 var explore = "" + _exploreSnapShots[i].Value;
                 var distance = "" + _distanceSnapShots[i].Value;
-                StringBuilder line = new StringBuilder();
+                var line = new StringBuilder();
                 line.Append(
                     $"{"" + tick}{separator}{coverage}{separator}{explore}{separator}{distance}{separator}");
                 if (_allAgentsConnectedSnapShots.TryGetValue(tick, out var agentsConnectedSnapShot))

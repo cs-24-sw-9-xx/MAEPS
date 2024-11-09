@@ -1,28 +1,27 @@
-using System.Collections.Generic;
-
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
 using UnityEngine;
 
-namespace MAES.ExplorationAlgorithm.FollowWaypoints
+namespace Maes.ExplorationAlgorithm.FollowWaypoints
 {
     public class FollowWaypointsAlgorithm : IExplorationAlgorithm
     {
-        private Robot2DController _controller;
-        private CoarseGrainedMap _map;
-        private readonly List<Waypoint> _waypoints = new()
-        {
-            new Waypoint(new Vector2Int(5,5)),
-            new Waypoint(new Vector2Int(10,10)),
-            new Waypoint(new Vector2Int(20,20)),
-            new Waypoint(new Vector2Int(30,30))
+        // Set by SetController
+        private Robot2DController _controller = null!;
+        // Set by SetController
+        private CoarseGrainedMap _map = null!;
+        private readonly Waypoint[] _waypoints = {
+            new(new Vector2Int(5,5)),
+            new(new Vector2Int(10,10)),
+            new(new Vector2Int(20,20)),
+            new(new Vector2Int(30,30))
         };
-        private int _currentWaypointIndex = 0;
+        private int _currentWaypointIndex;
 
         private struct Waypoint
         {
-            public Vector2Int Destination;
+            public readonly Vector2Int Destination;
 
             public Waypoint(Vector2Int destination)
             {
@@ -32,7 +31,7 @@ namespace MAES.ExplorationAlgorithm.FollowWaypoints
 
         public void UpdateLogic()
         {
-            if (_currentWaypointIndex >= _waypoints.Count)
+            if (_currentWaypointIndex >= _waypoints.Length)
             {
                 _controller.StopCurrentTask();
                 return;
@@ -41,7 +40,7 @@ namespace MAES.ExplorationAlgorithm.FollowWaypoints
             if (IsDestinationReached())
             {
                 _currentWaypointIndex++;
-                if (_currentWaypointIndex >= _waypoints.Count)
+                if (_currentWaypointIndex >= _waypoints.Length)
                 {
                     _controller.StopCurrentTask();
                     return;

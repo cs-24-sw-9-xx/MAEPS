@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +27,7 @@ using UnityEngine;
 namespace Maes.ExplorationAlgorithm.SSB {
     public partial class SsbAlgorithm {
 
-        public readonly struct Reservation {
+        public readonly struct Reservation : IEquatable<Reservation> {
             public readonly int ReservingRobot;
             public readonly Vector2Int ReservedTile;
             public readonly int StartingTick;
@@ -37,6 +36,31 @@ namespace Maes.ExplorationAlgorithm.SSB {
                 ReservingRobot = reservingRobot;
                 ReservedTile = reservedTile;
                 StartingTick = startingTick;
+            }
+
+            public bool Equals(Reservation other)
+            {
+                return ReservingRobot == other.ReservingRobot && ReservedTile.Equals(other.ReservedTile) && StartingTick == other.StartingTick;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is Reservation other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(ReservingRobot, ReservedTile, StartingTick);
+            }
+
+            public static bool operator ==(Reservation left, Reservation right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(Reservation left, Reservation right)
+            {
+                return !left.Equals(right);
             }
         }
         
@@ -64,7 +88,7 @@ namespace Maes.ExplorationAlgorithm.SSB {
             
             // Saves and broadcasts reservations for the given set of tiles
             public void Reserve(HashSet<Vector2Int> tiles) {
-                HashSet<Reservation> newReservations = new HashSet<Reservation>();
+                var newReservations = new HashSet<Reservation>();
                 foreach (var tile in tiles) {
                     var newRes = ReserveLocally(tile);
                     if (newRes != null) newReservations.Add(newRes.Value);

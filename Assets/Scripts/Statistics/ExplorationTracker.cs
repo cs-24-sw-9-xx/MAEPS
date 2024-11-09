@@ -23,17 +23,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using JetBrains.Annotations;
 using Maes.Map;
 using Maes.Map.MapGen;
-
-using MAES.Map.Visualization.Exploration;
-
+using Maes.Map.Visualization.Exploration;
 using Maes.Robot;
-
-using MAES.Trackers;
-
-using Maes.Utilities;
+using Maes.Trackers;
 
 using UnityEngine;
 
@@ -41,7 +35,7 @@ namespace Maes.Statistics {
     public class ExplorationTracker : Tracker<ExplorationCell, ExplorationVisualizer, IExplorationVisualizationMode>
     {
         // The low-resolution collision map used to create the smoothed map that robots are navigating 
-        private SimulationMap<Tile> _collisionMap;
+        private readonly SimulationMap<Tile> _collisionMap;
 
         private readonly int _totalExplorableTriangles;
         public int ExploredTriangles { get; private set; }
@@ -66,9 +60,11 @@ namespace Maes.Statistics {
                 this.Value = value;
             }
         }
+        
+        private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new List<(int, ExplorationCell)>();
 
-        public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints) : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type))) {
-            var explorableTriangles = 0;
+        public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
+            : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type))) {
             _collisionMap = collisionMap;
             _constraints = constraints;
             
@@ -84,8 +80,6 @@ namespace Maes.Statistics {
 
         private float CalculateAverageDistance(IReadOnlyList<MonaRobot> robots){
             List<float> averages = new List<float>();
-            float average = 0;
-            float sum = 0;
             foreach (var robot in robots) {
                 var robotPosition = robot.transform.position;
                 foreach (var otherRobot in robots){
@@ -93,14 +87,12 @@ namespace Maes.Statistics {
                     averages.Add((float)Math.Sqrt(Math.Pow(robotPosition.x - otherRobotPosition.x, 2) + Math.Pow(robotPosition.y - otherRobotPosition.y, 2) + Math.Pow(robotPosition.z - otherRobotPosition.z, 2)));
                 }
             }
-            foreach (var number in averages) {
-                sum += number;
-            }
-            average = sum / averages.Count;
-            return average;
+
+            float sum = averages.Sum();
+            return sum / averages.Count;
         }
         private void UpdateCoverageStatus(MonaRobot robot) {
-            var newlyCoveredCells = new List<(int, ExplorationCell)> {};
+            var newlyCoveredCells = new List<(int, ExplorationCell)>();
             var robotPos = robot.transform.position;
             
             // Find each mini tile (two triangle cells) covered by the robot and execute the following function on it
@@ -125,21 +117,20 @@ namespace Maes.Statistics {
             mostRecentDistance = CalculateAverageDistance(robots);
         }
 
-        List<(int, ExplorationCell)> newlyExploredTriangles = new List<(int, ExplorationCell)>();
         protected override void AfterRayTracingARobot(MonaRobot robot)
         {
             // Register newly explored cells of this robot for visualization
-            _currentVisualizationMode.RegisterNewlyExploredCells(robot, newlyExploredTriangles);
-            newlyExploredTriangles.Clear();
+            _currentVisualizationMode.RegisterNewlyExploredCells(robot, _newlyExploredTriangles);
+            _newlyExploredTriangles.Clear();
         }
 
         protected override void OnNewlyExploredTriangles(int index, ExplorationCell cell)
         {
-            newlyExploredTriangles.Add((index, cell));
+            _newlyExploredTriangles.Add((index, cell));
             ExploredTriangles++;
         }
 
-        public override void SetVisualizedRobot([CanBeNull] MonaRobot robot) {
+        public override void SetVisualizedRobot(MonaRobot? robot) {
             _selectedRobot = robot;
             if (_selectedRobot != null)
                 SetVisualizationMode(new CurrentlyVisibleAreaVisualization(_map, _selectedRobot.Controller));
@@ -174,7 +165,7 @@ namespace Maes.Statistics {
         public void ShowSelectedRobotSlamMap() {
             if (_selectedRobot == null)
                 throw new Exception("Cannot change to 'ShowSelectedRobotSlamMap' visualization mode when no robot is selected");
-            SetVisualizationMode(new SelectedRobotSlamMapVisualization(_map, _selectedRobot.Controller));
+            SetVisualizationMode(new SelectedRobotSlamMapVisualization(_selectedRobot.Controller));
         }
     }
 }

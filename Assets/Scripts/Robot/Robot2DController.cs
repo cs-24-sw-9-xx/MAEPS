@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Maes.Map;
-using Maes.Map.MapGen;
 using Maes.Robot.Task;
 using Maes.Utilities;
 using UnityEngine;
@@ -33,26 +32,33 @@ namespace Maes.Robot
 {
     public class Robot2DController : IRobotController
     {
-        private Rigidbody2D _rigidbody;
-        public Transform Transform { get; private set; }
-        public Transform LeftWheel { get; private set; }
-        public Transform RightWheel { get; private set; }
+        private readonly Rigidbody2D _rigidbody;
+        public Transform Transform { get; }
+        public Transform LeftWheel { get; }
+        public Transform RightWheel { get; }
 
         private const int RotateForce = 5;
         private const int MoveForce = 15;
 
         // Used for calculating wheel rotation for animation
-        private Vector3? _previousLeftWheelPosition = null;
-        private Vector3? _previousRightWheelPosition = null;
+        private Vector3? _previousLeftWheelPosition;
+        private Vector3? _previousRightWheelPosition;
 
-        private MonaRobot _robot;
+        private readonly MonaRobot _robot;
         private RobotStatus _currentStatus = RobotStatus.Idle;
-        private ITask? CurrentTask;
+        private ITask? _currentTask;
 
-        internal CommunicationManager CommunicationManager { get; set; }
-        public SlamMap SlamMap { get; set; }
+        // Set by RobotSpawner
+        internal CommunicationManager CommunicationManager { get; set; } = null!;
+        
+        // Set by RobotSpawner
+        public SlamMap SlamMap { get; set; } = null!;
+
+        // Set by RobotSpawner
+        public RobotConstraints Constraints { get; set; } = null!;
+        
         private Queue<Vector2Int> _currentPath = new();
-        private Vector2Int _currentTarget = new();
+        private Vector2Int _currentTarget;
 
         // Returns the counterclockwise angle in degrees between the forward orientation of the robot and the x-axis
         public float GetForwardAngleRelativeToXAxis()
@@ -67,10 +73,10 @@ namespace Maes.Robot
         }
 
         // Whether the rigidbody is currently colliding with something
-        private bool _isCurrentlyColliding = false;
+        private bool _isCurrentlyColliding;
 
         // Indicates whether the robot has entered a new collision since the previous logic update
-        private bool _newCollisionSinceLastUpdate = false;
+        private bool _newCollisionSinceLastUpdate;
 
         // When the robot enters a collision (such as with a wall) Unity will only notify of the
         // collision upon initial impact. If the robot continues to drive into the wall,
@@ -80,10 +86,9 @@ namespace Maes.Robot
         // exit may not be triggered until after a few physics updates. This variable determines how many physics
         // updates to wait before re-declaring the collision.
         private readonly int _movementUpdatesBeforeRedeclaringCollision = 2;
-        private int _physicsUpdatesSinceStartingMovement = 0;
-        public RobotConstraints Constraints;
+        private int _physicsUpdatesSinceStartingMovement;
 
-        public List<(Vector3, float)> DebugCircle = new();
+        public readonly List<(Vector3, float)> DebugCircle = new();
 
         public Robot2DController(Rigidbody2D rigidbody, Transform transform, Transform leftWheel, Transform rightWheel,
             MonaRobot robot)
@@ -152,7 +157,7 @@ namespace Maes.Robot
             _previousRightWheelPosition = RightWheel.position;
 
             // Update the current status to indicate whether the robot is currently moving, stopping or idle
-            if (CurrentTask != null)
+            if (_currentTask != null)
             {
                 // The robot is currently following an assigned task
                 _currentStatus = RobotStatus.Moving;
@@ -167,7 +172,7 @@ namespace Maes.Robot
                 _currentStatus = RobotStatus.Idle;
             }
 
-            var isAttemptingToMoveForwards = CurrentTask is MovementTask;
+            var isAttemptingToMoveForwards = _currentTask is MovementTask;
             if (_isCurrentlyColliding && isAttemptingToMoveForwards)
             {
                 if (_physicsUpdatesSinceStartingMovement > _movementUpdatesBeforeRedeclaringCollision)
@@ -182,16 +187,16 @@ namespace Maes.Robot
             }
 
             // Get directive from current task if present
-            var directive = CurrentTask?.GetNextDirective();
+            var directive = _currentTask?.GetNextDirective();
 
             if (directive != null)
                 ApplyWheelForce(directive);
 
             // Delete task once completed
-            var isCurrentTaskCompleted = CurrentTask?.IsCompleted() ?? false;
+            var isCurrentTaskCompleted = _currentTask?.IsCompleted() ?? false;
             if (isCurrentTaskCompleted)
             {
-                CurrentTask = null;
+                _currentTask = null;
             }
 
             if (directive != null)
@@ -218,8 +223,8 @@ namespace Maes.Robot
                 force = RotateForce;
 
             // Apply force at teach wheel
-            _rigidbody.AddForceAtPosition(forward * force * directive.LeftWheelSpeed, leftPosition);
-            _rigidbody.AddForceAtPosition(forward * force * directive.RightWheelSpeed, rightPosition);
+            _rigidbody.AddForceAtPosition(forward * (force * directive.LeftWheelSpeed), leftPosition);
+            _rigidbody.AddForceAtPosition(forward * (force * directive.RightWheelSpeed), rightPosition);
         }
 
         // Rotates the given wheel depending on how far it has moved an in which direction
@@ -232,13 +237,13 @@ namespace Maes.Robot
 
         public RobotStatus GetStatus()
         {
-            if (_currentStatus == RobotStatus.Idle && CurrentTask != null) return RobotStatus.Moving;
+            if (_currentStatus == RobotStatus.Idle && _currentTask != null) return RobotStatus.Moving;
             return _currentStatus;
         }
 
         public void Rotate(float degrees)
         {
-            if (CurrentTask != null)
+            if (_currentTask != null)
             {
                 StopCurrentTask();
                 return;
@@ -246,39 +251,38 @@ namespace Maes.Robot
 
             AssertRobotIsInIdleState("rotation");
 
-            CurrentTask = new FiniteRotationTask(Transform, degrees);
+            _currentTask = new FiniteRotationTask(Transform, degrees);
         }
 
         public void StartRotating(bool counterClockwise = false)
         {
-            if (CurrentTask != null)
+            if (_currentTask != null)
             {
                 StopCurrentTask();
                 return;
             }
 
             AssertRobotIsInIdleState("rotation");
-            CurrentTask = new InfiniteRotationTasK(Constraints.RelativeMoveSpeed * (counterClockwise ? -1 : 1));
+            _currentTask = new InfiniteRotationTasK(Constraints.RelativeMoveSpeed * (counterClockwise ? -1 : 1));
         }
 
         public void StartRotatingAroundPoint(Vector2Int point, bool counterClockwise = false)
         {
             AssertRobotIsInIdleState("Rotating around point");
             var coarseLocation = SlamMap.CoarseMap.GetCurrentPosition();
-            var angle = Vector2.SignedAngle(Geometry.DirectionAsVector(GetGlobalAngle()), Vector2.Perpendicular(point - coarseLocation) - coarseLocation);
             var radius = Vector2.Distance(Vector2Int.FloorToInt(coarseLocation), point);
             var worldPoint = SlamMap.CoarseMap.TileToWorld(point);
             var distanceBetweenWheels = Vector2.Distance(LeftWheel.position, RightWheel.position);
             DebugCircle.Add((worldPoint, radius - distanceBetweenWheels / 2));
             DebugCircle.Add((worldPoint, radius + distanceBetweenWheels / 2));
-            CurrentTask = new RotateAroundPointTask(point, radius, Constraints.RelativeMoveSpeed, counterClockwise);
+            _currentTask = new RotateAroundPointTask(point, radius, Constraints.RelativeMoveSpeed, counterClockwise);
         }
 
 
         public void StartMoving(bool reverse = false)
         {
             AssertRobotIsInIdleState("Moving Forwards");
-            CurrentTask = new MovementTask(Constraints.RelativeMoveSpeed * (reverse ? -1 : 1));
+            _currentTask = new MovementTask(Constraints.RelativeMoveSpeed * (reverse ? -1 : 1));
         }
 
         // Asserts that the current status is idle, and throws an exception if not
@@ -298,7 +302,7 @@ namespace Maes.Robot
 
         public void StopCurrentTask()
         {
-            CurrentTask = null;
+            _currentTask = null;
         }
 
         public void Broadcast(object data)
@@ -318,29 +322,29 @@ namespace Maes.Robot
                                             $"Given angle was {globalAngle}");
 
             var result = CommunicationManager.DetectWall(_robot, globalAngle);
-            if (result != null)
+            if (result == null)
             {
-                var intersection = result!.Value.Item1;
-                var distance = Vector2.Distance(intersection, _robot.transform.position);
-                var intersectingWallAngle = result!.Value.Item2;
-
-                // Calculate angle of wall relative to current forward angle of the robot
-                var relativeWallAngle = Math.Abs(intersectingWallAngle - GetForwardAngleRelativeToXAxis());
-
-                // Convert to relative wall angle to range 0-90
-                relativeWallAngle %= 180;
-                if (relativeWallAngle > 90) relativeWallAngle = 180 - relativeWallAngle;
-                return new IRobotController.DetectedWall(distance, relativeWallAngle);
+                return null;
             }
-            return null;
+            
+            var intersection = result.Value.Item1;
+            var distance = Vector2.Distance(intersection, _robot.transform.position);
+            var intersectingWallAngle = result.Value.Item2;
+
+            // Calculate angle of wall relative to current forward angle of the robot
+            var relativeWallAngle = Math.Abs(intersectingWallAngle - GetForwardAngleRelativeToXAxis());
+
+            // Convert to relative wall angle to range 0-90
+            relativeWallAngle %= 180;
+            if (relativeWallAngle > 90) relativeWallAngle = 180 - relativeWallAngle;
+            return new IRobotController.DetectedWall(distance, relativeWallAngle);
         }
 
         public string GetDebugInfo()
         {
             var info = new StringBuilder();
-            var approxPosition = SlamMap.ApproximatePosition;
             info.Append($"id: {this._robot.id}\n");
-            info.AppendLine($"Current task: {CurrentTask?.GetType()}");
+            info.AppendLine($"Current task: {_currentTask?.GetType()}");
             info.AppendLine(
                 $"World Position: {Transform.position.x.ToString("#.0")}, {Transform.position.y.ToString("#.0")}");
             info.Append($"Slam tile: {SlamMap.GetCurrentPosition()}\n");
@@ -352,7 +356,7 @@ namespace Maes.Robot
         public void Move(float distanceInMeters, bool reverse = false)
         {
             AssertRobotIsInIdleState($"Move forwards {distanceInMeters} meters");
-            CurrentTask = new FiniteMovementTask(Transform, distanceInMeters, Constraints.RelativeMoveSpeed, reverse);
+            _currentTask = new FiniteMovementTask(Transform, distanceInMeters, Constraints.RelativeMoveSpeed, reverse);
         }
 
         /// <summary>
@@ -370,7 +374,7 @@ namespace Maes.Robot
             {
                 var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
                 if (robotCurrentPosition == tile) return;
-                var pathList = SlamMap.CoarseMap.GetPath(tile, false, false);
+                var pathList = SlamMap.CoarseMap.GetPath(tile, false);
                 if (pathList == null) return;
                 _currentPath = new Queue<Vector2Int>(pathList);
                 _currentTarget = _currentPath.Dequeue();
@@ -394,7 +398,7 @@ namespace Maes.Robot
             }
             if (_currentPath.Any())
             {
-                var lastStep = _currentPath.Reverse().Take(2);
+                var lastStep = _currentPath.Reverse().Take(2).ToArray();
                 Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(lastStep.Last()), SlamMap.CoarseMap.TileToWorld(lastStep.First()), Color.cyan, 2);
             }
             #endregion
@@ -460,17 +464,17 @@ namespace Maes.Robot
 
         public bool IsRotating()
         {
-            return CurrentTask is FiniteRotationTask || CurrentTask is InfiniteRotationTasK;
+            return _currentTask is FiniteRotationTask || _currentTask is InfiniteRotationTasK;
         }
 
         public bool IsPerformingDifferentialDriveTask()
         {
-            return CurrentTask is InfiniteDifferentialMovementTask;
+            return _currentTask is InfiniteDifferentialMovementTask;
         }
 
         public bool IsRotatingIndefinitely()
         {
-            return CurrentTask is InfiniteRotationTasK;
+            return _currentTask is InfiniteRotationTasK;
         }
 
         // This method requires the robot to currently be idle or already be performing an infinite rotation 
@@ -482,7 +486,7 @@ namespace Maes.Robot
                                             $"Given value: {forceMultiplier}");
             }
 
-            if (CurrentTask is InfiniteRotationTasK currentRotationTask)
+            if (_currentTask is InfiniteRotationTasK currentRotationTask)
             {
                 // Adjust existing rotation task
                 currentRotationTask.ForceMultiplier = Constraints.RelativeMoveSpeed * forceMultiplier;
@@ -491,7 +495,7 @@ namespace Maes.Robot
             {
                 // Create new rotation task
                 AssertRobotIsInIdleState("infinite rotation");
-                CurrentTask = new InfiniteRotationTasK(Constraints.RelativeMoveSpeed * forceMultiplier);
+                _currentTask = new InfiniteRotationTasK(Constraints.RelativeMoveSpeed * forceMultiplier);
             }
         }
 
@@ -504,7 +508,7 @@ namespace Maes.Robot
                                             $"Given value: {forceMultiplier}");
             }
 
-            if (CurrentTask is MovementTask currentMovementTask)
+            if (_currentTask is MovementTask currentMovementTask)
             {
                 // Adjust existing movement task
                 currentMovementTask.ForceMultiplier = Constraints.RelativeMoveSpeed * forceMultiplier;
@@ -513,7 +517,7 @@ namespace Maes.Robot
             {
                 // Create new movement task
                 AssertRobotIsInIdleState("Infinite movement");
-                CurrentTask = new MovementTask(Constraints.RelativeMoveSpeed * forceMultiplier);
+                _currentTask = new MovementTask(Constraints.RelativeMoveSpeed * forceMultiplier);
             }
         }
 
@@ -524,7 +528,7 @@ namespace Maes.Robot
             leftWheelForce *= Constraints.RelativeMoveSpeed;
             rightWheelForce *= Constraints.RelativeMoveSpeed;
 
-            if (CurrentTask is InfiniteDifferentialMovementTask existingTask)
+            if (_currentTask is InfiniteDifferentialMovementTask existingTask)
             {
                 // Update the existing differential movement task
                 existingTask.UpdateWheelForces(leftWheelForce, rightWheelForce);
@@ -533,7 +537,7 @@ namespace Maes.Robot
             {
                 // The robot must be in idle state to start this task
                 AssertRobotIsInIdleState("Differential movement");
-                CurrentTask = new InfiniteDifferentialMovementTask(leftWheelForce, rightWheelForce);
+                _currentTask = new InfiniteDifferentialMovementTask(leftWheelForce, rightWheelForce);
             }
         }
     }

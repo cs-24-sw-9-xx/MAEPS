@@ -20,7 +20,6 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
 
 namespace Maes.Statistics {
 
@@ -41,16 +40,16 @@ namespace Maes.Statistics {
         public bool IsExplored { get; private set; } 
 
         // --- Coverage over time  ---
-        public bool IsCovered { get; private set; } = false;
+        public bool IsCovered { get; private set; }
         public bool CanBeCovered { get; set; } = true;
         
         // --- Redundant Coverage ---
-        public int CoverageTimeInTicks = 0; // The amount of ticks that this cell has been covered
-        public int ExplorationTimeInTicks = 0; // The amount of ticks that this has been explored
+        public int CoverageTimeInTicks; // The amount of ticks that this cell has been covered
+        public int ExplorationTimeInTicks; // The amount of ticks that this has been explored
         
         //  --- Heatmap ---
-        public int LastExplorationTimeInTicks = 0; // The last time that this cell was seen by a robot 
-        public int LastCoverageTimeInTicks = 0; // The last time that this cell was covered by a robot
+        public int LastExplorationTimeInTicks; // The last time that this cell was seen by a robot 
+        public int LastCoverageTimeInTicks; // The last time that this cell was covered by a robot
         
         /// <summary>
         /// Called to register that a robot has seen this tile this tick
@@ -77,8 +76,6 @@ namespace Maes.Statistics {
     }
     
     public class ExplorationCell : Cell {
-        private HashSet<int> _robotsThatVisited = new HashSet<int>();
-
         public ExplorationCell(bool isExplorable) : base(isExplorable)
         {
         }

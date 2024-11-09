@@ -1,8 +1,9 @@
 using Maes.Map;
 using Maes.Statistics;
+
 using UnityEngine;
 
-namespace Maes.Visualizer
+namespace Maes.Visualizers
 {
     public interface IVisualizer<TVisualizerTile>
     where TVisualizerTile : ICell

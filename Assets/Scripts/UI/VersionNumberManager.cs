@@ -19,8 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 

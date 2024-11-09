@@ -1,4 +1,3 @@
-#nullable enable
 // Copyright 2022 MAES
 // 
 // This file is part of MAES
@@ -20,42 +19,38 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using Maes;
 using Maes.Algorithms;
-
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
-
-using Maes.UI;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MAES.UI.SimulationInfoUIControllers {
+namespace Maes.UI.SimulationInfoUIControllers {
     public abstract class SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationInfoUIController
     where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
 
-        public Text AlgorithmDebugText;
-        public Text ControllerDebugText;
-        public Text TagDebugText;
+        public Text AlgorithmDebugText = null!;
+        public Text ControllerDebugText = null!;
+        public Text TagDebugText = null!;
 
-        public Text MouseCoordinateText;
+        public Text MouseCoordinateText = null!;
         
         
-        public Button AllVisualizeTagsButton;
-        private bool _visualizingAllTags = false;
-        public Button VisualizeTagsButton;
-        private bool _visualizingSelectedTags = false;
+        public Button AllVisualizeTagsButton = null!;
+        private bool _visualizingAllTags;
+        public Button VisualizeTagsButton = null!;
+        private bool _visualizingSelectedTags;
 
-        public Button StickyCameraButton;
+        public Button StickyCameraButton = null!;
 
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
         
 
-        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager = null!;
         // Represents a function that modifies the given simulation in some way
         // (for example by changing map visualization mode)
         protected delegate void SimulationModification(TSimulation? simulation);
@@ -122,7 +117,7 @@ namespace MAES.UI.SimulationInfoUIControllers {
         }
 
         private void ToggleVisualizeTagsButtons(Button button) {
-            simulationManager.CurrentSimulation.ClearVisualTags();
+            simulationManager.CurrentSimulation?.ClearVisualTags();
             if (button.name == "AllVisualizeTags") {
                 _visualizingSelectedTags = false;
                 VisualizeTagsButton.image.color = _mapVisualizationColor;
@@ -166,7 +161,7 @@ namespace MAES.UI.SimulationInfoUIControllers {
 
         public void NotifyNewSimulation(ISimulation? simulation)
         {
-            NotifyNewSimulation((TSimulation?) simulation);
+            NotifyNewSimulation((TSimulation?)simulation);
         }
 
         protected abstract void UpdateStatistics(TSimulation? simulation);

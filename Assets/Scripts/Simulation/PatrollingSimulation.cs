@@ -1,40 +1,33 @@
-using System.Collections.Generic;
-using UnityEngine;
-
 using Maes.Algorithms;
-using Maes.Map;
-using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-using MAES.Map.RobotSpawners;
-using Maes.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Map.RobotSpawners;
+using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Trackers;
-using MAES.UI.SimulationInfoUIControllers;
+using Maes.UI.SimulationInfoUIControllers;
 
-namespace Maes
+namespace Maes.Simulation
 {
     public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
     {
-        public PatrollingVisualizer patrollingVisualizer;
+        public PatrollingVisualizer patrollingVisualizer = null!;
 
-        public PatrollingTracker PatrollingTracker;
+        // Set after AfterCollisionMapGenerated is called
+        public PatrollingTracker PatrollingTracker = null!;
 
         public override PatrollingVisualizer Visualizer => patrollingVisualizer;
 
         public override PatrollingTracker Tracker => PatrollingTracker;
         
-        private PatrollingMap _patrollingMap;
-
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
-            _patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
+            var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
             
-            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, _patrollingMap);
+            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, patrollingMap);
             
-            patrollingVisualizer.SetPatrollingMap(_patrollingMap);
+            patrollingVisualizer.SetPatrollingMap(patrollingMap);
             
-            RobotSpawner.SetPatrolling(_patrollingMap, PatrollingTracker);
+            RobotSpawner.SetPatrolling(patrollingMap, PatrollingTracker);
         }
 
         public override bool HasFinishedSim()

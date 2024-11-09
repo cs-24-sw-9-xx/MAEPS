@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-#nullable enable
 namespace Maes.ExplorationAlgorithm.SSB {
     public interface ISsbBroadcastMessage {
         

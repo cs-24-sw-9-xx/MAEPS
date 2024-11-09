@@ -9,10 +9,15 @@ namespace Maes.PatrollingAlgorithms
     public abstract class PatrollingAlgorithm : IPatrollingAlgorithm
     {
         public abstract string AlgorithmName { get; }
-        public Vertex TargetVertex { get; protected set; }
-        protected IReadOnlyList<Vertex> _vertices;
-        protected Robot2DController _controller;
-        protected event OnReachVertex OnReachVertexHandler;
+
+        public Vertex TargetVertex { get; protected set; } = null!; // HACK!
+        
+        // Set by SetPatrollingMap
+        protected IReadOnlyList<Vertex> _vertices = null!;
+        
+        // Set by SetController
+        protected Robot2DController _controller = null!;
+        protected event OnReachVertex? OnReachVertexHandler;
         
         public void SetController(Robot2DController controller)
         {
@@ -21,7 +26,7 @@ namespace Maes.PatrollingAlgorithms
 
         public void SetPatrollingMap(PatrollingMap map)
         {
-            _vertices = map.Verticies;
+            _vertices = map.Vertices;
         }
         
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
@@ -29,7 +34,7 @@ namespace Maes.PatrollingAlgorithms
             OnReachVertexHandler += onReachVertex;
         }
 
-        protected void OnReachTargetVertex()
+        private void OnReachTargetVertex()
         {
             var atTick = _controller.GetRobot().Simulation.SimulatedLogicTicks;
             OnReachVertexHandler?.Invoke(TargetVertex, atTick);

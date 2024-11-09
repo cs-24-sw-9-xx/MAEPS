@@ -25,8 +25,8 @@ namespace Maes.Robot.Task {
     /// This allows for rotation while moving ahead 
     internal class InfiniteDifferentialMovementTask : ITask {
 
-        private float _leftWheelForce = 0f;
-        private float _rightWheelForce = 0f;
+        private float _leftWheelForce;
+        private float _rightWheelForce;
 
         public InfiniteDifferentialMovementTask(float leftWheelForce, float rightWheelForce) {
             UpdateWheelForces(leftWheelForce, rightWheelForce);

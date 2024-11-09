@@ -96,15 +96,14 @@ namespace Maes.Utilities.Priority_Queue
         /// <summary>
         /// Given an item of type T, returns the existing SimpleNode in the queue
         /// </summary>
-        private SimpleNode GetExistingNode(TItem item)
+        private SimpleNode? GetExistingNode(TItem? item)
         {
             if (item == null)
             {
                 return _nullNodesCache.Count > 0 ? _nullNodesCache[0] : null;
             }
 
-            IList<SimpleNode> nodes;
-            if (!_itemToNodesCache.TryGetValue(item, out nodes))
+            if (!_itemToNodesCache.TryGetValue(item, out var nodes))
             {
                 return null;
             }
@@ -362,7 +361,7 @@ namespace Maes.Utilities.Priority_Queue
         {
             lock (_queue)
             {
-                SimpleNode updateMe = GetExistingNode(item);
+                var updateMe = GetExistingNode(item);
                 if (updateMe == null)
                 {
                     throw new InvalidOperationException("Cannot call UpdatePriority() on a node which is not enqueued: " + item);
@@ -383,7 +382,7 @@ namespace Maes.Utilities.Priority_Queue
         {
             lock (_queue)
             {
-                SimpleNode findMe = GetExistingNode(item);
+                var findMe = GetExistingNode(item);
                 if(findMe == null)
                 {
                     throw new InvalidOperationException("Cannot call GetPriority() on a node which is not enqueued: " + item);
@@ -397,21 +396,18 @@ namespace Maes.Utilities.Priority_Queue
         /// Useful for multi-threading, where the queue may become empty between calls to Contains() and First
         /// Returns true if successful, false otherwise
         /// O(1)
-        public bool TryFirst(out TItem first)
+        public bool TryFirst(out TItem? first)
         {
-            if (_queue.Count > 0)
+            lock (_queue)
             {
-                lock (_queue)
+                if (_queue.Count > 0)
                 {
-                    if (_queue.Count > 0)
-                    {
-                        first = _queue.First.Data;
-                        return true;
-                    }
+                    first = _queue.First.Data;
+                    return true;
                 }
             }
 
-            first = default(TItem);
+            first = default;
             return false;
         }
 
@@ -421,23 +417,20 @@ namespace Maes.Utilities.Priority_Queue
         /// Returns true if successful; false if queue was empty
         /// O(log n)
         /// </summary>
-        public bool TryDequeue(out TItem first)
+        public bool TryDequeue(out TItem? first)
         {
-            if (_queue.Count > 0)
+            lock (_queue)
             {
-                lock (_queue)
+                if (_queue.Count > 0)
                 {
-                    if (_queue.Count > 0)
-                    {
-                        SimpleNode node = _queue.Dequeue();
-                        first = node.Data;
-                        RemoveFromNodeCache(node);
-                        return true;
-                    }
+                    SimpleNode node = _queue.Dequeue();
+                    first = node.Data;
+                    RemoveFromNodeCache(node);
+                    return true;
                 }
             }
             
-            first = default(TItem);
+            first = default;
             return false;
         }
 
@@ -494,7 +487,7 @@ namespace Maes.Utilities.Priority_Queue
         {
             lock(_queue)
             {
-                SimpleNode updateMe = GetExistingNode(item);
+                var updateMe = GetExistingNode(item);
                 if(updateMe == null)
                 {
                     return false;
@@ -513,14 +506,14 @@ namespace Maes.Utilities.Priority_Queue
         /// Returns true if the item was found in the queue, false otherwise
         /// O(1)
         /// </summary>
-        public bool TryGetPriority(TItem item, out TPriority priority)
+        public bool TryGetPriority(TItem item, out TPriority? priority)
         {
             lock(_queue)
             {
-                SimpleNode findMe = GetExistingNode(item);
+                var findMe = GetExistingNode(item);
                 if(findMe == null)
                 {
-                    priority = default(TPriority);
+                    priority = default;
                     return false;
                 }
                 priority = findMe.Priority;

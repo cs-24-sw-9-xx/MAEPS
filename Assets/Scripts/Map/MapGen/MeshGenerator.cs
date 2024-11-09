@@ -21,40 +21,38 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
 using System.Linq;
-using UnityEditor;
-using System.Collections;
+
+using UnityEngine;
 
 namespace Maes.Map.MapGen
 {
     internal class MeshGenerator : MonoBehaviour
     {
         // The inner walls, that the robots can collide with
-        public MeshFilter InnerWalls3D;
-        public MeshFilter InnerWalls2D;
+        public MeshFilter InnerWalls3D = null!;
+        public MeshFilter InnerWalls2D = null!;
 
         // Rendering for the walls
-        public MeshRenderer InnerWallsRenderer3D;
-        public MeshRenderer InnerWallsRenderer2D;
+        public MeshRenderer InnerWallsRenderer3D = null!;
+        public MeshRenderer InnerWallsRenderer2D = null!;
 
         // The outer/upper parts of the closed off cave
-        public MeshFilter WallRoof;
-        public MeshRenderer WallRoofRenderer;
+        public MeshFilter WallRoof = null!;
+        public MeshRenderer WallRoofRenderer = null!;
 
         // The materials used to signify different types of walls
-        public List<Material> Materials;
+        public List<Material> Materials = null!;
 
         [Tooltip("Include an invisible 3D collider on the inner walls to allow for ray trace collisions. " +
                  "Enabling this can impact performance of map generation by up to 2x")]
         public bool Include3DCollider = true;
 
         // Uses the marching squares algorithm to smooth out the grid and create a continuous wall around the rooms
-        private SquareGrid _squareGrid2D;
+        private SquareGrid? _squareGrid2D;
         // Since the squares have an index and this index is depending on the 
         // order of the vertices, we have to include an additional grid for 3D.
-        private SquareGrid _squareGrid3D;
+        private SquareGrid? _squareGrid3D;
 
         private List<Node> _vertices2D = new();
         private List<Node> _vertices3D = new();
@@ -687,7 +685,7 @@ namespace Maes.Map.MapGen
                 VertexB = b;
                 VertexC = c;
 
-                var types = new List<TileType> { a.Type, b.Type, c.Type }.Where(type => Tile.IsWall(type));
+                var types = new List<TileType> { a.Type, b.Type, c.Type }.Where(type => Tile.IsWall(type)).ToArray();
                 Type = TileType.Room;
                 if (types.Any())
                 {
@@ -759,10 +757,10 @@ namespace Maes.Map.MapGen
         {
             // This class is used in the marching squares algorithm.
             // Control nodes can be either on or off
-            public ControlNode TopLeft, TopRight, BottomRight, BottomLeft;
-            public Node CentreTop, CentreRight, CentreBottom, CentreLeft;
-            public Node Center; // Used for square off for offices. Ignoring case 1, 2, 4, 7, 8, 11, 13, 14
-            public int Configuration;
+            public readonly ControlNode TopLeft, TopRight, BottomRight, BottomLeft;
+            public readonly Node CentreTop, CentreRight, CentreBottom, CentreLeft;
+            public readonly Node Center; // Used for square off for offices. Ignoring case 1, 2, 4, 7, 8, 11, 13, 14
+            public readonly int Configuration;
 
             public Square(ControlNode topLeft, ControlNode topRight, ControlNode bottomRight, ControlNode bottomLeft)
             {
@@ -784,7 +782,7 @@ namespace Maes.Map.MapGen
                 var centerZ = bottomLeft.Position.z + (zDiff / 2f);
 
 
-                var types = new List<TileType>
+                var types = new[]
                 {
                     topLeft.Type,
                     topRight.Type,
@@ -833,8 +831,8 @@ namespace Maes.Map.MapGen
 
         internal class ControlNode : Node
         {
-            public bool IsWall;
-            public Node Above, Right;
+            public readonly bool IsWall;
+            public readonly Node Above, Right;
 
             public ControlNode(Vector3 position, TileType type) : base(position, type)
             {

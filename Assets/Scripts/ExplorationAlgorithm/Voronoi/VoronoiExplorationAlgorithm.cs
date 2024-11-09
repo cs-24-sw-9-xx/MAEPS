@@ -38,67 +38,67 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 {
     public class VoronoiExplorationAlgorithm : IExplorationAlgorithm
     {
-        private IRobotController _robotController;
+        // Set by SetController
+        private IRobotController _robotController = null!;
         private readonly Random _random;
 
-        private List<VoronoiRegion> _localVoronoiRegions = new List<VoronoiRegion>();
-        private VoronoiRegion _currentRegion = new VoronoiRegion();
-        private int _voronoiRegionMaxDistance; // Measured in coarse tiles
-        private static readonly Dictionary<Vector2Int, bool> _isExploredMap = new Dictionary<Vector2Int, bool>();
-        private int _currentTick = 0;
+        private List<VoronoiRegion> _localVoronoiRegions = new();
+        private VoronoiRegion _currentRegion;
+        private readonly int _voronoiRegionMaxDistance; // Measured in coarse tiles
+        
+        // TODO: Find out why this is static. Shared between robots?
+        private static readonly Dictionary<Vector2Int, bool> IsExploredMap = new();
+        private int _currentTick;
 
-        private VoronoiSearchPhase _currentSearchPhase = VoronoiSearchPhase.EXPLORE_MODE;
-        private readonly RobotConstraints _constraints;
+        private VoronoiSearchPhase _currentSearchPhase = VoronoiSearchPhase.ExploreMode;
         private readonly float _markExploredRangeInCoarseTiles;
-        private readonly int EXPAND_VORONOI_RECALC_INTERVAL = 40;
-        private readonly int SEARCH_MODE_RECALC_INTERVAL = 40;
-        private readonly int EXPLORE_MODE_RECALC_INTERVAL = 50;
-        private readonly float SELECT_FURTHEST_VORONOI_BOUNDARY_CHANCE = 0.3f;
-        private readonly List<(Vector2Int, int)> _coarseOcclusionPointsVisitedThisSearchMode = new List<(Vector2Int, int)>();
-        private List<(Vector2Int, bool)> _currentTargetPath = null; // bool represents, if it has been visited or not.
-        private Vector2Int? _currentPartialMovementTarget = null;
-        private readonly float DISTANCE_BETWEEN_SAME_OCC_POINT = 1f; // If two occlusion points are closer than this, they are the same
-        private readonly float VORONOI_BOUNDARY_EQUAL_DISTANCE_DELTA = 2f;
+        private const int ExpandVoronoiRecalcInterval = 40;
+        private const int SearchModeRecalcInterval = 40;
+        private const int ExploreModeRecalcInterval = 50;
+        private readonly List<(Vector2Int, int)> _coarseOcclusionPointsVisitedThisSearchMode = new();
+        private List<(Vector2Int, bool)>? _currentTargetPath; // bool represents, if it has been visited or not.
+        private Vector2Int? _currentPartialMovementTarget;
+        private const float DistanceBetweenSameOccPoint = 1f; // If two occlusion points are closer than this, they are the same
+        private const float VoronoiBoundaryEqualDistanceDelta = 2f;
         private VoronoiHeuristic _heuristic;
-        private UnexploredTilesComparer _unexploredTilesComparer;
+        private UnexploredTilesComparer _unexploredTilesComparer => GetSortingFunction(_heuristic);
 
         private delegate int UnexploredTilesComparer(Vector2Int c1, Vector2Int c2);
 
         // Debugging variables
-        private Vector2Int? _closestOcclusionPoint = null;
-        private int _occlusionPointsWithinView = 0;
+        private Vector2Int? _closestOcclusionPoint;
+        private int _occlusionPointsWithinView;
         private int _regionSizeCoarseTiles;
         private int _unexploredTilesInRegion;
 
 
         private enum VoronoiHeuristic
         {
-            NORTH_EAST,
-            EAST_SOUTH,
-            SOUTH_WEST,
-            WEST_NORTH
+            NorthEast,
+            EastSouth,
+            SouthWest,
+            WestNorth
         }
 
         private enum VoronoiSearchPhase
         {
-            SEARCH_MODE, // If not unexplored tiles within view 
-            EXPLORE_MODE, // Go to next unexplored tile
-            EXPAND_VORONOI
+            SearchMode, // If not unexplored tiles within view 
+            ExploreMode, // Go to next unexplored tile
+            ExpandVoronoi
         }
 
-        private struct VoronoiRegion
+        private readonly struct VoronoiRegion
         {
             public readonly int RobotId;
             public readonly List<Vector2Int> Tiles;
 
             public bool IsEmpty()
             {
-                return Tiles == null || Tiles.Count == 0;
+                return Tiles.Count == 0;
             }
 
             public int Size()
             {
-                if (IsEmpty()) return 0;
                 return Tiles.Count;
             }
 
@@ -109,10 +109,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             }
         }
 
-        public VoronoiExplorationAlgorithm(int randomSeed, RobotConstraints constraints, float markExploredRangeInCoarseTiles)
+        public VoronoiExplorationAlgorithm(int randomSeed, float markExploredRangeInCoarseTiles)
         {
             _random = new Random(randomSeed);
-            _constraints = constraints;
             _markExploredRangeInCoarseTiles = markExploredRangeInCoarseTiles;
             _voronoiRegionMaxDistance = 50;
         }
@@ -121,7 +120,6 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         {
             this._robotController = controller;
             _heuristic = (VoronoiHeuristic)(_robotController.GetRobotID() % 4);
-            _unexploredTilesComparer = GetSortingFunction(_heuristic);
         }
 
         public void UpdateLogic()
@@ -145,7 +143,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
                 if (unexploredTiles.Count != 0)
                 {
-                    this._currentSearchPhase = VoronoiSearchPhase.EXPLORE_MODE;
+                    this._currentSearchPhase = VoronoiSearchPhase.ExploreMode;
                     _coarseOcclusionPointsVisitedThisSearchMode.Clear();
                     // _currentTargetPath = null;
                     // _currentPartialMovementTarget = null;
@@ -206,48 +204,41 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private UnexploredTilesComparer GetSortingFunction(VoronoiHeuristic heuristic)
         {
-            switch (heuristic)
+            return heuristic switch
             {
-                case VoronoiHeuristic.SOUTH_WEST:
-                    return (c1, c2) =>
-                    {
-                        if (c2.y.CompareTo(c1.y) == 0)
-                            return -c2.x.CompareTo(c1.x);
-                        return -c2.y.CompareTo(c1.y);
-                    };
-                case VoronoiHeuristic.WEST_NORTH:
-                    return (c1, c2) =>
-                    {
-                        if (c2.x.CompareTo(c1.x) == 0)
-                            return c2.y.CompareTo(c1.y);
-                        return -c2.x.CompareTo(c1.x);
-                    };
-                case VoronoiHeuristic.NORTH_EAST:
-                    return (c1, c2) =>
-                    {
-                        if (c2.y.CompareTo(c1.y) == 0)
-                            return c2.x.CompareTo(c1.x);
-                        return c2.y.CompareTo(c1.y);
-                    };
-                case VoronoiHeuristic.EAST_SOUTH:
-                    return (c1, c2) =>
-                    {
-                        if (c2.x.CompareTo(c1.x) == 0)
-                            return -c2.y.CompareTo(c1.y);
-                        return c2.x.CompareTo(c1.x);
-                    };
-                default:
-                    throw new Exception("Could not find sorting function for voronoi heuristic.");
-            }
+                VoronoiHeuristic.SouthWest => (c1, c2) =>
+                {
+                    if (c2.y.CompareTo(c1.y) == 0) return -c2.x.CompareTo(c1.x);
+                    return -c2.y.CompareTo(c1.y);
+                },
+                VoronoiHeuristic.WestNorth => (c1, c2) =>
+                {
+                    if (c2.x.CompareTo(c1.x) == 0) return c2.y.CompareTo(c1.y);
+                    return -c2.x.CompareTo(c1.x);
+                },
+                VoronoiHeuristic.NorthEast => (c1, c2) =>
+                {
+                    if (c2.y.CompareTo(c1.y) == 0) return c2.x.CompareTo(c1.x);
+                    return c2.y.CompareTo(c1.y);
+                },
+                VoronoiHeuristic.EastSouth => (c1, c2) =>
+                {
+                    if (c2.x.CompareTo(c1.x) == 0) return -c2.y.CompareTo(c1.y);
+                    return c2.x.CompareTo(c1.x);
+                },
+                _ => throw new Exception("Could not find sorting function for voronoi heuristic.")
+            };
         }
 
         private Vector2Int? GetNextStep()
         {
-            if (IsDoneWithCurrentPath()) return null;
-            else
+            if (IsDoneWithCurrentPath())
             {
-                return _currentTargetPath.First(e => e.Item2 == false).Item1;
+                return null;
             }
+            
+            // IsDoneWithCurrentPath checks for _currentPargetPath == null
+            return _currentTargetPath!.First(e => e.Item2 == false).Item1;
         }
 
         private void UpdateExploredStatusOfTiles()
@@ -262,9 +253,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 var distance = Geometry.DistanceBetween(currentPosition, visibleTile);
                 if (distance <= _markExploredRangeInCoarseTiles)
                 {
-                    if (!_isExploredMap.ContainsKey(visibleTile))
+                    if (!IsExploredMap.ContainsKey(visibleTile))
                     {
-                        _isExploredMap[visibleTile] = true;
+                        IsExploredMap[visibleTile] = true;
                     }
                 }
             }
@@ -285,7 +276,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                                 return (e.Item1, true);
                             return e;
                         }).ToList();
-                        if (_currentSearchPhase == VoronoiSearchPhase.SEARCH_MODE)
+                        if (_currentSearchPhase == VoronoiSearchPhase.SearchMode)
                         {
                             _coarseOcclusionPointsVisitedThisSearchMode.Add((_currentPartialMovementTarget.Value, _currentTick));
                         }
@@ -312,12 +303,12 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 switch (_currentSearchPhase)
                 {
-                    case VoronoiSearchPhase.SEARCH_MODE:
-                        return _currentTick % SEARCH_MODE_RECALC_INTERVAL == 0;
-                    case VoronoiSearchPhase.EXPLORE_MODE:
-                        return _currentTick % EXPLORE_MODE_RECALC_INTERVAL == 0;
-                    case VoronoiSearchPhase.EXPAND_VORONOI:
-                        return _currentTick % EXPAND_VORONOI_RECALC_INTERVAL == 0;
+                    case VoronoiSearchPhase.SearchMode:
+                        return _currentTick % SearchModeRecalcInterval == 0;
+                    case VoronoiSearchPhase.ExploreMode:
+                        return _currentTick % ExploreModeRecalcInterval == 0;
+                    case VoronoiSearchPhase.ExpandVoronoi:
+                        return _currentTick % ExpandVoronoiRecalcInterval == 0;
                 }
             }
 
@@ -336,7 +327,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 foreach (var visitedOccPo in _coarseOcclusionPointsVisitedThisSearchMode)
                 {
-                    if (Geometry.DistanceBetween(op, visitedOccPo.Item1) > DISTANCE_BETWEEN_SAME_OCC_POINT)
+                    if (Geometry.DistanceBetween(op, visitedOccPo.Item1) > DistanceBetweenSameOccPoint)
                     {
                         coarseOcclusionPointsNotVisitedThisSearchMode.Add(op);
                     }
@@ -346,7 +337,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             // If we have some unvisited occlusion points, visit them. 
             if (coarseOcclusionPointsNotVisitedThisSearchMode.Count > 0)
             {
-                this._currentSearchPhase = VoronoiSearchPhase.SEARCH_MODE;
+                this._currentSearchPhase = VoronoiSearchPhase.SearchMode;
                 // Find occlusion point closest to robot
                 var robotPosition = coarseMap.GetApproximatePosition();
                 coarseOcclusionPointsNotVisitedThisSearchMode.Sort((c1, c2) =>
@@ -364,7 +355,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 // Visit least recently visited occlusion point
                 if (_coarseOcclusionPointsVisitedThisSearchMode.Count > 1)
                 {
-                    this._currentSearchPhase = VoronoiSearchPhase.SEARCH_MODE;
+                    this._currentSearchPhase = VoronoiSearchPhase.SearchMode;
                     _coarseOcclusionPointsVisitedThisSearchMode.Sort((e1, e2) => e1.Item2.CompareTo(e2.Item2));
                     var leastRecentlyVisitedOcclusionPoint = _coarseOcclusionPointsVisitedThisSearchMode[0];
                     SetCurrentMovementTarget(leastRecentlyVisitedOcclusionPoint.Item1);
@@ -373,7 +364,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 // If we see no occlusion points or the only occlusion point is already visited, expand region
                 else if (_coarseOcclusionPointsVisitedThisSearchMode.Count == 0 || (_coarseOcclusionPointsVisitedThisSearchMode.Count == 1 && coarseOcclusionPointsNotVisitedThisSearchMode.Count == 0))
                 {
-                    _currentSearchPhase = VoronoiSearchPhase.EXPAND_VORONOI;
+                    _currentSearchPhase = VoronoiSearchPhase.ExpandVoronoi;
                     var closestVoronoiBoundary = FindClosestVoronoiBoundary();
                     SetCurrentMovementTarget(closestVoronoiBoundary);
                     _closestOcclusionPoint = null;
@@ -383,8 +374,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private bool IsDoneWithCurrentPath()
         {
-            if (_currentTargetPath == null) return true;
-            return _currentTargetPath.TrueForAll(e => e.Item2 == true);
+            return _currentTargetPath == null || _currentTargetPath.TrueForAll(e => e.Item2);
         }
 
         private void SetCurrentMovementTarget(Vector2Int target)
@@ -449,14 +439,14 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             // Find all tiles with a distance within delta and assume they are equally far away
             var closestOrFurthestDistance = Geometry.DistanceBetween(robotPosition, coarseEdgeTiles[0]);
             var candidates = coarseEdgeTiles.Where(e =>
-                Mathf.Abs(Geometry.DistanceBetween(e, robotPosition) - closestOrFurthestDistance) < VORONOI_BOUNDARY_EQUAL_DISTANCE_DELTA).ToList();
+                Mathf.Abs(Geometry.DistanceBetween(e, robotPosition) - closestOrFurthestDistance) < VoronoiBoundaryEqualDistanceDelta).ToList();
 
             // Filter away anything close to the occlusion points visited this search mode
             var filteredCandidates = candidates.Where(e =>
             {
                 foreach (var occPo in _coarseOcclusionPointsVisitedThisSearchMode)
                 {
-                    if (Geometry.DistanceBetween(e, occPo.Item1) > DISTANCE_BETWEEN_SAME_OCC_POINT)
+                    if (Geometry.DistanceBetween(e, occPo.Item1) > DistanceBetweenSameOccPoint)
                         return false;
                 }
 
@@ -615,7 +605,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
             var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
 
-            var unExploredInRegion = region.Tiles.Where(e => !_isExploredMap.ContainsKey(e) || _isExploredMap[e] == false).ToList();
+            var unExploredInRegion = region.Tiles.Where(e => !IsExploredMap.ContainsKey(e) || IsExploredMap[e] == false).ToList();
 
             unExploredInRegion =
                 unExploredInRegion
@@ -652,7 +642,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
             // Assign tiles to robots to create regions
             var currentlyVisibleTiles = this._robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList());
+            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList()).ToHashSet();
             for (int x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
             {
                 for (int y = myPosition.y - _voronoiRegionMaxDistance; y < myPosition.y + _voronoiRegionMaxDistance; y++)
@@ -707,7 +697,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 info.Append($"Current partial target: x:{_currentPartialMovementTarget.Value.x}, y:{_currentPartialMovementTarget.Value.y}\n");
             else info.Append("Voronoi has no partial target\n");
 
-            if (_currentSearchPhase == VoronoiSearchPhase.SEARCH_MODE || _currentSearchPhase == VoronoiSearchPhase.EXPAND_VORONOI)
+            if (_currentSearchPhase == VoronoiSearchPhase.SearchMode || _currentSearchPhase == VoronoiSearchPhase.ExpandVoronoi)
                 info.AppendLine($"Occlusion Points within range: {_occlusionPointsWithinView}");
             else
                 info.AppendLine($"Occlusion Points within range: Not in search mode");
@@ -718,13 +708,13 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             info.Append($"Search phase: {_currentSearchPhase}\n");
             info.Append($"Current Region size: {_regionSizeCoarseTiles}\n");
             info.Append($"Unexplored tiles in region: {_unexploredTilesInRegion}\n");
-            info.Append($"Explored tiles: {_isExploredMap.Count}\n");
+            info.Append($"Explored tiles: {IsExploredMap.Count}\n");
 
             if (_currentTargetPath == null)
                 info.Append($"No path to target found\n");
             else
                 info.Append($"Path tiles: {String.Join(",", _currentTargetPath)}\n");
-            info.Append($"Explored tiles: {String.Join(",", _isExploredMap)}\n");
+            info.Append($"Explored tiles: {String.Join(",", IsExploredMap)}\n");
 
             return info.ToString();
         }

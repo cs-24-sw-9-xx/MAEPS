@@ -29,9 +29,9 @@ namespace Maes.Robot.Task {
         private readonly float _startingAngle;
 
         private readonly Transform _robotTransform;
-        private float _previousRotation = 0f;
+        private float _previousRotation;
 
-        private bool _isCompleted = false;
+        private bool _isCompleted;
         public bool IsCompleted() => _isCompleted;
 
         public FiniteRotationTask(Transform robotTransform, float degreesToRotate) {

@@ -20,28 +20,25 @@
 // 
 // Original repository: https://github.com/cs-24-sw-9-xx/MAEPS
 
-using Maes.Map.MapGen;
-using Maes.Robot;
-using UnityEngine;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.ExplorationAlgorithm.FollowWaypoints;
+using Maes.Map.MapGen;
+using Maes.Map.RobotSpawners;
+using Maes.Robot;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
-using MAES.ExplorationAlgorithm.FollowWaypoints;
-using MAES.Map.RobotSpawners;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using UnityEngine;
 
-namespace Maes
+namespace Maes.ExperimentSimulations
 {
     using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class ExampleProgramOneRobotAndSimulation : MonoBehaviour
     {
-        private MySimulator _simulator;
-        /*
-*/
         private void Start()
         {
             const int randomSeed = 12345;
@@ -60,7 +57,7 @@ namespace Maes
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => true);
+                calculateSignalTransmissionProbability: (_, _) => true);
 
             var simulator = MySimulator.GetInstance();
             var random = new System.Random(randomSeed);
@@ -94,6 +91,5 @@ namespace Maes
 
             simulator.PressPlayButton(); // Instantly enter play mode
         }
-
     }
 }

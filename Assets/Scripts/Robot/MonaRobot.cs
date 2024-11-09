@@ -23,41 +23,41 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm;
-using MAES.Simulation;
+using Maes.Simulation;
 using Maes.UI;
 
 using QuickOutline;
 
-using UnityEditor;
 using UnityEngine;
 
 namespace Maes.Robot {
     public class MonaRobot : MonoBehaviour, ISimulationUnit {
-        public Transform leftWheelTransform;
-        public Transform rightWheelTransform;
-        public Outline outLine;
-
-        public ISimulation Simulation { get; private set; }
-
+        public Transform leftWheelTransform = null!;
+        public Transform rightWheelTransform = null!;
+        public Outline outLine = null!;
         public int id = -1;
 
+        // Set by Awake
+        public ISimulation Simulation { get; private set; } = null!;
+
         // The controller that provides an interface for moving the robot
-        public Robot2DController Controller { get; private set; }
+        // Set by Awake
+        public Robot2DController Controller { get; private set; } = null!;
 
         public delegate void OnRobotSelectedDelegate(MonaRobot robot);
 
-        public OnRobotSelectedDelegate OnRobotSelected = (r) => { };
+        public OnRobotSelectedDelegate OnRobotSelected = _ => { };
 
         // The algorithm that controls the logic of the robot
-        public IAlgorithm Algorithm { get; set; }
+        // Set by RobotSpawner
+        public IAlgorithm Algorithm { get; set; } = null!;
 
-        public List<GameObject> _collidingGameObjects = new List<GameObject>();
+        private readonly List<GameObject> _collidingGameObjects = new();
 
         private void Awake() {
             var rigidBody = GetComponent<Rigidbody2D>();
             Controller = new Robot2DController(rigidBody, transform, leftWheelTransform, rightWheelTransform, this);
-            Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation;
+            Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation ?? throw new InvalidOperationException("No current simulation");
         }
 
         public void LogicUpdate() {
@@ -101,7 +101,7 @@ namespace Maes.Robot {
             var gameObj = Instantiate(Resources.Load<GameObject>("TagPost"), envTagHolder.transform);
             gameObj.transform.position = this.transform.position + new Vector3(0,0,-0.1f);
             gameObj.SetActive(false);
-            gameObj.name = $"robot{0}-" + gameObj.name;
+            gameObj.name = $"robot{id}-" + gameObj.name;
             return gameObj;
         }
 

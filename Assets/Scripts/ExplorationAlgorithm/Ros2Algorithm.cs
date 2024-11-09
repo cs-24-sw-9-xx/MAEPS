@@ -37,21 +37,31 @@ using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm {
     internal class Ros2Algorithm : IExplorationAlgorithm {
-        private Robot2DController _controller;
-        private ROSConnection _ros;
-        private string _robotRosId; // e.g. robot0
-        private string _topicPrefix; // Is set in SetController method, e.g. /robot0
-        private string _stateTopic = "/maes_state";
-        private string _broadcastTopic = "/maes_broadcast";
-        private string _depositTagTopic = "/maes_deposit_tag";
-        private string _cmdVelTopic = "/cmd_vel";
-        private Transform _worldPosition; // Used for finding position of relative objects and sending it to ROS
+        // Set by SetController
+        private Robot2DController _controller = null!;
+        
+        // Set by SetController
+        private ROSConnection _ros = null!;
+        
+        // Set by SetController
+        private string _robotRosId = null!; // e.g. robot0
+        
+        // Set by SetController
+        private string _topicPrefix = null!; // Is set in SetController method, e.g. /robot0
+        
+        // Set by SetController
+        private Transform _worldPosition = null!; // Used for finding position of relative objects and sending it to ROS
+        
+        private const string _stateTopic = "/maes_state";
+        private const string _broadcastTopic = "/maes_broadcast";
+        private const string _depositTagTopic = "/maes_deposit_tag";
+        private const string _cmdVelTopic = "/cmd_vel";
 
-        private int _tick = 0;
+        private int _tick;
         
         // Used to react to cmlVel from ROS
-        private float _rosLinearSpeed = 0f;
-        private float _rosRotationSpeed = 0f;
+        private float _rosLinearSpeed;
+        private float _rosRotationSpeed;
 
         // Service calls from ROS uses a callback function. We need to store the results 
         // and act on them in the next logic tick
@@ -87,8 +97,8 @@ namespace Maes.ExplorationAlgorithm {
 
         private void PublishState() {
             var state = new StateMsg();
-            var robotPosition = new Vector2(_worldPosition.position.x, _worldPosition.position.y);
-            var robot_rotation = _worldPosition.rotation.eulerAngles.z - 90f;
+            var robotPosition = (Vector2)_worldPosition.position;
+            var robotRotation = _worldPosition.rotation.eulerAngles.z - 90f;
             // Flip signs like also done in TransformTreePublisher 
             // TODO: Maybe create utility function for transforming coordinates between ROS and Maes ? - Philip
             robotPosition = Geometry.ToROSCoord(robotPosition);
@@ -108,9 +118,8 @@ namespace Maes.ExplorationAlgorithm {
             
             // ---- Nearby Robots ---- //
             var nearbyRobots = _controller.SenseNearbyRobots();
-            var globalAngle = _controller.GetGlobalAngle();
             // Map to relative positions of other robots
-            var otherRobots = nearbyRobots.Select(e => (e.item, e.GetRelativePosition(robotPosition, robot_rotation)));
+            var otherRobots = nearbyRobots.Select(e => (e.item, e.GetRelativePosition(robotPosition, robotRotation)));
             // Convert to ros messages
             var nearbyRobotMsgs = otherRobots.Select(e =>
                 new NearbyRobotMsg(e.item.ToString(), new Vector2DMsg(e.Item2.x, e.Item2.y)));
@@ -118,7 +127,7 @@ namespace Maes.ExplorationAlgorithm {
 
             // ---- Nearby environment tags ---- //
             var tags = _controller.ReadNearbyTags();
-            var rosTagsWithPos = tags.Select(e => (e.Item.Content, GetRelativePosition(robotPosition, robot_rotation, e)));
+            var rosTagsWithPos = tags.Select(e => (e.Item.Content, GetRelativePosition(robotPosition, robotRotation, e)));
             var rosTagAsMsgs =
                     rosTagsWithPos.Select(e => new EnvironmentTagMsg(e.Content, new Vector2DMsg(e.Item2.x, e.Item2.y)));
             state.tags_nearby = rosTagAsMsgs.ToArray();
@@ -174,8 +183,8 @@ namespace Maes.ExplorationAlgorithm {
 
         public string GetDebugInfo() {
             var info = new StringBuilder();
-            
-            var robotPosition = new Vector2(-_worldPosition.position.x, -_worldPosition.position.y);
+
+            var robotPosition = (Vector2)(-_worldPosition.position);
 
             info.AppendLine($"Robot ID: {this._robotRosId}");
             info.AppendLine($"Namespace: {this._topicPrefix}");
@@ -192,22 +201,22 @@ namespace Maes.ExplorationAlgorithm {
         }
         
         public void SetController(Robot2DController controller) {
-            this._controller = controller;
-            this._ros = ROSConnection.GetOrCreateInstance();
-            this._topicPrefix = $"/robot{_controller.GetRobotID()}";
-            this._robotRosId = $"robot{_controller.GetRobotID()}";
+            _controller = controller;
+            _ros = ROSConnection.GetOrCreateInstance();
+            _topicPrefix = $"/robot{_controller.GetRobotID()}";
+            _robotRosId = $"robot{_controller.GetRobotID()}";
             
-            this._worldPosition = GameObject.Find($"robot{_controller.GetRobotID()}").transform;
+            _worldPosition = GameObject.Find($"robot{_controller.GetRobotID()}").transform;
 
             // Register state publisher
-            this._ros.RegisterPublisher<StateMsg>(_topicPrefix + _stateTopic);
+            _ros.RegisterPublisher<StateMsg>(_topicPrefix + _stateTopic);
             
             // Register broadcast and deposit tag services
-            this._ros.ImplementService<BroadcastToAllRequest, BroadcastToAllResponse>(_topicPrefix + _broadcastTopic, BroadcastMessage);
-            this._ros.ImplementService<DepositTagRequest, DepositTagResponse>(_topicPrefix + _depositTagTopic, DepositTag);
+            _ros.ImplementService<BroadcastToAllRequest, BroadcastToAllResponse>(_topicPrefix + _broadcastTopic, BroadcastMessage);
+            _ros.ImplementService<DepositTagRequest, DepositTagResponse>(_topicPrefix + _depositTagTopic, DepositTag);
             
             // Subscribe to cmdVel from Nav2
-            this._ros.Subscribe<TwistMsg>(_topicPrefix + _cmdVelTopic, ReceiveRosCmd);
+            _ros.Subscribe<TwistMsg>(_topicPrefix + _cmdVelTopic, ReceiveRosCmd);
         }
 
         private DepositTagResponse DepositTag(DepositTagRequest req) {

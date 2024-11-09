@@ -20,26 +20,19 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
 using Maes.Map.MapGen;
-
-using MAES.Map.RobotSpawners;
-
+using Maes.Map.RobotSpawners;
 using Maes.Robot;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
-
+using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Trackers;
-using Maes.UI;
+using Maes.UI.SimulationInfoUIControllers;
+using Maes.Visualizers;
 
-using MAES.UI.SimulationInfoUIControllers;
-
-using Maes.Visualizer;
 using UnityEngine;
 
 namespace Maes.Simulation
@@ -54,15 +47,17 @@ namespace Maes.Simulation
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     where TRobotSpawner : RobotSpawner<TAlgorithm>
     {
-        public static SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> SingletonInstance;
-        
-        public int SimulatedLogicTicks { get; private set; } = 0;
-        public int SimulatedPhysicsTicks { get; private set; } = 0;
-        public float SimulateTimeSeconds { get; private set; } = 0;
+        public int SimulatedLogicTicks { get; private set; }
+        public int SimulatedPhysicsTicks { get; private set; }
+        public float SimulateTimeSeconds { get; private set; }
 
-        public MapSpawner MapGenerator;
+        public MapSpawner MapGenerator = null!;
         
-        public TRobotSpawner RobotSpawner;
+        public TRobotSpawner RobotSpawner = null!;
+
+        public IReadOnlyList<MonaRobot> Robots => _robots;
+
+        private List<MonaRobot> _robots = new();
 
         public abstract TVisualizer Visualizer { get; }
         
@@ -70,23 +65,28 @@ namespace Maes.Simulation
         
         ITracker ISimulation.Tracker => Tracker;
 
-        protected TScenario _scenario;
-        protected SimulationMap<Tile> _collisionMap;
-        public List<MonaRobot> Robots;
+        // Set by SetScenario
+        protected TScenario _scenario = null!;
+        
+        // Set by SetScenario
+        protected SimulationMap<Tile> _collisionMap = null!;
+        
+        // Set by SetScenario
+        public CommunicationManager CommunicationManager { get; private set; } = null!;
 
 
-        IReadOnlyList<MonaRobot> ISimulation.Robots => Robots;
-
-        [CanBeNull] private MonaRobot _selectedRobot;
+        private MonaRobot? _selectedRobot;
         public bool HasSelectedRobot() => _selectedRobot != null;
-        [CanBeNull] private VisibleTagInfoHandler _selectedTag;
+        private VisibleTagInfoHandler? _selectedTag;
         public bool HasSelectedTag() => _selectedTag != null;
-        internal CommunicationManager _communicationManager;
 
         // The debugging visualizer provides 
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController;
+        // Set by SetInfoUIController
+        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController { get;
+            private set;
+        } = null!;
 
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
@@ -95,16 +95,16 @@ namespace Maes.Simulation
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
             AfterCollisionMapGenerated(scenario);
-            _communicationManager = new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
-            RobotSpawner.CommunicationManager = _communicationManager;
+            CommunicationManager = new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
+            RobotSpawner.CommunicationManager = CommunicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
-            _communicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
+            _robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
+            CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
                 robot.OnRobotSelected = SetSelectedRobot;
 
-            _communicationManager.SetRobotReferences(Robots);
+            CommunicationManager.SetRobotReferences(Robots);
 
         }
 
@@ -118,7 +118,7 @@ namespace Maes.Simulation
             
         }
 
-        public void SetSelectedRobot([CanBeNull] MonaRobot newSelectedRobot)
+        public void SetSelectedRobot(MonaRobot? newSelectedRobot)
         {
             // Disable outline on previously selected robot
             if (_selectedRobot != null) _selectedRobot.outLine.enabled = false;
@@ -134,7 +134,7 @@ namespace Maes.Simulation
             SetSelectedRobot(Robots[0]);
         }
 
-        public void SetSelectedTag([CanBeNull] VisibleTagInfoHandler newSelectedTag)
+        public void SetSelectedTag(VisibleTagInfoHandler? newSelectedTag)
         {
             if (_selectedTag != null) _selectedTag.outline.enabled = false;
             _selectedTag = newSelectedTag;
@@ -146,21 +146,28 @@ namespace Maes.Simulation
         {
             _debugVisualizer.LogicUpdate();
             Tracker.LogicUpdate(Robots);
-            Robots.ForEach(robot => robot.LogicUpdate());
+            foreach (var robot in Robots)
+            {
+                robot.LogicUpdate();
+            }
             SimulatedLogicTicks++;
-            _communicationManager.LogicUpdate();
+            CommunicationManager.LogicUpdate();
         }
 
         public void PhysicsUpdate()
         {
-            Robots.ForEach(simUnit => simUnit.PhysicsUpdate());
+            foreach (var robot in Robots)
+            {
+                robot.PhysicsUpdate();
+            }
             Physics2D.Simulate(GlobalSettings.PhysicsTickDeltaSeconds);
             SimulateTimeSeconds += GlobalSettings.PhysicsTickDeltaSeconds;
             SimulatedPhysicsTicks++;
             _debugVisualizer.PhysicsUpdate();
-            _communicationManager.PhysicsUpdate();
+            CommunicationManager.PhysicsUpdate();
         }
 
+        // TODO: This function should not be here wtf is this?
         /// <summary>
         /// Tests specifically if The Next Frontier is no longer doing any work.
         /// </summary>
@@ -225,11 +232,6 @@ namespace Maes.Simulation
         public void RenderCommunicationLines()
         {
             _debugVisualizer.RenderCommunicationLines();
-        }
-
-        public void Awake()
-        {
-            SingletonInstance = this;
         }
 
         public Vector2 WorldCoordinateToSlamPosition(Vector2 worldPosition)

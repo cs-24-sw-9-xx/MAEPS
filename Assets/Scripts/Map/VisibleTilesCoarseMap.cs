@@ -21,7 +21,6 @@
 
 using System.Collections.Generic;
 using Maes.Map.PathFinding;
-using Maes.Robot;
 using UnityEngine;
 
 namespace Maes.Map {
@@ -58,11 +57,11 @@ namespace Maes.Map {
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is solid
-            if (_slamMap._currentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
                 return true;
 
             // Check if the coarse tile is actually solid
-            var tileStatus = GetTileStatus(coordinate, false);
+            var tileStatus = GetTileStatus(coordinate);
             if (tileStatus == SlamMap.SlamTileStatus.Solid)
                 return true;
 
@@ -82,9 +81,9 @@ namespace Maes.Map {
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is not solid
-            if (!_slamMap._currentlyVisibleTiles.ContainsKey(slamTile))
+            if (!_slamMap.CurrentlyVisibleTiles.ContainsKey(slamTile))
                 return false;
-            if (_slamMap._currentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
                 return false;
 
             // Check if the coarse tile is actually solid
@@ -136,7 +135,7 @@ namespace Maes.Map {
             return status;
         }
 
-        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamMap.SlamTileStatus lookupStatus, HashSet<Vector2Int> excludedTiles = null)
+        public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamMap.SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
         {
             return _aStar.GetNearestTileFloodFill(this, targetCoordinate, lookupStatus, excludedTiles);
         }

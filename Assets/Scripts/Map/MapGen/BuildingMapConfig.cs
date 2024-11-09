@@ -20,11 +20,9 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
-using Maes.YamlConfig;
 
 namespace Maes.Map.MapGen {
-    public struct BuildingMapConfig {
+    public readonly struct BuildingMapConfig : IEquatable<BuildingMapConfig> {
         // Bitmap size is always +1 larger in both axis
         // due to the marching squares algorithm using 4 points per square
         public int WidthInTiles { get; }
@@ -50,7 +48,7 @@ namespace Maes.Map.MapGen {
         public int WallThickness { get; }
 
         internal BuildingMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
-            randomSeed: seed, wallThickness: config.Map.BuildingConfig.WallThickness, widthInTiles: config.Map.WidthInTiles,
+            randomSeed: seed, wallThickness: config.Map!.BuildingConfig!.WallThickness, widthInTiles: config.Map.WidthInTiles,
             heightInTiles: config.Map.HeightInTiles,
             maxHallInPercent: config.Map.BuildingConfig.MaxHallInPercent,
             hallWidth: config.Map.BuildingConfig.HallWidth,
@@ -73,12 +71,12 @@ namespace Maes.Map.MapGen {
             int borderSize=1)
             {
             if ((2 * doorPadding + doorWidth) > minRoomSideLength) {
-                throw new ArgumentOutOfRangeException(
+                throw new ArgumentOutOfRangeException(nameof(doorWidth),
                     "Door width cannot be bigger than the smallest side lenght of rooms plus two times DoorPadding");
             }
 
             if (roomSplitChancePercent > 100) {
-                throw new ArgumentOutOfRangeException("roomSplitChance cannot be greater than 100");
+                throw new ArgumentOutOfRangeException(nameof(roomSplitChancePercent), "roomSplitChance cannot be greater than 100");
             }
 
             WidthInTiles = widthInTiles;
@@ -95,6 +93,45 @@ namespace Maes.Map.MapGen {
             DoorPadding = doorPadding;
             RoomSplitChancePercent = roomSplitChancePercent;
             BorderSize = borderSize;
+        }
+
+        public bool Equals(BuildingMapConfig other)
+        {
+            return WidthInTiles == other.WidthInTiles && HeightInTiles == other.HeightInTiles && BitMapWidth == other.BitMapWidth && BitMapHeight == other.BitMapHeight && RandomSeed == other.RandomSeed && MaxHallInPercent.Equals(other.MaxHallInPercent) && HallWidth == other.HallWidth && MinRoomSideLength.Equals(other.MinRoomSideLength) && DoorWidth == other.DoorWidth && DoorPadding == other.DoorPadding && RoomSplitChancePercent == other.RoomSplitChancePercent && BorderSize == other.BorderSize && WallThickness == other.WallThickness;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is BuildingMapConfig other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = new HashCode();
+            hashCode.Add(WidthInTiles);
+            hashCode.Add(HeightInTiles);
+            hashCode.Add(BitMapWidth);
+            hashCode.Add(BitMapHeight);
+            hashCode.Add(RandomSeed);
+            hashCode.Add(MaxHallInPercent);
+            hashCode.Add(HallWidth);
+            hashCode.Add(MinRoomSideLength);
+            hashCode.Add(DoorWidth);
+            hashCode.Add(DoorPadding);
+            hashCode.Add(RoomSplitChancePercent);
+            hashCode.Add(BorderSize);
+            hashCode.Add(WallThickness);
+            return hashCode.ToHashCode();
+        }
+
+        public static bool operator ==(BuildingMapConfig left, BuildingMapConfig right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(BuildingMapConfig left, BuildingMapConfig right)
+        {
+            return !left.Equals(right);
         }
     }
 }

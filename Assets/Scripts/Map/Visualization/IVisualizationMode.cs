@@ -1,5 +1,5 @@
 using Maes.Statistics;
-using Maes.Visualizer;
+using Maes.Visualizers;
 
 namespace Maes.Map.Visualization
 {

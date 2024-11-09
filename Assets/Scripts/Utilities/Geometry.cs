@@ -22,9 +22,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
+
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Maes.Utilities
 {
@@ -63,7 +62,7 @@ namespace Maes.Utilities
         }
 
         /// <summary>
-        /// Utilizes this inequality (x - <paramref name="circleStartPosition"/>.x)^2 + (y - <paramref name="circleStartPosition"/>.y)^2 = r^2 &lt; <paramref name="radius"/>^2 <para/>
+        /// Utilizes this inequality (x - <paramref name="circleStartPosition"/>.x)^2 + (y - <paramref name="circleStartPosition"/>.y)^2 = r^2 &lt; <paramref name="maxRadius"/>^2 <para/>
         /// Based on <see href="https://math.stackexchange.com/questions/1307832/how-to-tell-if-x-y-coordinate-is-within-a-circle">How to tell if (X,Y) coordinate is within a Circle</see>
         /// </summary>
         /// <param name="points">The points that gets checked if they are within the circle</param>

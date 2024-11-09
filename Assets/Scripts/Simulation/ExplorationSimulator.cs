@@ -1,13 +1,10 @@
 using System.Collections.Generic;
-using Maes;
 using Maes.Algorithms;
-
-using MAES.Simulation.SimulationScenarios;
-
+using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
 using UnityEngine;
 
-namespace MAES.Simulation
+namespace Maes.Simulation
 {
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {

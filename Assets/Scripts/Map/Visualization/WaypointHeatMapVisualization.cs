@@ -1,3 +1,4 @@
+using Maes.Map.Visualization.Patrolling;
 using Maes.Statistics;
 
 namespace Maes.Map.Visualization
