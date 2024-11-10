@@ -57,7 +57,7 @@ namespace Maes.Trackers
             // In the first tick, the robot does not have a position in the slam map.
             if (!_isFirstTick)
             {
-                OnFirstTick(robots);
+                OnAfterFirstTick(robots);
             } 
             else _isFirstTick = false;
 
@@ -88,8 +88,8 @@ namespace Maes.Trackers
 
         public abstract void SetVisualizedRobot(MonaRobot? robot);
 
-        protected virtual void OnFirstTick(IReadOnlyList<MonaRobot> robots) {
-            _isFirstTick = false;
+        protected virtual void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots) {
+            foreach (var robot in robots) UpdateCoverageStatus(robot);
         }
 
         protected abstract void CreateSnapShot();
@@ -150,5 +150,18 @@ namespace Maes.Trackers
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
             OnVisualizationModeChanged?.Invoke(_currentVisualizationMode);
         }
+        
+        protected virtual void UpdateCoverageStatus(MonaRobot robot) {
+            var robotPos = robot.transform.position;
+            
+            // Find each mini tile (two triangle cells) covered by the robot and execute the following function on it
+            _coverageCalculator.UpdateRobotCoverage(robotPos, _currentTick, preCoverageTileConsumer);
+
+            AfterUpdateCoverageStatus(robot);
+        }
+        
+        protected virtual CoverageCalculator<TCell>.MiniTileConsumer preCoverageTileConsumer => (index1, triangle1, index2, triangle2) => { };
+
+        protected virtual void AfterUpdateCoverageStatus(MonaRobot robot) { }
     }
 }

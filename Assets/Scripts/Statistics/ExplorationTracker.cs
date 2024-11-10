@@ -91,19 +91,24 @@ namespace Maes.Statistics {
             float sum = averages.Sum();
             return sum / averages.Count;
         }
-        private void UpdateCoverageStatus(MonaRobot robot) {
-            var newlyCoveredCells = new List<(int, ExplorationCell)>();
-            var robotPos = robot.transform.position;
-            
-            // Find each mini tile (two triangle cells) covered by the robot and execute the following function on it
-            _coverageCalculator.UpdateRobotCoverage(robotPos, _currentTick,(index1, triangle1, index2, triangle2) => {
-                if (!triangle1.IsCovered) {
-                    // This tile was not covered before, register as newly covered
-                    newlyCoveredCells.Add((index1, triangle1));
-                    newlyCoveredCells.Add((index2, triangle2));
-                }
-            });
-            
+        
+        List<(int, ExplorationCell)> newlyCoveredCells = new() {};
+        protected override void UpdateCoverageStatus(MonaRobot robot) {
+            newlyCoveredCells = new List<(int, ExplorationCell)> {};
+            base.UpdateCoverageStatus(robot);
+        }
+        
+        protected override CoverageCalculator<ExplorationCell>.MiniTileConsumer preCoverageTileConsumer => (index1, triangle1, index2, triangle2) =>
+        {
+            if (triangle1.IsCovered) return;
+
+            // This tile was not covered before, register as newly covered
+            newlyCoveredCells.Add((index1, triangle1));
+            newlyCoveredCells.Add((index2, triangle2));
+        };
+
+        protected override void AfterUpdateCoverageStatus(MonaRobot robot)
+        {
             _currentVisualizationMode.RegisterNewlyCoveredCells(robot, newlyCoveredCells);
         }
 
@@ -112,8 +117,7 @@ namespace Maes.Statistics {
             return new Vector2Int((int)robotPosition.x, (int)robotPosition.y);
         }
         
-        protected override void OnFirstTick(IReadOnlyList<MonaRobot> robots) {
-            foreach (var robot in robots) UpdateCoverageStatus(robot);
+        protected override void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots) {
             mostRecentDistance = CalculateAverageDistance(robots);
         }
 
