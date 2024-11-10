@@ -59,7 +59,7 @@ namespace Maes.ExperimentSimulations
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = MySimulator.GetInstance();
+            var simulator = new MySimulator();
             var random = new System.Random(randomSeed);
             const int robotCount = 1;
             const int size = 75;

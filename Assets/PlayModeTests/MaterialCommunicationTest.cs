@@ -95,7 +95,7 @@ namespace PlayModeTests
         [TearDown]
         public void ClearSimulator()
         {
-            MySimulator.Destroy();
+            _maes.Destroy();
         }
 
         private void InitSimulator(MapFactory mapFactory,
@@ -117,9 +117,9 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = MySimulator.GetInstance();
+            _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
-            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
 
             // The first robot will broadcast immediately
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>

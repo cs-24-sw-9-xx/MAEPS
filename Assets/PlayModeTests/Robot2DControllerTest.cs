@@ -65,15 +65,15 @@ namespace PlayModeTests {
                         return algorithm;
                     }));
             
-            _maes = MySimulator.GetInstance();
+            _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
-            _simulationBase = _maes.GetSimulationManager().CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
+            _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
         }
 
         [TearDown]
         public void ClearSimulator() {
-            MySimulator.Destroy();
+            _maes.Destroy();
         }
 
         

@@ -59,7 +59,7 @@ namespace PlayModeTests
         [TearDown]
         public void ClearSimulator()
         {
-            MySimulator.Destroy();
+            _maes.Destroy();
             _minotaurs.Clear();
         }
         private void InitSimulator(string mapName, List<Vector2Int> robotSpawnPositions)
@@ -105,9 +105,9 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = MySimulator.GetInstance();
+            _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
-            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
         }
 
         private IEnumerator AssertDoorsWhenFinished(int doorAmount)
@@ -128,7 +128,7 @@ namespace PlayModeTests
             InitSimulator("blank", new List<Vector2Int> { new Vector2Int(0, 0) });
 
             _maes.PressPlayButton();
-            _maes.GetSimulationManager().AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(0);
         }
 
@@ -138,7 +138,7 @@ namespace PlayModeTests
             InitSimulator("doorway", new List<Vector2Int> { new Vector2Int(0, 0) });
 
             _maes.PressPlayButton();
-            _maes.GetSimulationManager().AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }
 
@@ -148,7 +148,7 @@ namespace PlayModeTests
             InitSimulator("doorway_corner", new List<Vector2Int> { new Vector2Int(0, 0) });
 
             _maes.PressPlayButton();
-            _maes.GetSimulationManager().AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }
 
@@ -158,7 +158,7 @@ namespace PlayModeTests
             InitSimulator("hallway", new List<Vector2Int> { new Vector2Int(0, -24) });
 
             _maes.PressPlayButton();
-            _maes.GetSimulationManager().AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }
     }
