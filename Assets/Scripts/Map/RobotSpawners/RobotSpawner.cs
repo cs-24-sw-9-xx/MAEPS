@@ -40,23 +40,23 @@ namespace Maes.Map.RobotSpawners
     {
         public delegate TAlgorithm CreateAlgorithmDelegate(int randomSeed);
 
-        public GameObject robotPrefab = null!;
-
         // Set by SimulationBase
         public CommunicationManager CommunicationManager = null!;
 
         // Set by SimulationBase
         public RobotConstraints RobotConstraints = null!;
+        
+        // Set by Awake
+        private GameObject _robotPrefab = null!;
 
         public void Awake()
         {
-            robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
+            _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
-
 
         public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
-            List<MonaRobot> robots = new List<MonaRobot>();
+            var robots = new List<MonaRobot>();
 
             // Ensure enough spawn positions were given
             if (numberOfRobots != spawnPositions.Count)
@@ -73,7 +73,7 @@ namespace Maes.Map.RobotSpawners
                 spawnPositions = spawnPositions.Select(pos => Geometry.FromROSCoord(pos)).ToList();
 
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            List<Vector2Int> possibleSpawnTiles = new List<Vector2Int>();
+            var possibleSpawnTiles = new List<Vector2Int>();
             for (int x = 0; x < collisionMap.WidthInTiles; x++)
             {
                 for (int y = 0; y < collisionMap.HeightInTiles; y++)
@@ -82,7 +82,6 @@ namespace Maes.Map.RobotSpawners
                     {
                         possibleSpawnTiles.Add(new Vector2Int(x, y));
                     }
-
                 }
             }
 
@@ -126,7 +125,7 @@ namespace Maes.Map.RobotSpawners
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
         public List<MonaRobot> SpawnRobotsInBiggestRoom(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
-            List<MonaRobot> robots = new List<MonaRobot>();
+            var robots = new List<MonaRobot>();
 
             // Sort by room size
             collisionMap.Rooms.Sort((r1, r2) =>
@@ -216,7 +215,7 @@ namespace Maes.Map.RobotSpawners
             // Flooding algorithm to find next tiles from neighbors
             var spawnTilesSelected = new List<Vector2Int>();
             var startCoord = possibleSpawnTiles[0];
-            Queue<Vector2Int> queue = new Queue<Vector2Int>();
+            var queue = new Queue<Vector2Int>();
             queue.Enqueue(startCoord);
             while (queue.Count > 0 && spawnTilesSelected.Count < numberOfRobots)
             {
@@ -340,7 +339,7 @@ namespace Maes.Map.RobotSpawners
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {
-            var robotGameObject = Instantiate(robotPrefab, parent: transform);
+            var robotGameObject = Instantiate(_robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
             var robot = robotGameObject.GetComponent<MonaRobot>();
             // robotRelativeSize is a floating point value in ]0,1.0]. 1.0 = robot is the same size as a tile.

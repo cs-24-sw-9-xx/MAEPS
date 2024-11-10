@@ -40,10 +40,10 @@ namespace Maes.Map.MapGen
 
         public void Awake()
         {
-            Plane = GameObject.Find("CaveFloor").GetComponent<Transform>();
-            InnerWalls2D = GameObject.Find("InnerWalls2D").GetComponent<Transform>();
-            InnerWalls3D = GameObject.Find("InnerWalls3D").GetComponent<Transform>();
-            WallRoof = GameObject.Find("WallRoof").GetComponent<Transform>();
+            Plane = transform.Find("CaveFloor").GetComponent<Transform>();
+            InnerWalls2D = transform.Find("InnerWalls2D").GetComponent<Transform>();
+            InnerWalls3D = transform.Find("InnerWalls3D").GetComponent<Transform>();
+            WallRoof = transform.Find("WallRoof").GetComponent<Transform>();
             _meshGenerator = GetComponent<MeshGenerator>();
         }
 

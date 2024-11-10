@@ -83,7 +83,7 @@ namespace Maes.ExperimentSimulations
                     { "greed", _ => new GreedAlgorithm() },
                     { "voronoi", seed => new VoronoiExplorationAlgorithm(seed, constraintsDict[constraintName].SlamRayTraceRange-1) }
                 };
-            var simulator = MySimulator.GetInstance();
+            var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
             for (int i = 0; i < mapIterations; i++)

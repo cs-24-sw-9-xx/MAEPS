@@ -31,7 +31,7 @@ namespace Maes.Map.MapGen
     {
         private BuildingMapConfig _config;
         private float _wallHeight;
-        private static Tile? _type;
+        private Tile? _type;
 
         /// <summary>
         /// Generates a building map using the unity game objects Plane, InnerWalls and WallRoof.
@@ -87,7 +87,7 @@ namespace Maes.Map.MapGen
             return collisionMap;
         }
 
-        private static Tile[,] ConnectRoomsWithDoors(List<Room> sortedRooms, Tile[,] oldMap, Random random,
+        private Tile[,] ConnectRoomsWithDoors(List<Room> sortedRooms, Tile[,] oldMap, Random random,
             BuildingMapConfig config)
         {
             var connectedMap = (Tile[,])oldMap.Clone();
@@ -244,7 +244,7 @@ namespace Maes.Map.MapGen
             return rooms;
         }
 
-        private static Tile[,] CloseOffHallwayEnds(Tile[,] oldMap)
+        private Tile[,] CloseOffHallwayEnds(Tile[,] oldMap)
         {
             var map = oldMap.Clone() as Tile[,];
 

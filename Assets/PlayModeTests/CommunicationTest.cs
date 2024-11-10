@@ -40,7 +40,6 @@ namespace PlayModeTests
 
     public class CommunicationTest
     {
-
         private const int MapWidth = 50, MapHeight = 50;
         private const int RandomSeed = 123;
         private MySimulator _maes;
@@ -71,7 +70,7 @@ namespace PlayModeTests
         [TearDown]
         public void ClearSimulator()
         {
-            MySimulator.Destroy();
+            _maes.Destroy();
         }
 
         private void InitSimulator(MapFactory mapFactory,
@@ -90,9 +89,9 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = MySimulator.GetInstance();
+            _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
-            _explorationSimulation = _maes.GetSimulationManager().CurrentSimulation;
+            _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
 
             // The first robot will broadcast immediatealy
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {

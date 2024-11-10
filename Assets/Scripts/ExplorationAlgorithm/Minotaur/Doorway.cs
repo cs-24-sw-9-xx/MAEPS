@@ -35,23 +35,22 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         public IEnumerable<Vector2Int> Tiles => Opening.Rasterize().Select(tile => Vector2Int.FloorToInt(tile));
         public bool Explored;
         public readonly CardinalDirection ExitDirection;
-        public static int DoorWidth;
-        // Set by MinotaurAlgorithm.SetController NOTE: Fuck this code :(
-        public static CoarseGrainedMap Map = null!;
+        private readonly int _doorWidth;
 
-        public Doorway(Line2D opening, Vector2Int center, CardinalDirection exitDirection)
+        public Doorway(Line2D opening, Vector2Int center, CardinalDirection exitDirection, int doorWidth)
         {
             Center = center;
             Explored = false;
             Opening = opening;
             ExitDirection = exitDirection;
+            _doorWidth = doorWidth;
         }
 
         public override bool Equals(object? obj)
         {
             if (obj is Doorway other)
             {
-                var squareTiles = Enumerable.Range(0, DoorWidth+1).SelectMany(i => Tiles.Select(doorTile => doorTile + ExitDirection.Vector * i)).ToList();
+                var squareTiles = Enumerable.Range(0, _doorWidth+1).SelectMany(i => Tiles.Select(doorTile => doorTile + ExitDirection.Vector * i)).ToList();
                 //squareTiles.ToList().ForEach(tile => _map.FromSlamMapCoordinate(tile).DrawDebugLineFromRobot(_map, Color.cyan));
                 if (other.Tiles.Any(tile => squareTiles.Contains(tile)))
                 {

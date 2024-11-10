@@ -149,7 +149,6 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             _robotConstraints = robotConstraints;
             _doorWidth = doorWidth;
-            Doorway.DoorWidth = _doorWidth;
         }
 
         public string GetDebugInfo()
@@ -162,7 +161,6 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             _controller = controller;
             _map = _controller.GetSlamMap().GetCoarseMap();
-            Doorway.Map = _map;
             _edgeDetector = new EdgeDetector(_controller.GetSlamMap(), VisionRadius);
             _previousPosition = Position;
         }
@@ -899,7 +897,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                     var doorDirection = CardinalDirection.VectorToDirection(start - end);
                     var extended = new Line2D(start*doorDirection.Vector*VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
                     var closestToRobot = GetClosestPoints(new List<Line2D> { extended }, slamPosition);
-                    var newDoorway = new Doorway(opening, center, CardinalDirection.VectorToDirection(closestToRobot.First() - slamPosition));
+                    var newDoorway = new Doorway(opening, center, CardinalDirection.VectorToDirection(closestToRobot.First() - slamPosition), _doorWidth);
                     var otherDoorway = _doorways.FirstOrDefault(doorway => doorway.Equals(newDoorway));
 
                     if (otherDoorway == null)
