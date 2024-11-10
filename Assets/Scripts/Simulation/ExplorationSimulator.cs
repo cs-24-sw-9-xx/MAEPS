@@ -9,10 +9,6 @@ namespace Maes.Simulation
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
         protected override GameObject LoadSimulatorGameObject() => Resources.Load<GameObject>("Exploration_MAEPS");
-
-        public static ExplorationSimulator GetInstance() {
-            return (ExplorationSimulator) (_instance ??= new ExplorationSimulator());
-        }
         
         /// <summary>
         /// This method is used to start the simulation in a predefined configuration that will change depending on	
@@ -28,7 +24,7 @@ namespace Maes.Simulation
             }	
             EnqueueScenarios(generatedScenarios);	
             if (Application.isBatchMode) {	
-                _simulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);	
+                SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);	
             }	
         }
 

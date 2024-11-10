@@ -53,7 +53,7 @@ namespace Maes.ExperimentSimulations
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) =>
                     distanceThroughWalls <= 0);
 
-            var simulator = MySimulator.GetInstance();
+            var simulator = new MySimulator(); 
 
             var mapFromFile = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);

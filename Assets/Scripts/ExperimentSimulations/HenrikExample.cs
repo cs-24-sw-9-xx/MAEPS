@@ -90,7 +90,7 @@ namespace Maes.ExperimentSimulations
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
 
-            var simulator = MySimulator.GetInstance();
+            var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
             for (int i = 0; i < 100; i++)

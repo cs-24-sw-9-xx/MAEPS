@@ -47,6 +47,9 @@ namespace Maes.Simulation {
         public GameObject UIControllerDebugTitle = null!;
         public GameObject UIControllerDebugInfo = null!;
         public Text SimulationStatusText = null!;
+        public RectTransform controlPanel = null!;
+        public RectTransform playButton = null!;
+        public RectTransform pauseButton = null!;
 
         public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimulationInfoUIController = null!;
         ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
@@ -91,19 +94,13 @@ namespace Maes.Simulation {
             UISpeedController.fastAsPossibleButton.gameObject.SetActive(false);
             
             // Resize background
-            var controlPanel = GameObject.Find("ControlPanel");
-            var cpRectTransform = controlPanel.GetComponent<RectTransform>();
-            cpRectTransform.sizeDelta = new Vector2(100, 50);
+            controlPanel.sizeDelta = new Vector2(100, 50);
             
             // Reposition play button
-            var playButton = GameObject.Find("PlayButton");
-            var pbRectTransform = playButton.GetComponent<RectTransform>();
-            pbRectTransform.anchoredPosition = new Vector2(-20, 0);
+            playButton.anchoredPosition = new Vector2(-20, 0);
             
             // Reposition pause button
-            var pauseButton = GameObject.Find("PauseButton");
-            var pauseRectTransform = pauseButton.GetComponent<RectTransform>();
-            pauseRectTransform.anchoredPosition = new Vector2(20, 0);
+            pauseButton.anchoredPosition = new Vector2(20, 0);
         }
 
         public void CreateRosClockAndVisualiserObjects() {

@@ -24,14 +24,18 @@ using UnityEngine.UI;
 
 namespace Maes.UI {
     internal class Tooltip : MonoBehaviour {
+        // Set by Awake
         private Text _text = null!;
         private RectTransform _backgroundTransform = null!;
+        private RectTransform _parentTransform = null!;
+        
         private static Tooltip _instance = null!;
 
         private void Awake() {
             _instance = this;
-            _backgroundTransform = transform.Find("Background").GetComponent<RectTransform>();
             _text = transform.Find("Text").GetComponent<Text>();
+            _backgroundTransform = transform.Find("Background").GetComponent<RectTransform>();
+            _parentTransform = transform.parent.GetComponent<RectTransform>();
             HideTooltip();
         }
 
@@ -49,7 +53,7 @@ namespace Maes.UI {
 
         private void Update() {
             // Have the tooltip follow the mouse-pointer around.
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(transform.parent.GetComponent<RectTransform>(), 
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentTransform, 
                 Input.mousePosition, null, out var localPoint);
             transform.localPosition = localPoint + new Vector2(2f, 2f);
         }

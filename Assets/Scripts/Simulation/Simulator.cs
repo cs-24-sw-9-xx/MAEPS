@@ -36,50 +36,43 @@ namespace Maes.Simulation {
         where TAlgorithm : IAlgorithm
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        protected static Simulator<TSimulation, TAlgorithm, TScenario>? _instance;
+        public SimulationManager<TSimulation, TAlgorithm, TScenario> SimulationManager { get; }
+        
         private readonly GameObject _maesGameObject;
-        protected SimulationManager<TSimulation, TAlgorithm, TScenario> _simulationManager;
 
         protected Simulator() {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
-            _simulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
+            SimulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
         }
 
         protected abstract GameObject LoadSimulatorGameObject();
 
         // Clears the singleton instance and removes the simulator game object
-        public static void Destroy() {
-            if (_instance != null) {
-                Object.Destroy(_instance._maesGameObject);
-                _instance = null;
-            }
+        public void Destroy() {
+            Object.Destroy(_maesGameObject);
         }
         
         public void EnqueueScenario(TScenario scenario) {
-            _simulationManager.EnqueueScenario(scenario);
-            _simulationManager.InitialScenarios.Enqueue(scenario);
+            SimulationManager.EnqueueScenario(scenario);
+            SimulationManager.InitialScenarios.Enqueue(scenario);
         }
         public void EnqueueScenarios(IEnumerable<TScenario> scenario) {
             foreach (var simulationScenario in scenario) {
-                _simulationManager.EnqueueScenario(simulationScenario);
+                SimulationManager.EnqueueScenario(simulationScenario);
             }
         }
         
         public void PressPlayButton() {
-            if (_simulationManager.PlayState == SimulationPlayState.Play)
+            if (SimulationManager.PlayState == SimulationPlayState.Play)
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
-            if (!_simulationManager.HasActiveScenario())
+            if (!SimulationManager.HasActiveScenario())
                 throw new InvalidOperationException("You must enqueue at least one scenario before starting the" +
                                                     " simulation");
 
 
-            _simulationManager.AttemptSetPlayState(SimulationPlayState.Play);
-        }
-
-        public SimulationManager<TSimulation, TAlgorithm, TScenario> GetSimulationManager() {
-            return _simulationManager;
+            SimulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }
     }
 }

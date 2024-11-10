@@ -36,7 +36,7 @@ namespace Maes.UI {
         private ISimulationManager _simulationManager = null!;
 
         private void Start() {
-            _simulationManager = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>();
+            _simulationManager = GetComponent<ISimulationManager>();
             
             pauseButton.onClick.AddListener(Pause);
             playButton.onClick.AddListener(Play);
