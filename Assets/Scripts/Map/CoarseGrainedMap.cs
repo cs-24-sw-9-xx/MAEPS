@@ -23,9 +23,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Map
@@ -60,7 +62,7 @@ namespace Maes.Map
             _tilesCoveredStatus = new bool[width, height];
             _optimisticTileStatuses = SetTileStatuses(slamMap, width, height, mapKnown);
         }
-        
+
         private static SlamMap.SlamTileStatus[,] SetTileStatuses(SlamMap slamMap, int width, int height, bool mapKnown)
         {
             var tileStatuses = new SlamMap.SlamTileStatus[width, height];
@@ -177,7 +179,7 @@ namespace Maes.Map
 
         public bool IsCoordWithinBounds(Vector2Int coordinate)
         {
-             return (coordinate.x >= 0 && coordinate.x < _width && coordinate.y >= 0 && coordinate.y < _height) && !CheckIfAnyIsStatus(coordinate, SlamMap.SlamTileStatus.Solid);
+            return (coordinate.x >= 0 && coordinate.x < _width && coordinate.y >= 0 && coordinate.y < _height) && !CheckIfAnyIsStatus(coordinate, SlamMap.SlamTileStatus.Solid);
         }
 
         delegate SlamMap.SlamTileStatus StatusAggregator(SlamMap.SlamTileStatus s1, SlamMap.SlamTileStatus s2);
@@ -523,7 +525,8 @@ namespace Maes.Map
             var open = SlamMap.SlamTileStatus.Open;
 
             // If all SLAM tiles are solid, just return solid
-            if (CheckIfAnyIsStatus(nextCoordinate, solid) || CheckIfAnyIsStatus(currentCoordinate, solid) || CheckIfAllSlamStatusesSolid(nextCoordinate) || CheckIfAllSlamStatusesSolid(currentCoordinate)) {
+            if (CheckIfAnyIsStatus(nextCoordinate, solid) || CheckIfAnyIsStatus(currentCoordinate, solid) || CheckIfAllSlamStatusesSolid(nextCoordinate) || CheckIfAllSlamStatusesSolid(currentCoordinate))
+            {
                 return true;
             }
             if (CheckIfAnyIsStatus(currentCoordinate, open) && CheckIfAnyIsStatus(nextCoordinate, open))

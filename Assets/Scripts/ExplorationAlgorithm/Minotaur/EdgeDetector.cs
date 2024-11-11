@@ -19,14 +19,16 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
-using Maes.Utilities;
-using static Maes.Map.SlamMap;
 
+using Maes.Map;
 using Maes.Map.PathFinding;
+using Maes.Utilities;
+
+using UnityEngine;
+
+using static Maes.Map.SlamMap;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -35,10 +37,10 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         public EdgeState State => UpdateState();
         public bool isStuck => GetTilesAroundPoint(_edgeSize, _defaultLimitors).Where(tile => _coarseMap.GetTileStatus(tile) != SlamTileStatus.Open).Any();
 
-        private SlamMap _slamMap;
-        private CoarseGrainedMap _coarseMap;
-        private int _edgeSize;
-        private int _visionRange;
+        private readonly SlamMap _slamMap;
+        private readonly CoarseGrainedMap _coarseMap;
+        private readonly int _edgeSize;
+        private readonly int _visionRange;
         private readonly List<SlamTileStatus> _defaultLimitors = new List<SlamTileStatus> { SlamTileStatus.Solid };
         private Vector2Int _robotPosition => _coarseMap.GetCurrentPosition();
 

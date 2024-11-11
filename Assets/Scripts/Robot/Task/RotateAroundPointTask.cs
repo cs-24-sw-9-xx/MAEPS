@@ -32,9 +32,9 @@ namespace Maes.Robot.Task
 
         // Radius in slam
         public RotateAroundPointTask(Vector2Int point, float radius, float force, bool counterClockwise)
-        {   
+        {
             _point = point;
-            _radius = radius*2;
+            _radius = radius * 2;
             _force = force;
             _counterClockwise = counterClockwise;
         }

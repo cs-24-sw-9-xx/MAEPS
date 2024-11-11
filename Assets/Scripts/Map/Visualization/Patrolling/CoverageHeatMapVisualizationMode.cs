@@ -6,7 +6,7 @@ namespace Maes.Map.Visualization.Patrolling
 {
     public class PatrollingCoverageHeatMapVisualizationMode : IPatrollingVisualizationMode
     {
-        private SimulationMap<PatrollingCell> _map;
+        private readonly SimulationMap<PatrollingCell> _map;
         private readonly int _logicTicksBeforeCold = GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold;
 
         public PatrollingCoverageHeatMapVisualizationMode(SimulationMap<PatrollingCell> map)
@@ -23,12 +23,12 @@ namespace Maes.Map.Visualization.Patrolling
         {
             if (!cell.CanBeCovered) return ExplorationVisualizer.SolidColor;
             if (!cell.IsCovered) return ExplorationVisualizer.StandardCellColor;
-            
+
             var ticksSinceLastCovered = currentTick - cell.LastCoverageTimeInTicks;
-            float coldness = Mathf.Min((float) ticksSinceLastCovered / (float) _logicTicksBeforeCold, 1.0f);
+            float coldness = Mathf.Min((float)ticksSinceLastCovered / (float)_logicTicksBeforeCold, 1.0f);
             return Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
         }
     }
-    
-    
+
+
 }

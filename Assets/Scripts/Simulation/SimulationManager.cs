@@ -31,7 +31,8 @@ using Maes.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.Simulation {
+namespace Maes.Simulation
+{
     public abstract class SimulationManager<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationManager
     where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
@@ -59,11 +60,11 @@ namespace Maes.Simulation {
 
         public TSimulation? CurrentSimulation { get; private set; }
         ISimulation? ISimulationManager.CurrentSimulation => CurrentSimulation;
-        
+
         public SimulationPlayState PlayState { get; private set; } = SimulationPlayState.Paused;
 
         private GameObject? _simulationGameObject;
-        
+
         private int _physicsTicksSinceUpdate;
 
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
@@ -76,9 +77,10 @@ namespace Maes.Simulation {
             Physics.simulationMode = SimulationMode.Script;
             //Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
-            
+
             // Adapt UI for ros mode
-            if (GlobalSettings.IsRosMode) {
+            if (GlobalSettings.IsRosMode)
+            {
                 CreateRosClockAndVisualiserObjects();
                 RemoveFastForwardButtonsFromControlPanel();
                 UIControllerDebugTitle.SetActive(false);
@@ -87,31 +89,35 @@ namespace Maes.Simulation {
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
         }
 
-        private void RemoveFastForwardButtonsFromControlPanel() {
+        private void RemoveFastForwardButtonsFromControlPanel()
+        {
             // Deactivate fast forward buttons
             UISpeedController.stepperButton.gameObject.SetActive(false);
             UISpeedController.fastForwardButton.gameObject.SetActive(false);
             UISpeedController.fastAsPossibleButton.gameObject.SetActive(false);
-            
+
             // Resize background
             controlPanel.sizeDelta = new Vector2(100, 50);
-            
+
             // Reposition play button
             playButton.anchoredPosition = new Vector2(-20, 0);
-            
+
             // Reposition pause button
             pauseButton.anchoredPosition = new Vector2(20, 0);
         }
 
-        public void CreateRosClockAndVisualiserObjects() {
+        public void CreateRosClockAndVisualiserObjects()
+        {
             Instantiate(RosClockPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             Instantiate(RosVisualizerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
         }
 
-        public SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState) {
+        public SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState)
+        {
             if (targetState == PlayState) return PlayState;
 
-            if (CurrentScenario == null) {
+            if (CurrentScenario == null)
+            {
                 targetState = SimulationPlayState.Paused;
             }
 
@@ -126,11 +132,12 @@ namespace Maes.Simulation {
 
         private void Update()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) {
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
                 if (Input.GetKeyDown(KeyCode.Alpha1))
                 {
                     AttemptSetPlayState(SimulationPlayState.Play);
-                } 
+                }
                 else if (Input.GetKeyDown(KeyCode.Alpha2))
                 {
                     AttemptSetPlayState(SimulationPlayState.FastForward);
@@ -148,9 +155,12 @@ namespace Maes.Simulation {
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
         // real time (or whatever speed setting is chosen)
-        private void FixedUpdate() {
-            if (PlayState == SimulationPlayState.Paused) {
-                if (Application.isBatchMode) {
+        private void FixedUpdate()
+        {
+            if (PlayState == SimulationPlayState.Paused)
+            {
+                if (Application.isBatchMode)
+                {
                     // The simulation will only enter paused mode after finishing when in headless/batch mode
                     Application.Quit(0);
                 }
@@ -163,7 +173,7 @@ namespace Maes.Simulation {
             }
 
             long startTimeMillis = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            int millisPerFixedUpdate = (int) (1000f * Time.fixedDeltaTime);
+            int millisPerFixedUpdate = (int)(1000f * Time.fixedDeltaTime);
             // Subtract 8 milliseconds to allow for other procedures such as rendering to occur between updates 
             millisPerFixedUpdate -= 8;
             long fixedUpdateEndTime = startTimeMillis + millisPerFixedUpdate;
@@ -173,18 +183,20 @@ namespace Maes.Simulation {
                 GlobalSettings.LogicTickDeltaMillis / GlobalSettings.PhysicsTicksPerLogicUpdate;
 
             // Only calculate updates if there is still time left in the current update
-            while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate) {
+            while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate)
+            {
                 // Yield if no more updates are needed this FixedUpdate cycle
                 if (_nextUpdateTimeMillis > fixedUpdateEndTime) break;
 
                 var shouldContinue = UpdateSimulation();
-                if (!shouldContinue) {
+                if (!shouldContinue)
+                {
                     AttemptSetPlayState(SimulationPlayState.Paused);
                     return;
                 }
 
                 // The delay before simulating the next update is dependant on the current simulation play speed
-                int updateDelayMillis = physicsTickDeltaMillis / (int) PlayState;
+                int updateDelayMillis = physicsTickDeltaMillis / (int)PlayState;
                 _nextUpdateTimeMillis = _nextUpdateTimeMillis + updateDelayMillis;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
@@ -193,18 +205,22 @@ namespace Maes.Simulation {
         }
 
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
-        private bool UpdateSimulation() {
-            if (CurrentScenario != null &&  CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation))
+        private bool UpdateSimulation()
+        {
+            if (CurrentScenario != null && CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation))
             {
                 CurrentSimulation.OnSimulationFinished();
-                
-                if (Scenarios.Count != 0) { //If last simulation, let us keep looking around in it
+
+                if (Scenarios.Count != 0)
+                { //If last simulation, let us keep looking around in it
                     RemoveCurrentSimulation();
                 }
             }
 
-            if (CurrentScenario == null || CurrentSimulation == null) {
-                if (Scenarios.Count == 0) {
+            if (CurrentScenario == null || CurrentSimulation == null)
+            {
+                if (Scenarios.Count == 0)
+                {
                     // Indicate that no further updates are needed
                     return false;
                 }
@@ -216,12 +232,13 @@ namespace Maes.Simulation {
             CurrentSimulation!.PhysicsUpdate();
             _physicsTicksSinceUpdate++;
             var shouldContinueSim = true;
-            if (_physicsTicksSinceUpdate >= GlobalSettings.PhysicsTicksPerLogicUpdate) {
+            if (_physicsTicksSinceUpdate >= GlobalSettings.PhysicsTicksPerLogicUpdate)
+            {
                 CurrentSimulation.LogicUpdate();
                 _physicsTicksSinceUpdate = 0;
                 UpdateStatisticsUI();
-                
-                
+
+
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
                 if (PlayState == SimulationPlayState.Step)
                     shouldContinueSim = false;
@@ -232,11 +249,12 @@ namespace Maes.Simulation {
             SimulationStatusText.text = "Phys. ticks: " + CurrentSimulation.SimulatedPhysicsTicks +
                                         "\nLogic ticks: " + CurrentSimulation.SimulatedLogicTicks +
                                         "\nSimulated: " + output;
-            
+
             return shouldContinueSim;
         }
 
-        private void CreateSimulation(TScenario scenario) {
+        private void CreateSimulation(TScenario scenario)
+        {
             CurrentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();
@@ -247,7 +265,8 @@ namespace Maes.Simulation {
         }
 
 
-        private void UpdateStatisticsUI() {
+        private void UpdateStatisticsUI()
+        {
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             CurrentSimulation?.UpdateDebugInfo();
         }
@@ -260,16 +279,20 @@ namespace Maes.Simulation {
             _simulationGameObject = null;
         }
 
-        public void EnqueueScenario(TScenario simulationScenario) {
-            if (HasActiveScenario()) {
+        public void EnqueueScenario(TScenario simulationScenario)
+        {
+            if (HasActiveScenario())
+            {
                 Scenarios.Enqueue(simulationScenario);
-            } else // This is the first scenario, initialize it immediately 
+            }
+            else // This is the first scenario, initialize it immediately 
                 CreateSimulation(simulationScenario);
         }
 
-        public bool HasActiveScenario() {
+        public bool HasActiveScenario()
+        {
             return CurrentScenario is not null;
         }
-        
+
     }
 }

@@ -19,16 +19,18 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-using Maes.Robot;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+
+using Maes.Map;
+using Maes.Map.PathFinding;
+using Maes.Robot;
+using Maes.Utilities;
 
 using UnityEngine;
-using Maes.Utilities;
+
 using static Maes.Map.SlamMap;
-using Maes.Map.PathFinding;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -39,13 +41,13 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
         // Set by SetController
         private IRobotController _controller = null!;
-        
+
         // Set by SetController
         private CoarseGrainedMap _map = null!;
-        
+
         // Set by SetController
         private EdgeDetector _edgeDetector = null!;
-        
+
         private readonly RobotConstraints _robotConstraints;
         private Vector2Int Position => _map.GetCurrentPosition();
         protected readonly List<Doorway> _doorways = new();
@@ -64,7 +66,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             .Select(position => position.destination!.Value)
             .ToHashSet();
         private const int DeadlockTimeout = 5;
-        
+
         private enum AlgorithmState
         {
             Idle,
@@ -117,7 +119,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Destination, UsePathing, (int) Type);
+                return HashCode.Combine(Destination, UsePathing, (int)Type);
             }
 
             public static bool operator ==(Waypoint left, Waypoint right)
@@ -223,9 +225,9 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             if (_deadlockTimer >= 5)
             {
                 var waypoint = _waypoint;
-                if (MoveToNearestUnseenWithinRoom()){}
-                else if (MovetoNearestDoorway()){}
-                else if (MoveToNearestUnseen(OtherRobotDestinations)) {}
+                if (MoveToNearestUnseenWithinRoom()) { }
+                else if (MovetoNearestDoorway()) { }
+                else if (MoveToNearestUnseen(OtherRobotDestinations)) { }
                 if (waypoint.HasValue && waypoint.Equals(_waypoint))
                 {
                     if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
@@ -361,15 +363,15 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                             if (MoveToNearestUnseenWithinRoom()) { }
                             else if (MovetoNearestDoorway()) { }
                             else if (MoveToNearestUnseen(OtherRobotDestinations)) { }
-                            else {_currentState = AlgorithmState.Done;}
+                            else { _currentState = AlgorithmState.Done; }
                         }
-                        else if (MoveAlongWall()) {}
-                        else if (MoveToCornerCoverage()) {}
-                        else if (MoveToNearestEdge()) {}
-                        else if (MoveToNearestUnseenWithinRoom()) {}
-                        else if (MovetoNearestDoorway()) {}
-                        else if (MoveToNearestUnseen(OtherRobotDestinations)) {}
-                        else {_currentState = AlgorithmState.Done;}
+                        else if (MoveAlongWall()) { }
+                        else if (MoveToCornerCoverage()) { }
+                        else if (MoveToNearestEdge()) { }
+                        else if (MoveToNearestUnseenWithinRoom()) { }
+                        else if (MovetoNearestDoorway()) { }
+                        else if (MoveToNearestUnseen(OtherRobotDestinations)) { }
+                        else { _currentState = AlgorithmState.Done; }
                     }
                     break;
                 case AlgorithmState.Auctioning: //Should probably wait a certain amount of ticks before doing this
@@ -506,7 +508,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             var slamMap = _controller.GetSlamMap();
             var slamPosition = slamMap.GetCurrentPosition();
             var wall = slamWalls.FirstOrDefault(wall => wall.Start != wall.End && (wall.Start == point.point || wall.End == point.point));
-            if (wall == default) 
+            if (wall == default)
                 return false;
             var thirdPoint = wall.Rasterize().OrderBy(wallPoint => Vector2.Distance(wallPoint, slamPosition)).First();
             var towardRobotVector = CardinalDirection.VectorToDirection(slamPosition - thirdPoint).Vector;
@@ -895,7 +897,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 {
                     var opening = new Line2D(start, end);
                     var doorDirection = CardinalDirection.VectorToDirection(start - end);
-                    var extended = new Line2D(start*doorDirection.Vector*VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
+                    var extended = new Line2D(start * doorDirection.Vector * VisionRadius, end * doorDirection.OppositeDirection().Vector * VisionRadius);
                     var closestToRobot = GetClosestPoints(new List<Line2D> { extended }, slamPosition);
                     var newDoorway = new Doorway(opening, center, CardinalDirection.VectorToDirection(closestToRobot.First() - slamPosition), _doorWidth);
                     var otherDoorway = _doorways.FirstOrDefault(doorway => doorway.Equals(newDoorway));

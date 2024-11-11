@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
@@ -16,22 +17,22 @@ namespace Maes.Simulation
         void SetScenario(TScenario scenario);
         void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController);
     }
-    
+
     public interface ISimulation : ISimulationUnit
     {
         int SimulatedLogicTicks { get; }
         int SimulatedPhysicsTicks { get; }
         float SimulateTimeSeconds { get; }
-        
+
         ITracker Tracker { get; }
-        
+
         IReadOnlyList<MonaRobot> Robots { get; }
-        
+
         void SetSelectedRobot(MonaRobot? newSelectedRobot);
-        
+
         // TODO: Remove this!
         void SetSelectedTag(VisibleTagInfoHandler? newSelectedTag);
-        
+
         // TODO: Remove this!
         void ClearVisualTags();
 
@@ -46,7 +47,7 @@ namespace Maes.Simulation
         void RenderCommunicationLines();
 
         void UpdateDebugInfo();
-        
+
         void OnSimulationFinished();
     }
 }

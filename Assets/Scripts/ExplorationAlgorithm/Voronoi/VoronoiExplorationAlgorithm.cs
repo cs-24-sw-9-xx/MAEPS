@@ -29,8 +29,10 @@ using Maes.Map;
 using Maes.Robot;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 using UnityEngine.Assertions;
+
 using Debug = UnityEngine.Debug;
 using Random = System.Random;
 
@@ -45,7 +47,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         private List<VoronoiRegion> _localVoronoiRegions = new();
         private VoronoiRegion _currentRegion;
         private readonly int _voronoiRegionMaxDistance; // Measured in coarse tiles
-        
+
         // TODO: Find out why this is static. Shared between robots?
         private static readonly Dictionary<Vector2Int, bool> IsExploredMap = new();
         private int _currentTick;
@@ -210,22 +212,26 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 {
                     if (c2.y.CompareTo(c1.y) == 0) return -c2.x.CompareTo(c1.x);
                     return -c2.y.CompareTo(c1.y);
-                },
+                }
+                ,
                 VoronoiHeuristic.WestNorth => (c1, c2) =>
                 {
                     if (c2.x.CompareTo(c1.x) == 0) return c2.y.CompareTo(c1.y);
                     return -c2.x.CompareTo(c1.x);
-                },
+                }
+                ,
                 VoronoiHeuristic.NorthEast => (c1, c2) =>
                 {
                     if (c2.y.CompareTo(c1.y) == 0) return c2.x.CompareTo(c1.x);
                     return c2.y.CompareTo(c1.y);
-                },
+                }
+                ,
                 VoronoiHeuristic.EastSouth => (c1, c2) =>
                 {
                     if (c2.x.CompareTo(c1.x) == 0) return -c2.y.CompareTo(c1.y);
                     return c2.x.CompareTo(c1.x);
-                },
+                }
+                ,
                 _ => throw new Exception("Could not find sorting function for voronoi heuristic.")
             };
         }
@@ -236,7 +242,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 return null;
             }
-            
+
             // IsDoneWithCurrentPath checks for _currentPargetPath == null
             return _currentTargetPath!.First(e => e.Item2 == false).Item1;
         }

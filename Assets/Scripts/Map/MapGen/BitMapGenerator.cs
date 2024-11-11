@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
+
 using UnityEngine;
 
 namespace Maes.Map.MapGen
@@ -72,7 +73,7 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            if (MapToDraw != null) 
+            if (MapToDraw != null)
             {
                 DrawMap(MapToDraw);
             }

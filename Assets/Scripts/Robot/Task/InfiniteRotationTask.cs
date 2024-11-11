@@ -21,20 +21,25 @@
 
 using System;
 
-namespace Maes.Robot.Task {
-    internal class InfiniteRotationTasK : ITask {
+namespace Maes.Robot.Task
+{
+    internal class InfiniteRotationTasK : ITask
+    {
         public float ForceMultiplier;
 
-        public InfiniteRotationTasK(float forceMultiplier) {
+        public InfiniteRotationTasK(float forceMultiplier)
+        {
             ForceMultiplier = forceMultiplier;
         }
 
-        public MovementDirective GetNextDirective() {
+        public MovementDirective GetNextDirective()
+        {
             var absMultiplier = Math.Abs(ForceMultiplier);
             return ForceMultiplier < 0 ? MovementDirective.Left(absMultiplier) : MovementDirective.Right(absMultiplier);
         }
 
-        public bool IsCompleted() {
+        public bool IsCompleted()
+        {
             return false;
         }
     }

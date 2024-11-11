@@ -28,6 +28,7 @@ using System.Text;
 using Maes.Simulation;
 
 using UnityEngine;
+
 using static Maes.Statistics.ExplorationTracker;
 
 namespace Maes.Statistics

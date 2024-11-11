@@ -23,9 +23,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Maes.Map;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Robot
@@ -50,13 +52,13 @@ namespace Maes.Robot
 
         // Set by RobotSpawner
         internal CommunicationManager CommunicationManager { get; set; } = null!;
-        
+
         // Set by RobotSpawner
         public SlamMap SlamMap { get; set; } = null!;
 
         // Set by RobotSpawner
         public RobotConstraints Constraints { get; set; } = null!;
-        
+
         private Queue<Vector2Int> _currentPath = new();
         private Vector2Int _currentTarget;
 
@@ -99,7 +101,7 @@ namespace Maes.Robot
             RightWheel = rightWheel;
             _robot = robot;
         }
-        
+
         public MonaRobot GetRobot()
         {
             return _robot;
@@ -326,7 +328,7 @@ namespace Maes.Robot
             {
                 return null;
             }
-            
+
             var intersection = result.Value.Item1;
             var distance = Vector2.Distance(intersection, _robot.transform.position);
             var intersectingWallAngle = result.Value.Item2;
@@ -389,7 +391,7 @@ namespace Maes.Robot
             }
             #region DrawPath
             Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (int i = 0; i < _currentPath.Count-1; i++)
+            for (int i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToList();
                 if (i == 0)

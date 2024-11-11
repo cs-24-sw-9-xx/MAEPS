@@ -30,9 +30,9 @@ namespace Maes.ExplorationAlgorithm
     {
         // Set by SetController
         private Robot2DController _controller = null!;
-        
+
         private readonly Vector2Int _targetTile;
-        
+
         public MovementTestAlgorithm(Vector2Int targetTile)
         {
             _targetTile = targetTile;

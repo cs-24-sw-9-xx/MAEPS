@@ -21,21 +21,26 @@
 
 using UnityEngine;
 
-namespace Maes.Robot.Task {
-    internal class MovementTask : ITask {
+namespace Maes.Robot.Task
+{
+    internal class MovementTask : ITask
+    {
         public float ForceMultiplier;
 
-        public MovementTask(float forceMultiplier) {
+        public MovementTask(float forceMultiplier)
+        {
             ForceMultiplier = forceMultiplier;
         }
 
-        public MovementDirective GetNextDirective() {
+        public MovementDirective GetNextDirective()
+        {
             var absForce = Mathf.Abs(ForceMultiplier);
             if (ForceMultiplier < 0) return MovementDirective.Reverse(absForce);
             else return MovementDirective.Forward(absForce);
         }
 
-        public bool IsCompleted() {
+        public bool IsCompleted()
+        {
             return false;
         }
     }

@@ -31,9 +31,9 @@ using UnityEngine;
 
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
-    
+    using MySimulator = ExplorationSimulator;
+
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
         private void Start()
@@ -53,7 +53,7 @@ namespace Maes.ExperimentSimulations
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) =>
                     distanceThroughWalls <= 0);
 
-            var simulator = new MySimulator(); 
+            var simulator = new MySimulator();
 
             var mapFromFile = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);

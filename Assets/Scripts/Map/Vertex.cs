@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+
 using UnityEngine;
 
 
-namespace Maes.Map {
+namespace Maes.Map
+{
     public class Vertex : ICloneable
     {
         private readonly HashSet<Vertex> _neighbors = new();
@@ -19,22 +21,25 @@ namespace Maes.Map {
             Position = position;
             Color = color ?? Color.green;
         }
-        
+
         public IReadOnlyCollection<Vertex> Neighbors => _neighbors;
-        
+
         public void VisitedAtTick(int tick)
         {
             LastTimeVisitedTick = tick;
             NumberOfVisits++;
         }
 
-        public void AddNeighbor(Vertex neighbor){
-            if (!Equals(neighbor, this)) {
+        public void AddNeighbor(Vertex neighbor)
+        {
+            if (!Equals(neighbor, this))
+            {
                 _neighbors.Add(neighbor);
             }
         }
 
-        public void RemoveNeighbor(Vertex neighbor) {
+        public void RemoveNeighbor(Vertex neighbor)
+        {
             _neighbors.Remove(neighbor);
         }
 
@@ -45,7 +50,7 @@ namespace Maes.Map {
             {
                 vertex.AddNeighbor(neighbor);
             }
-            
+
             return vertex;
         }
     }

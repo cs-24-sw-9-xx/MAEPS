@@ -19,6 +19,7 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-namespace Maes.Algorithms {
+namespace Maes.Algorithms
+{
     public interface IExplorationAlgorithm : IAlgorithm { }
 }

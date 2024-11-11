@@ -37,16 +37,16 @@ namespace Maes.TransformToNav2
 
         [SerializeField, HideInInspector]
         Clock.ClockMode m_LastSetClockMode;
-    
-        [SerializeField] 
-        double m_PublishRateHz = 100f;
+
+        [SerializeField]
+        readonly double m_PublishRateHz = 100f;
 
         double m_LastPublishTimeSeconds;
 
         // Set in Start
         ROSConnection m_ROS = null!;
 
-        private string m_ClockTopic = "/clock";
+        private readonly string m_ClockTopic = "/clock";
 
         double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
 
@@ -65,7 +65,7 @@ namespace Maes.TransformToNav2
                 Debug.LogWarning("Can't change ClockMode during simulation! Setting it back...");
                 m_ClockMode = m_LastSetClockMode;
             }
-        
+
             SetClockMode(m_ClockMode);
         }
 

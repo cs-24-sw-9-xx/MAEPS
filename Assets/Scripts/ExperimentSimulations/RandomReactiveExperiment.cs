@@ -39,9 +39,9 @@ using UnityEngine;
 
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = PatrollingSimulator;
     using MySimulationScenario = PatrollingSimulationScenario;
-    
+    using MySimulator = PatrollingSimulator;
+
     internal class RandomReactiveExperiment : MonoBehaviour
     {
         private void Start()
@@ -108,7 +108,7 @@ namespace Maes.ExperimentSimulations
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-            
+
             var buildingConfigList100 = new List<BuildingMapConfig>();
             foreach (int val in randNumbers)
             {
@@ -136,7 +136,7 @@ namespace Maes.ExperimentSimulations
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size/2, size/2), random.Next(-size/2, size/2)),
+                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)

@@ -19,8 +19,10 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-namespace Maes.Robot.Task {
-    public enum RobotStatus {
+namespace Maes.Robot.Task
+{
+    public enum RobotStatus
+    {
         Moving,
         Stopping,
         Idle

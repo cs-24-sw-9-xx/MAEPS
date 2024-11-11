@@ -24,28 +24,36 @@ using System.Collections.Generic;
 using Maes.Robot;
 using Maes.Statistics;
 
-namespace Maes.Map.Visualization.Exploration {
-    internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode{
+namespace Maes.Map.Visualization.Exploration
+{
+    internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode
+    {
         private readonly SlamMap _map;
 
-        public SelectedRobotSlamMapVisualization(Robot2DController robot) {
+        public SelectedRobotSlamMapVisualization(Robot2DController robot)
+        {
             _map = robot.SlamMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {
+        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        {
             // Ignore since entire map is replaced every tick
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells) {
+        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        {
             // Ignore since entire map is replaced every tick
         }
 
-        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick) {
-            visualizer.SetAllColors((index) => {
+        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
+        {
+            visualizer.SetAllColors((index) =>
+            {
                 var coordinate = _map.TriangleIndexToCoordinate(index);
                 var status = _map.GetTileStatus(coordinate);
 
-                return status switch {
+                return status switch
+                {
                     SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
                     SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
                     _ => ExplorationVisualizer.StandardCellColor

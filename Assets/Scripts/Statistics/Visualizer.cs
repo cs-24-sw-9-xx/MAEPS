@@ -25,13 +25,13 @@ namespace Maes.Statistics
 
         protected readonly List<Vector3> _vertices = new();
         private readonly List<int> _triangles = new();
-        
+
         // Set in SetSimulationMap
         private SimulationMap<TCell> _map = null!;
         protected Color32[] _colors = null!;
 
         private const int ResolutionMultiplier = 2;
-        
+
 
         public delegate Color32 CellToColor(TCell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);

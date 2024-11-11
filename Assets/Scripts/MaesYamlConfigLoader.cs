@@ -32,16 +32,20 @@ using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Maes {
-    internal static class MaesYamlConfigLoader {
+namespace Maes
+{
+    internal static class MaesYamlConfigLoader
+    {
 
         private static MaesConfigType? PreloadedConfig;
-        
-        public static MaesConfigType? LoadConfig() {
+
+        public static MaesConfigType? LoadConfig()
+        {
             if (PreloadedConfig != null) return PreloadedConfig;
-            
+
             string configFileName;
-            try {
+            try
+            {
                 var yFile = new DirectoryInfo(InputFileLoader.GetDefaultInputPath())
                     .GetFiles("*.y*ml")
                     .Where(f => f.Name.ToLower().Contains("config"))
@@ -49,9 +53,10 @@ namespace Maes {
                     .First();
                 configFileName = yFile.FullName;
                 Debug.Log($"Found {yFile.Name} as config-file. ({yFile.FullName})");
-                
+
             }
-            catch (InvalidOperationException) {
+            catch (InvalidOperationException)
+            {
                 Debug.Log("No valid config-file found. Defaulting to hard-coded settings from GlobalSettings.cs");
                 return null;
             }
@@ -59,17 +64,20 @@ namespace Maes {
             var stream = new StreamReader(configFileName);
             var deserializer = new DeserializerBuilder()
                 .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                .Build(); 
-            
+                .Build();
+
             MaesConfigType config;
-            try {
+            try
+            {
                 config = deserializer.Deserialize<MaesConfigType>(stream);
             }
-            catch (YamlException e) {
+            catch (YamlException e)
+            {
                 Debug.LogException(e);
                 return null;
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 Debug.Log($"Caught exception: {e.Message}");
                 return null;
             }
@@ -77,11 +85,12 @@ namespace Maes {
             PreloadedConfig = config; // Cache for later use
             return config;
         }
-        
-            
-            
+
+
+
         [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-        public class MaesConfigType {
+        public class MaesConfigType
+        {
             public int[] RandomSeeds { get; set; } = new[] { 0 };
             public int NumberOfRobots { get; set; } = 1;
             public GlobalSettingsType GlobalSettings { get; set; } = new GlobalSettingsType();
@@ -91,17 +100,19 @@ namespace Maes {
 
             public MapType? Map { get; set; } = null;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(RandomSeeds)}: {RandomSeeds}, {nameof(NumberOfRobots)}: {NumberOfRobots}, {nameof(GlobalSettings)}: {GlobalSettings}, {nameof(RobotConstraints)}: {RobotConstraints}, {nameof(EndCriteria)}: {EndCriteria}, {nameof(RobotSpawnConfig)}: {RobotSpawnConfig}, {nameof(Map)}: {Map}";
             }
-        }    
-        
+        }
+
         /// <summary>
         /// Only used for parsing YML-values into, as YamlDotNet doesn't support parsing into static members directly.
         /// Remember to make changes here as well, when you make changes to <see cref="GlobalSettings"/>.
         /// </summary>
         [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-        public class GlobalSettingsType {
+        public class GlobalSettingsType
+        {
             // Times per second that robot logic is updated
             public int LogicTicksDeltaMillis { get; set; } = 100;
 
@@ -114,21 +125,23 @@ namespace Maes {
 
             // Statistics
             public bool ShouldWriteCsvResults { get; set; } = false;
-            
+
             public string StatisticsResultPath { get; set; } = "";
             public int TicksPerStatsSnapshot { get; set; } = 10;
             public bool PopulateAdjacencyAndCommGroupsEveryTick { get; set; } = false;
             public int TicksBeforeExplorationHeatmapCold { get; set; } = 2400; // 10*60*4
             public int TicksBeforeCoverageHeatmapCold { get; set; } = 2400;    // 10*60*4
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(LogicTicksDeltaMillis)}: {LogicTicksDeltaMillis}, {nameof(PhysicsTicksPerLogicUpdate)}: {PhysicsTicksPerLogicUpdate}, {nameof(DrawCommunication)}: {DrawCommunication}, {nameof(ShouldWriteCsvResults)}: {ShouldWriteCsvResults}, {nameof(StatisticsResultPath)}: {StatisticsResultPath}, {nameof(TicksPerStatsSnapshot)}: {TicksPerStatsSnapshot}, {nameof(PopulateAdjacencyAndCommGroupsEveryTick)}: {PopulateAdjacencyAndCommGroupsEveryTick}, {nameof(TicksBeforeExplorationHeatmapCold)}: {TicksBeforeExplorationHeatmapCold}, {nameof(TicksBeforeCoverageHeatmapCold)}: {TicksBeforeCoverageHeatmapCold}";
             }
         }
-            
-            
+
+
         [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-        public class RobotConstraintsType {
+        public class RobotConstraintsType
+        {
             public float BroadcastRange { get; set; } = 20f;
             public bool BroadcastBlockedByWalls { get; set; } = false;
             public float SenseNearbyAgentsRange { get; set; } = 20f;
@@ -143,63 +156,73 @@ namespace Maes {
             public float RelativeMoveSpeed { get; set; } = 1f;
             public float AgentRelativeSize { get; set; } = 0.6f;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(BroadcastRange)}: {BroadcastRange}, {nameof(BroadcastBlockedByWalls)}: {BroadcastBlockedByWalls}, {nameof(SenseNearbyAgentsRange)}: {SenseNearbyAgentsRange}, {nameof(SenseNearbyAgentsBlockedByWalls)}: {SenseNearbyAgentsBlockedByWalls}, {nameof(AutomaticallyUpdateSlam)}: {AutomaticallyUpdateSlam}, {nameof(SlamUpdateIntervalInTicks)}: {SlamUpdateIntervalInTicks}, {nameof(SlamSyncIntervalInTicks)}: {SlamSyncIntervalInTicks}, {nameof(SlamPositionInaccuracy)}: {SlamPositionInaccuracy}, {nameof(DistributeSlam)}: {DistributeSlam}, {nameof(EnvironmentTagReadRange)}: {EnvironmentTagReadRange}, {nameof(SlamRaytraceRange)}: {SlamRaytraceRange}, {nameof(RelativeMoveSpeed)}: {RelativeMoveSpeed}, {nameof(AgentRelativeSize)}: {AgentRelativeSize}";
             }
         }
 
-        public class EndCriteriaType {
+        public class EndCriteriaType
+        {
             public float? CoveragePercent { get; set; } = null;
             public float? ExplorationPercent { get; set; } = null;
 
             public int? Tick { get; set; } = null;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(CoveragePercent)}: {CoveragePercent}, {nameof(ExplorationPercent)}: {ExplorationPercent}, {nameof(Tick)}: {Tick}";
             }
         }
 
-        public class SpawnTogetherType {
+        public class SpawnTogetherType
+        {
             public int? SuggestedStartingPointX { get; set; } = null;
             public int? SuggestedStartingPointY { get; set; } = null;
 
-            public bool HasSuggestedStartingPoint => this. SuggestedStartingPointX != null && this.SuggestedStartingPointY != null;
+            public bool HasSuggestedStartingPoint => this.SuggestedStartingPointX != null && this.SuggestedStartingPointY != null;
 
             public Vector2Int SuggestedStartingPointAsVector =>
                 new(SuggestedStartingPointX!.Value, SuggestedStartingPointY!.Value);
-            
-            public override string ToString() {
+
+            public override string ToString()
+            {
                 return $"{nameof(SuggestedStartingPointX)}: {SuggestedStartingPointX}, {nameof(SuggestedStartingPointY)}: {SuggestedStartingPointY}, {nameof(HasSuggestedStartingPoint)}: {HasSuggestedStartingPoint}";
             }
         }
 
-        public class RobotSpawnConfigType {
+        public class RobotSpawnConfigType
+        {
             public bool? BiggestRoom { get; set; } = null;
             public SpawnTogetherType? SpawnTogether { get; set; } = null;
             public bool? SpawnAtHallwayEnds { get; set; } = null;
             public int[]? spawnAtPositionsXVals { get; set; } = null;
             public int[]? spawnAtPositionsYVals { get; set; } = null;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(BiggestRoom)}: {BiggestRoom}, {nameof(SpawnTogether)}: {SpawnTogether}, " +
                        $"{nameof(SpawnAtHallwayEnds)}: {SpawnAtHallwayEnds}, {nameof(spawnAtPositionsXVals)}: " +
                        $"{spawnAtPositionsXVals}, {nameof(spawnAtPositionsYVals)}: {spawnAtPositionsYVals}";
             }
         }
 
-        public class CaveConfigType {
+        public class CaveConfigType
+        {
             public int SmoothingRuns { get; set; } = 4;
             public int ConnectionPassageWidth { get; set; } = 4;
             public int RandomFillPercent { get; set; } = 40;
             public int WallThresholdSize { get; set; } = 10;
             public int RoomThresholdSize { get; set; } = 10;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(SmoothingRuns)}: {SmoothingRuns}, {nameof(ConnectionPassageWidth)}: {ConnectionPassageWidth}, {nameof(RandomFillPercent)}: {RandomFillPercent}, {nameof(WallThresholdSize)}: {WallThresholdSize}, {nameof(RoomThresholdSize)}: {RoomThresholdSize}";
             }
         }
 
-        public class BuildingConfigType {
+        public class BuildingConfigType
+        {
             public float MaxHallInPercent { get; set; } = 20;
             public int HallWidth { get; set; } = 4;
             public int MinRoomSideLength { get; set; } = 6;
@@ -208,12 +231,14 @@ namespace Maes {
             public uint RoomSplitChance { get; set; } = 85;
             public int WallThickness { get; set; } = 1;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(MaxHallInPercent)}: {MaxHallInPercent}, {nameof(MinRoomSideLength)}: {MinRoomSideLength}, {nameof(DoorWidth)}: {DoorWidth}, {nameof(DoorPadding)}: {DoorPadding}, {nameof(RoomSplitChance)}: {RoomSplitChance}";
             }
         }
 
-        public class MapType {
+        public class MapType
+        {
             public float WallHeight { get; set; } = 2f;
             public int WidthInTiles { get; set; } = 30;
             public int HeightInTiles { get; set; } = 30;
@@ -223,11 +248,12 @@ namespace Maes {
 
             public string? CustomMapFilename { get; set; } = null;
 
-            public override string ToString() {
+            public override string ToString()
+            {
                 return $"{nameof(WallHeight)}: {WallHeight}, {nameof(WidthInTiles)}: {WidthInTiles}, {nameof(HeightInTiles)}: {HeightInTiles}, {nameof(BorderSize)}: {BorderSize}, {nameof(BuildingConfig)}: {BuildingConfig}, {nameof(CaveConfig)}: {CaveConfig}";
             }
         }
-        
-        
+
+
     }
 }

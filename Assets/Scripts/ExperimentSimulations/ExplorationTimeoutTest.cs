@@ -19,27 +19,26 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
-using Maes.Map.MapGen;
-using Maes.Robot;
-
-using UnityEngine;
-
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using Maes.ExplorationAlgorithm.Greed;
 using Maes.Algorithms;
+using Maes.ExplorationAlgorithm.Greed;
+using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.ExplorationAlgorithm.TheNextFrontier;
+using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
+using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     public class ExplorationTimeoutTest : MonoBehaviour
     {
@@ -94,7 +93,7 @@ namespace Maes.ExperimentSimulations
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
-            
+
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
                     { "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) },
@@ -177,16 +176,16 @@ namespace Maes.ExperimentSimulations
                     regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart_.*\.csv");
                     if (false)
                     {
-                    simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                                        mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                                            collisionMap: buildingConfig,
-                                            seed: 123,
-                                            numberOfRobots: robotCount,
-                                            spawnPositions: spawningPosHashSet.ToList(),
-                                            createAlgorithmDelegate: algorithms[algorithmName]),
-                                        statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                        robotConstraints: constraintsDict[constraintName]));
+                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                            mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                            robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                                                collisionMap: buildingConfig,
+                                                seed: 123,
+                                                numberOfRobots: robotCount,
+                                                spawnPositions: spawningPosHashSet.ToList(),
+                                                createAlgorithmDelegate: algorithms[algorithmName]),
+                                            statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
+                                            robotConstraints: constraintsDict[constraintName]));
                     }
                     else
                     {

@@ -19,56 +19,70 @@ namespace Maes.UI.SimulationInfoUIControllers
         public TextMeshProUGUI ProgressText = null!;
 
         public Toggle StoppingCriteriaToggle = null!;
-        
+
         public TextMeshProUGUI DistanceTravelledText = null!;
         public TextMeshProUGUI CurrentGraphIdlenessText = null!;
         public TextMeshProUGUI WorstGraphIdlenessText = null!;
         public TextMeshProUGUI AverageGraphIdlenessText = null!;
-        
+
         public Button WaypointHeatMapButton = null!;
         public Button CoverageHeatMapButton = null!;
         public Button PatrollingHeatMapButton = null!;
-        
+
         protected override void AfterStart()
         {
             _mapVisualizationToggleGroup = new List<Button>() {
                 WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton
             };
             SelectVisualizationButton(WaypointHeatMapButton);
-            
-            
-            StoppingCriteriaToggle.onValueChanged.AddListener(delegate {
+
+
+            StoppingCriteriaToggle.onValueChanged.AddListener(delegate
+            {
                 //TODO: when the stopping criteria is toggled
             });
 
-            WaypointHeatMapButton.onClick.AddListener(() => {
+            WaypointHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowWaypointHeatMap());
             });
-            
-            CoverageHeatMapButton.onClick.AddListener(() => {
+
+            CoverageHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotCoverageHeatMap());
             });
-            
-            PatrollingHeatMapButton.onClick.AddListener(() => {
+
+            PatrollingHeatMapButton.onClick.AddListener(() =>
+            {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
             });
         }
-        
-        private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode) {
-            if (mode is WaypointHeatMapVisualizationMode) {
+
+        private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
+        {
+            if (mode is WaypointHeatMapVisualizationMode)
+            {
                 SelectVisualizationButton(WaypointHeatMapButton);
-            } else if (mode is PatrollingCoverageHeatMapVisualizationMode) {
+            }
+            else if (mode is PatrollingCoverageHeatMapVisualizationMode)
+            {
                 SelectVisualizationButton(CoverageHeatMapButton);
-            } else if (mode is PatrollingHeatMapVisualizationMode) {
+            }
+            else if (mode is PatrollingHeatMapVisualizationMode)
+            {
                 SelectVisualizationButton(PatrollingHeatMapButton);
-            } else {
+            }
+            else
+            {
                 throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
             }
-            
+
         }
 
-        protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation) {
-            if (newSimulation != null) {
+        protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation)
+        {
+            if (newSimulation != null)
+            {
                 newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }
@@ -83,25 +97,25 @@ namespace Maes.UI.SimulationInfoUIControllers
             SetWorstGraphIdleness(simulation.PatrollingTracker.WorstGraphIdleness);
             SetAverageGraphIdleness(simulation.PatrollingTracker.AverageGraphIdleness);
         }
-        
+
         private void SetProgress(int completed, int total)
         {
             ProgressBarMask.fillAmount = (float)completed / total;
             ProgressText.text = $"{completed}/{total}";
         }
-        
-        private void SetDistanceTravelled(float distance) => 
+
+        private void SetDistanceTravelled(float distance) =>
             DistanceTravelledText.text = $"The total patrolling distance traveled: {distance} meters";
-        
-        private void SetCurrentGraphIdleness(float idleness) => 
+
+        private void SetCurrentGraphIdleness(float idleness) =>
             CurrentGraphIdlenessText.text = $"Current graph idleness: {idleness} ticks";
-        
-        private void SetWorstGraphIdleness(float idleness) => 
+
+        private void SetWorstGraphIdleness(float idleness) =>
             WorstGraphIdlenessText.text = $"Worst graph idleness: {idleness} ticks";
-        
-        private void SetAverageGraphIdleness(float idleness) => 
+
+        private void SetAverageGraphIdleness(float idleness) =>
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
 
-        
+
     }
 }

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 
 using Maes.Map;
-using Maes.Visualizers;
 
 using UnityEngine;
 
-namespace Maes.Statistics {
-    public class PatrollingVisualizer : Visualizer<PatrollingCell> {
+namespace Maes.Statistics
+{
+    public class PatrollingVisualizer : Visualizer<PatrollingCell>
+    {
 
         public GameObject VertexVisualizer = null!;
         public GameObject EdgeVisualizer = null!;
@@ -22,8 +23,9 @@ namespace Maes.Statistics {
         public override void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
             base.SetSimulationMap(simulationMap, Vector3.zero);
-            
-            foreach (var visualizer in _visualizers) {
+
+            foreach (var visualizer in _visualizers)
+            {
                 Destroy(visualizer);
             }
         }
@@ -45,7 +47,8 @@ namespace Maes.Statistics {
                 _visualizers.Add(vertexVisualizer);
                 _vertexVisualizers.Add(vertex, vertexVisualizer);
 
-                foreach (var otherVertex in vertex.Neighbors) {
+                foreach (var otherVertex in vertex.Neighbors)
+                {
                     var edgeVisualizer = GameObject.Instantiate(EdgeVisualizer, transform);
                     var lineRenderer = edgeVisualizer.GetComponent<LineRenderer>();
                     lineRenderer.SetPosition(0, ((Vector3)(Vector2)vertex.Position) + transform.position + Vector3.back);
@@ -57,13 +60,14 @@ namespace Maes.Statistics {
             }
         }
 
-        public void ShowWaypointHeatMap(int currentTick){
+        public void ShowWaypointHeatMap(int currentTick)
+        {
 
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                if(vertex.NumberOfVisits == 0) continue;
+                if (vertex.NumberOfVisits == 0) continue;
                 var ticksSinceLastExplored = currentTick - vertex.LastTimeVisitedTick;
-                float coldness = Mathf.Min((float) ticksSinceLastExplored / (float) GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
+                float coldness = Mathf.Min((float)ticksSinceLastExplored / (float)GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
                 var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
                 _vertexVisualizers[vertex].GetComponent<MeshRenderer>().material.color = color;
             }

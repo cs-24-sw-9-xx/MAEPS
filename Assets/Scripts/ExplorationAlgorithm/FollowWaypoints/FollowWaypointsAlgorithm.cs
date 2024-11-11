@@ -1,6 +1,7 @@
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
+
 using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.FollowWaypoints
@@ -36,7 +37,7 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
                 _controller.StopCurrentTask();
                 return;
             }
-            
+
             if (IsDestinationReached())
             {
                 _currentWaypointIndex++;
@@ -64,7 +65,7 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
                    $"\nDestination: {_waypoints[_currentWaypointIndex].Destination}" +
                    $"\nStatus: {_controller.GetStatus()}";
         }
-        
+
         private bool IsDestinationReached()
         {
             return _map.GetTileCenterRelativePosition(_waypoints[_currentWaypointIndex].Destination).Distance < 0.5f;

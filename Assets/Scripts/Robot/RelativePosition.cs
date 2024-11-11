@@ -19,17 +19,21 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-namespace Maes.Robot {
-    public class RelativePosition {
+namespace Maes.Robot
+{
+    public class RelativePosition
+    {
         public readonly float Distance;
         public readonly float RelativeAngle;
 
-        public RelativePosition(float distance, float relativeAngle) {
+        public RelativePosition(float distance, float relativeAngle)
+        {
             Distance = distance;
             RelativeAngle = relativeAngle;
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"[Relative angle: {RelativeAngle} degrees. Distance: {Distance}]";
         }
     }

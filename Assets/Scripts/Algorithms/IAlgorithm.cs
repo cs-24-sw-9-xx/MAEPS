@@ -2,7 +2,8 @@ using Maes.Robot;
 
 namespace Maes.Algorithms
 {
-    public interface IAlgorithm {
+    public interface IAlgorithm
+    {
         public void UpdateLogic();
 
         public void SetController(Robot2DController controller);

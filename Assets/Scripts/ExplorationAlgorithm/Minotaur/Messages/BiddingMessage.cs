@@ -31,7 +31,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         public class BiddingMessage : IMinotaurMessage
         {
             private readonly int _requestorRobotID;
-            private Dictionary<int, int> _allBids = new();
+            private readonly Dictionary<int, int> _allBids = new();
             private readonly Doorway _doorway;
 
             public BiddingMessage(int requestorRobotID, Dictionary<int, int> allBids, Doorway doorway)
@@ -60,7 +60,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 {
                     return Combine(biddingMessage, minotaur);
                 }
-                
+
                 return this;
             }
             public IMinotaurMessage Process(MinotaurAlgorithm minotaur)

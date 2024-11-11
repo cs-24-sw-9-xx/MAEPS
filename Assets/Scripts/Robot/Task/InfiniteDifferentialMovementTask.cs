@@ -19,29 +19,35 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-namespace Maes.Robot.Task {
-    
+namespace Maes.Robot.Task
+{
+
     /// Represents a task where the force application at each wheel may be controlled individually
     /// This allows for rotation while moving ahead 
-    internal class InfiniteDifferentialMovementTask : ITask {
+    internal class InfiniteDifferentialMovementTask : ITask
+    {
 
         private float _leftWheelForce;
         private float _rightWheelForce;
 
-        public InfiniteDifferentialMovementTask(float leftWheelForce, float rightWheelForce) {
+        public InfiniteDifferentialMovementTask(float leftWheelForce, float rightWheelForce)
+        {
             UpdateWheelForces(leftWheelForce, rightWheelForce);
         }
 
-        public void UpdateWheelForces(float leftWheelForce, float rightWheelForce) {
+        public void UpdateWheelForces(float leftWheelForce, float rightWheelForce)
+        {
             _leftWheelForce = leftWheelForce;
             _rightWheelForce = rightWheelForce;
         }
 
-        public MovementDirective GetNextDirective() {
+        public MovementDirective GetNextDirective()
+        {
             return new MovementDirective(_leftWheelForce, _rightWheelForce);
         }
 
-        public bool IsCompleted() {
+        public bool IsCompleted()
+        {
             // This is an infinite movement task that can only be terminated manually
             return false;
         }
