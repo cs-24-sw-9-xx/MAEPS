@@ -41,16 +41,9 @@ namespace Maes.UI.SimulationInfoUIControllers {
 
         public Text MouseCoordinateText = null!;
         
-        
-        public Button AllVisualizeTagsButton = null!;
-        private bool _visualizingAllTags;
-        public Button VisualizeTagsButton = null!;
-        private bool _visualizingSelectedTags;
-
         public Button StickyCameraButton = null!;
 
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
-        
 
         public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager = null!;
         // Represents a function that modifies the given simulation in some way
@@ -68,25 +61,6 @@ namespace Maes.UI.SimulationInfoUIControllers {
 
         private void Start()
         {
-            /*// Set listeners for Tag visualization buttons 
-            AllVisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
-                        ToggleVisualizeTagsButtons(AllVisualizeTagsButton);
-                    }
-                });
-            });
-            
-            VisualizeTagsButton.onClick.AddListener(() => {
-                ExecuteAndRememberTagVisualization(sim => {
-                    if (sim != null) {
-                        if (sim.HasSelectedRobot()) {
-                            ToggleVisualizeTagsButtons(VisualizeTagsButton);
-                        }
-                    }
-                });
-            });*/
-            
             StickyCameraButton.onClick.AddListener(() => {
                 CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
                 StickyCameraButton.image.color = CameraController.singletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
@@ -95,23 +69,11 @@ namespace Maes.UI.SimulationInfoUIControllers {
             AfterStart();
         }
 
-        public void Update() {
-            if (Simulation is not null) {
-                if (_visualizingAllTags) {
-                    Simulation.ShowAllTags();
-                }
-                else if (_visualizingSelectedTags) {
-                    Simulation.ShowSelectedTags();
-                }
-                Simulation.RenderCommunicationLines();
-            }
-        }
+        public virtual void Update() { }
 
-        public void ClearSelectedRobot() {
-            _visualizingSelectedTags = false;
+        public virtual void ClearSelectedRobot() {
             CameraController.singletonInstance.stickyCam = false;
             StickyCameraButton.image.color = _mapVisualizationColor;
-            VisualizeTagsButton.image.color = _mapVisualizationColor;
         }
 
         public void UpdateMouseCoordinates(Vector2 mousePosition) {
@@ -120,30 +82,10 @@ namespace Maes.UI.SimulationInfoUIControllers {
             MouseCoordinateText.text = $"(x: {xNumberString}, y: {yNumberString})";
         }
 
-        private void ToggleVisualizeTagsButtons(Button button) {
-            simulationManager.CurrentSimulation?.ClearVisualTags();
-            if (button.name == "AllVisualizeTags") {
-                _visualizingSelectedTags = false;
-                VisualizeTagsButton.image.color = _mapVisualizationColor;
-                _visualizingAllTags = !_visualizingAllTags;
-                button.image.color = _visualizingAllTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
-            }
-            else {
-                _visualizingAllTags = false;
-                AllVisualizeTagsButton.image.color = _mapVisualizationColor;
-                _visualizingSelectedTags = !_visualizingSelectedTags;
-                button.image.color = _visualizingSelectedTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
-            }
-        }
-
         // This function executes the given map visualization change and remembers it.
         // Whenever the simulator creates a new simulation the most recent visualization change is repeated 
         protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc) {
             _mostRecentMapVisualizationModification = modificationFunc;
-            modificationFunc(Simulation);
-        }
-
-        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc) {
             modificationFunc(Simulation);
         }
 
