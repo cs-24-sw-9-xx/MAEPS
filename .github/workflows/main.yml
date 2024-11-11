@@ -131,7 +131,7 @@ jobs:
     permissions:
       checks: write
     runs-on: ubuntu-latest
-    container: unityci/editor:ubuntu-2021.3.45f1-linux-il2cpp-3
+    container: unityci/editor:ubuntu-2022.3.51f1-linux-il2cpp-3.1.0
     steps:
       - uses: actions/checkout@v1
         with:
