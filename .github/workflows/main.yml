@@ -127,15 +127,11 @@ jobs:
   lint:
     name: Quality Check
     runs-on: ubuntu-latest
-    container: unityci/editor:ubuntu-2021.3.11f1-linux-il2cpp-1
+    container: unityci/editor:ubuntu-2021.3.45f1-linux-il2cpp-3
     steps:
       - uses: actions/checkout@v1
         with:
           lfs: true
-      - uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-test
       - name: Generate Solution
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -143,7 +139,7 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         run: |
           unity-editor -nographics -logFile /dev/stdout -quit -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" -serial "$UNITY_SERIAL"
-          unity-editor -nographics -logFile /dev/stdout -customBuildName Card-Game-Simulator -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
+          unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
       - name: Print the files in the folder
         run: ls  
   
