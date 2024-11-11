@@ -36,7 +36,6 @@ namespace Maes.Map.MapGen
 
     public class Tile
     {
-        // Set all over the place because this code fucking sucks
         public static Random? Rand { get; set; }
         
         public TileType Type { get; }
