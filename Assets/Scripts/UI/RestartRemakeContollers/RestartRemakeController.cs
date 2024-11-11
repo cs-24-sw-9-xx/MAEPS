@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -49,22 +50,25 @@ namespace Maes.UI.RestartRemakeContollers
 
             RestartAllButton.onClick.AddListener(RestartAllScenarios);
 
-            MakeAndRunButton.onClick.AddListener(() => {
+            MakeAndRunButton.onClick.AddListener(() =>
+            {
                 Debug.LogWarning("Does nothing");
             });
 
-            CreateBatchButton.onClick.AddListener(() => {
+            CreateBatchButton.onClick.AddListener(() =>
+            {
                 Debug.LogWarning("Does nothing");
             });
         }
 
-        private void RestartCurrentScenario() {
+        private void RestartCurrentScenario()
+        {
             if (simulationManager.CurrentScenario == null)
             {
                 Debug.LogWarning("There is no current scenario");
                 return;
             }
-            
+
             simulationManager.AttemptSetPlayState(SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var newScenariosQueue = new Queue<TScenario>();
             newScenariosQueue.Enqueue(simulationManager.CurrentScenario);
@@ -78,17 +82,19 @@ namespace Maes.UI.RestartRemakeContollers
             }
 
             simulationManager.Scenarios = newScenariosQueue;
-            
+
             //Basically adds the same simulation to the front of the queue again
             //Second time it get a crash, for some reason
-            
+
             // TODO: WTF is this comment talking about? ^
         }
-        
-        private void RestartAllScenarios() {
+
+        private void RestartAllScenarios()
+        {
             simulationManager.AttemptSetPlayState(SimulationPlayState.Play); //Avoids a crash when restarting during pause
             var tempScenariosQueue = new Queue<TScenario>();
-            foreach (var scenario in simulationManager.InitialScenarios){
+            foreach (var scenario in simulationManager.InitialScenarios)
+            {
                 tempScenariosQueue.Enqueue(scenario);
             }
             simulationManager.RemoveCurrentSimulation();

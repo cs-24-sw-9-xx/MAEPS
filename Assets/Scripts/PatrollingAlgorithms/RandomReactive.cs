@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
-using UnityEngine;
 
 using Maes.Map;
+
+using UnityEngine;
 
 /// <summary>
 /// The random reactive patrolling algorithm from "Multi-Agent Movement Coordination in Patrolling", 2002

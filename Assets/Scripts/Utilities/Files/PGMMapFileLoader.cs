@@ -25,12 +25,15 @@ using Maes.Map.MapGen;
 
 namespace Maes.Utilities.Files
 {
-    public static class PgmMapFileLoader {
+    public static class PgmMapFileLoader
+    {
 
-        public static Tile[,] LoadMapFromFileIfPresent(string fileName) {
+        public static Tile[,] LoadMapFromFileIfPresent(string fileName)
+        {
             var stream = InputFileLoader.ReadInputFile(fileName);
 
-            try {
+            try
+            {
                 // Read meta data and initialize map array based on found size
                 var (width, height) = ReadWidthAndHeight(stream);
 
@@ -39,17 +42,19 @@ namespace Maes.Utilities.Files
 
                 return data;
             }
-            finally {
+            finally
+            {
                 stream.Close();
             }
         }
 
         // Reads the image height/width from the meta data and advances the stream pointer to the start of the data
-        private static (int, int) ReadWidthAndHeight(TextReader stream) {
+        private static (int, int) ReadWidthAndHeight(TextReader stream)
+        {
             // Skip first two meta data lines
-            stream.ReadLine(); 
             stream.ReadLine();
-            
+            stream.ReadLine();
+
             // Read resolution line
             var resolution = stream.ReadLine()!.Split(" ");
             // Skip the line integer indicating the maximum value - We assume it to be 255
@@ -58,26 +63,29 @@ namespace Maes.Utilities.Files
             return (int.Parse(resolution[0]), int.Parse(resolution[1]));
         }
 
-        private static Tile[,] ReadMapDataIntoArray(TextReader stream, int width, int height) {
+        private static Tile[,] ReadMapDataIntoArray(TextReader stream, int width, int height)
+        {
             var data = new Tile[width, height];
-            
-            for (var y = 0; y < height; y++) {
+
+            for (var y = 0; y < height; y++)
+            {
                 //var numberStrings = stream.ReadLine()!.Split(" ");
                 //var debugString = "";
-                for (var x = 0; x < width; x++) {
+                for (var x = 0; x < width; x++)
+                {
                     var line = stream.ReadLine()!;
                     var pixelValue = int.Parse(line.Trim());
                     var bitmapValue = pixelValue < 125 ? TileType.Wall : TileType.Room;
                     data[x, height - y - 1] = new Tile(bitmapValue);
                     //debugString += " " + bitmapValue;
                 }
-                
+
                 // Debug.Log(debugString);
             }
 
             return data;
         }
-        
-        
+
+
     }
 }

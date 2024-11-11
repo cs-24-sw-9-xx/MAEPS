@@ -19,8 +19,10 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-namespace Maes.UI {
-    public enum SimulationPlayState {
+namespace Maes.UI
+{
+    public enum SimulationPlayState
+    {
         Paused = 0,
         Play = 1,
         FastForward = 2,

@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
 namespace Maes.Utilities
@@ -107,7 +108,7 @@ namespace Maes.Utilities
                     if (minDistance > distance)
                     {
                         minDistance = distance;
-                        result = (point, otherPoint); 
+                        result = (point, otherPoint);
                     }
                 }
             }

@@ -16,7 +16,7 @@ namespace Maes.Trackers
         where TVisualizationMode : class, IVisualizationMode<TCell, TVisualizer>
     {
         protected readonly CoverageCalculator<TCell> _coverageCalculator;
-        
+
         protected readonly TVisualizer _visualizer;
 
         protected readonly SimulationMap<TCell> _map;
@@ -30,49 +30,53 @@ namespace Maes.Trackers
         protected MonaRobot? _selectedRobot;
 
         protected int _currentTick;
-        
+
         private bool _isFirstTick = true;
         protected RobotConstraints _constraints;
-        
+
         // Set by derived class constructor.
         protected TVisualizationMode _currentVisualizationMode = null!;
 
-        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, TCell> mapper) {
+        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, TCell> mapper)
+        {
             _visualizer = visualizer;
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
-            
+
             _visualizer.SetSimulationMap(_map, collisionMap.ScaledOffset);
             _rayTracingMap = new RayTracingMap<TCell>(_map);
-            
+
             _coverageCalculator = new CoverageCalculator<TCell>(_map, collisionMap);
         }
-        
-        public void LogicUpdate(IReadOnlyList<MonaRobot> robots) {
+
+        public void LogicUpdate(IReadOnlyList<MonaRobot> robots)
+        {
             // The user can specify the tick interval at which the slam map is updated. 
-            var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam && 
-                                      _currentTick % _constraints.SlamUpdateIntervalInTicks == 0; 
+            var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam &&
+                                      _currentTick % _constraints.SlamUpdateIntervalInTicks == 0;
             PerformRayTracing(robots, shouldUpdateSlamMap);
 
             // In the first tick, the robot does not have a position in the slam map.
             if (!_isFirstTick)
             {
                 OnAfterFirstTick(robots);
-            } 
+            }
             else _isFirstTick = false;
 
-            if (_constraints.AutomaticallyUpdateSlam) {
+            if (_constraints.AutomaticallyUpdateSlam)
+            {
                 // Always update estimated robot position and rotation
                 // regardless of whether the slam map was updated this tick
-                foreach (var robot in robots) {
+                foreach (var robot in robots)
+                {
                     var slamMap = robot.Controller.SlamMap;
                     slamMap.UpdateApproxPosition(robot.transform.position);
                     slamMap.SetApproxRobotAngle(robot.Controller.GetForwardAngleRelativeToXAxis());
                 }
             }
-            
+
             OnLogicUpdate(robots);
-            
+
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
             _currentTick++;
 
@@ -88,29 +92,34 @@ namespace Maes.Trackers
 
         public abstract void SetVisualizedRobot(MonaRobot? robot);
 
-        protected virtual void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots) {
+        protected virtual void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots)
+        {
             foreach (var robot in robots) UpdateCoverageStatus(robot);
         }
 
         protected abstract void CreateSnapShot();
 
         // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(IReadOnlyList<MonaRobot> robots, bool shouldUpdateSlamMap) {
+        private void PerformRayTracing(IReadOnlyList<MonaRobot> robots, bool shouldUpdateSlamMap)
+        {
             float visibilityRange = _constraints.SlamRayTraceRange;
 
-            foreach (var robot in robots) {
+            foreach (var robot in robots)
+            {
                 SlamMap? slamMap = null;
 
-                if (shouldUpdateSlamMap) {
+                if (shouldUpdateSlamMap)
+                {
                     slamMap = robot.Controller.SlamMap;
                     slamMap.ResetRobotVisibility();
                 }
 
                 // Use amount of traces specified by user, or calculate circumference and use trace at interval of 4
                 float tracesPerMeter = 2f;
-                int traces = _constraints.SlamRayTraceCount ?? (int) (Math.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
+                int traces = _constraints.SlamRayTraceCount ?? (int)(Math.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
                 float traceIntervalDegrees = 360f / traces;
-                for (int i = 0; i < traces; i++) {
+                for (int i = 0; i < traces; i++)
+                {
                     var angle = i * traceIntervalDegrees;
                     // Avoid ray casts that can be parallel to the lines of a triangle
                     if (angle % 45 == 0) angle += 0.5f;
@@ -142,24 +151,26 @@ namespace Maes.Trackers
         }
 
         protected virtual void OnNewlyExploredTriangles(int index, TCell cell) { }
-        
+
         protected virtual void AfterRayTracingARobot(MonaRobot robot) { }
 
-        protected void SetVisualizationMode(TVisualizationMode newMode) {
+        protected void SetVisualizationMode(TVisualizationMode newMode)
+        {
             _currentVisualizationMode = newMode;
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
             OnVisualizationModeChanged?.Invoke(_currentVisualizationMode);
         }
-        
-        protected virtual void UpdateCoverageStatus(MonaRobot robot) {
+
+        protected virtual void UpdateCoverageStatus(MonaRobot robot)
+        {
             var robotPos = robot.transform.position;
-            
+
             // Find each mini tile (two triangle cells) covered by the robot and execute the following function on it
             _coverageCalculator.UpdateRobotCoverage(robotPos, _currentTick, preCoverageTileConsumer);
 
             AfterUpdateCoverageStatus(robot);
         }
-        
+
         protected virtual CoverageCalculator<TCell>.MiniTileConsumer preCoverageTileConsumer => (index1, triangle1, index2, triangle2) => { };
 
         protected virtual void AfterUpdateCoverageStatus(MonaRobot robot) { }

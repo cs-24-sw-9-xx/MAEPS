@@ -36,8 +36,8 @@ using Random = System.Random;
 
 namespace PlayModeTests
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
 
     public class MaterialCommunicationTest
     {
@@ -263,7 +263,7 @@ namespace PlayModeTests
                 yield return null;
             }
 
-            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0, 1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }

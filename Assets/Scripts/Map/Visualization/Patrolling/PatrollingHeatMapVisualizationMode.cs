@@ -23,27 +23,32 @@ using Maes.Statistics;
 
 using UnityEngine;
 
-namespace Maes.Map.Visualization.Patrolling {
-    internal class PatrollingHeatMapVisualizationMode : IPatrollingVisualizationMode {
+namespace Maes.Map.Visualization.Patrolling
+{
+    internal class PatrollingHeatMapVisualizationMode : IPatrollingVisualizationMode
+    {
 
         private readonly SimulationMap<PatrollingCell> _map;
         private readonly int _logicTicksBeforeCold = GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold;
 
-        public PatrollingHeatMapVisualizationMode(SimulationMap<PatrollingCell> map) {
+        public PatrollingHeatMapVisualizationMode(SimulationMap<PatrollingCell> map)
+        {
             _map = map;
         }
 
-        public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick) {
+        public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
+        {
             // The entire map has to be replaced every tick since all colors are time dependent
             visualizer.SetAllColors(_map, (cell) => CellToColor(cell, currentTick));
         }
-        
-        private Color32 CellToColor(PatrollingCell cell, int currentTick) {
+
+        private Color32 CellToColor(PatrollingCell cell, int currentTick)
+        {
             if (!cell.IsExplorable) return ExplorationVisualizer.SolidColor;
             if (!cell.IsExplored) return ExplorationVisualizer.StandardCellColor;
- 
+
             var ticksSinceLastExplored = currentTick - cell.LastExplorationTimeInTicks;
-            float coldness = Mathf.Min((float) ticksSinceLastExplored / (float) _logicTicksBeforeCold, 1.0f);
+            float coldness = Mathf.Min((float)ticksSinceLastExplored / (float)_logicTicksBeforeCold, 1.0f);
             return Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
         }
     }

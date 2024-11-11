@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes.Map;
 
 using UnityEngine;
@@ -29,12 +30,12 @@ namespace Maes.Statistics
     public class ExplorationVisualizer : Visualizer<ExplorationCell>
     {
         public LayerMask _foglayer;
-        
+
         private GameObject? _fogOfWarPlane;
         private Mesh? _fogMesh;
         private Vector3[]? _fogVertices;
         private Color[]? _fogColors;
-        
+
         public static readonly Color32 ExploredColor = new Color32(32, 130, 57, 255);
         public static readonly Color32 CoveredColor = new Color32(32, 80, 240, 255);
         public static readonly Color32 SlamSeenColor = new Color32(50, 120, 180, 255);
@@ -44,7 +45,7 @@ namespace Maes.Statistics
         public override void SetSimulationMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
         {
             base.SetSimulationMap(newMap, offset);
-            
+
             //Fog of War related stuff below
             _fogOfWarPlane = GameObject.Find("FogPlaneBetter");
             if (_fogOfWarPlane != null)
@@ -87,7 +88,8 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogMesh != null && _fogColors != null) {
+                if (_fogMesh != null && _fogColors != null)
+                {
                     for (int i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
                         var ray = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);

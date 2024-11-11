@@ -18,15 +18,15 @@ namespace Maes.Simulation
         public override PatrollingVisualizer Visualizer => patrollingVisualizer;
 
         public override PatrollingTracker Tracker => PatrollingTracker;
-        
+
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
-            
+
             PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, patrollingMap);
-            
+
             patrollingVisualizer.SetPatrollingMap(patrollingMap);
-            
+
             RobotSpawner.SetPatrolling(patrollingMap, PatrollingTracker);
         }
 

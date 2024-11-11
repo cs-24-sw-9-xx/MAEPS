@@ -37,8 +37,8 @@ using UnityEngine;
 
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
 
     internal class AvariceExperiments : MonoBehaviour

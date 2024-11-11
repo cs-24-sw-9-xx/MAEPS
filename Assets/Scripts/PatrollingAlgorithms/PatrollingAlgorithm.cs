@@ -11,14 +11,14 @@ namespace Maes.PatrollingAlgorithms
         public abstract string AlgorithmName { get; }
 
         public Vertex TargetVertex { get; protected set; } = null!; // HACK!
-        
+
         // Set by SetPatrollingMap
         protected IReadOnlyList<Vertex> _vertices = null!;
-        
+
         // Set by SetController
         protected Robot2DController _controller = null!;
         protected event OnReachVertex? OnReachVertexHandler;
-        
+
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
@@ -28,7 +28,7 @@ namespace Maes.PatrollingAlgorithms
         {
             _vertices = map.Vertices;
         }
-        
+
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
         {
             OnReachVertexHandler += onReachVertex;
@@ -45,7 +45,8 @@ namespace Maes.PatrollingAlgorithms
         {
             Preliminaries();
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
-            if(currentPosition != TargetVertex.Position){
+            if (currentPosition != TargetVertex.Position)
+            {
                 _controller.PathAndMoveTo(TargetVertex.Position);
                 return;
             }

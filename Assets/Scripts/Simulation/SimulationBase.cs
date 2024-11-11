@@ -52,7 +52,7 @@ namespace Maes.Simulation
         public float SimulateTimeSeconds { get; private set; }
 
         public MapSpawner MapGenerator = null!;
-        
+
         public TRobotSpawner RobotSpawner = null!;
 
         public IReadOnlyList<MonaRobot> Robots => _robots;
@@ -60,17 +60,17 @@ namespace Maes.Simulation
         private List<MonaRobot> _robots = new();
 
         public abstract TVisualizer Visualizer { get; }
-        
+
         public abstract TTracker Tracker { get; }
-        
+
         ITracker ISimulation.Tracker => Tracker;
 
         // Set by SetScenario
         protected TScenario _scenario = null!;
-        
+
         // Set by SetScenario
         protected SimulationMap<Tile> _collisionMap = null!;
-        
+
         // Set by SetScenario
         public CommunicationManager CommunicationManager { get; private set; } = null!;
 
@@ -84,7 +84,9 @@ namespace Maes.Simulation
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
 
         // Set by SetInfoUIController
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController { get;
+        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController
+        {
+            get;
             private set;
         } = null!;
 
@@ -115,7 +117,7 @@ namespace Maes.Simulation
 
         protected virtual void AfterCollisionMapGenerated(TScenario scenario)
         {
-            
+
         }
 
         public void SetSelectedRobot(MonaRobot? newSelectedRobot)
@@ -241,7 +243,8 @@ namespace Maes.Simulation
 
         private void OnDrawGizmos()
         {
-            if (_collisionMap == null) {
+            if (_collisionMap == null)
+            {
                 return;
             }
 

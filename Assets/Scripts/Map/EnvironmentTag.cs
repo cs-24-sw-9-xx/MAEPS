@@ -20,40 +20,47 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using Maes.Utilities;
+
 using UnityEngine;
 
-namespace Maes.Map {
-    public class EnvironmentTag {
-        
+namespace Maes.Map
+{
+    public class EnvironmentTag
+    {
+
         public readonly int Sender;
         public readonly string Content;
         public readonly Vector3 WorldPosition; // Coord in Unity
         public readonly Vector2 MapPosition; // Coord in tile map
-        
-        private readonly GameObject _model;
-        
 
-        public EnvironmentTag(int sender, GameObject model, string content) {
+        private readonly GameObject _model;
+
+
+        public EnvironmentTag(int sender, GameObject model, string content)
+        {
             Sender = sender;
             _model = model;
             Content = content;
             WorldPosition = model.transform.position;
             MapPosition = WorldPosition;
 
-            this._model.GetComponent<VisibleTagInfoHandler>().SetTag(this); 
+            this._model.GetComponent<VisibleTagInfoHandler>().SetTag(this);
         }
 
-        public override string ToString() {
+        public override string ToString()
+        {
             return $"| Robot{Sender} |:\n" + Content;
         }
 
-        public void SetVisibility(bool val) {
+        public void SetVisibility(bool val)
+        {
             _model.SetActive(val);
         }
 
-        public string GetDebugInfo() {
+        public string GetDebugInfo()
+        {
             Vector2 position = GlobalSettings.IsRosMode ? Geometry.ToROSCoord(MapPosition) : MapPosition;
-            
+
             return $"Tag content:  {Content}\n"
                    + $"Deposited by: Robot{Sender}\n"
                    + $"Position:     ({position.x},{position.y})";

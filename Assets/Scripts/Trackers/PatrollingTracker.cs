@@ -18,7 +18,7 @@ namespace Maes.Trackers
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
         private PatrollingSimulation PatrollingSimulation { get; }
-        private PatrollingMap Map { get;}
+        private PatrollingMap Map { get; }
         private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
 
         public int WorstGraphIdleness { get; private set; }
@@ -39,7 +39,7 @@ namespace Maes.Trackers
             PatrollingSimulation = patrollingSimulation;
             Map = map;
             Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
-            
+
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
@@ -51,19 +51,19 @@ namespace Maes.Trackers
             var idleness = atTick - vertexDetails.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
             vertexDetails.VisitedAtTick(atTick);
-                
+
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
         }
-        
+
         protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
         {
             var eachVertexIdleness = GetEachVertexIdleness();
-            
+
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, eachVertexIdleness.Max());
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             GraphIdlenessList.Add(CurrentGraphIdleness);
-            
+
             // TODO: Remove this when the code UI is set up, just for showing that it works
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
         }
@@ -83,24 +83,26 @@ namespace Maes.Trackers
             var currentTick = PatrollingSimulation.SimulatedLogicTicks;
             return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
-        
+
         private void SetCompletedCycles()
         {
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
         }
-        
+
         public void ShowWaypointHeatMap()
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new WaypointHeatMapVisualizationMode());
         }
 
-        public void ShowAllRobotCoverageHeatMap() {
+        public void ShowAllRobotCoverageHeatMap()
+        {
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new PatrollingCoverageHeatMapVisualizationMode(_map));
         }
 
-        public void ShowAllRobotPatrollingHeatMap() {
+        public void ShowAllRobotPatrollingHeatMap()
+        {
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
         }

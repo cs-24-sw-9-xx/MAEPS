@@ -35,8 +35,8 @@ using Random = System.Random;
 
 namespace PlayModeTests
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
 
     public class CommunicationTest
     {
@@ -83,7 +83,8 @@ namespace PlayModeTests
                 hasFinishedSim: _ => false,
                 robotConstraints: new RobotConstraints(materialCommunication: false, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 2,
-                    _ => {
+                    _ =>
+                    {
                         var algorithm = new TestingAlgorithm();
                         _robotTestAlgorithms.Add(algorithm);
                         return algorithm;
@@ -94,12 +95,14 @@ namespace PlayModeTests
             _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
 
             // The first robot will broadcast immediatealy
-            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) => {
+            _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast("Test Message");
             };
 
             // The second robot will continuously receive broadcasts
-            _robotTestAlgorithms[0].UpdateFunction = (_, controller) => {
+            _robotTestAlgorithms[0].UpdateFunction = (_, controller) =>
+            {
                 controller.ReceiveBroadcast();
             };
         }
@@ -117,11 +120,13 @@ namespace PlayModeTests
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
-            algorithm1.UpdateFunction = (tick, controller) => {
+            algorithm1.UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (_, controller) => {
+            algorithm2.UpdateFunction = (_, controller) =>
+            {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -148,11 +153,13 @@ namespace PlayModeTests
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
-            algorithm1.UpdateFunction = (tick, controller) => {
+            algorithm1.UpdateFunction = (tick, controller) =>
+            {
                 if (tick == 0) controller.Broadcast(sentMessage);
             };
 
-            algorithm2.UpdateFunction = (_, controller) => {
+            algorithm2.UpdateFunction = (_, controller) =>
+            {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0) receivedMessage = results[0] as string;
             };
@@ -173,7 +180,8 @@ namespace PlayModeTests
             float foundWallDistance = float.PositiveInfinity;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (_, wallDistance) => {
+                (_, wallDistance) =>
+                {
                     foundWallDistance = wallDistance;
                     return true;
                 },
@@ -204,7 +212,8 @@ namespace PlayModeTests
             float actualDistance = (firstRobotPosition - secondRobotPosition).magnitude;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                (distance, _) => {
+                (distance, _) =>
+                {
                     transmissionDistance = distance;
                     return true;
                 },
@@ -233,7 +242,8 @@ namespace PlayModeTests
             InitSimulator(
                 generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
                     transmissionSuccessCalculatorFunc:
-                    (_, wallDistance) => {
+                    (_, wallDistance) =>
+                    {
                         foundWallDistance = wallDistance;
                         return true;
                     },

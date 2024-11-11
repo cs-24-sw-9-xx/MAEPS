@@ -21,6 +21,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes.Map.MapGen;
 
 namespace Maes.Robot

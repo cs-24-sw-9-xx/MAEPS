@@ -26,37 +26,44 @@ using QuickOutline;
 
 using UnityEngine;
 
-namespace Maes.Map {
-    public class VisibleTagInfoHandler : MonoBehaviour {
+namespace Maes.Map
+{
+    public class VisibleTagInfoHandler : MonoBehaviour
+    {
         public Outline outline = null!;
         public ExplorationSimulation Simulation = null!;
-        
+
         // Set by SetTag
         private EnvironmentTag _environmentTag = null!;
         // Set by SetTag
         private OnVisibleTagSelectedDelegate _onVisibleTagSelected = null!;
-        
+
         private delegate void OnVisibleTagSelectedDelegate(VisibleTagInfoHandler t);
 
 
-        public void SetTag(EnvironmentTag t) {
+        public void SetTag(EnvironmentTag t)
+        {
             _environmentTag = t;
             _onVisibleTagSelected = Simulation.SetSelectedTag;
         }
-        
-        public void OnMouseEnter() {
+
+        public void OnMouseEnter()
+        {
             Tooltip.ShowTooltip_Static(_environmentTag.ToString());
         }
 
-        public void OnMouseExit() {
+        public void OnMouseExit()
+        {
             Tooltip.HideTooltip_Static();
         }
 
-        public void OnMouseDown() {
+        public void OnMouseDown()
+        {
             _onVisibleTagSelected(this);
         }
 
-        public string GetDebugInfo() {
+        public string GetDebugInfo()
+        {
             return _environmentTag.GetDebugInfo();
         }
     }

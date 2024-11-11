@@ -20,12 +20,15 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.IO;
+
 using UnityEngine;
 
-namespace Maes {
+namespace Maes
+{
 
     // This class contains all settings related to an instance of an simulation
-    public static class GlobalSettings {
+    public static class GlobalSettings
+    {
         // Times per second that robot logic is updated
         public static readonly int LogicTickDeltaMillis = 100;
 
@@ -53,9 +56,11 @@ namespace Maes {
 
         public static bool IsRosMode = false;
 
-        static GlobalSettings() {
+        static GlobalSettings()
+        {
             // Maes only loads config from yaml file when in Ros Mode
-            if (!IsRosMode) {
+            if (!IsRosMode)
+            {
                 return;
             }
 
@@ -72,12 +77,13 @@ namespace Maes {
             PhysicsTickDeltaMillis = config.GlobalSettings.PhysicsTicksPerLogicUpdate;
             DrawCommunication = config.GlobalSettings.DrawCommunication;
             ShouldWriteCsvResults = config.GlobalSettings.ShouldWriteCsvResults;
-            if (config.GlobalSettings.StatisticsResultPath.Length == 0) {
+            if (config.GlobalSettings.StatisticsResultPath.Length == 0)
+            {
                 // Puts results file in same dir as the executable is run from
                 // If run from editor put the path will be path to project folder
                 StatisticsOutPutPath = Directory.GetParent(Application.dataPath)?.ToString() + Path.DirectorySeparatorChar;
                 Debug.Log($"{nameof(config.GlobalSettings.StatisticsResultPath)} was empty. Defaulting to executable dir (or project root if run in unity editor)");
-                
+
             }
             TicksPerStatsSnapShot = config.GlobalSettings.TicksPerStatsSnapshot;
             PopulateAdjacencyAndComGroupsEveryTick = config.GlobalSettings.PopulateAdjacencyAndCommGroupsEveryTick;

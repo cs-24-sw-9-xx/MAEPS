@@ -45,7 +45,7 @@ namespace Maes.Map.RobotSpawners
 
         // Set by SimulationBase
         public RobotConstraints RobotConstraints = null!;
-        
+
         // Set by Awake
         private GameObject _robotPrefab = null!;
 
@@ -335,7 +335,7 @@ namespace Maes.Map.RobotSpawners
 
             return robots;
         }
-        
+
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {

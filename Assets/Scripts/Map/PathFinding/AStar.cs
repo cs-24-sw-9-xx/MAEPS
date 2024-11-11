@@ -22,9 +22,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Maes.Utilities;
 using Maes.Utilities.Priority_Queue;
+
 using UnityEngine;
+
 using static Maes.Map.SlamMap;
 
 namespace Maes.Map.PathFinding
@@ -38,7 +41,7 @@ namespace Maes.Map.PathFinding
             public readonly float Heuristic;
             public readonly float Cost;
             public readonly float TotalCost;
-            
+
             private readonly AStarTile? _parent;
 
             public AStarTile(int x, int y, AStarTile? parent, float heuristic, float cost)
@@ -106,8 +109,10 @@ namespace Maes.Map.PathFinding
                 {
                     Vector2Int candidateCoord = currentCoordinate + dir.Vector;
                     // Only consider non-solid tiles
-                    if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate) {
-                        if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate)){
+                    if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
+                    {
+                        if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate))
+                        {
                             continue;
                         }
                     }
@@ -195,7 +200,7 @@ namespace Maes.Map.PathFinding
         private bool IsSolid(Vector2Int coord, IPathFindingMap map, bool optimistic)
         {
             return optimistic
-                ? map.IsOptimisticSolid(coord) 
+                ? map.IsOptimisticSolid(coord)
                 : map.IsSolid(coord);
         }
         private bool IsAnyNeighborOpen(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool optimistic)
@@ -276,7 +281,7 @@ namespace Maes.Map.PathFinding
                 {
                     return neighborHit.Value;
                 }
-                
+
                 var directions = CardinalDirection.GetCardinalDirections().Select(dir => dir.Vector);
                 foreach (var dir in directions)
                 {
