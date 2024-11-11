@@ -28,7 +28,6 @@ using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
-    // How da fuck does this code even work?
     public class Doorway
     {
         public readonly Vector2Int Center;
