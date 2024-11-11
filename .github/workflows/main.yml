@@ -92,9 +92,15 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Print files in dir root
+        run: ls
+      - name: Go one dir out
+        run: cd ..
+      - name: Print files in dir root-1 dir
+        run: ls
       - name: Check formatting
         run: |
           for filename in *.csproj; do
             dotnet format "$filename" --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/" --verify-no-changes
           done
-  
+
