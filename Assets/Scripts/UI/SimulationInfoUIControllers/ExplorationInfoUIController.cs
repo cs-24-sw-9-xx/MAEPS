@@ -24,6 +24,11 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button SelectVisibleAreaButton = null!;
         public Button SelectedSlamMapButton = null!;
 
+        public Button AllVisualizeTagsButton = null!;
+        private bool _visualizingAllTags;
+        public Button VisualizeTagsButton = null!;
+        private bool _visualizingSelectedTags;
+        
         protected override void AfterStart()
         {
             _mapVisualizationToggleGroup = new List<Button>() {
@@ -66,6 +71,25 @@ namespace Maes.UI.SimulationInfoUIControllers
                     }
                 });
             });
+            
+            // Set listeners for Tag visualization buttons 
+            AllVisualizeTagsButton.onClick.AddListener(() => {
+                ExecuteAndRememberTagVisualization(sim => {
+                    if (sim != null) {
+                        ToggleVisualizeTagsButtons(AllVisualizeTagsButton);
+                    }
+                });
+            });
+            
+            VisualizeTagsButton.onClick.AddListener(() => {
+                ExecuteAndRememberTagVisualization(sim => {
+                    if (sim != null) {
+                        if (sim.HasSelectedRobot()) {
+                            ToggleVisualizeTagsButtons(VisualizeTagsButton);
+                        }
+                    }
+                });
+            });
         }
 
         public void SetExplorationProgress(float progress) {
@@ -92,6 +116,24 @@ namespace Maes.UI.SimulationInfoUIControllers
                                         explorationSimulation.SimulateTimeSeconds).ToString("#.0");
             // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
         }
+        
+        public override void Update() {
+            if (Simulation is not null) {
+                if (_visualizingAllTags) {
+                    Simulation.ShowAllTags();
+                }
+                else if (_visualizingSelectedTags) {
+                    Simulation.ShowSelectedTags();
+                }
+                Simulation.RenderCommunicationLines();
+            }
+        }
+        
+        public override void ClearSelectedRobot() {
+            base.ClearSelectedRobot();
+            _visualizingSelectedTags = false;
+            VisualizeTagsButton.image.color = _mapVisualizationColor;
+        }
 
         private void OnMapVisualizationModeChanged(IExplorationVisualizationMode mode) {
             if (mode is AllRobotsExplorationVisualization) {
@@ -116,6 +158,27 @@ namespace Maes.UI.SimulationInfoUIControllers
             if (newSimulation != null) {
                 newSimulation.ExplorationTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
+            }
+        }
+        
+        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc) {
+            modificationFunc(Simulation);
+        }
+        
+        
+        private void ToggleVisualizeTagsButtons(Button button) {
+            simulationManager.CurrentSimulation?.ClearVisualTags();
+            if (button.name == "AllVisualizeTags") {
+                _visualizingSelectedTags = false;
+                VisualizeTagsButton.image.color = _mapVisualizationColor;
+                _visualizingAllTags = !_visualizingAllTags;
+                button.image.color = _visualizingAllTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
+            }
+            else {
+                _visualizingAllTags = false;
+                AllVisualizeTagsButton.image.color = _mapVisualizationColor;
+                _visualizingSelectedTags = !_visualizingSelectedTags;
+                button.image.color = _visualizingSelectedTags ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             }
         }
     }
