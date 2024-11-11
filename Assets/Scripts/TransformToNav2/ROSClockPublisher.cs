@@ -33,26 +33,25 @@ namespace Maes.TransformToNav2
     internal class ROSClockPublisher : MonoBehaviour
     {
         [SerializeField]
-        Clock.ClockMode m_ClockMode;
+        private Clock.ClockMode m_ClockMode;
 
         [SerializeField, HideInInspector]
-        Clock.ClockMode m_LastSetClockMode;
+        private Clock.ClockMode m_LastSetClockMode;
 
         [SerializeField]
-        readonly double m_PublishRateHz = 100f;
-
-        double m_LastPublishTimeSeconds;
+        private readonly double m_PublishRateHz = 100f;
+        private double m_LastPublishTimeSeconds;
 
         // Set in Start
-        ROSConnection m_ROS = null!;
+        private ROSConnection m_ROS = null!;
 
         private readonly string m_ClockTopic = "/clock";
 
-        double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
+        private double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
 
-        bool ShouldPublishMessage => Clock.FrameStartTimeInSeconds - PublishPeriodSeconds > m_LastPublishTimeSeconds;
+        private bool ShouldPublishMessage => Clock.FrameStartTimeInSeconds - PublishPeriodSeconds > m_LastPublishTimeSeconds;
 
-        void OnValidate()
+        private void OnValidate()
         {
             var clocks = FindObjectsOfType<ROSClockPublisher>();
             if (clocks.Length > 1)
@@ -69,21 +68,21 @@ namespace Maes.TransformToNav2
             SetClockMode(m_ClockMode);
         }
 
-        void SetClockMode(Clock.ClockMode mode)
+        private void SetClockMode(Clock.ClockMode mode)
         {
             Clock.Mode = mode;
             m_LastSetClockMode = mode;
         }
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             SetClockMode(m_ClockMode);
             m_ROS = ROSConnection.GetOrCreateInstance();
             m_ROS.RegisterPublisher<ClockMsg>(m_ClockTopic);
         }
 
-        void PublishMessage()
+        private void PublishMessage()
         {
             var publishTime = Clock.time;
             var clockMsg = new TimeMsg
@@ -95,7 +94,7 @@ namespace Maes.TransformToNav2
             m_ROS.Publish(m_ClockTopic, clockMsg);
         }
 
-        void Update()
+        private void Update()
         {
             if (ShouldPublishMessage)
             {

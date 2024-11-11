@@ -67,15 +67,28 @@ namespace Maes.Utilities
             Vector = CalculateDirectionVector();
         }
 
-        public CardinalDirection OppositeDirection() => GetDirection((Index + 4) % 8);
-        public float DirectionToAngle() => ((8 - Index) % 8) * 45;
-        public bool IsDiagonal() => Index % 2 != 0;
+        public CardinalDirection OppositeDirection()
+        {
+            return GetDirection((Index + 4) % 8);
+        }
+
+        public float DirectionToAngle()
+        {
+            return ((8 - Index) % 8) * 45;
+        }
+
+        public bool IsDiagonal()
+        {
+            return Index % 2 != 0;
+        }
 
         // Converts the given absolute angle (relative to the x-axis) to the closest corresponding cardinal direction
         public static CardinalDirection DirectionFromDegrees(float degrees)
         {
             if (degrees < 0f)
+            {
                 throw new ArgumentException($"Degrees must be above zero, was: {degrees}");
+            }
 
             var offset = (int)(((degrees + 22.5f) % 360) / 45f);
             return Directions[(8 - offset) % 8];
@@ -83,7 +96,11 @@ namespace Maes.Utilities
 
         public static CardinalDirection GetDirection(int index)
         {
-            while (index < 0) index += 8;
+            while (index < 0)
+            {
+                index += 8;
+            }
+
             return Directions[index % 8];
         }
 
@@ -102,23 +119,41 @@ namespace Maes.Utilities
             var xDir = 0;
             var yDir = 0;
 
-            if (Index > 6 || (Index < 2 && Index >= 0)) xDir = 1;
-            else if (Index < 6 && Index > 2) xDir = -1;
+            if (Index > 6 || (Index < 2 && Index >= 0))
+            {
+                xDir = 1;
+            }
+            else if (Index < 6 && Index > 2)
+            {
+                xDir = -1;
+            }
 
-            if (Index > 4) yDir = 1;
-            else if (Index < 4 && Index > 0) yDir = -1;
+            if (Index > 4)
+            {
+                yDir = 1;
+            }
+            else if (Index < 4 && Index > 0)
+            {
+                yDir = -1;
+            }
 
             return new Vector2Int(xDir, yDir);
         }
 
         public CardinalDirection GetRelativeDirection(RelativeDirection dir)
         {
-            return GetDirection(this.Index + (int)dir);
+            return GetDirection(Index + (int)dir);
         }
 
-        public static CardinalDirection[] GetCardinalAndOrdinalDirections() => Directions;
-        public static CardinalDirection[] GetCardinalDirections() => new[] { East, South, West, North };
+        public static CardinalDirection[] GetCardinalAndOrdinalDirections()
+        {
+            return Directions;
+        }
 
+        public static CardinalDirection[] GetCardinalDirections()
+        {
+            return new[] { East, South, West, North };
+        }
 
         public static CardinalDirection FromVector(Vector2Int vector)
         {

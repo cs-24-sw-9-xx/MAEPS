@@ -120,7 +120,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         public void SetController(Robot2DController controller)
         {
-            this._robotController = controller;
+            _robotController = controller;
             _heuristic = (VoronoiHeuristic)(_robotController.GetRobotID() % 4);
         }
 
@@ -128,7 +128,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         {
             if (!_currentRegion.IsEmpty())
             {
-                _currentRegion.Tiles.ForEach(tile => tile.DrawDebugLineFromRobot(this._robotController.GetSlamMap().GetCoarseMap(), Color.black, 0.2f));
+                _currentRegion.Tiles.ForEach(tile => tile.DrawDebugLineFromRobot(_robotController.GetSlamMap().GetCoarseMap(), Color.black, 0.2f));
             }
 
             UpdateExploredStatusOfTiles();
@@ -145,7 +145,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
                 if (unexploredTiles.Count != 0)
                 {
-                    this._currentSearchPhase = VoronoiSearchPhase.ExploreMode;
+                    _currentSearchPhase = VoronoiSearchPhase.ExploreMode;
                     _coarseOcclusionPointsVisitedThisSearchMode.Clear();
                     // _currentTargetPath = null;
                     // _currentPartialMovementTarget = null;
@@ -177,7 +177,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                             .GetTileCenterRelativePosition(_currentPartialMovementTarget.Value);
 
                         // Find delta
-                        float delta = 1.5f;
+                        var delta = 1.5f;
                         if (Math.Abs(relativePosition.RelativeAngle) <= delta)
                         {
                             _robotController.Move((relativePosition.Distance));
@@ -210,25 +210,41 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 VoronoiHeuristic.SouthWest => (c1, c2) =>
                 {
-                    if (c2.y.CompareTo(c1.y) == 0) return -c2.x.CompareTo(c1.x);
+                    if (c2.y.CompareTo(c1.y) == 0)
+                    {
+                        return -c2.x.CompareTo(c1.x);
+                    }
+
                     return -c2.y.CompareTo(c1.y);
                 }
                 ,
                 VoronoiHeuristic.WestNorth => (c1, c2) =>
                 {
-                    if (c2.x.CompareTo(c1.x) == 0) return c2.y.CompareTo(c1.y);
+                    if (c2.x.CompareTo(c1.x) == 0)
+                    {
+                        return c2.y.CompareTo(c1.y);
+                    }
+
                     return -c2.x.CompareTo(c1.x);
                 }
                 ,
                 VoronoiHeuristic.NorthEast => (c1, c2) =>
                 {
-                    if (c2.y.CompareTo(c1.y) == 0) return c2.x.CompareTo(c1.x);
+                    if (c2.y.CompareTo(c1.y) == 0)
+                    {
+                        return c2.x.CompareTo(c1.x);
+                    }
+
                     return c2.y.CompareTo(c1.y);
                 }
                 ,
                 VoronoiHeuristic.EastSouth => (c1, c2) =>
                 {
-                    if (c2.x.CompareTo(c1.x) == 0) return -c2.y.CompareTo(c1.y);
+                    if (c2.x.CompareTo(c1.x) == 0)
+                    {
+                        return -c2.y.CompareTo(c1.y);
+                    }
+
                     return c2.x.CompareTo(c1.x);
                 }
                 ,
@@ -249,9 +265,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private void UpdateExploredStatusOfTiles()
         {
-            var currentPosition = this._robotController.GetSlamMap().GetCoarseMap().GetApproximatePosition();
-            var currentlyVisibleTiles = this._robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var currentlyVisibleCoarseTiles = this._robotController.GetSlamMap().GetCoarseMap()
+            var currentPosition = _robotController.GetSlamMap().GetCoarseMap().GetApproximatePosition();
+            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
+            var currentlyVisibleCoarseTiles = _robotController.GetSlamMap().GetCoarseMap()
                 .FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList());
 
             foreach (var visibleTile in currentlyVisibleCoarseTiles)
@@ -279,7 +295,10 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                         _currentTargetPath = _currentTargetPath.Select(e =>
                         {
                             if (e.Item1.Equals(robotCoarseTile))
+                            {
                                 return (e.Item1, true);
+                            }
+
                             return e;
                         }).ToList();
                         if (_currentSearchPhase == VoronoiSearchPhase.SearchMode)
@@ -343,7 +362,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             // If we have some unvisited occlusion points, visit them. 
             if (coarseOcclusionPointsNotVisitedThisSearchMode.Count > 0)
             {
-                this._currentSearchPhase = VoronoiSearchPhase.SearchMode;
+                _currentSearchPhase = VoronoiSearchPhase.SearchMode;
                 // Find occlusion point closest to robot
                 var robotPosition = coarseMap.GetApproximatePosition();
                 coarseOcclusionPointsNotVisitedThisSearchMode.Sort((c1, c2) =>
@@ -361,7 +380,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 // Visit least recently visited occlusion point
                 if (_coarseOcclusionPointsVisitedThisSearchMode.Count > 1)
                 {
-                    this._currentSearchPhase = VoronoiSearchPhase.SearchMode;
+                    _currentSearchPhase = VoronoiSearchPhase.SearchMode;
                     _coarseOcclusionPointsVisitedThisSearchMode.Sort((e1, e2) => e1.Item2.CompareTo(e2.Item2));
                     var leastRecentlyVisitedOcclusionPoint = _coarseOcclusionPointsVisitedThisSearchMode[0];
                     SetCurrentMovementTarget(leastRecentlyVisitedOcclusionPoint.Item1);
@@ -415,7 +434,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             var openCoarseEdgeTiles = coarseEdgeTiles.Where(e => !coarseMap.IsOptimisticSolid(e)).ToList();
             // If no voronoi boundary is available without an obstacle, just take one with an obstacle
             if (openCoarseEdgeTiles.Count > 0)
+            {
                 coarseEdgeTiles = openCoarseEdgeTiles;
+            }
 
             var robotPosition = coarseMap.GetApproximatePosition();
 
@@ -453,14 +474,18 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 foreach (var occPo in _coarseOcclusionPointsVisitedThisSearchMode)
                 {
                     if (Geometry.DistanceBetween(e, occPo.Item1) > DistanceBetweenSameOccPoint)
+                    {
                         return false;
+                    }
                 }
 
                 return true;
             }).ToList();
 
             if (filteredCandidates.Count > 0)
+            {
                 candidates = filteredCandidates;
+            }
 
             // Take random candidate
             var candidateIndex = _random.Next(candidates.Count);
@@ -501,7 +526,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 .ToList();
 
             if (possiblyOccludedEdges.Count == 0)
+            {
                 return new List<Vector2Int>();
+            }
 
             // Find group of open edges (possibly occluded by walls)
             var edgeTileGroups = FindGroupedTiles(possiblyOccludedEdges);
@@ -528,14 +555,21 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
             // No tiles are accounted for in the beginning
             var counter = new Dictionary<Vector2Int, bool>();
-            foreach (var tile in allTiles) counter[tile] = false;
+            foreach (var tile in allTiles)
+            {
+                counter[tile] = false;
+            }
 
             // Continue while some tiles have not yet been counted
             while (counter.ContainsValue(false))
             {
                 var next = counter.First(e => e.Value == false);
                 var connectedTiles = GetConnectedTiles(next.Key, allTiles);
-                foreach (var tile in connectedTiles) counter[tile] = true;
+                foreach (var tile in connectedTiles)
+                {
+                    counter[tile] = true;
+                }
+
                 res.Add(connectedTiles);
             }
 
@@ -550,7 +584,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         {
             var res = new List<Vector2Int>();
             var countFlagList = new List<Vector2Int>();
-            Queue<Vector2Int> queue = new Queue<Vector2Int>();
+            var queue = new Queue<Vector2Int>();
             queue.Enqueue(startTile);
             countFlagList.Add(startTile);
 
@@ -559,9 +593,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 var tile = queue.Dequeue();
                 res.Add(tile);
 
-                for (int x = tile.x - 1; x <= tile.x + 1; x++)
+                for (var x = tile.x - 1; x <= tile.x + 1; x++)
                 {
-                    for (int y = tile.y - 1; y <= tile.y + 1; y++)
+                    for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if (x == tile.x || y == tile.y)
                         { // Diagonal does not count.
@@ -587,19 +621,25 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             foreach (var tile in tiles)
             {
                 var isEdge = false;
-                for (int x = tile.x - 1; x <= tile.x + 1; x++)
+                for (var x = tile.x - 1; x <= tile.x + 1; x++)
                 {
-                    for (int y = tile.y - 1; y <= tile.y + 1; y++)
+                    for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if (x == tile.x || y == tile.y)
                         {
                             var neighbour = new Vector2Int(x, y);
-                            if (!tiles.Contains(neighbour)) isEdge = true;
+                            if (!tiles.Contains(neighbour))
+                            {
+                                isEdge = true;
+                            }
                         }
                     }
                 }
 
-                if (isEdge) edgeTiles.Add(tile);
+                if (isEdge)
+                {
+                    edgeTiles.Add(tile);
+                }
             }
 
             return edgeTiles;
@@ -607,7 +647,10 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private List<Vector2Int> FindUnexploredTilesWithinRegion(VoronoiRegion region)
         {
-            if (region.IsEmpty()) return new List<Vector2Int>();
+            if (region.IsEmpty())
+            {
+                return new List<Vector2Int>();
+            }
 
             var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
 
@@ -644,25 +687,25 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             // Find furthest away robot. Voronoi partition should include all robots within broadcast range
             nearbyRobots.Sort((r1, r2) => r1.Distance.CompareTo(r2.Distance));
 
-            Dictionary<int, List<Vector2Int>> robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
+            var robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
 
             // Assign tiles to robots to create regions
-            var currentlyVisibleTiles = this._robotController.GetSlamMap().GetCurrentlyVisibleTiles();
+            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
             var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList()).ToHashSet();
-            for (int x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
+            for (var x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
             {
-                for (int y = myPosition.y - _voronoiRegionMaxDistance; y < myPosition.y + _voronoiRegionMaxDistance; y++)
+                for (var y = myPosition.y - _voronoiRegionMaxDistance; y < myPosition.y + _voronoiRegionMaxDistance; y++)
                 {
                     // Only go through tiles within line of sight of the robot
                     if (currentlyVisibleCoarseTiles.Contains(new Vector2Int(x, y)))
                     {
                         var tilePosition = new Vector2Int(x, y);
-                        float bestDistance = Geometry.DistanceBetween(myPosition, tilePosition);
-                        int bestRobotId = this._robotController.GetRobotID();
+                        var bestDistance = Geometry.DistanceBetween(myPosition, tilePosition);
+                        var bestRobotId = _robotController.GetRobotID();
                         foreach (var robot in nearbyRobots)
                         {
-                            var otherPosition = robot.GetRelativePosition(myPosition, this._robotController.GetSlamMap().GetRobotAngleDeg());
-                            float distance = Geometry.DistanceBetween(otherPosition, tilePosition);
+                            var otherPosition = robot.GetRelativePosition(myPosition, _robotController.GetSlamMap().GetRobotAngleDeg());
+                            var distance = Geometry.DistanceBetween(otherPosition, tilePosition);
                             if (distance < bestDistance)
                             {
                                 bestDistance = distance;
@@ -671,7 +714,10 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                         }
 
                         if (!robotIdToClosestTilesMap.Keys.Contains(bestRobotId))
+                        {
                             robotIdToClosestTilesMap[bestRobotId] = new List<Vector2Int>();
+                        }
+
                         robotIdToClosestTilesMap[bestRobotId].Add(tilePosition);
                     }
                 }
@@ -679,37 +725,55 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
             foreach (var kv in robotIdToClosestTilesMap)
             {
-                this._localVoronoiRegions.Add(new VoronoiRegion(kv.Key, kv.Value));
+                _localVoronoiRegions.Add(new VoronoiRegion(kv.Key, kv.Value));
             }
 
             _currentRegion = _localVoronoiRegions
                 .DefaultIfEmpty(new VoronoiRegion())
-                .First(k => k.RobotId == this._robotController.GetRobotID());
+                .First(k => k.RobotId == _robotController.GetRobotID());
         }
 
         public string GetDebugInfo()
         {
             var info = new StringBuilder();
 
-            info.AppendLine($"Heuristic: {this._heuristic}");
+            info.AppendLine($"Heuristic: {_heuristic}");
             if (_currentTargetPath != null && _currentTargetPath.Count > 0)
             {
                 var finalTarget = _currentTargetPath[_currentTargetPath.Count - 1];
                 info.Append($"Current final target: x:{finalTarget.Item1.x}, y:{finalTarget.Item1.y}\n");
             }
-            else info.Append("Voronoi has no final target\n");
+            else
+            {
+                info.Append("Voronoi has no final target\n");
+            }
 
             if (_currentPartialMovementTarget.HasValue)
+            {
                 info.Append($"Current partial target: x:{_currentPartialMovementTarget.Value.x}, y:{_currentPartialMovementTarget.Value.y}\n");
-            else info.Append("Voronoi has no partial target\n");
+            }
+            else
+            {
+                info.Append("Voronoi has no partial target\n");
+            }
 
             if (_currentSearchPhase == VoronoiSearchPhase.SearchMode || _currentSearchPhase == VoronoiSearchPhase.ExpandVoronoi)
+            {
                 info.AppendLine($"Occlusion Points within range: {_occlusionPointsWithinView}");
+            }
             else
+            {
                 info.AppendLine($"Occlusion Points within range: Not in search mode");
+            }
+
             if (_closestOcclusionPoint.HasValue)
+            {
                 info.Append($"Closest occlusion point slamtile: x:{_closestOcclusionPoint.Value.x}, y:{_closestOcclusionPoint.Value.y}\n");
-            else info.Append("No closest occlusion point\n");
+            }
+            else
+            {
+                info.Append("No closest occlusion point\n");
+            }
 
             info.Append($"Search phase: {_currentSearchPhase}\n");
             info.Append($"Current Region size: {_regionSizeCoarseTiles}\n");
@@ -717,10 +781,15 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             info.Append($"Explored tiles: {IsExploredMap.Count}\n");
 
             if (_currentTargetPath == null)
+            {
                 info.Append($"No path to target found\n");
+            }
             else
-                info.Append($"Path tiles: {String.Join(",", _currentTargetPath)}\n");
-            info.Append($"Explored tiles: {String.Join(",", IsExploredMap)}\n");
+            {
+                info.Append($"Path tiles: {string.Join(",", _currentTargetPath)}\n");
+            }
+
+            info.Append($"Explored tiles: {string.Join(",", IsExploredMap)}\n");
 
             return info.ToString();
         }

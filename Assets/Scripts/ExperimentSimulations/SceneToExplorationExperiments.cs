@@ -26,7 +26,7 @@ namespace Maes.ExperimentSimulations
     public class SceneToExplorationExperiments : ExplorationExperimentBase
     {
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             var sceneName = SceneManager.GetActiveScene().name;
             var configuration = sceneName.Split("_");

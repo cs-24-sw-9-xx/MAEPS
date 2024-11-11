@@ -52,7 +52,7 @@ namespace Maes
 
         public static Queue<MySimulationScenario> GenerateROS2Scenario()
         {
-            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var scenarios = new Queue<MySimulationScenario>();
             var yamlConfig = MaesYamlConfigLoader.LoadConfig();
 
             if (yamlConfig == null)
@@ -162,9 +162,12 @@ namespace Maes
                     {
                         if (yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count() !=
                             yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals!.Count())
+                        {
                             throw new Exception("Number of position x values does not match number of position y values");
+                        }
+
                         var positions = new List<Vector2Int>();
-                        for (int index = 0; index < yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count(); index++)
+                        for (var index = 0; index < yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals.Count(); index++)
                         {
                             positions.Add(new Vector2Int(yamlConfig.RobotSpawnConfig.spawnAtPositionsXVals[index],
                                 yamlConfig.RobotSpawnConfig.spawnAtPositionsYVals![index]));
@@ -247,9 +250,9 @@ namespace Maes
                agentRelativeSize: 0.6f,
                calculateSignalTransmissionProbability: (_, _) => false // Never allow communication 
            );
-            for (int i = 0; i < runs; i++)
+            for (var i = 0; i < runs; i++)
             {
-                int randomSeed = i;
+                var randomSeed = i;
                 var algorithmsAndFileNames = new List<(string, CreateAlgorithmDelegate, RobotConstraints)>
                 {
                     ("LVD-long-range", seed => new VoronoiExplorationAlgorithm(seed, 1), robotConstraintsLVD),
@@ -336,7 +339,7 @@ namespace Maes
                 calculateSignalTransmissionProbability: (_, _) => true // Communication always gets through
             );
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 var randomSeed = i;
 
@@ -484,9 +487,9 @@ namespace Maes
                 calculateSignalTransmissionProbability: (_, _) => true
             );
 
-            for (int i = 0; i < runs; i++)
+            for (var i = 0; i < runs; i++)
             {
-                int randomSeed = i;
+                var randomSeed = i;
                 var algorithmsAndFileNames = new List<(string, CreateAlgorithmDelegate, RobotConstraints)>
                 {
                     ("LVD", seed => new VoronoiExplorationAlgorithm(seed, 1), robotConstraintsLVD),
@@ -551,12 +554,12 @@ namespace Maes
         /// </summary>
         public static Queue<MySimulationScenario> GenerateVoronoiScenarios()
         {
-            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                int randomSeed = i + 4 + 1;
-                int minute = 60;
+                var randomSeed = i + 4 + 1;
+                var minute = 60;
                 var mapConfig = new CaveMapConfig(
                     randomSeed,
                     10,
@@ -636,12 +639,12 @@ namespace Maes
         /// </summary>
         public static Queue<MySimulationScenario> GenerateBallisticScenarios()
         {
-            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                int randomSeed = i + 4 + 1;
-                int minute = 60;
+                var randomSeed = i + 4 + 1;
+                var minute = 60;
                 var mapConfig = new CaveMapConfig(
                     randomSeed,
                     60,
@@ -735,12 +738,12 @@ namespace Maes
         /// </summary>
         public static Queue<MySimulationScenario> GenerateSsbScenarios()
         {
-            Queue<MySimulationScenario> scenarios = new Queue<MySimulationScenario>();
+            var scenarios = new Queue<MySimulationScenario>();
 
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
-                int randomSeed = i + 4 + 1;
-                int minute = 60;
+                var randomSeed = i + 4 + 1;
+                var minute = 60;
                 var caveConfig = new CaveMapConfig(
                     randomSeed,
                     60,
@@ -791,7 +794,7 @@ namespace Maes
         {
             var scenarios = new Queue<MySimulationScenario>();
 
-            int randomSeed = 4 + 2;
+            var randomSeed = 4 + 2;
 
             var buildingConfig = new BuildingMapConfig(
                 randomSeed,

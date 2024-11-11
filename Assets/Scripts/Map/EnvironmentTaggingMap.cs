@@ -43,13 +43,13 @@ namespace Maes.Map
 
         public EnvironmentTaggingMap(SimulationMap<Tile> collisionMap)
         {
-            this._widthInTiles = collisionMap.WidthInTiles;
-            this._heightInTiles = collisionMap.HeightInTiles;
-            this.offset = collisionMap.ScaledOffset;
+            _widthInTiles = collisionMap.WidthInTiles;
+            _heightInTiles = collisionMap.HeightInTiles;
+            offset = collisionMap.ScaledOffset;
             _tagLists = new List<EnvironmentTag>[_widthInTiles, _heightInTiles];
-            for (int x = 0; x < _widthInTiles; x++)
+            for (var x = 0; x < _widthInTiles; x++)
             {
-                for (int y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < _heightInTiles; y++)
                 {
                     _tagLists[x, y] = new List<EnvironmentTag>();
                 }
@@ -65,19 +65,19 @@ namespace Maes.Map
 
         public List<EnvironmentTag> GetTagsNear(Vector2 centerWorldPosition, float radius)
         {
-            List<EnvironmentTag> nearbyTags = new List<EnvironmentTag>();
+            var nearbyTags = new List<EnvironmentTag>();
 
             var gridPosition = ToLocalMapCoordinate(centerWorldPosition);
             var maxTileRadius = (int)Math.Ceiling(radius);
             // Find bounding box of cells to check
-            int minX = Math.Max(gridPosition.x - maxTileRadius, 0);
-            int maxX = Math.Min(gridPosition.x + maxTileRadius, _widthInTiles);
-            int minY = Math.Max(gridPosition.y - maxTileRadius, 0);
-            int maxY = Math.Min(gridPosition.y + maxTileRadius, _heightInTiles);
+            var minX = Math.Max(gridPosition.x - maxTileRadius, 0);
+            var maxX = Math.Min(gridPosition.x + maxTileRadius, _widthInTiles);
+            var minY = Math.Max(gridPosition.y - maxTileRadius, 0);
+            var maxY = Math.Min(gridPosition.y + maxTileRadius, _heightInTiles);
 
-            for (int x = minX; x < maxX; x++)
+            for (var x = minX; x < maxX; x++)
             {
-                for (int y = minY; y < maxY; y++)
+                for (var y = minY; y < maxY; y++)
                 {
                     // Add all tags from this tile that are within the given radius of the center 
                     nearbyTags.AddRange(_tagLists[x, y]
@@ -91,8 +91,8 @@ namespace Maes.Map
         // Takes a world coordinates and removes the offset and scale to translate it to a local map coordinate
         private Vector2Int ToLocalMapCoordinate(Vector2 worldCoordinate)
         {
-            Vector2 localFloatCoordinate = worldCoordinate - offset;
-            Vector2Int localCoordinate = new Vector2Int((int)localFloatCoordinate.x, (int)localFloatCoordinate.y);
+            var localFloatCoordinate = worldCoordinate - offset;
+            var localCoordinate = new Vector2Int((int)localFloatCoordinate.x, (int)localFloatCoordinate.y);
             if (!IsWithinLocalMapBounds(localCoordinate))
             {
                 throw new ArgumentException("The given coordinate " + localCoordinate

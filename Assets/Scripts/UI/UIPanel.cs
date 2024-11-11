@@ -28,7 +28,7 @@ namespace Maes.UI
     {
         public CameraController cameraController = null!;
 
-        void Start()
+        private void Start()
         {
             var t = GetComponent<RectTransform>();
             cameraController.Subscribe(t);

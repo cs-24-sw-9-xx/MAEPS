@@ -48,15 +48,15 @@ namespace PlayModeTests
 
         private Tile[,] GenerateMapWithHorizontalWallInMiddle(int wallThicknessInTiles)
         {
-            Tile[,] bitmap = new Tile[MapWidth, MapHeight];
-            int firstWallRowY = MapHeight / 2;
-            int lastWallRowY = firstWallRowY + wallThicknessInTiles;
+            var bitmap = new Tile[MapWidth, MapHeight];
+            var firstWallRowY = MapHeight / 2;
+            var lastWallRowY = firstWallRowY + wallThicknessInTiles;
             Tile.Rand = new Random(RandomSeed);
             var wall = Tile.GetRandomWall();
 
-            for (int x = 0; x < MapWidth; x++)
+            for (var x = 0; x < MapWidth; x++)
             {
-                for (int y = 0; y < MapHeight; y++)
+                for (var y = 0; y < MapHeight; y++)
                 {
                     var isSolid = y >= firstWallRowY && y <= lastWallRowY - 1;
                     bitmap[x, y] = isSolid ? wall : new Tile(TileType.Room);
@@ -97,7 +97,10 @@ namespace PlayModeTests
             // The first robot will broadcast immediatealy
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Broadcast("Test Message");
+                if (tick == 0)
+                {
+                    controller.Broadcast("Test Message");
+                }
             };
 
             // The second robot will continuously receive broadcasts
@@ -116,19 +119,25 @@ namespace PlayModeTests
                 new List<Vector2Int> { new(2, 2), new(6, 6) });
 
             string receivedMessage = null;
-            string sentMessage = "message sent between robots 1 and 2";
+            var sentMessage = "message sent between robots 1 and 2";
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
             algorithm1.UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Broadcast(sentMessage);
+                if (tick == 0)
+                {
+                    controller.Broadcast(sentMessage);
+                }
             };
 
             algorithm2.UpdateFunction = (_, controller) =>
             {
                 var results = controller.ReceiveBroadcast();
-                if (results.Count != 0) receivedMessage = results[0] as string;
+                if (results.Count != 0)
+                {
+                    receivedMessage = results[0] as string;
+                }
             };
 
             _maes.PressPlayButton();
@@ -149,19 +158,25 @@ namespace PlayModeTests
                 new List<Vector2Int> { new(2, 2), new(6, 6) });
 
             string receivedMessage = null;
-            string sentMessage = "message sent between robots 1 and 2";
+            var sentMessage = "message sent between robots 1 and 2";
             var algorithm1 = _robotTestAlgorithms[0];
             var algorithm2 = _robotTestAlgorithms[1];
 
             algorithm1.UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Broadcast(sentMessage);
+                if (tick == 0)
+                {
+                    controller.Broadcast(sentMessage);
+                }
             };
 
             algorithm2.UpdateFunction = (_, controller) =>
             {
                 var results = controller.ReceiveBroadcast();
-                if (results.Count != 0) receivedMessage = results[0] as string;
+                if (results.Count != 0)
+                {
+                    receivedMessage = results[0] as string;
+                }
             };
 
             _maes.PressPlayButton();
@@ -177,7 +192,7 @@ namespace PlayModeTests
         [Test(ExpectedResult = null)]
         public IEnumerator Broadcast_NoWallsCommunicationTest()
         {
-            float foundWallDistance = float.PositiveInfinity;
+            var foundWallDistance = float.PositiveInfinity;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 (_, wallDistance) =>
@@ -206,10 +221,10 @@ namespace PlayModeTests
         [TestCase(-5, -5, ExpectedResult = null)]
         public IEnumerator Broadcast_CorrectDistanceCalculation(int secondRobotX, int secondRobotY)
         {
-            float transmissionDistance = float.PositiveInfinity;
+            var transmissionDistance = float.PositiveInfinity;
             var firstRobotPosition = new Vector2Int(0, 0);
             var secondRobotPosition = new Vector2Int(secondRobotX, secondRobotY);
-            float actualDistance = (firstRobotPosition - secondRobotPosition).magnitude;
+            var actualDistance = (firstRobotPosition - secondRobotPosition).magnitude;
 
             InitSimulator(StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 (distance, _) =>
@@ -238,7 +253,7 @@ namespace PlayModeTests
         [TestCase(10, ExpectedResult = null)]
         public IEnumerator Broadcast_WallDistanceIsApproximatelyCorrect(int wallThickness)
         {
-            float foundWallDistance = float.PositiveInfinity;
+            var foundWallDistance = float.PositiveInfinity;
             InitSimulator(
                 generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
                     transmissionSuccessCalculatorFunc:

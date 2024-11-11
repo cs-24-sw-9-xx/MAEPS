@@ -36,7 +36,11 @@ namespace Maes.Statistics
 
         public void CreateSnapshot(int tick)
         {
-            if (tick == 0) return;
+            if (tick == 0)
+            {
+                return;
+            }
+
             CreateInterconnectedSnapShot(tick);
             CreateClusterSizeSnapShot(tick);
         }
@@ -58,7 +62,7 @@ namespace Maes.Statistics
                 // Supposed to sort descending
                 CommunicationGroups.Sort((e1, e2) => e2.Count.CompareTo(e1.Count));
                 var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) => sum + e1.Count);
-                float percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * (float)100;
+                var percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * (float)100;
                 BiggestClusterPercentageSnapshots[tick] = new SnapShot<float>(tick, percentage);
             }
         }
@@ -68,9 +72,13 @@ namespace Maes.Statistics
             if (AdjacencyMatrixRef != null && CommunicationGroups != null)
             {
                 if (AreAllAgentsConnected(tick))
+                {
                     InterconnectionSnapShot[tick] = new SnapShot<bool>(tick, true);
+                }
                 else
+                {
                     InterconnectionSnapShot[tick] = new SnapShot<bool>(tick, false);
+                }
             }
 
             return;

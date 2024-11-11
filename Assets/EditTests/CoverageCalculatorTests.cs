@@ -53,12 +53,12 @@ namespace EditTests
         // Generates a collision map where only the edge tiles are solid
         private static SimulationMap<Tile> GenerateCollisionMap()
         {
-            SimulationMapTile<Tile>[,] tiles = new SimulationMapTile<Tile>[Width, Height];
+            var tiles = new SimulationMapTile<Tile>[Width, Height];
             Tile.Rand = new Random(RandomSeed);
             var wall = Tile.GetRandomWall();
-            for (int x = 0; x < Width; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     var tile = IsGeneratedTileSolid(new Vector2Int(x, y)) ? wall : new Tile(TileType.Room);
                     tiles[x, y] = new SimulationMapTile<Tile>(() => tile);
@@ -115,9 +115,9 @@ namespace EditTests
 
             // Find all cells that are immediate neighbours of tile currently occupied by the robot
             var cells = new List<ExplorationCell>();
-            for (int x = -1; x < 1; x++)
+            for (var x = -1; x < 1; x++)
             {
-                for (int y = -1; y < 1; y++)
+                for (var y = -1; y < 1; y++)
                 {
                     var xOffset = x * 0.5f;
                     var yOffset = y * 0.5f;
@@ -130,7 +130,9 @@ namespace EditTests
 
             // Assert that none of cells are covered in advance
             foreach (var cell in cells)
+            {
                 Assert.IsFalse(cell.IsCovered);
+            }
 
             // Register coverage for the testing robot 
             _coverageCalculator.UpdateRobotCoverage(robotWorldPos, 1, (_, _, _, _) =>
@@ -139,7 +141,9 @@ namespace EditTests
 
             // Assert that the status of the tiles has now changed
             foreach (var cell in cells)
+            {
                 Assert.IsTrue(cell.IsCovered);
+            }
         }
 
 
@@ -174,9 +178,9 @@ namespace EditTests
         {
             // Copy the existing exploration map and to get a new map where all CanBeCovered flags are true
             var freshExplorationMap = _explorationMap.FMap((cell) => new ExplorationCell(cell.IsExplorable));
-            for (int x = 0; x < Width; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     Assert.IsTrue(freshExplorationMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(cell => cell.CanBeCovered));
                 }
@@ -185,9 +189,9 @@ namespace EditTests
             new CoverageCalculator<ExplorationCell>(freshExplorationMap, _collisionMap);
             // Pass the new exploration map to the coverage calculator which should cause the solid tiles to be
             // marked as non-coverable
-            for (int x = 0; x < Width; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (int y = 0; y < Height; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     // We now expect the tiles have a 'CanBeCovered' status that is opposite to the solid status of tile
                     // (ie. solid tiles cannot be covered and non-solid ones can be covered)

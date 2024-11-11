@@ -90,7 +90,11 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         protected override void UpdateStatistics(PatrollingSimulation? simulation)
         {
-            if (simulation == null) return;
+            if (simulation == null)
+            {
+                return;
+            }
+
             SetProgress(simulation.PatrollingTracker.CompletedCycles, simulation.PatrollingTracker.TotalCycles);
             SetDistanceTravelled(simulation.PatrollingTracker.TotalDistanceTraveled);
             SetCurrentGraphIdleness(simulation.PatrollingTracker.CurrentGraphIdleness);
@@ -104,18 +108,24 @@ namespace Maes.UI.SimulationInfoUIControllers
             ProgressText.text = $"{completed}/{total}";
         }
 
-        private void SetDistanceTravelled(float distance) =>
+        private void SetDistanceTravelled(float distance)
+        {
             DistanceTravelledText.text = $"The total patrolling distance traveled: {distance} meters";
+        }
 
-        private void SetCurrentGraphIdleness(float idleness) =>
+        private void SetCurrentGraphIdleness(float idleness)
+        {
             CurrentGraphIdlenessText.text = $"Current graph idleness: {idleness} ticks";
+        }
 
-        private void SetWorstGraphIdleness(float idleness) =>
+        private void SetWorstGraphIdleness(float idleness)
+        {
             WorstGraphIdlenessText.text = $"Worst graph idleness: {idleness} ticks";
+        }
 
-        private void SetAverageGraphIdleness(float idleness) =>
+        private void SetAverageGraphIdleness(float idleness)
+        {
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
-
-
+        }
     }
 }

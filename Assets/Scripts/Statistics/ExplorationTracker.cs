@@ -60,7 +60,7 @@ namespace Maes.Statistics
             public SnapShot(int tick, TValue value)
             {
                 Tick = tick;
-                this.Value = value;
+                Value = value;
             }
         }
 
@@ -85,7 +85,7 @@ namespace Maes.Statistics
 
         private float CalculateAverageDistance(IReadOnlyList<MonaRobot> robots)
         {
-            List<float> averages = new List<float>();
+            var averages = new List<float>();
             foreach (var robot in robots)
             {
                 var robotPosition = robot.transform.position;
@@ -96,11 +96,11 @@ namespace Maes.Statistics
                 }
             }
 
-            float sum = averages.Sum();
+            var sum = averages.Sum();
             return sum / averages.Count;
         }
 
-        List<(int, ExplorationCell)> newlyCoveredCells = new() { };
+        private List<(int, ExplorationCell)> newlyCoveredCells = new() { };
         protected override void UpdateCoverageStatus(MonaRobot robot)
         {
             newlyCoveredCells = new List<(int, ExplorationCell)> { };
@@ -109,7 +109,10 @@ namespace Maes.Statistics
 
         protected override CoverageCalculator<ExplorationCell>.MiniTileConsumer preCoverageTileConsumer => (index1, triangle1, index2, triangle2) =>
         {
-            if (triangle1.IsCovered) return;
+            if (triangle1.IsCovered)
+            {
+                return;
+            }
 
             // This tile was not covered before, register as newly covered
             newlyCoveredCells.Add((index1, triangle1));
@@ -149,11 +152,15 @@ namespace Maes.Statistics
         {
             _selectedRobot = robot;
             if (_selectedRobot != null)
+            {
                 SetVisualizationMode(new CurrentlyVisibleAreaVisualization(_map, _selectedRobot.Controller));
+            }
             else
+            {
                 // Revert to all robots exploration visualization when current robot is deselected
                 // while visualization mode is based on the selected robot
                 SetVisualizationMode(new AllRobotsExplorationVisualization(_map));
+            }
         }
 
         public void ShowAllRobotExploration()
@@ -179,14 +186,20 @@ namespace Maes.Statistics
         public void ShowSelectedRobotVisibleArea()
         {
             if (_selectedRobot == null)
+            {
                 throw new Exception("Cannot change to 'ShowSelectedRobotVisibleArea' visualization mode when no robot is selected");
+            }
+
             SetVisualizationMode(new CurrentlyVisibleAreaVisualization(_map, _selectedRobot.Controller));
         }
 
         public void ShowSelectedRobotSlamMap()
         {
             if (_selectedRobot == null)
+            {
                 throw new Exception("Cannot change to 'ShowSelectedRobotSlamMap' visualization mode when no robot is selected");
+            }
+
             SetVisualizationMode(new SelectedRobotSlamMapVisualization(_selectedRobot.Controller));
         }
     }

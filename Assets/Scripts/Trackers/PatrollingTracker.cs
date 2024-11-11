@@ -46,7 +46,10 @@ namespace Maes.Trackers
 
         public void OnReachedVertex(Vertex vertex, int atTick)
         {
-            if (!Vertices.TryGetValue(vertex.Position, out var vertexDetails)) return;
+            if (!Vertices.TryGetValue(vertex.Position, out var vertexDetails))
+            {
+                return;
+            }
 
             var idleness = atTick - vertexDetails.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);

@@ -42,9 +42,9 @@ namespace Maes.Robot
 
         public SensedObject(float distance, float angle, T t)
         {
-            this.Distance = distance;
-            this.Angle = angle;
-            this.item = t;
+            Distance = distance;
+            Angle = angle;
+            item = t;
         }
 
         public Vector2 GetRelativePosition(Vector2 myPosition, float globalAngle)
@@ -144,11 +144,14 @@ namespace Maes.Robot
         public List<object> ReadMessages(MonaRobot receiver)
         {
             PopulateAdjacencyMatrix();
-            List<object> messages = new List<object>();
+            var messages = new List<object>();
             foreach (var message in _readableMessages)
             {
                 // The robot will not receive its own messages
-                if (message.Sender.id == receiver.id) continue;
+                if (message.Sender.id == receiver.id)
+                {
+                    continue;
+                }
 
                 var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
                 // If the transmission probability is above the specified threshold then the message will be sent
@@ -157,7 +160,9 @@ namespace Maes.Robot
                 {
                     messages.Add(message.Contents);
                     if (GlobalSettings.DrawCommunication)
+                    {
                         _visualizer.AddCommunicationTrail(message.Sender, receiver);
+                    }
                 }
             }
 
@@ -170,11 +175,20 @@ namespace Maes.Robot
             var angle = Vector2.Angle(Vector2.right, pos2 - pos1);
             // If p1.y > p2.y then angle should be 360 minus the angle difference between the vectors
             // to make the angle relative to the x axis. (Moving from oregon along the x axis is 0 degrees in out system)
-            if (pos1.y > pos2.y) angle = 360f - angle;
+            if (pos1.y > pos2.y)
+            {
+                angle = 360f - angle;
+            }
 
             var angleMod = angle % 90f;
-            if (angleMod <= 45.05f && angleMod >= 45f) angle += 0.005f;
-            else if (angleMod >= 44.95f && angleMod <= 45f) angle -= 0.005f;
+            if (angleMod <= 45.05f && angleMod >= 45f)
+            {
+                angle += 0.005f;
+            }
+            else if (angleMod >= 44.95f && angleMod <= 45f)
+            {
+                angle -= 0.005f;
+            }
 
             var wallsTraveledThrough = 0;
             var regularCellsTraveledThrough = 0;
@@ -182,11 +196,19 @@ namespace Maes.Robot
 
             _rayTracingMap.Raytrace(pos1, angle, distance, (_, tile) =>
             {
-                if (Tile.IsWall(tile.Type)) wallsTraveledThrough++;
-                else regularCellsTraveledThrough++;
+                if (Tile.IsWall(tile.Type))
+                {
+                    wallsTraveledThrough++;
+                }
+                else
+                {
+                    regularCellsTraveledThrough++;
+                }
 
                 if (_robotConstraints.MaterialCommunication)
+                {
                     signalStrength -= _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tile.Type];
+                }
 
                 return true;
             });
@@ -200,7 +222,9 @@ namespace Maes.Robot
             var transmissionSuccessful = _robotConstraints
                 .IsTransmissionSuccessful(distance, distanceTraveledThroughWalls);
             if (_robotConstraints.MaterialCommunication)
+            {
                 transmissionSuccessful = _robotConstraints.ReceiverSensitivity <= signalStrength;
+            }
             //Debug.Log($"strength: {signalStrength}, success: {transmissionSuccessful}");
             return new CommunicationInfo(distance, angle, wallsCellsPassedThrough, regularCellsPassedThrough, transmissionSuccessful, signalStrength);
         }
@@ -229,13 +253,17 @@ namespace Maes.Robot
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
                 CommunicationTracker.AdjacencyMatrixRef = _adjacencyMatrix;
-                if (_communicationGroups == null) _communicationGroups = GetCommunicationGroups();
+                if (_communicationGroups == null)
+                {
+                    _communicationGroups = GetCommunicationGroups();
+                }
+
                 CommunicationTracker.CommunicationGroups = _communicationGroups;
                 CommunicationTracker.CreateSnapshot(_localTickCounter);
             }
 
-            this._adjacencyMatrix = null;
-            this._communicationGroups = null;
+            _adjacencyMatrix = null;
+            _communicationGroups = null;
         }
 
         private void SynchronizeSlamMaps()
@@ -261,7 +289,9 @@ namespace Maes.Robot
         private void PopulateAdjacencyMatrix()
         {
             if (_adjacencyMatrix != null)
+            {
                 return;
+            }
 
             _adjacencyMatrix = new Dictionary<(int, int), CommunicationInfo>();
 
@@ -299,7 +329,7 @@ namespace Maes.Robot
         {
             PopulateAdjacencyMatrix();
 
-            List<HashSet<int>> groups = new List<HashSet<int>>();
+            var groups = new List<HashSet<int>>();
             foreach (var r1 in _robots)
             {
                 if (!groups.Exists(g => g.Contains(r1.id)))
@@ -338,7 +368,7 @@ namespace Maes.Robot
             return resultSet;
         }
 
-        public void DepositTag(MonaRobot robot, String content)
+        public void DepositTag(MonaRobot robot, string content)
         {
             var tag = _environmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
             _visualizer.AddEnvironmentTag(tag);
@@ -359,13 +389,18 @@ namespace Maes.Robot
 
             foreach (var robot in _robots)
             {
-                if (robot.id == id) continue;
+                if (robot.id == id)
+                {
+                    continue;
+                }
 
                 var comInfo = _adjacencyMatrix![(id, robot.id)];
                 if ((comInfo.Distance > _robotConstraints.SenseNearbyAgentsRange && !_robotConstraints.MaterialCommunication) ||
                    (comInfo.WallsCellsPassedThrough > 0 && _robotConstraints.SenseNearbyAgentsBlockedByWalls) ||
                    (!comInfo.TransmissionSuccessful && _robotConstraints.MaterialCommunication))
+                {
                     continue;
+                }
 
                 sensedObjects.Add(new SensedObject<int>(comInfo.Distance, comInfo.Angle, robot.id));
             }
@@ -415,7 +450,9 @@ namespace Maes.Robot
             }
 
             if (distance3 < closestWallDistance)
+            {
                 closestWall = result3;
+            }
 
             return closestWall;
         }

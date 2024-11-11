@@ -32,10 +32,12 @@ namespace Maes.Utilities
         public static T TakeBest<T>(T[] values, XBetterThanY<T> xBetterThanY)
         {
             var currentMin = values[0];
-            for (int i = 1; i < values.Length; i++)
+            for (var i = 1; i < values.Length; i++)
             {
                 if (xBetterThanY(values[i], currentMin))
+                {
                     currentMin = values[i];
+                }
             }
             return currentMin;
         }
@@ -44,10 +46,12 @@ namespace Maes.Utilities
         public static T TakeBest<T>(List<T> values, XBetterThanY<T> xBetterThanY)
         {
             var currentMin = values[0];
-            for (int i = 1; i < values.Count; i++)
+            for (var i = 1; i < values.Count; i++)
             {
                 if (xBetterThanY(values[i], currentMin))
+                {
                     currentMin = values[i];
+                }
             }
             return currentMin;
         }

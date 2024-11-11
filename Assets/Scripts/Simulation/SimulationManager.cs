@@ -114,7 +114,10 @@ namespace Maes.Simulation
 
         public SimulationPlayState AttemptSetPlayState(SimulationPlayState targetState)
         {
-            if (targetState == PlayState) return PlayState;
+            if (targetState == PlayState)
+            {
+                return PlayState;
+            }
 
             if (CurrentScenario == null)
             {
@@ -172,21 +175,24 @@ namespace Maes.Simulation
                 AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }
 
-            long startTimeMillis = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-            int millisPerFixedUpdate = (int)(1000f * Time.fixedDeltaTime);
+            var startTimeMillis = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            var millisPerFixedUpdate = (int)(1000f * Time.fixedDeltaTime);
             // Subtract 8 milliseconds to allow for other procedures such as rendering to occur between updates 
             millisPerFixedUpdate -= 8;
-            long fixedUpdateEndTime = startTimeMillis + millisPerFixedUpdate;
+            var fixedUpdateEndTime = startTimeMillis + millisPerFixedUpdate;
 
             // ReSharper disable once PossibleLossOfFraction
-            int physicsTickDeltaMillis =
+            var physicsTickDeltaMillis =
                 GlobalSettings.LogicTickDeltaMillis / GlobalSettings.PhysicsTicksPerLogicUpdate;
 
             // Only calculate updates if there is still time left in the current update
             while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate)
             {
                 // Yield if no more updates are needed this FixedUpdate cycle
-                if (_nextUpdateTimeMillis > fixedUpdateEndTime) break;
+                if (_nextUpdateTimeMillis > fixedUpdateEndTime)
+                {
+                    break;
+                }
 
                 var shouldContinue = UpdateSimulation();
                 if (!shouldContinue)
@@ -196,7 +202,7 @@ namespace Maes.Simulation
                 }
 
                 // The delay before simulating the next update is dependant on the current simulation play speed
-                int updateDelayMillis = physicsTickDeltaMillis / (int)PlayState;
+                var updateDelayMillis = physicsTickDeltaMillis / (int)PlayState;
                 _nextUpdateTimeMillis = _nextUpdateTimeMillis + updateDelayMillis;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
@@ -241,7 +247,9 @@ namespace Maes.Simulation
 
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
                 if (PlayState == SimulationPlayState.Step)
+                {
                     shouldContinueSim = false;
+                }
             }
 
             var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
@@ -286,7 +294,9 @@ namespace Maes.Simulation
                 Scenarios.Enqueue(simulationScenario);
             }
             else // This is the first scenario, initialize it immediately 
+            {
                 CreateSimulation(simulationScenario);
+            }
         }
 
         public bool HasActiveScenario()

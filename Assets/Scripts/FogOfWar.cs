@@ -42,7 +42,7 @@ namespace Maes
         private Color[] _colors = null!;
 
         // Use this for initialization
-        void Start()
+        private void Start()
         {
             foreach (var robot in simulationManager.CurrentSimulation!.Robots)
             {
@@ -54,11 +54,11 @@ namespace Maes
             _mesh = _fogOfWarPlane.GetComponent<MeshFilter>().mesh;
             _vertices = _mesh.vertices;
             _colors = new Color[_vertices.Length];
-            for (int i = 0; i < _colors.Length; i++)
+            for (var i = 0; i < _colors.Length; i++)
             {
                 _colors[i] = Color.black;
             }
-            for (int i = 0; i < _vertices.Length; i++)
+            for (var i = 0; i < _vertices.Length; i++)
             {
                 _vertices[i] = _fogOfWarPlane.transform.TransformPoint(_vertices[i]);
             }
@@ -66,20 +66,20 @@ namespace Maes
         }
 
         // Update is called once per frame
-        void Update() //various optimizations options, robots shoot up to plane, instead of from camera, visible area around robot shoots up
+        private void Update() //various optimizations options, robots shoot up to plane, instead of from camera, visible area around robot shoots up
         {
-            foreach (Transform robot in robots)
+            foreach (var robot in robots)
             {
                 var r = new Ray(transform.position, robot.position - transform.position);
                 if (Physics.Raycast(r, out var hit, 1000, _foglayer, QueryTriggerInteraction.Collide))
                 {
-                    for (int i = 0; i < _vertices.Length; i++)
+                    for (var i = 0; i < _vertices.Length; i++)
                     {
-                        Vector3 v = _vertices[i];
-                        float dist = Vector3.SqrMagnitude(v - hit.point);
+                        var v = _vertices[i];
+                        var dist = Vector3.SqrMagnitude(v - hit.point);
                         if (dist < _revealRadiusSqr)
                         {
-                            float alpha = Mathf.Min(_colors[i].a, dist / _revealRadiusSqr);
+                            var alpha = Mathf.Min(_colors[i].a, dist / _revealRadiusSqr);
                             _colors[i].a = alpha;
                         }
                     }
@@ -89,7 +89,7 @@ namespace Maes
 
         }
 
-        void UpdateColor()
+        private void UpdateColor()
         {
             _mesh.colors = _colors;
         }

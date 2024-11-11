@@ -48,7 +48,9 @@ namespace Maes.Map.MapGen
         public static Tile GetRandomWall()
         {
             if (Rand == null)
+            {
                 throw new Exception("Random is not set");
+            }
 
             var typeValues = Enum.GetValues(typeof(TileType));
             var randomWallInt = Rand.Next((int)TileType.Concrete, typeValues.Length);

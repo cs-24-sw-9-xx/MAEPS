@@ -46,18 +46,20 @@ namespace Maes.Map
             var vertexDistance = 0.5f; // Vertices and in triangles are 0.5 tiles apart
 
             _traceableTriangles = new RayTracingTriangle[totalTriangles];
-            for (int x = 0; x < map.WidthInTiles; x++)
+            for (var x = 0; x < map.WidthInTiles; x++)
             {
-                for (int y = 0; y < map.HeightInTiles; y++)
+                for (var y = 0; y < map.HeightInTiles; y++)
                 {
-                    int index = x * 8 + y * trianglesPerRow;
+                    var index = x * 8 + y * trianglesPerRow;
                     AddTraceableTriangles(new Vector2(x, y) + map.ScaledOffset, vertexDistance, index,
                         trianglesPerRow);
                 }
             }
 
             foreach (var (index, cell) in map)
+            {
                 _traceableTriangles[index].Cell = cell;
+            }
         }
 
         // Adds 8 'Traceable triangles' for a given tile. These triangles contain information that allows effective 
@@ -194,9 +196,11 @@ namespace Maes.Map
             CellFunction shouldContinueFromCell)
         {
             if (angleDegrees < 0f || angleDegrees > 360f)
+            {
                 throw new ArgumentException($"Given angle must be between 0-360 degrees. Angle was: {angleDegrees}");
+            }
 
-            int startingIndex = _map.GetTriangleIndex(startingPoint);
+            var startingIndex = _map.GetTriangleIndex(startingPoint);
 
             // Convert given angle and starting point to a linear equation: ax + b
             var a = Mathf.Tan(Mathf.PI / 180 * angleDegrees);
@@ -204,11 +208,11 @@ namespace Maes.Map
 
             var triangle = _traceableTriangles[startingIndex];
             var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);
-            int traceCount = 1;
-            TriangleTrace trace = new TriangleTrace(enteringEdge, startingIndex);
+            var traceCount = 1;
+            var trace = new TriangleTrace(enteringEdge, startingIndex);
 
             // If a trace travels diagonally in the bottom half of a tile, it will cross at least 4 tiles
-            int minimumTracesBeforeDistanceCheck = (int)(distance / MaxTraceLengthPerTriangle);
+            var minimumTracesBeforeDistanceCheck = (int)(distance / MaxTraceLengthPerTriangle);
             var maxTraces = distance * 8;
             while (true)
             {
@@ -220,7 +224,9 @@ namespace Maes.Map
 
                 // Invoke the given function on the cell, and only continue if it returns true
                 if (!shouldContinueFromCell(trace.nextTriangleIndex, triangle.Cell))
+                {
                     break;
+                }
 
                 // Perform the ray tracing step for the current triangle
                 triangle.RayTrace(ref trace, angleDegrees, a, b);
@@ -228,7 +234,9 @@ namespace Maes.Map
 
                 // Break if the next triangle is outside the map bounds
                 if (trace.nextTriangleIndex < 0 || trace.nextTriangleIndex >= _traceableTriangles.Length)
+                {
                     break;
+                }
 
                 triangle = _traceableTriangles[trace.nextTriangleIndex];
 
@@ -236,11 +244,13 @@ namespace Maes.Map
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
                 {
                     // All vertices of the triangle must be within range for the triangle to be considered visible
-                    bool withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
+                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
                     withinRange &= Vector2.Distance(startingPoint, triangle.Lines[0].End) <= distance;
                     withinRange &= Vector2.Distance(startingPoint, triangle.Lines[1].End) <= distance;
                     if (!withinRange)
+                    {
                         break;
+                    }
                 }
             }
         }
@@ -252,28 +262,34 @@ namespace Maes.Map
         public (Vector2, float)? FindIntersection(Vector2 startingPoint, float angleDegrees, float distance, CellFunction shouldContinue)
         {
             if (angleDegrees < 0f || angleDegrees > 360f)
+            {
                 throw new ArgumentException($"Given angle must be range 0-360 degrees. Angle was: {angleDegrees}");
+            }
 
-            int startingIndex = _map.GetTriangleIndex(startingPoint);
+            var startingIndex = _map.GetTriangleIndex(startingPoint);
 
             // Convert given angle and starting point to a linear equation: ax + b
             var a = Mathf.Tan(Mathf.PI / 180 * angleDegrees);
 
             // TODO: Temp fix for 90 and 270 degree angles. Should be replaced with special case logic.
             if (Math.Abs(angleDegrees - 90f) < 0.01f)
+            {
                 a = 99.9f;
+            }
             else if (Math.Abs(angleDegrees - 270f) < 0.01f)
+            {
                 a = -99.9f;
+            }
 
             var b = startingPoint.y - a * startingPoint.x;
 
             var triangle = _traceableTriangles[startingIndex];
             var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);
-            int traceCount = 1;
-            TriangleTrace trace = new TriangleTrace(enteringEdge, startingIndex);
+            var traceCount = 1;
+            var trace = new TriangleTrace(enteringEdge, startingIndex);
 
             // If a trace travels diagonally in the bottom half of a tile, it will cross at least 4 tiles
-            int minimumTracesBeforeDistanceCheck = (int)(distance / MaxTraceLengthPerTriangle);
+            var minimumTracesBeforeDistanceCheck = (int)(distance / MaxTraceLengthPerTriangle);
             while (true)
             {
                 if (traceCount > 1500)
@@ -298,7 +314,9 @@ namespace Maes.Map
 
                 // Break if the next triangle is outside the map bounds
                 if (trace.nextTriangleIndex < 0 || trace.nextTriangleIndex >= _traceableTriangles.Length)
+                {
                     break;
+                }
 
                 triangle = _traceableTriangles[trace.nextTriangleIndex];
 
@@ -306,11 +324,13 @@ namespace Maes.Map
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
                 {
                     // All vertices of the triangle must be within range for the triangle to be considered visible
-                    bool withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
+                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
                     withinRange &= Vector2.Distance(startingPoint, triangle.Lines[0].End) <= distance;
                     withinRange &= Vector2.Distance(startingPoint, triangle.Lines[1].End) <= distance;
                     if (!withinRange)
+                    {
                         break;
+                    }
                 }
             }
 
@@ -336,12 +356,15 @@ namespace Maes.Map
             {
                 // Variable for storing an intersection and the corresponding edge
                 Vector2? intersection = null;
-                int intersectionEdge = -1;
-                for (int edge = 0; edge < 3; edge++)
+                var intersectionEdge = -1;
+                for (var edge = 0; edge < 3; edge++)
                 {
                     // The line must exit the triangle in one of the two edges that the line did not enter through
                     // Therefore only check intersection for these two lines
-                    if (edge == trace.enteringEdge) continue;
+                    if (edge == trace.enteringEdge)
+                    {
+                        continue;
+                    }
 
                     // Find the intersection for the current edge
                     var currentIntersection = Lines[edge].GetIntersection(a, b);
@@ -349,7 +372,10 @@ namespace Maes.Map
                     if (currentIntersection == null) // No intersection with this edge
                     {
                         // If an intersection was found with a previously checked edge, then just use that
-                        if (intersection != null) break;
+                        if (intersection != null)
+                        {
+                            break;
+                        }
 
                         // Otherwise, since there is no intersection on this line, it has to be the other one (that isn't the entering edge)
                         // If the entering edge is 2, the next edge must be 1
@@ -437,10 +463,13 @@ namespace Maes.Map
             public int FindInitialEnteringEdge(float direction, float a, float b)
             {
                 var intersectionsAndEdge = new List<(Vector2, int)>();
-                for (int edge = 0; edge < 3; edge++)
+                for (var edge = 0; edge < 3; edge++)
                 {
                     var intersection = Lines[edge].GetIntersection(a, b);
-                    if (intersection != null) intersectionsAndEdge.Add((intersection.Value, edge));
+                    if (intersection != null)
+                    {
+                        intersectionsAndEdge.Add((intersection.Value, edge));
+                    }
                 }
 
 

@@ -45,58 +45,41 @@ namespace Maes.TransformToNav2
         }
 
         public const double k_NanoSecondsInSeconds = 1e9;
+        private static readonly DateTime k_UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
 
-        static readonly DateTime k_UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0);
         // Time the application started, relative to Unix Epoch
-        static readonly double k_StartTimeEpochSeconds = SecondsSinceUnixEpoch - Time.realtimeSinceStartupAsDouble;
+        private static readonly double k_StartTimeEpochSeconds = SecondsSinceUnixEpoch - Time.realtimeSinceStartupAsDouble;
 
-        static double SecondsSinceUnixEpoch => (DateTime.Now - k_UnixEpoch).TotalSeconds;
-        static double UnityUnscaledTimeSinceFrameStart =>
+        private static double SecondsSinceUnixEpoch => (DateTime.Now - k_UnixEpoch).TotalSeconds;
+
+        private static double UnityUnscaledTimeSinceFrameStart =>
             Time.realtimeSinceStartupAsDouble - Time.unscaledTimeAsDouble;
 
         public static double TimeSinceFrameStart => Now - FrameStartTimeInSeconds;
 
-        public static double FrameStartTimeInSeconds
+        public static double FrameStartTimeInSeconds => Mode switch
         {
-            get
-            {
-                return Mode switch
-                {
-                    // This might be an approximation... needs testing.
-                    ClockMode.UnityScaled => Time.timeAsDouble,
-                    // ClockMode.UnityUnscaled => Time.unscaledTimeAsDouble,
-                    // ClockMode.UnixEpoch => k_StartTimeEpochSeconds + UnityUnscaledTimeSinceFrameStart,
-                    _ => throw new NotImplementedException()
-                };
-            }
-        }
+            // This might be an approximation... needs testing.
+            ClockMode.UnityScaled => Time.timeAsDouble,
+            // ClockMode.UnityUnscaled => Time.unscaledTimeAsDouble,
+            // ClockMode.UnixEpoch => k_StartTimeEpochSeconds + UnityUnscaledTimeSinceFrameStart,
+            _ => throw new NotImplementedException()
+        };
 
-        public static double NowTimeInSeconds
+        public static double NowTimeInSeconds => Mode switch
         {
-            get
-            {
-                return Mode switch
-                {
-                    ClockMode.UnityScaled => Time.timeAsDouble + UnityUnscaledTimeSinceFrameStart * Time.timeScale,
-                    // ClockMode.UnityUnscaled => Time.realtimeSinceStartupAsDouble,
-                    // ClockMode.UnixEpoch => SecondsSinceUnixEpoch,
-                    _ => throw new NotImplementedException()
-                };
-            }
-        }
+            ClockMode.UnityScaled => Time.timeAsDouble + UnityUnscaledTimeSinceFrameStart * Time.timeScale,
+            // ClockMode.UnityUnscaled => Time.realtimeSinceStartupAsDouble,
+            // ClockMode.UnixEpoch => SecondsSinceUnixEpoch,
+            _ => throw new NotImplementedException()
+        };
 
         // NOTE: Precision loss vs. other time measurements due to no deltaTimeAsDouble interface
-        public static float DeltaTimeInSeconds
+        public static float DeltaTimeInSeconds => Mode switch
         {
-            get
-            {
-                return Mode switch
-                {
-                    ClockMode.UnityScaled => Time.deltaTime,
-                    _ => Time.unscaledDeltaTime,
-                };
-            }
-        }
+            ClockMode.UnityScaled => Time.deltaTime,
+            _ => Time.unscaledDeltaTime,
+        };
 
         public static ClockMode Mode = ClockMode.UnityScaled;
 

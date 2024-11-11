@@ -61,7 +61,10 @@ namespace Maes.Trackers
             {
                 OnAfterFirstTick(robots);
             }
-            else _isFirstTick = false;
+            else
+            {
+                _isFirstTick = false;
+            }
 
             if (_constraints.AutomaticallyUpdateSlam)
             {
@@ -94,7 +97,10 @@ namespace Maes.Trackers
 
         protected virtual void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots)
         {
-            foreach (var robot in robots) UpdateCoverageStatus(robot);
+            foreach (var robot in robots)
+            {
+                UpdateCoverageStatus(robot);
+            }
         }
 
         protected abstract void CreateSnapShot();
@@ -102,7 +108,7 @@ namespace Maes.Trackers
         // Updates both exploration tracker and robot slam maps
         private void PerformRayTracing(IReadOnlyList<MonaRobot> robots, bool shouldUpdateSlamMap)
         {
-            float visibilityRange = _constraints.SlamRayTraceRange;
+            var visibilityRange = _constraints.SlamRayTraceRange;
 
             foreach (var robot in robots)
             {
@@ -115,14 +121,17 @@ namespace Maes.Trackers
                 }
 
                 // Use amount of traces specified by user, or calculate circumference and use trace at interval of 4
-                float tracesPerMeter = 2f;
-                int traces = _constraints.SlamRayTraceCount ?? (int)(Math.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
-                float traceIntervalDegrees = 360f / traces;
-                for (int i = 0; i < traces; i++)
+                var tracesPerMeter = 2f;
+                var traces = _constraints.SlamRayTraceCount ?? (int)(Math.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
+                var traceIntervalDegrees = 360f / traces;
+                for (var i = 0; i < traces; i++)
                 {
                     var angle = i * traceIntervalDegrees;
                     // Avoid ray casts that can be parallel to the lines of a triangle
-                    if (angle % 45 == 0) angle += 0.5f;
+                    if (angle % 45 == 0)
+                    {
+                        angle += 0.5f;
+                    }
 
                     _rayTracingMap.Raytrace(robot.transform.position, angle, visibilityRange, (index, cell) =>
                     {

@@ -59,7 +59,7 @@ namespace Maes.Map.MapGen
             MapToDraw = cleanedMap;
 
             // Create mesh
-            MeshGenerator meshGen = GetComponent<MeshGenerator>();
+            var meshGen = GetComponent<MeshGenerator>();
             var collisionMap = meshGen.GenerateMesh((Tile[,])cleanedMap.Clone(), _wallHeight,
                 true, survivingRooms);
 

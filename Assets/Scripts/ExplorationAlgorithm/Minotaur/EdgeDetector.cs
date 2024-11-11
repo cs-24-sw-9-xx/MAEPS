@@ -113,7 +113,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             IPathFindingMap map = slamPrecision ? _slamMap : _coarseMap;
             var tiles = new List<Vector2Int>();
-            for (int angle = startAngle; angle < 360; angle++)
+            for (var angle = startAngle; angle < 360; angle++)
             {
                 tiles.Add(GetFurthestTileAroundPoint(_coarseMap.GetApproximateGlobalDegrees() + angle, range, limiters, slamPrecision: slamPrecision));
             }
@@ -132,8 +132,8 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 position = slamPrecision ? _slamMap.GetCurrentPosition() : _robotPosition;
             }
             IPathFindingMap map = slamPrecision ? _slamMap : _coarseMap;
-            Vector2Int tile = position;
-            for (int r = 0; r < (slamPrecision ? range * 2 : range); r++)
+            var tile = position;
+            for (var r = 0; r < (slamPrecision ? range * 2 : range); r++)
             {
                 tile = snapToGrid ? CardinalDirection.AngleToDirection(angle).Vector * r : Vector2Int.FloorToInt(Geometry.VectorFromDegreesAndMagnitude(angle, r));
                 var candidateTile = tile + position;
@@ -155,9 +155,9 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         public IEnumerable<Vector2Int> GetBoxAroundRobot()
         {
             var boxTileList = new List<Vector2Int>();
-            for (int x = -_edgeSize; x <= _edgeSize; x++)
+            for (var x = -_edgeSize; x <= _edgeSize; x++)
             {
-                for (int y = _edgeSize; y <= _edgeSize + 1; y++)
+                for (var y = _edgeSize; y <= _edgeSize + 1; y++)
                 {
                     boxTileList.Add(_robotPosition + new Vector2Int(x, y));
                     boxTileList.Add(_robotPosition + new Vector2Int(x, -y));

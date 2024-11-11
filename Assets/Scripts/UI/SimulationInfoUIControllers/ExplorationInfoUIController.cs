@@ -63,7 +63,11 @@ namespace Maes.UI.SimulationInfoUIControllers
                 {
                     if (sim != null)
                     {
-                        if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
                         sim.ExplorationTracker.ShowSelectedRobotVisibleArea();
                     }
                 });
@@ -75,7 +79,11 @@ namespace Maes.UI.SimulationInfoUIControllers
                 {
                     if (sim != null)
                     {
-                        if (!sim.HasSelectedRobot()) sim.SelectFirstRobot();
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
                         sim.ExplorationTracker.ShowSelectedRobotSlamMap();
                     }
                 });
@@ -122,7 +130,10 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         protected override void UpdateStatistics(ExplorationSimulation? explorationSimulation)
         {
-            if (explorationSimulation == null) return;
+            if (explorationSimulation == null)
+            {
+                return;
+            }
 
             SetExplorationProgress(explorationSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(explorationSimulation.ExplorationTracker.CoverageProportion);

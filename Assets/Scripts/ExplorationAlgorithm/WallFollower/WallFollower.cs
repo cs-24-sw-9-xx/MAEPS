@@ -40,8 +40,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
 
         private bool _initial = true;
 
-
-        enum Direction
+        private enum Direction
         {
             North,
             East,
@@ -276,10 +275,14 @@ namespace Maes.ExplorationAlgorithm.WallFollower
         {
             angle %= 360;
             if (angle > 180)
+            {
                 return angle - 360;
+            }
 
             if (angle < -180)
+            {
                 return angle + 360;
+            }
 
             return angle;
         }

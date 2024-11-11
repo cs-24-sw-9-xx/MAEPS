@@ -76,9 +76,16 @@ namespace Maes.Simulation
 
 
         private MonaRobot? _selectedRobot;
-        public bool HasSelectedRobot() => _selectedRobot != null;
+        public bool HasSelectedRobot()
+        {
+            return _selectedRobot != null;
+        }
+
         private VisibleTagInfoHandler? _selectedTag;
-        public bool HasSelectedTag() => _selectedTag != null;
+        public bool HasSelectedTag()
+        {
+            return _selectedTag != null;
+        }
 
         // The debugging visualizer provides 
         protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
@@ -104,7 +111,9 @@ namespace Maes.Simulation
             _robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
             CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
+            {
                 robot.OnRobotSelected = SetSelectedRobot;
+            }
 
             CommunicationManager.SetRobotReferences(Robots);
 
@@ -123,11 +132,23 @@ namespace Maes.Simulation
         public void SetSelectedRobot(MonaRobot? newSelectedRobot)
         {
             // Disable outline on previously selected robot
-            if (_selectedRobot != null) _selectedRobot.outLine.enabled = false;
+            if (_selectedRobot != null)
+            {
+                _selectedRobot.outLine.enabled = false;
+            }
+
             _selectedRobot = newSelectedRobot;
-            if (newSelectedRobot != null) newSelectedRobot.outLine.enabled = true;
+            if (newSelectedRobot != null)
+            {
+                newSelectedRobot.outLine.enabled = true;
+            }
+
             Tracker.SetVisualizedRobot(newSelectedRobot);
-            if (_selectedRobot == null) SimInfoUIController.ClearSelectedRobot();
+            if (_selectedRobot == null)
+            {
+                SimInfoUIController.ClearSelectedRobot();
+            }
+
             UpdateDebugInfo();
         }
 
@@ -138,9 +159,17 @@ namespace Maes.Simulation
 
         public void SetSelectedTag(VisibleTagInfoHandler? newSelectedTag)
         {
-            if (_selectedTag != null) _selectedTag.outline.enabled = false;
+            if (_selectedTag != null)
+            {
+                _selectedTag.outline.enabled = false;
+            }
+
             _selectedTag = newSelectedTag;
-            if (newSelectedTag != null) newSelectedTag.outline.enabled = true;
+            if (newSelectedTag != null)
+            {
+                newSelectedTag.outline.enabled = true;
+            }
+
             UpdateDebugInfo();
         }
 
@@ -252,15 +281,25 @@ namespace Maes.Simulation
             var width = (_collisionMap.WidthInTiles + 1) / 2;
             Gizmos.color = Color.blue;
             for (float x = -width; x < width; x += 0.5f)
+            {
                 Gizmos.DrawLine(new Vector3(x, -width, -0.01f), new Vector3(x, width, -0.01f));
+            }
+
             for (float y = -height; y < height; y += 0.5f)
+            {
                 Gizmos.DrawLine(new Vector3(-height, y, -0.01f), new Vector3(height, y, -0.01f));
+            }
 
             Gizmos.color = Color.red;
             for (float x = -width; x < width; x += 1)
+            {
                 Gizmos.DrawLine(new Vector3(x, -width, -0.01f), new Vector3(x, width, -0.01f));
+            }
+
             for (float y = -height; y < height; y += 1f)
+            {
                 Gizmos.DrawLine(new Vector3(-height, y, -0.01f), new Vector3(height, y, -0.01f));
+            }
 
             Gizmos.color = Color.black;
             Gizmos.DrawLine(new Vector3(0, -width, -0.01f), new Vector3(0, width, -0.01f));

@@ -57,7 +57,7 @@ namespace Maes.ExperimentSimulations
 
             var mapFromFile = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
             {
                 var val = random.Next(0, 1000000);
                 simulator.EnqueueScenario(new MySimulationScenario(val,

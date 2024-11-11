@@ -49,7 +49,7 @@ namespace Maes.TransformToNav2
             return node.Transform.ToROSTransformStamped(Clock.time);
         }
 
-        static void PopulateChildNodes(TransformTreeNode tfNode)
+        private static void PopulateChildNodes(TransformTreeNode tfNode)
         {
             var acceptedNames = new List<string>() { "base_footprint", "base_link", "base_scan" };
             var parentTransform = tfNode.Transform;

@@ -37,7 +37,7 @@ namespace Maes.Map
 
         public SimulationMapTile(Functional.Factory<TCell> cellFactory)
         {
-            for (int i = 0; i < 8; i++)
+            for (var i = 0; i < 8; i++)
             {
                 _triangleCells.Add(cellFactory());
             }
@@ -45,18 +45,18 @@ namespace Maes.Map
 
         public void SetCellValue(int index, TCell newCellValue)
         {
-            this._triangleCells[index] = newCellValue;
+            _triangleCells[index] = newCellValue;
         }
 
         private SimulationMapTile(List<TCell> cells)
         {
-            this._triangleCells = cells;
+            _triangleCells = cells;
         }
 
 
         public SimulationMapTile<TNewCell> FMap<TNewCell>(Func<TCell, TNewCell> mapper)
         {
-            List<TNewCell> mappedCells = new List<TNewCell>();
+            var mappedCells = new List<TNewCell>();
             foreach (var cell in _triangleCells)
             {
                 mappedCells.Add(mapper(cell));
@@ -78,7 +78,10 @@ namespace Maes.Map
 
             foreach (var cell in _triangleCells)
             {
-                if (!predicate(cell)) return false;
+                if (!predicate(cell))
+                {
+                    return false;
+                }
             }
 
             return true;
@@ -98,25 +101,49 @@ namespace Maes.Map
         public int CoordinateDecimalsToTriangleIndex(float xDecimal, float yDecimal)
         {
             if (xDecimal < 0.0f || xDecimal > 1.0f || yDecimal < 0.0f || yDecimal > 1.0f)
+            {
                 throw new ArgumentException("Coordinate decimals must be between 0.0 and 1.0. " +
                                             "Coordinates were: (" + xDecimal + ", " + yDecimal + " )");
+            }
 
             if (yDecimal < 0.5)
             {
                 // Bottom left quadrant
-                if (xDecimal + yDecimal < 0.5f) return 0;
-                if (xDecimal + yDecimal >= 0.5f && xDecimal < 0.5f) return 1;
+                if (xDecimal + yDecimal < 0.5f)
+                {
+                    return 0;
+                }
+
+                if (xDecimal + yDecimal >= 0.5f && xDecimal < 0.5f)
+                {
+                    return 1;
+                }
                 // Bottom right quadrant
-                if (xDecimal - yDecimal < 0.5f) return 2;
+                if (xDecimal - yDecimal < 0.5f)
+                {
+                    return 2;
+                }
+
                 return 3;
             }
             else
             {
                 // Top left quadrant
-                if (yDecimal - xDecimal > 0.5f && xDecimal < 0.5f) return 4;
-                if (yDecimal - xDecimal <= 0.5f && xDecimal < 0.5f) return 5;
+                if (yDecimal - xDecimal > 0.5f && xDecimal < 0.5f)
+                {
+                    return 4;
+                }
+
+                if (yDecimal - xDecimal <= 0.5f && xDecimal < 0.5f)
+                {
+                    return 5;
+                }
                 // Top right quadrant
-                if (xDecimal + yDecimal < 1.5f) return 6;
+                if (xDecimal + yDecimal < 1.5f)
+                {
+                    return 6;
+                }
+
                 return 7;
             }
         }

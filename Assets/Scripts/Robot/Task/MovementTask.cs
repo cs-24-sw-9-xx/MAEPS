@@ -35,8 +35,14 @@ namespace Maes.Robot.Task
         public MovementDirective GetNextDirective()
         {
             var absForce = Mathf.Abs(ForceMultiplier);
-            if (ForceMultiplier < 0) return MovementDirective.Reverse(absForce);
-            else return MovementDirective.Forward(absForce);
+            if (ForceMultiplier < 0)
+            {
+                return MovementDirective.Reverse(absForce);
+            }
+            else
+            {
+                return MovementDirective.Forward(absForce);
+            }
         }
 
         public bool IsCompleted()

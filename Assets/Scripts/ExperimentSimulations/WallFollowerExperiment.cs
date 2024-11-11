@@ -93,7 +93,7 @@ namespace Maes.ExperimentSimulations
             var simulator = new MySimulator();
             var random = new System.Random(12345);
             var randNumbers = new List<int>();
-            for (int i = 0; i < 100; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
                 randNumbers.Add(val);
@@ -105,7 +105,7 @@ namespace Maes.ExperimentSimulations
             var buildingConfigList50 = new List<BuildingMapConfig>();
             var buildingConfigList75 = new List<BuildingMapConfig>();
             var buildingConfigList100 = new List<BuildingMapConfig>();
-            foreach (int val in randNumbers)
+            foreach (var val in randNumbers)
             {
                 buildingConfigList50.Add(new BuildingMapConfig(val, widthInTiles: 50, heightInTiles: 50));
                 buildingConfigList75.Add(new BuildingMapConfig(val, widthInTiles: 75, heightInTiles: 75));

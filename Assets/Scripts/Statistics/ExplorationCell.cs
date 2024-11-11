@@ -58,7 +58,10 @@ namespace Maes.Statistics
         public void RegisterExploration(int currentTimeTicks)
         {
             if (!IsExplorable)
+            {
                 throw new Exception("Registered exploration for a tile that was marked not explorable");
+            }
+
             ExplorationTimeInTicks += 1;
             LastExplorationTimeInTicks = currentTimeTicks;
             IsExplored = true;
@@ -67,7 +70,10 @@ namespace Maes.Statistics
         public void RegisterCoverage(int currenTimeTicks)
         {
             if (!CanBeCovered)
+            {
                 throw new Exception("Registered coverage for a tile that was marked not coverable");
+            }
+
             CoverageTimeInTicks += 1;
             LastCoverageTimeInTicks = currenTimeTicks;
             IsCovered = true;

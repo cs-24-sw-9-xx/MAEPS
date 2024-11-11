@@ -54,7 +54,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, false, false);
                 if (pathLengthToDoorway != null)
                 {
-                    foreach (Doorway knownDoorway in minotaur._doorways)
+                    foreach (var knownDoorway in minotaur._doorways)
                     {
                         if (pathLengthToDoorway.Contains(minotaur._map.FromSlamMapCoordinate(knownDoorway.Center)))
                         {

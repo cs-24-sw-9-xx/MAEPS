@@ -87,7 +87,10 @@ namespace Maes.ExplorationAlgorithm.SSB
                 if (_reservations.ContainsKey(tile))
                 {
                     if (_reservations[tile].ReservingRobot != _algorithm._controller.GetRobotID())
+                    {
                         throw new Exception("Attempted to reserve a tile that is already reserved by another robot");
+                    }
+
                     return null;
                 }
                 else
@@ -104,11 +107,16 @@ namespace Maes.ExplorationAlgorithm.SSB
                 foreach (var tile in tiles)
                 {
                     var newRes = ReserveLocally(tile);
-                    if (newRes != null) newReservations.Add(newRes.Value);
+                    if (newRes != null)
+                    {
+                        newReservations.Add(newRes.Value);
+                    }
                 }
 
                 if (newReservations.Count == 0)
+                {
                     return; // No new reservations added, so no need to 
+                }
 
                 // Broadcast reservations to all nearby robots
                 _algorithm._controller.Broadcast(new ReservationMessage(new HashSet<Reservation>(
@@ -137,12 +145,17 @@ namespace Maes.ExplorationAlgorithm.SSB
             // Returns null if no robot has reserved the tile
             public int? GetReservingRobot(Vector2Int tile)
             {
-                if (!_reservations.ContainsKey(tile)) return null;
+                if (!_reservations.ContainsKey(tile))
+                {
+                    return null;
+                }
 
                 var reservation = _reservations[tile];
                 // Ignore reservations made this tick by this robot (as there could potentially be a conflict next tick)
                 if (_algorithm.RobotID() == reservation.ReservingRobot && _algorithm._currentTick == reservation.StartingTick)
+                {
                     return null;
+                }
 
                 return _reservations[tile].ReservingRobot;
             }
@@ -154,7 +167,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 // or if the new reservation has a higher robot id
                 var tile = newRes.ReservedTile;
                 if (!_reservations.ContainsKey(tile) || _reservations[tile].ReservingRobot < newRes.ReservingRobot)
+                {
                     _reservations[tile] = newRes;
+                }
             }
 
             public void ClearThisRobotsReservationsExcept(Vector2Int exception)
@@ -165,11 +180,15 @@ namespace Maes.ExplorationAlgorithm.SSB
 
                 // Only broadcast if there are any removable tiles
                 if (removableReservations.Count == 0)
+                {
                     return;
+                }
 
                 // Remove from local reservations list
                 foreach (var reservation in removableReservations)
+                {
                     _reservations.Remove(reservation.ReservedTile);
+                }
 
                 // Broadcast removal to other robots
                 _algorithm._controller.Broadcast(new ReservationClearingMessage(removableReservations));
@@ -183,7 +202,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             public void ClearReservations(HashSet<Reservation> reservationsToClear)
             {
                 foreach (var reservation in reservationsToClear)
+                {
                     _reservations.Remove(reservation.ReservedTile);
+                }
             }
 
             public List<Vector2Int> GetTilesReservedByThisRobot()
@@ -209,7 +230,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 foreach (var tile in tiles)
                 {
                     if (_reservations.ContainsKey(tile) && _reservations[tile].ReservingRobot != thisRobot)
+                    {
                         return true;
+                    }
                 }
 
                 return false;
@@ -221,7 +244,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 foreach (var tile in tiles)
                 {
                     if (!_reservations.ContainsKey(tile) || _reservations[tile].ReservingRobot != thisRobot)
+                    {
                         return false;
+                    }
                 }
                 return true;
             }
@@ -240,7 +265,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             public ISsbBroadcastMessage? Process(SsbAlgorithm algorithm)
             {
                 foreach (var reservation in _reservations)
+                {
                     algorithm._reservationSystem.RegisterReservationFromOtherRobot(reservation);
+                }
 
                 // Debug.Log($"Robot {algorithm.RobotID()} " +
                 //           $"registered {_reservations.Count} reservations from other robots");
@@ -251,7 +278,7 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 if (other is ReservationMessage reservationMsg)
                 {
-                    this._reservations.UnionWith(reservationMsg._reservations);
+                    _reservations.UnionWith(reservationMsg._reservations);
                     return this;
                 }
 
@@ -281,7 +308,7 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 if (other is ReservationClearingMessage clearingMsg)
                 {
-                    this._reservationsToClear.UnionWith(clearingMsg._reservationsToClear);
+                    _reservationsToClear.UnionWith(clearingMsg._reservationsToClear);
                     return this;
                 }
 

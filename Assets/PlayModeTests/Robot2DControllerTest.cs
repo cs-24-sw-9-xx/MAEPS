@@ -94,7 +94,10 @@ namespace PlayModeTests
         {
             _testAlgorithm.UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Move(movementDistance);
+                if (tick == 0)
+                {
+                    controller.Move(movementDistance);
+                }
             };
             var controller = _robot.Controller;
 
@@ -114,7 +117,10 @@ namespace PlayModeTests
             //  Wait 1 second (10 ticks) for the robot to stand completely still
             var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait)
+            {
+                yield return null;
+            }
 
             // Assert that the actual final position approximately matches the expected final position
             var endingPosition = _robot.transform.position;
@@ -136,24 +142,33 @@ namespace PlayModeTests
         [TestCase(-180.0f, ExpectedResult = null)]
         public IEnumerator Rotate_RotatesCorrectAmountOfDegrees(float degreesToRotate)
         {
-            _testAlgorithm.UpdateFunction = (tick, controller) => { if (tick == 1) controller.Rotate(degreesToRotate); };
+            _testAlgorithm.UpdateFunction = (tick, controller) => { if (tick == 1) { controller.Rotate(degreesToRotate); } };
 
             // Register the starting position and calculate the expected position
             var transform = _robot.transform;
             var startingRotation = transform.rotation.eulerAngles.z;
             var expectedAngle = startingRotation + degreesToRotate;
-            while (expectedAngle < 0) expectedAngle += 360;
+            while (expectedAngle < 0)
+            {
+                expectedAngle += 360;
+            }
+
             expectedAngle %= 360;
 
             _maes.PressPlayButton();
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            {
                 yield return null;
+            }
             //  Wait 1 second (10 ticks) for the robot to stand completely still
             var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
             const int ticksToWait = 10;
-            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait) yield return null;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait)
+            {
+                yield return null;
+            }
 
             // Assert that the actual final rotation approximately matches the expected angle
             var actualAngle = _robot.transform.rotation.eulerAngles.z;

@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,29 +34,28 @@ namespace Maes.TransformToNav2
 {
     internal class ROSTransformTreePublisher : MonoBehaviour
     {
-        const string k_TfTopic = "/tf";
+        private const string k_TfTopic = "/tf";
 
         [SerializeField]
-        readonly double m_PublishRateHz = 10f;
+        private readonly double m_PublishRateHz = 10f;
         [SerializeField]
-        readonly List<string> m_GlobalFrameIds = new List<string> { "map", "odom" };
+        private readonly List<string> m_GlobalFrameIds = new List<string> { "map", "odom" };
         [SerializeField]
         public GameObject m_RootGameObject = null!;
         [SerializeField]
         public GameObject m_WrapperObject = null!;
-        String m_NameSpace = "";
-
-        double m_LastPublishTimeSeconds;
-
-        // Set by Start
-        ROSConnection m_ROS = null!;
+        private string m_NameSpace = "";
+        private double m_LastPublishTimeSeconds;
 
         // Set by Start
-        TransformTreeNode m_TransformRoot = null!;
+        private ROSConnection m_ROS = null!;
 
-        double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
+        // Set by Start
+        private TransformTreeNode m_TransformRoot = null!;
 
-        bool ShouldPublishMessage => Clock.NowTimeInSeconds > m_LastPublishTimeSeconds + PublishPeriodSeconds;
+        private double PublishPeriodSeconds => 1.0f / m_PublishRateHz;
+
+        private bool ShouldPublishMessage => Clock.NowTimeInSeconds > m_LastPublishTimeSeconds + PublishPeriodSeconds;
 
         private void Awake()
         {
@@ -67,7 +65,7 @@ namespace Maes.TransformToNav2
         }
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             if (m_RootGameObject == null)
             {
@@ -84,7 +82,7 @@ namespace Maes.TransformToNav2
             m_LastPublishTimeSeconds = Clock.time + PublishPeriodSeconds;
         }
 
-        static void PopulateTFList(List<TransformStampedMsg> tfList, TransformTreeNode tfNode)
+        private static void PopulateTFList(List<TransformStampedMsg> tfList, TransformTreeNode tfNode)
         {
             // TODO: Some of this could be done once and cached rather than doing from scratch every time
             // Only generate transform messages from the children, because This node will be parented to the global frame
@@ -99,7 +97,7 @@ namespace Maes.TransformToNav2
             }
         }
 
-        void PublishMessage()
+        private void PublishMessage()
         {
             var tfMessageList = new List<TransformStampedMsg>();
 
@@ -151,7 +149,7 @@ namespace Maes.TransformToNav2
 
         }
 
-        void PublishMessageCustom()
+        private void PublishMessageCustom()
         {
             // Publish fake transform messages (copied from slam example project)
             var tfMessage = new TFMessageMsg(GenerateTransformMessages().ToArray());
@@ -159,7 +157,7 @@ namespace Maes.TransformToNav2
             m_LastPublishTimeSeconds = Clock.FrameStartTimeInSeconds;
         }
 
-        void Update()
+        private void Update()
         {
             if (ShouldPublishMessage)
             {

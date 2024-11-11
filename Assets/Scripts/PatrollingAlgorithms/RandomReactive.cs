@@ -25,7 +25,10 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void Preliminaries()
         {
-            if (_isPatrolling) return;
+            if (_isPatrolling)
+            {
+                return;
+            }
 
             var vertex = GetClosestVertex();
             TargetVertex = vertex;

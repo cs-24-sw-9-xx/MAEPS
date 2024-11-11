@@ -25,7 +25,7 @@ namespace Maes
 {
     public class MinotaurDemo : ExplorationExperimentBase
     {
-        void Start()
+        private void Start()
         {
             RunSimulation("building", "minotaur", "Material", "100", 100, 775411, 9);
         }

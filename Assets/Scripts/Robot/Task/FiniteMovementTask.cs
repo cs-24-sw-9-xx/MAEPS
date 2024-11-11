@@ -49,16 +49,22 @@ namespace Maes.Robot.Task
         public MovementDirective GetNextDirective()
         {
             if (_isCompleted)
+            {
                 return MovementDirective.NoMovement();
+            }
 
-            float remainingDistance = _targetDistance - Vector2.Distance(_startingPosition, _robotTransform.position);
+            var remainingDistance = _targetDistance - Vector2.Distance(_startingPosition, _robotTransform.position);
             if (remainingDistance > 0.1f)
             {
                 var currentPosition = _robotTransform.position;
                 var currentVelocity = Vector2.Distance(_previousPosition, currentPosition);
                 _previousPosition = currentPosition;
                 var forceFactor = GetForceFactor(remainingDistance, currentVelocity);
-                if (_reverse) forceFactor *= -1f;
+                if (_reverse)
+                {
+                    forceFactor *= -1f;
+                }
+
                 return new MovementDirective(forceFactor, forceFactor);
             }
             else
@@ -71,10 +77,16 @@ namespace Maes.Robot.Task
         // The applied force depends on how large a distance is remaining and how fast the robot is currently moving
         private float GetForceFactor(float remainingDistance, float currentVelocity)
         {
-            int stopTimeTicks = GetStopTime(currentVelocity);
-            float stopDistance = GetDistanceTraveled(currentVelocity, stopTimeTicks);
-            if (stopDistance <= remainingDistance - 0.01f) return _force;
-            else return 0f;
+            var stopTimeTicks = GetStopTime(currentVelocity);
+            var stopDistance = GetDistanceTraveled(currentVelocity, stopTimeTicks);
+            if (stopDistance <= remainingDistance - 0.01f)
+            {
+                return _force;
+            }
+            else
+            {
+                return 0f;
+            }
         }
 
         // Returns the time (in ticks from now) at which the velocity of the robot will be approximately 0 (<0.001) 

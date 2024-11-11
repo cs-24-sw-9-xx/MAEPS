@@ -75,25 +75,13 @@ namespace Maes.Utilities.Priority_Queue
         /// Returns the number of nodes in the queue.
         /// O(1)
         /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _numNodes;
-            }
-        }
+        public int Count => _numNodes;
 
         /// <summary>
         /// Returns the maximum number of items that can be enqueued at once in this queue.  Once you hit this number (ie. once Count == MaxSize),
         /// attempting to enqueue another item will cause undefined behavior.  O(1)
         /// </summary>
-        public int MaxSize
-        {
-            get
-            {
-                return _nodes.Length - 1;
-            }
-        }
+        public int MaxSize => _nodes.Length - 1;
 
         /// <summary>
         /// Removes every node from the queue.
@@ -188,7 +176,9 @@ namespace Maes.Utilities.Priority_Queue
                 parent = node.QueueIndex >> 1;
                 var parentNode = _nodes[parent]!;
                 if (HasHigherPriority(parentNode, node))
+                {
                     return;
+                }
 
                 //Node has lower priority value, so move parent down the heap to make room
                 _nodes[node.QueueIndex] = parentNode;
@@ -205,7 +195,9 @@ namespace Maes.Utilities.Priority_Queue
                 parent >>= 1;
                 var parentNode = _nodes[parent]!;
                 if (HasHigherPriority(parentNode, node))
+                {
                     break;
+                }
 
                 //Node has lower priority value, so move parent down the heap to make room
                 _nodes[node.QueueIndex] = parentNode;
@@ -222,8 +214,8 @@ namespace Maes.Utilities.Priority_Queue
         private void CascadeDown(TItem node)
         {
             //aka Heapify-down
-            int finalQueueIndex = node.QueueIndex;
-            int childLeftIndex = 2 * finalQueueIndex;
+            var finalQueueIndex = node.QueueIndex;
+            var childLeftIndex = 2 * finalQueueIndex;
 
             // If leaf node, we're done
             if (childLeftIndex > _numNodes)
@@ -232,7 +224,7 @@ namespace Maes.Utilities.Priority_Queue
             }
 
             // Check if the left-child is higher-priority than the current node
-            int childRightIndex = childLeftIndex + 1;
+            var childRightIndex = childLeftIndex + 1;
             var childLeft = _nodes[childLeftIndex]!;
             if (HasHigherPriority(childLeft, node))
             {
@@ -431,8 +423,8 @@ namespace Maes.Utilities.Priority_Queue
             }
 #endif
 
-            TItem[] newArray = new TItem[maxNodes + 1];
-            int highestIndexToCopy = Math.Min(maxNodes, _numNodes);
+            var newArray = new TItem[maxNodes + 1];
+            var highestIndexToCopy = Math.Min(maxNodes, _numNodes);
             Array.Copy(_nodes, newArray, highestIndexToCopy + 1);
             _nodes = newArray;
         }
@@ -493,7 +485,7 @@ namespace Maes.Utilities.Priority_Queue
         private void OnNodeUpdated(TItem node)
         {
             //Bubble the updated node up or down as appropriate
-            int parentIndex = node.QueueIndex >> 1;
+            var parentIndex = node.QueueIndex >> 1;
 
             if (parentIndex > 0 && HasHigherPriority(node, _nodes[parentIndex]!))
             {
@@ -586,8 +578,10 @@ namespace Maes.Utilities.Priority_Queue
             IEnumerable<TItem> e = new ArraySegment<TItem>(_nodes, 1, _numNodes);
             return e.GetEnumerator();
 #else
-            for (int i = 1; i <= _numNodes; i++)
+            for (var i = 1; i <= _numNodes; i++)
+            {
                 yield return _nodes[i]!;
+            }
 #endif
         }
 
@@ -602,17 +596,21 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool IsValidQueue()
         {
-            for (int i = 1; i < _nodes.Length; i++)
+            for (var i = 1; i < _nodes.Length; i++)
             {
                 if (_nodes[i] != null)
                 {
-                    int childLeftIndex = 2 * i;
+                    var childLeftIndex = 2 * i;
                     if (childLeftIndex < _nodes.Length && _nodes[childLeftIndex] != null && HasHigherPriority(_nodes[childLeftIndex]!, _nodes[i]!))
+                    {
                         return false;
+                    }
 
-                    int childRightIndex = childLeftIndex + 1;
+                    var childRightIndex = childLeftIndex + 1;
                     if (childRightIndex < _nodes.Length && _nodes[childRightIndex] != null && HasHigherPriority(_nodes[childRightIndex]!, _nodes[i]!))
+                    {
                         return false;
+                    }
                 }
             }
             return true;

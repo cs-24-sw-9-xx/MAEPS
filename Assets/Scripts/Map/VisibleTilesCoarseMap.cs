@@ -50,7 +50,9 @@ namespace Maes.Map
             var path = _aStar.GetPath(coarseTileFrom, coarseTileTo, this, true, acceptPartialPaths);
 
             if (path == null)
+            {
                 return null;
+            }
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
@@ -65,12 +67,16 @@ namespace Maes.Map
 
             // Anything not currently visible is solid
             if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            {
                 return true;
+            }
 
             // Check if the coarse tile is actually solid
             var tileStatus = GetTileStatus(coordinate);
             if (tileStatus == SlamMap.SlamTileStatus.Solid)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -91,14 +97,21 @@ namespace Maes.Map
 
             // Anything not currently visible is not solid
             if (!_slamMap.CurrentlyVisibleTiles.ContainsKey(slamTile))
+            {
                 return false;
+            }
+
             if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            {
                 return false;
+            }
 
             // Check if the coarse tile is actually solid
             var tileStatus = GetTileStatus(coordinate, true);
             if (tileStatus == SlamMap.SlamTileStatus.Solid)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -162,9 +175,15 @@ namespace Maes.Map
         private SlamMap.SlamTileStatus AggregateStatusOptimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
         {
             if (status1 == SlamMap.SlamTileStatus.Solid || status2 == SlamMap.SlamTileStatus.Solid)
+            {
                 return SlamMap.SlamTileStatus.Solid;
+            }
+
             if (status1 == SlamMap.SlamTileStatus.Open || status2 == SlamMap.SlamTileStatus.Open)
+            {
                 return SlamMap.SlamTileStatus.Open;
+            }
+
             return SlamMap.SlamTileStatus.Unseen;
         }
 
@@ -173,9 +192,15 @@ namespace Maes.Map
         private SlamMap.SlamTileStatus AggregateStatusPessimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
         {
             if (status1 == SlamMap.SlamTileStatus.Solid || status2 == SlamMap.SlamTileStatus.Solid)
+            {
                 return SlamMap.SlamTileStatus.Solid;
+            }
+
             if (status1 == SlamMap.SlamTileStatus.Unseen || status2 == SlamMap.SlamTileStatus.Unseen)
+            {
                 return SlamMap.SlamTileStatus.Unseen;
+            }
+
             return SlamMap.SlamTileStatus.Open;
         }
 
