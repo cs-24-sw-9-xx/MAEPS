@@ -131,6 +131,8 @@ namespace Maes.ExperimentSimulations
                         foreach (var (algorithmName, algorithm) in algorithms)
                         {
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                                                             totalCycles: 3,
+                                                                             stopAfterDiff: true,
                                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                                  buildingConfig,
@@ -149,6 +151,8 @@ namespace Maes.ExperimentSimulations
                             }
 
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                                                             totalCycles: 3,
+                                                                             stopAfterDiff: true,
                                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                                  collisionMap: buildingConfig,
@@ -167,6 +171,8 @@ namespace Maes.ExperimentSimulations
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                totalCycles: 3,
+                stopAfterDiff: true,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,
