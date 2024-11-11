@@ -58,9 +58,14 @@ namespace Maes.Map.MapGen
                     for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if ((x != tile.x && y != tile.y) || !IsInMapRange(x, y, map))
+                        {
                             continue;
+                        }
+
                         if (Tile.IsWall(map[x, y].Type))
+                        {
                             EdgeTiles.Add(tile);
+                        }
                     }
                 }
             }
@@ -84,9 +89,15 @@ namespace Maes.Map.MapGen
             var outsideTiles = new List<Vector2Int>();
             // Add tiles surrounding the room, going a tile further with each step
             foreach (var tile in Tiles)
+            {
                 for (var x = -wallThickness; x < wallThickness; x++)
+                {
                     for (var y = -wallThickness; y < wallThickness; y++)
+                    {
                         outsideTiles.Add(new Vector2Int(tile.x + x, tile.y + y));
+                    }
+                }
+            }
 
             return outsideTiles.Where(vec => IsInMapRange(vec.x, vec.y, TilesAsArray)).Distinct().ToList();
         }
@@ -104,7 +115,10 @@ namespace Maes.Map.MapGen
         public void SetAccessibleFromMainRoom()
         {
             if (IsAccessibleFromMainRoom)
+            {
                 return;
+            }
+
             IsAccessibleFromMainRoom = true;
             foreach (var connectedRoom in ConnectedRooms)
             {

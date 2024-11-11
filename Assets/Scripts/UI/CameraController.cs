@@ -68,7 +68,7 @@ namespace Maes.UI
         public bool stickyCam;
 
         // Start is called before the first frame update
-        void Start()
+        private void Start()
         {
             _simulationManager = simulationManagerObject.GetComponent<ISimulationManager>();
             singletonInstance = this;
@@ -95,11 +95,13 @@ namespace Maes.UI
         }
 
         // Update is called once per frame
-        void Update()
+        private void Update()
         {
             var mouseWorldPosition = GetMouseWorldPosition();
             if (mouseWorldPosition != null)
+            {
                 OnNewMouseWorldPosition(mouseWorldPosition.Value);
+            }
             // Update the camera position (either by following a robot or through mouse movement)
             UpdateCameraPosition(mouseWorldPosition);
 
@@ -122,7 +124,10 @@ namespace Maes.UI
 
         private void HandleCameraSelect()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) return;
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                return;
+            }
 
             if (Input.GetKey(KeyCode.Alpha1))
             {
@@ -207,7 +212,11 @@ namespace Maes.UI
                 rotateStartPosition = Input.mousePosition;
             }
 
-            if (!Input.GetMouseButton(1)) return;
+            if (!Input.GetMouseButton(1))
+            {
+                return;
+            }
+
             rotateCurrentPosition = Input.mousePosition;
 
             var diff = rotateStartPosition - rotateCurrentPosition;
@@ -258,7 +267,11 @@ namespace Maes.UI
 
 
             // Only continue if the ray cast intersects the plane
-            if (!plane.Raycast(ray, out var entry)) return null;
+            if (!plane.Raycast(ray, out var entry))
+            {
+                return null;
+            }
+
             var mouseWorldPosition = ray.GetPoint(entry);
             return mouseWorldPosition;
         }
@@ -278,7 +291,7 @@ namespace Maes.UI
             }
         }
 
-        void UpdateCameraPosition(Vector2? mouseWorldPosition)
+        private void UpdateCameraPosition(Vector2? mouseWorldPosition)
         {
             // If sticky cam is enabled and a robot is selected, then camera movement is determined entirely by the
             // movement of the robot
@@ -290,7 +303,9 @@ namespace Maes.UI
 
             // Only use mouse for camera control if the mouse is within the world bounds (ie. it is not hovering over UI)
             if (mouseWorldPosition == null)
+            {
                 return;
+            }
 
             if (uiPanels.Any(panel =>
                 RectTransformUtility.RectangleContainsScreenPoint(panel, Input.mousePosition)))
@@ -317,7 +332,7 @@ namespace Maes.UI
             #endregion
         }
 
-        void HandleKeyboardMovementInput()
+        private void HandleKeyboardMovementInput()
         {
             var t = transform;
             if (Input.GetKey(KeyCode.I) || buttons[(int)UIMovementButton.Direction.Forwards].isActive)

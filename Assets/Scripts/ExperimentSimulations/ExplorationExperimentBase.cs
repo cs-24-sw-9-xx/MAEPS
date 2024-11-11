@@ -85,7 +85,7 @@ namespace Maes.ExperimentSimulations
             var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
-            for (int i = 0; i < mapIterations; i++)
+            for (var i = 0; i < mapIterations; i++)
             {
                 var val = random.Next(0, 1000000);
                 randNumbers.Add(val);

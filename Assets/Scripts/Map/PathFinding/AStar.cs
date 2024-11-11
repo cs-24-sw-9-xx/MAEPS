@@ -58,7 +58,7 @@ namespace Maes.Map.PathFinding
             {
                 var path = new List<Vector2Int>();
 
-                AStarTile? current = this;
+                var current = this;
                 while (current != null)
                 {
                     path.Add(new Vector2Int(current.X, current.Y));
@@ -90,7 +90,7 @@ namespace Maes.Map.PathFinding
                 targetCoordinate = nearestTile.HasValue ? nearestTile.Value : targetCoordinate;
             }
 
-            int loopCount = 0;
+            var loopCount = 0;
             while (candidates.Count > 0)
             {
 
@@ -99,15 +99,18 @@ namespace Maes.Map.PathFinding
 
                 // Skip if a better candidate has been added to the queue since this was added
                 if (bestCandidateOnTile.ContainsKey(currentCoordinate) && bestCandidateOnTile[currentCoordinate] != currentTile)
+                {
                     continue;
+                }
 
                 if (currentCoordinate == targetCoordinate)
+                {
                     return currentTile.Path();
-
+                }
 
                 foreach (var dir in CardinalDirection.GetCardinalAndOrdinalDirections())
                 {
-                    Vector2Int candidateCoord = currentCoordinate + dir.Vector;
+                    var candidateCoord = currentCoordinate + dir.Vector;
                     // Only consider non-solid tiles
                     if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
                     {
@@ -158,12 +161,16 @@ namespace Maes.Map.PathFinding
             {
                 // Find lowest heuristic tile, as it is closest to the target
                 Vector2Int? lowestHeuristicKey = null;
-                float lowestHeuristic = float.MaxValue;
+                var lowestHeuristic = float.MaxValue;
                 foreach (var kv in bestCandidateOnTile)
                 {
                     if (kv.Value.Heuristic < lowestHeuristic)
                     {
-                        if (kv.Key == startCoordinate) continue;
+                        if (kv.Key == startCoordinate)
+                        {
+                            continue;
+                        }
+
                         lowestHeuristic = kv.Value.Heuristic;
                         lowestHeuristicKey = kv.Key;
                     }
@@ -178,14 +185,16 @@ namespace Maes.Map.PathFinding
 
         private AStarTile DequeueBestCandidate(List<AStarTile> candidates)
         {
-            AStarTile bestCandidate = candidates.First();
+            var bestCandidate = candidates.First();
             foreach (var current in candidates.Skip(1))
             {
                 if (Mathf.Abs(current.TotalCost - bestCandidate.TotalCost) < 0.01f)
                 {
                     // Total cost is the same, compare by heuristic instead
                     if (current.Heuristic < bestCandidate.Heuristic)
+                    {
                         bestCandidate = current;
+                    }
                 }
                 else if (current.TotalCost < bestCandidate.TotalCost)
                 {
@@ -219,7 +228,7 @@ namespace Maes.Map.PathFinding
             var minDif = Math.Min(xDif, yDif);
             var maxDif = Math.Max(xDif, yDif);
 
-            float heuristic = maxDif - minDif + minDif * Mathf.Sqrt(2f);
+            var heuristic = maxDif - minDif + minDif * Mathf.Sqrt(2f);
             return heuristic;
         }
 
@@ -227,13 +236,16 @@ namespace Maes.Map.PathFinding
         public List<PathStep> PathToSteps(List<Vector2Int> path, float robotRadius)
         {
             if (path.Count == 1)
+            {
                 return new List<PathStep> { new PathStep(path[0], path[0], new HashSet<Vector2Int>() { path[0] }) };
+            }
+
             var steps = new List<PathStep>();
 
-            Vector2Int stepStart = path[0];
-            Vector2Int currentTile = path[1];
-            HashSet<Vector2Int> crossedTiles = new HashSet<Vector2Int>();
-            CardinalDirection currentDirection = CardinalDirection.FromVector(currentTile - stepStart);
+            var stepStart = path[0];
+            var currentTile = path[1];
+            var crossedTiles = new HashSet<Vector2Int>();
+            var currentDirection = CardinalDirection.FromVector(currentTile - stepStart);
             AddIntersectingTiles(stepStart, currentDirection, crossedTiles);
 
             foreach (var nextTile in path.Skip(2))
@@ -288,7 +300,9 @@ namespace Maes.Map.PathFinding
                     if (!pathFindingMap.IsWithinBounds(target + dir)
                         || (excludedTiles != null && excludedTiles.Contains(target + dir))
                         || pathFindingMap.GetTileStatus(target + dir) == SlamTileStatus.Solid)
+                    {
                         continue;
+                    }
 
                     neighborHit = IsAnyNeighborStatus(target + dir, pathFindingMap, lookupStatus);
                     if (neighborHit.HasValue && pathFindingMap.IsWithinBounds(target + dir))
@@ -314,7 +328,10 @@ namespace Maes.Map.PathFinding
             foreach (var dir in directions)
             {
                 if (!pathFindingMap.IsWithinBounds(targetCoordinate + dir))
+                {
                     continue;
+                }
+
                 if (pathFindingMap.GetTileStatus(targetCoordinate + dir, optimistic) == status)
                 {
                     return targetCoordinate + dir;

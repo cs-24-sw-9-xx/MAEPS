@@ -76,9 +76,14 @@ namespace Maes.ExplorationAlgorithm
             ReactToCmdVel(_rosLinearSpeed, _rosRotationSpeed);
 
             if (_envTagsToDeposit.Count != 0)
+            {
                 ReactToBroadcastRequests();
+            }
+
             if (_msgsToBroadcast.Count != 0)
+            {
                 ReactToDepositTagRequests();
+            }
 
             PublishState();
 
@@ -145,7 +150,7 @@ namespace Maes.ExplorationAlgorithm
             _ros.Publish(_topicPrefix + _stateTopic, state);
         }
 
-        void ReactToCmdVel(float speedCommandValue, float rotationCommandValue)
+        private void ReactToCmdVel(float speedCommandValue, float rotationCommandValue)
         {
             // Debug.Log($"{this._robotRosId} command velocities: [{speedCommandValue}, {rotationCommandValue}]");
             var robotStatus = _controller.GetStatus();
@@ -176,15 +181,15 @@ namespace Maes.ExplorationAlgorithm
                 else
                 {
                     // The force applied at each wheel before factoring in rotation
-                    float flatWheelForce = speedCommandValue;
+                    var flatWheelForce = speedCommandValue;
 
                     // The difference in applied force between the right and left wheel. 
                     float rotationSign = rotationCommandValue > 0 ? -1 : 1;
-                    float wheelForceDelta = rotationSign * Mathf.Pow(1.3f * rotationCommandValue, 2.0f) * 0.6f;
+                    var wheelForceDelta = rotationSign * Mathf.Pow(1.3f * rotationCommandValue, 2.0f) * 0.6f;
 
                     // Calculate the force applied to each wheel and send the values to the controller
-                    float leftWheelForce = flatWheelForce + wheelForceDelta / 2f;
-                    float rightWheelForce = flatWheelForce - wheelForceDelta / 2f;
+                    var leftWheelForce = flatWheelForce + wheelForceDelta / 2f;
+                    var rightWheelForce = flatWheelForce - wheelForceDelta / 2f;
                     _controller.SetWheelForceFactors(leftWheelForce, rightWheelForce);
                 }
             }
@@ -196,7 +201,7 @@ namespace Maes.ExplorationAlgorithm
             }
         }
 
-        void ReceiveRosCmd(TwistMsg cmdVel)
+        private void ReceiveRosCmd(TwistMsg cmdVel)
         {
             _rosLinearSpeed = (float)cmdVel.linear.x;
             _rosRotationSpeed = (float)cmdVel.angular.z;
@@ -209,16 +214,16 @@ namespace Maes.ExplorationAlgorithm
 
             var robotPosition = (Vector2)(-_worldPosition.position);
 
-            info.AppendLine($"Robot ID: {this._robotRosId}");
-            info.AppendLine($"Namespace: {this._topicPrefix}");
+            info.AppendLine($"Robot ID: {_robotRosId}");
+            info.AppendLine($"Namespace: {_topicPrefix}");
             info.AppendLine($"Position: ({robotPosition.x},{robotPosition.y})");
             info.AppendLine($"Status: {Enum.GetName(typeof(RobotStatus), _controller.GetStatus())}");
-            info.AppendLine($"Is Colliding: {this._controller.IsCurrentlyColliding()}");
+            info.AppendLine($"Is Colliding: {_controller.IsCurrentlyColliding()}");
             info.AppendLine($"Number of nearby robots: {_controller.SenseNearbyRobots().Count}");
             info.AppendLine($"Number Incoming broadcast msg: {_controller.ReceiveBroadcast().Count}");
             info.AppendLine($"Number of nearby env tags: {_controller.ReadNearbyTags().Count}");
-            info.AppendLine($"rosLinearSpeed: {this._rosLinearSpeed}");
-            info.AppendLine($"rosRotationalSpeed: {this._rosRotationSpeed}");
+            info.AppendLine($"rosLinearSpeed: {_rosLinearSpeed}");
+            info.AppendLine($"rosRotationalSpeed: {_rosRotationSpeed}");
 
             return info.ToString();
         }

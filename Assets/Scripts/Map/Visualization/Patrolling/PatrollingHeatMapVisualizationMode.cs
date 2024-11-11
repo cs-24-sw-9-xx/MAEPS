@@ -44,11 +44,18 @@ namespace Maes.Map.Visualization.Patrolling
 
         private Color32 CellToColor(PatrollingCell cell, int currentTick)
         {
-            if (!cell.IsExplorable) return ExplorationVisualizer.SolidColor;
-            if (!cell.IsExplored) return ExplorationVisualizer.StandardCellColor;
+            if (!cell.IsExplorable)
+            {
+                return ExplorationVisualizer.SolidColor;
+            }
+
+            if (!cell.IsExplored)
+            {
+                return ExplorationVisualizer.StandardCellColor;
+            }
 
             var ticksSinceLastExplored = currentTick - cell.LastExplorationTimeInTicks;
-            float coldness = Mathf.Min((float)ticksSinceLastExplored / (float)_logicTicksBeforeCold, 1.0f);
+            var coldness = Mathf.Min((float)ticksSinceLastExplored / (float)_logicTicksBeforeCold, 1.0f);
             return Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
         }
     }

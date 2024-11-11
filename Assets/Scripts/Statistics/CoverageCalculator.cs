@@ -51,14 +51,14 @@ namespace Maes.Statistics
         private void FindCoverableTiles(SimulationMap<Tile> collisionMap)
         {
             // Register all coverable tiles
-            for (int x = 0; x < _explorationMap.WidthInTiles; x++)
+            for (var x = 0; x < _explorationMap.WidthInTiles; x++)
             {
-                for (int y = 0; y < _explorationMap.HeightInTiles; y++)
+                for (var y = 0; y < _explorationMap.HeightInTiles; y++)
                 {
                     var tileCells = collisionMap.GetTileByLocalCoordinate(x, y).GetTriangles();
                     var explorationCells = _explorationMap.GetTileByLocalCoordinate(x, y).GetTriangles();
 
-                    for (int i = 0; i < 8; i += 2)
+                    for (var i = 0; i < 8; i += 2)
                     {
                         // If any of the two triangles forming the 'mini-tile' are solid,
                         // then mark both triangles as non-coverable
@@ -66,7 +66,10 @@ namespace Maes.Statistics
                         var isSolid = Tile.IsWall(tileCells[i].Type) || Tile.IsWall(tileCells[i + 1].Type);
                         explorationCells[i].CanBeCovered = !isSolid;
                         explorationCells[i + 1].CanBeCovered = !isSolid;
-                        if (!isSolid) _coverableTiles++;
+                        if (!isSolid)
+                        {
+                            _coverableTiles++;
+                        }
                     }
                 }
             }
@@ -85,9 +88,9 @@ namespace Maes.Statistics
             var robotMiniTileCenterY = (float)Math.Truncate(robotWorldPos.y) + Mathf.Round(robotWorldPos.y - (float)Math.Truncate(robotWorldPos.y)) * 0.5f + ((robotWorldPos.y < 0) ? -0.25f : 0.25f);
             var robotMiniTilePos = new Vector2(robotMiniTileCenterX, robotMiniTileCenterY);
             // Loop through all tiles currently near the robot
-            for (int x = -1; x <= 1; x++)
+            for (var x = -1; x <= 1; x++)
             {
-                for (int y = -1; y <= 1; y++)
+                for (var y = -1; y <= 1; y++)
                 {
                     var tilePosition = robotMiniTilePos + new Vector2(x * 0.5f, y * 0.5f);
                     // ------------------------------------------------------------------------------------------------
@@ -110,8 +113,15 @@ namespace Maes.Statistics
                     _explorationMap.GetMiniTileTrianglesByWorldCoordinates(tilePosition);
 
                     // Skip non-coverable tiles
-                    if (!triangle1.Item2.CanBeCovered) continue;
-                    if (!triangle1.Item2.IsCovered) CoveredMiniTiles++; // Register first coverage of this tile
+                    if (!triangle1.Item2.CanBeCovered)
+                    {
+                        continue;
+                    }
+
+                    if (!triangle1.Item2.IsCovered)
+                    {
+                        CoveredMiniTiles++; // Register first coverage of this tile
+                    }
 
                     // Execute the given function on the two covered cells
                     preCoverageTileConsumer(triangle1.Item1, triangle1.Item2, triangle2.Item1, triangle2.Item2);

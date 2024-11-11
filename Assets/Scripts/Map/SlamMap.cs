@@ -105,8 +105,12 @@ namespace Maes.Map
         {
             var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
             for (var x = 0; x < _widthInTiles; x++)
+            {
                 for (var y = 0; y < _heightInTiles; y++)
+                {
                     tiles[x, y] = SlamTileStatus.Unseen;
+                }
+            }
 
             return tiles;
         }
@@ -133,7 +137,9 @@ namespace Maes.Map
         {
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
             if (_tiles[localCoordinate.x, localCoordinate.y] != SlamTileStatus.Solid)
+            {
                 _tiles[localCoordinate.x, localCoordinate.y] = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
+            }
         }
 
         public Vector2Int GetCurrentPosition()
@@ -200,7 +206,7 @@ namespace Maes.Map
         {
             if (Math.Abs(_robotConstraints.SlamPositionInaccuracy) < 0.0000001f)
             {
-                this.ApproximatePosition = worldPosition;
+                ApproximatePosition = worldPosition;
                 return;
             }
 
@@ -221,7 +227,7 @@ namespace Maes.Map
             var newYAprox = (float)newInaccuracy + worldPosition.y;
             _lastInaccuracyY = (float)newInaccuracy;
 
-            this.ApproximatePosition = new Vector2(newXAprox, newYAprox);
+            ApproximatePosition = new Vector2(newXAprox, newYAprox);
         }
 
         // Synchronizes the given slam maps to create a new one
@@ -231,18 +237,22 @@ namespace Maes.Map
 
             foreach (var map in maps)
             {
-                for (int x = 0; x < map._widthInTiles; x++)
+                for (var x = 0; x < map._widthInTiles; x++)
                 {
-                    for (int y = 0; y < map._heightInTiles; y++)
+                    for (var y = 0; y < map._heightInTiles; y++)
                     {
                         if (map._tiles[x, y] != SlamTileStatus.Unseen && globalMap[x, y] != SlamTileStatus.Solid)
+                        {
                             globalMap[x, y] = map._tiles[x, y];
+                        }
                     }
                 }
             }
 
             foreach (var map in maps)
+            {
                 map._tiles = (SlamTileStatus[,])globalMap.Clone();
+            }
 
             // Synchronize coarse maps
             CoarseGrainedMap.Synchronize(maps.Select(m => m.CoarseMap).ToList(), globalMap);
@@ -259,12 +269,14 @@ namespace Maes.Map
 
             foreach (var other in others)
             {
-                for (int x = 0; x < target._widthInTiles; x++)
+                for (var x = 0; x < target._widthInTiles; x++)
                 {
-                    for (int y = 0; y < target._heightInTiles; y++)
+                    for (var y = 0; y < target._heightInTiles; y++)
                     {
                         if (other._tiles[x, y] != SlamTileStatus.Unseen)
+                        {
                             globalMap[x, y] = target._tiles[x, y];
+                        }
                     }
                 }
             }
@@ -282,12 +294,14 @@ namespace Maes.Map
         {
             var res = new Dictionary<Vector2Int, SlamTileStatus>();
 
-            for (int x = 0; x < _widthInTiles; x++)
+            for (var x = 0; x < _widthInTiles; x++)
             {
-                for (int y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < _heightInTiles; y++)
                 {
                     if (_tiles[x, y] != SlamTileStatus.Unseen)
+                    {
                         res[new Vector2Int(x, y)] = _tiles[x, y];
+                    }
                 }
             }
 
@@ -352,9 +366,14 @@ namespace Maes.Map
         private SlamTileStatus AggregateStatusOptimistic(SlamTileStatus status1, SlamTileStatus status2)
         {
             if (status1 == SlamTileStatus.Solid || status2 == SlamTileStatus.Solid)
+            {
                 return SlamTileStatus.Solid;
+            }
+
             if (status1 == SlamTileStatus.Open || status2 == SlamTileStatus.Open)
+            {
                 return SlamTileStatus.Open;
+            }
 
             return SlamTileStatus.Unseen;
         }
@@ -406,7 +425,9 @@ namespace Maes.Map
             var path = _pathFinder.GetPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
 
             if (path == null)
+            {
                 return null;
+            }
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
@@ -420,7 +441,9 @@ namespace Maes.Map
             var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
 
             if (path == null)
+            {
                 return null;
+            }
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
@@ -434,7 +457,10 @@ namespace Maes.Map
             return CoarseMap;
         }
 
-        public SlamTileStatus[,] GetTileStatuses() => _tiles;
+        public SlamTileStatus[,] GetTileStatuses()
+        {
+            return _tiles;
+        }
 
         public VisibleTilesCoarseMap GetVisibleTilesCoarseMap()
         {

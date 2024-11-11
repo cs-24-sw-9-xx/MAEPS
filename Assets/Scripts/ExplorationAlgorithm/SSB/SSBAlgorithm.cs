@@ -110,14 +110,16 @@ namespace Maes.ExplorationAlgorithm.SSB
                 var count = Enumerable.Range(0, 50)
                     .SelectMany(x => Enumerable.Range(0, 50).Select(y => new Vector2Int(x, y)))
                     .Where(v => !_map.IsTileExplored(v) && _map.GetTileStatus(v) == SlamMap.SlamTileStatus.Open);
-                Debug.Log(String.Join(",", count));
+                Debug.Log(string.Join(",", count));
             }
 
             // Only triggered upon initial ticks of the simulation
             if (!_hasPerformedInitialReservation)
             {
                 if (_reservationSystem.IsTileReservedByThisRobot(_map.GetCurrentTile()))
+                {
                     _hasPerformedInitialReservation = true;
+                }
                 else
                 {
                     _reservationSystem.Reserve(new HashSet<Vector2Int>() { _map.GetCurrentTile() });
@@ -127,8 +129,12 @@ namespace Maes.ExplorationAlgorithm.SSB
 
             // If in wait mode 
             _ticksToWait--;
-            if (_ticksToWait < 0) _ticksToWait = 0;
-            int tickCount = 0;
+            if (_ticksToWait < 0)
+            {
+                _ticksToWait = 0;
+            }
+
+            var tickCount = 0;
 
             if (_controller.HasCollidedSinceLastLogicTick())
             {
@@ -144,14 +150,20 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
 
                 if (_currentState == State.Backtracking)
+                {
                     PerformBackTrack();
+                }
 
                 if (_currentState == State.Spiraling)
+                {
                     PerformSpiraling();
+                }
 
                 tickCount++;
                 if (tickCount > 50)
+                {
                     throw new Exception($"Robot {RobotID()} has entered an infinite update loop");
+                }
             }
         }
 
@@ -177,7 +189,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 var response = msg.Process(this);
                 // If processing of the message prompts a response then broadcast it 
                 if (response != null)
+                {
                     _controller.Broadcast(response);
+                }
             }
         }
 
@@ -234,7 +248,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                     _backtrackTarget = FindBestBackTrackingTarget();
                     // If no local backtracking points could be found either, then wait till next tick
                     if (_backtrackTarget == null)
+                    {
                         _ticksToWait = 1;
+                    }
                 }
                 else if (_tickOfLastRequestSentByThisRobot == _currentTick - 1)
                 {
@@ -342,7 +358,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             // Check if the robot needs to move to reach next step target 
             var relativeTarget = _map.GetTileCenterRelativePosition(_nextBackTrackStep!.End);
             if (relativeTarget.Distance > 0.2f)
+            {
                 MoveTo(relativeTarget);
+            }
             else
             {
                 // This part of the back track path has been completed
@@ -443,21 +461,28 @@ namespace Maes.ExplorationAlgorithm.SSB
             // Also attempts to predict path and reserve in advance
             var predictedTiles = EstimateSpiralPathBeforeTurning(5);
             if (predictedTiles.Count == 0)
+            {
                 throw new Exception("Cannot reserve future spiral path because tiles straight ahead are blocked");
+            }
 
             // Count how many tiles are already reserved
             var reservedTiles = 0;
             foreach (var futureTile in predictedTiles)
             {
                 if (!_reservationSystem.IsTileReservedByThisRobot(futureTile))
+                {
                     break;
+                }
+
                 reservedTiles++;
             }
 
             // At minimum the next two tiles should be reserved in advance (unless only one tile remains)
             var minimumReservations = Math.Min(2, predictedTiles.Count);
             if (reservedTiles >= minimumReservations)
+            {
                 return true;
+            }
 
             // Otherwise attempt to reserve the next part of the path now
             var maximumReservations = 5;
@@ -501,7 +526,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             foreach (var direction in directions)
             {
                 if (IsTileBlocked(_map.GetGlobalNeighbour(direction)))
+                {
                     continue;
+                }
 
                 // If this tile is open and the left neighbour is blocked, start spiraling along the left wall 
                 if (IsTileBlocked(_map.GetGlobalNeighbour(direction.GetRelativeDirection(Left))))
@@ -535,7 +562,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 .GetTileCenterRelativePosition(_map.GetGlobalNeighbour(targetDirection));
             // Assert that we are pointed in the right direction
             if (Mathf.Abs(targetRelativePosition.RelativeAngle) <= 1.5f)
+            {
                 return true;
+            }
 
             // otherwise rotate to face the target tile
             _controller.Rotate(targetRelativePosition.RelativeAngle);
@@ -558,7 +587,9 @@ namespace Maes.ExplorationAlgorithm.SSB
         private bool IsTileBlocked(Vector2Int tileCoord)
         {
             if (_map.GetTileStatus(tileCoord) == SlamMap.SlamTileStatus.Solid)
+            {
                 return true; // physically blocked
+            }
 
             // Return virtual blocked status (true if either explored or reserved by another robot)
             return _map.IsTileExplored(tileCoord) || _reservationSystem.IsTileReservedByOtherRobot(tileCoord);
@@ -567,7 +598,9 @@ namespace Maes.ExplorationAlgorithm.SSB
         private void MoveTo(RelativePosition relativePosition)
         {
             if (Mathf.Abs(relativePosition.RelativeAngle) > 1.5f)
+            {
                 _controller.Rotate(relativePosition.RelativeAngle);
+            }
             else
             {
                 _controller.Move(relativePosition.Distance);
@@ -604,7 +637,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 var path = _map.GetPathSteps(bp);
                 if (path != null)
+                {
                     return bp;
+                }
             }
 
             return null;
@@ -615,14 +650,18 @@ namespace Maes.ExplorationAlgorithm.SSB
         {
             var currentTile = _map.GetCurrentTile();
             if (!IsTileBlocked(currentTile) && !existingBPs.Contains(currentTile))
+            {
                 return currentTile;
+            }
 
             // Try to find one
             foreach (var direction in GetCardinalAndOrdinalDirections())
             {
                 var candidateTile = currentTile + direction.Vector;
                 if (!existingBPs.Contains(candidateTile) && !IsTileBlocked(candidateTile))
+                {
                     return candidateTile;
+                }
             }
 
             return null;
@@ -645,37 +684,71 @@ namespace Maes.ExplorationAlgorithm.SSB
                 // Special cases where spiraling is blocked by reserved tiled from backtracking robots,
                 // but not explored or solid. In this case we should always add these points to the bp candidates as
                 // the other robot may not mark them as explored
-                if (!IsTileSolidOrExplored(front)) _backTrackingPoints.Add(front);
-                if (!IsTileSolidOrExplored(rls)) _backTrackingPoints.Add(rls);
-                if (!IsTileSolidOrExplored(ols)) _backTrackingPoints.Add(ols);
+                if (!IsTileSolidOrExplored(front))
+                {
+                    _backTrackingPoints.Add(front);
+                }
+
+                if (!IsTileSolidOrExplored(rls))
+                {
+                    _backTrackingPoints.Add(rls);
+                }
+
+                if (!IsTileSolidOrExplored(ols))
+                {
+                    _backTrackingPoints.Add(ols);
+                }
+
                 return null; // No more open tiles left. Spiraling has finished
             }
 
             // The following is the spiral algorithm specified by the bsa paper
             if (!rlsBlocked)
+            {
                 return _map.GetRelativeNeighbour(_referenceLateralSide);
-            if (!IsTileSolidOrExplored(rls)) _backTrackingPoints.Add(rls);
+            }
+
+            if (!IsTileSolidOrExplored(rls))
+            {
+                _backTrackingPoints.Add(rls);
+            }
 
             if (frontTileBlocked)
             {
-                if (!IsTileSolidOrExplored(front)) _backTrackingPoints.Add(front);
+                if (!IsTileSolidOrExplored(front))
+                {
+                    _backTrackingPoints.Add(front);
+                }
+
                 return _map.GetRelativeNeighbour(_oppositeLateralSide);
             }
 
-            if (!IsTileSolidOrExplored(ols)) _backTrackingPoints.Add(ols);
+            if (!IsTileSolidOrExplored(ols))
+            {
+                _backTrackingPoints.Add(ols);
+            }
+
             return _map.GetRelativeNeighbour(Front);
         }
 
         private RelativeDirection? GetSpiralTargetDirection(bool frontBlocked, bool rlsBlocked, bool olsBlocked)
         {
             if (frontBlocked && rlsBlocked && olsBlocked)
+            {
                 return null; // No more open tiles left. Spiraling has finished
+            }
 
             // The following is the spiral algorithm specified by the bsa paper
             if (!rlsBlocked)
+            {
                 return _referenceLateralSide;
+            }
+
             if (frontBlocked)
+            {
                 return _oppositeLateralSide;
+            }
+
             return Front;
         }
 
@@ -687,13 +760,17 @@ namespace Maes.ExplorationAlgorithm.SSB
             if (!IsSolidOrExplored(Right))
             {
                 if (IsSolidOrExplored(Front) || IsSolidOrExplored(FrontRight) || IsSolidOrExplored(RearRight))
+                {
                     _backTrackingPoints.Add(_map.GetRelativeNeighbour(Right));
+                }
             }
 
             if (!IsSolidOrExplored(Left))
             {
                 if (IsSolidOrExplored(Front) || IsSolidOrExplored(FrontLeft) || IsSolidOrExplored(RearLeft))
+                {
                     _backTrackingPoints.Add(_map.GetRelativeNeighbour(Left));
+                }
             }
         }
 
@@ -702,17 +779,19 @@ namespace Maes.ExplorationAlgorithm.SSB
         private int? SimulateSpiraling(int maxCost = 100)
         {
             if (_currentState != State.Spiraling)
+            {
                 throw new Exception("Illegal state. Can only call SimulateSpiraling when in spiraling mode");
+            }
 
             // Number of tiles left to traverse
-            int cost = 1;
+            var cost = 1;
 
-            HashSet<Vector2Int> simulatedExplored = new HashSet<Vector2Int>();
+            var simulatedExplored = new HashSet<Vector2Int>();
 
             var simulatedSpiralTile = _nextSpiralTarget ?? _map.GetCurrentTile();
             // Default to current tile
-            int stepsSinceRotating = 0;
-            int maxStepsBeforeRotating = 20;
+            var stepsSinceRotating = 0;
+            var maxStepsBeforeRotating = 20;
 
             var simulatedDirection = DirectionFromDegrees(_map.GetApproximateGlobalDegrees());
             while (cost < maxCost)
@@ -728,7 +807,9 @@ namespace Maes.ExplorationAlgorithm.SSB
 
                 var nextDirection = GetSpiralTargetDirection(frontBlocked, rlsBlocked, olsBlocked);
                 if (nextDirection == null) // Spiralling successfully terminated
+                {
                     return cost;
+                }
 
                 if (nextDirection == Front)
                 {
@@ -736,7 +817,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                     // If going too far in a straight line, we have probably exited the map
                     // or the spiral is too big to simulate
                     if (stepsSinceRotating > maxStepsBeforeRotating)
+                    {
                         return null;
+                    }
                 }
                 else
                 {
@@ -770,15 +853,18 @@ namespace Maes.ExplorationAlgorithm.SSB
             _map = _controller.GetSlamMap().GetCoarseMap();
         }
 
-        private int RobotID() => _controller.GetRobotID();
+        private int RobotID()
+        {
+            return _controller.GetRobotID();
+        }
 
         public string GetDebugInfo()
         {
             return $"State: {Enum.GetName(typeof(State), _currentState)}" +
                    $"\nCoarse Map Position: {_map.GetApproximatePosition()}" +
-                   $"\nBPs: [{String.Join(", ", _backTrackingPoints.Select(bp => bp.ToString()))}]" +
-                   $"\nTemp BPs: [{String.Join(", ", _bpsFoundThisSpiralPhase.Select(bp => bp.ToString()))}]" +
-                   $"\nReserved tiles: [{String.Join(", ", _reservationSystem.GetTilesReservedByThisRobot())}]" +
+                   $"\nBPs: [{string.Join(", ", _backTrackingPoints.Select(bp => bp.ToString()))}]" +
+                   $"\nTemp BPs: [{string.Join(", ", _bpsFoundThisSpiralPhase.Select(bp => bp.ToString()))}]" +
+                   $"\nReserved tiles: [{string.Join(", ", _reservationSystem.GetTilesReservedByThisRobot())}]" +
                    $"\nBacktracking target: {_backtrackTarget}";
         }
 
@@ -802,7 +888,7 @@ namespace Maes.ExplorationAlgorithm.SSB
                 {
                     // This case occurs when this robot has sent a bp request at the same time that another robot has
                     // sent one. Determine which one to discard based on the robots' ids
-                    if (this._requestingRobot < algorithm._controller.GetRobotID())
+                    if (_requestingRobot < algorithm._controller.GetRobotID())
                     {
                         // Discard this request received by the other robot, as it has a lower id than this robot 
                         return null;
@@ -815,7 +901,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 // Debug.Log($"Robot {algorithm._controller.GetRobotID()} received bp request. Broadcasting {algorithm._backTrackingPoints.Count} bps");
 
                 if (algorithm._backTrackingPoints.Count == 0)
+                {
                     return null; // No BPs to share
+                }
 
                 // Respond to the request by sending all bps found by this robot
                 return new BackTrackingPointsMessage(_requestingRobot, new HashSet<Vector2Int>(algorithm._backTrackingPoints));
@@ -826,7 +914,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 // In case of multiple simultaneous request messages use
                 // one the one issued by the robot with the highest id 
                 if (other is RequestMessage otherRequestMsg)
-                    return otherRequestMsg._requestingRobot > this._requestingRobot ? otherRequestMsg : this;
+                {
+                    return otherRequestMsg._requestingRobot > _requestingRobot ? otherRequestMsg : this;
+                }
 
                 return null;
             }
@@ -859,7 +949,7 @@ namespace Maes.ExplorationAlgorithm.SSB
                 {
                     // This case occurs when this robot has sent a bp request at the same time that another robot has
                     // sent one. Determine which one to discard based on the robots' ids
-                    if (this.RequestingRobot < algorithm._controller.GetRobotID())
+                    if (RequestingRobot < algorithm._controller.GetRobotID())
                     {
                         // Discard this request received by the other robot, as it has a lower id than this robot 
                         return null;
@@ -869,7 +959,9 @@ namespace Maes.ExplorationAlgorithm.SSB
 
                 // If this robot the one that requested the BPs then do not respond to this message
                 if (RequestingRobot == algorithm._controller.GetRobotID())
+                {
                     return null;
+                }
 
                 var bids = algorithm.GenerateBids(algorithm._backTrackingPoints);
 
@@ -882,7 +974,7 @@ namespace Maes.ExplorationAlgorithm.SSB
                 if (other is BackTrackingPointsMessage bpMessage)
                 {
                     // Resolve potential conflict in case of multiple simultaneous auctions
-                    if (bpMessage.RequestingRobot > this.RequestingRobot)
+                    if (bpMessage.RequestingRobot > RequestingRobot)
                     {
                         bpMessage.BackTrackingPoints.UnionWith(bpMessage.BackTrackingPoints);
                         return bpMessage;
@@ -902,15 +994,19 @@ namespace Maes.ExplorationAlgorithm.SSB
         // Generates a series of bids for each of the given backtracking points
         private List<Bid> GenerateBids(HashSet<Vector2Int> backTrackingPoints)
         {
-            List<Bid> bids = new List<Bid>();
+            var bids = new List<Bid>();
 
             int? spiralFinishCost = 0;
             if (_currentState == State.Spiraling)
+            {
                 spiralFinishCost = SimulateSpiraling();
+            }
 
             // Spiraling could not be fully simulated - No bids
             if (spiralFinishCost == null)
+            {
                 return bids;
+            }
 
             var robotPosInt = _map.GetCurrentTile();
 
@@ -988,7 +1084,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 _requestingRobot = requestingRobot;
                 foreach (var robotBid in robotBids)
+                {
                     _allBids.Add(robotBid.BP, new List<Bid>() { robotBid });
+                }
             }
 
             // Process bids by calculating winner through auction
@@ -996,7 +1094,9 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 // This message is ignored if this robot was not the one to start the auction
                 if (_requestingRobot != algorithm._controller.GetRobotID())
+                {
                     return null;
+                }
 
                 //Debug.Log($"[{algorithm._currentTick}] Auction processed by robot: {algorithm._controller.GetRobotID()}");
 
@@ -1004,7 +1104,9 @@ namespace Maes.ExplorationAlgorithm.SSB
                 foreach (var ownBid in algorithm.GenerateBids(algorithm._backTrackingPoints))
                 {
                     if (!_allBids.ContainsKey(ownBid.BP))
+                    {
                         _allBids.Add(ownBid.BP, new List<Bid>());
+                    }
 
                     _allBids[ownBid.BP].Add(ownBid);
                 }
@@ -1029,14 +1131,18 @@ namespace Maes.ExplorationAlgorithm.SSB
                     foreach (var entry in bidQueues)
                     {
                         if (entry.Value.Count == 0)
+                        {
                             continue; // No more bids left for this tile
+                        }
 
                         var newBid = entry.Value.Peek();
                         if (!bestBids.TryAdd(newBid.RobotId, newBid))
                         {
                             // Skip if this is already registered as the current best bid for this robot
                             if (bestBids[newBid.RobotId] == entry.Value.Peek())
+                            {
                                 continue;
+                            }
 
                             fixedPointReached = false;
                             if (newBid.Cost < bestBids[newBid.RobotId].Cost)
@@ -1075,13 +1181,18 @@ namespace Maes.ExplorationAlgorithm.SSB
                 {
                     // This message can be ignored if this robot was not the one to start the auction
                     if (_requestingRobot != algorithm._controller.GetRobotID())
+                    {
                         return this;
+                    }
 
                     // Adds all bids from the other message into this one
                     foreach (var entry in bidMessage._allBids)
                     {
                         if (!_allBids.ContainsKey(entry.Key))
+                        {
                             _allBids.Add(entry.Key, new List<Bid>());
+                        }
+
                         _allBids[entry.Key].AddRange(entry.Value);
                     }
 
@@ -1125,7 +1236,10 @@ namespace Maes.ExplorationAlgorithm.SSB
             {
                 // There should never be more than one auction result message at a time
                 if (other is AuctionResultsMessage)
+                {
                     throw new Exception("Illegal state. Multiple auction results received simultaneously");
+                }
+
                 return null;
             }
         }

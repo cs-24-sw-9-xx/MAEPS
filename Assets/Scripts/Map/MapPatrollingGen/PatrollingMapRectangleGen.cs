@@ -15,9 +15,9 @@ namespace Maes.Map.MapPatrollingGen
             var width = simulationMap.WidthInTiles;
             var height = simulationMap.HeightInTiles;
 
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
                     var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];

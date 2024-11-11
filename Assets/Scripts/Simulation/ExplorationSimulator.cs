@@ -10,7 +10,10 @@ namespace Maes.Simulation
 {
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        protected override GameObject LoadSimulatorGameObject() => Resources.Load<GameObject>("Exploration_MAEPS");
+        protected override GameObject LoadSimulatorGameObject()
+        {
+            return Resources.Load<GameObject>("Exploration_MAEPS");
+        }
 
         /// <summary>
         /// This method is used to start the simulation in a predefined configuration that will change depending on	

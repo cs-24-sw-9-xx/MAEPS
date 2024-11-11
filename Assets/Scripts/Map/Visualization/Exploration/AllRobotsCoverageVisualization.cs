@@ -70,7 +70,11 @@ namespace Maes.Map.Visualization.Exploration
 
         private static Color32 ExplorationCellToColor(ExplorationCell cell)
         {
-            if (!cell.CanBeCovered) return ExplorationVisualizer.SolidColor;
+            if (!cell.CanBeCovered)
+            {
+                return ExplorationVisualizer.SolidColor;
+            }
+
             return (cell.IsCovered) ? ExplorationVisualizer.CoveredColor : ExplorationVisualizer.StandardCellColor;
         }
     }

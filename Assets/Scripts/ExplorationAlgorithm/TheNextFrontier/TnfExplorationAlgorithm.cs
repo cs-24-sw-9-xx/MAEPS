@@ -201,7 +201,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
                     _isCommunicating = true;
                     if (_path != null && _path.Count > 0)
                     {
-                        PathStep lastStep = _path.Last.Value;
+                        var lastStep = _path.Last.Value;
                         _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), (Vector2)lastStep.End));
                     }
                     else
@@ -276,7 +276,11 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
 
         private void CollisionMitigation()
         {
-            if (_robotController.GetStatus() != RobotStatus.Idle) return;
+            if (_robotController.GetStatus() != RobotStatus.Idle)
+            {
+                return;
+            }
+
             if (_bonked)
             {
                 _bonked = false;
@@ -506,9 +510,9 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
                     edges.Remove(next);
                     frontier.Add(next);
                     fCellCount++;
-                    for (int x = next.Item1.x - 1; x <= next.Item1.x + 1; x++)
+                    for (var x = next.Item1.x - 1; x <= next.Item1.x + 1; x++)
                     {
-                        for (int y = next.Item1.y - 1; y <= next.Item1.y + 1; y++)
+                        for (var y = next.Item1.y - 1; y <= next.Item1.y + 1; y++)
                         {
                             var position = new Vector2Int(x, y);
                             if (edges.Any(e => e.Item1 == position))

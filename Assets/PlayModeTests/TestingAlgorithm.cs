@@ -40,7 +40,7 @@ namespace PlayModeTests
 
         public void SetController(Robot2DController controller)
         {
-            this.Controller = controller;
+            Controller = controller;
         }
 
         public string GetDebugInfo()

@@ -51,7 +51,10 @@ namespace Maes.UI
         public void UpdateButtonsUI(SimulationPlayState currentState)
         {
             // Do not change ui for the duration of the step
-            if (currentState == SimulationPlayState.Step) return;
+            if (currentState == SimulationPlayState.Step)
+            {
+                return;
+            }
 
             pauseButton.image.color = (currentState == SimulationPlayState.Paused) ? Color.green : Color.white;
             playButton.image.color = (currentState == SimulationPlayState.Play) ? Color.green : Color.white;

@@ -344,9 +344,13 @@ namespace Maes.Map.MapGen
             {
                 var type = wallVertices[i].Type;
                 if (wallIndexType.ContainsKey(type))
+                {
                     wallIndexType[type].Add(i);
+                }
                 else
+                {
                     wallIndexType[type] = new List<int> { i };
+                }
             }
 
             var startVertexIndex = 0;
@@ -414,27 +418,47 @@ namespace Maes.Map.MapGen
                 // 1 points:
                 case 0b001:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.Center, square.CentreBottom, square.BottomLeft, square.CentreLeft);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.CentreLeft, square.CentreBottom, square.BottomLeft);
+                    }
+
                     break;
                 case 0b0010:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.CentreRight, square.BottomRight, square.CentreBottom, square.Center);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.BottomRight, square.CentreBottom, square.CentreRight);
+                    }
+
                     break;
                 case 0b0100:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.TopRight, square.CentreRight, square.Center, square.CentreTop);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.TopRight, square.CentreRight, square.CentreTop);
+                    }
+
                     break;
                 case 0b1000:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.TopLeft, square.CentreTop, square.Center, square.CentreLeft);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.TopLeft, square.CentreTop, square.CentreLeft);
+                    }
+
                     break;
 
                 // 2 points:
@@ -462,35 +486,55 @@ namespace Maes.Map.MapGen
                 // 3 point:
                 case 0b0111:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.Center, square.CentreTop, square.TopRight, square.BottomRight,
                             square.BottomLeft, square.CentreLeft);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.CentreTop, square.TopRight, square.BottomRight, square.BottomLeft,
                             square.CentreLeft);
+                    }
+
                     break;
                 case 0b1011:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.Center, square.CentreRight, square.BottomRight, square.BottomLeft,
                             square.TopLeft, square.CentreTop);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.TopLeft, square.CentreTop, square.CentreRight, square.BottomRight,
                             square.BottomLeft);
+                    }
+
                     break;
                 case 0b1101:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.Center, square.CentreBottom, square.BottomLeft, square.TopLeft,
                             square.TopRight, square.CentreRight);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.TopLeft, square.TopRight, square.CentreRight, square.CentreBottom,
                             square.BottomLeft);
+                    }
+
                     break;
                 case 0b1110:
                     if (removeRoundedCorners)
+                    {
                         MeshFromPoints(isMesh3D, square.Center, square.CentreLeft, square.TopLeft, square.TopRight,
                             square.BottomRight, square.CentreBottom);
+                    }
                     else
+                    {
                         MeshFromPoints(isMesh3D, square.TopLeft, square.TopRight, square.BottomRight, square.CentreBottom,
                             square.CentreLeft);
+                    }
+
                     break;
 
                 // 4 point:
@@ -521,13 +565,24 @@ namespace Maes.Map.MapGen
             AssignIndexesToVertices(points, isMesh3D);
 
             if (points.Length >= 3)
+            {
                 CreateTriangle(points[0], points[1], points[2], isMesh3D);
+            }
+
             if (points.Length >= 4)
+            {
                 CreateTriangle(points[0], points[2], points[3], isMesh3D);
+            }
+
             if (points.Length >= 5)
+            {
                 CreateTriangle(points[0], points[3], points[4], isMesh3D);
+            }
+
             if (points.Length >= 6)
+            {
                 CreateTriangle(points[0], points[4], points[5], isMesh3D);
+            }
         }
 
         private void AssignIndexesToVertices(IEnumerable<Node> points, bool isMesh3D)
@@ -537,12 +592,17 @@ namespace Maes.Map.MapGen
                 if (point.VertexIndex != -1)
                 {
                     if (!Tile.IsWall(_vertices2D[point.VertexIndex].Type) && Tile.IsWall(point.Type))
+                    {
                         _vertices2D[point.VertexIndex].Type = point.Type;
+                    }
+
                     continue;
                 }
                 point.VertexIndex = isMesh3D ? _vertices3D.Count : _vertices2D.Count;
                 if (isMesh3D)
+                {
                     _vertices3D.Add(point);
+                }
                 else
                 {
                     // The map is rotated in 2d mode                                                             
@@ -559,7 +619,9 @@ namespace Maes.Map.MapGen
             var triangle = new Triangle(a, b, c);
 
             if (!triangles.ContainsKey(triangle.Type))
+            {
                 triangles[triangle.Type] = new List<int>();
+            }
 
             triangles[triangle.Type].Add(triangle.VertexA.VertexIndex);
             triangles[triangle.Type].Add(triangle.VertexB.VertexIndex);
@@ -594,12 +656,17 @@ namespace Maes.Map.MapGen
             for (var vertexIndex = 0; vertexIndex < vertices.Count; vertexIndex++)
             {
                 if (checkedVertices.Contains(vertexIndex))
+                {
                     continue;
+                }
 
                 var vertex = vertices[vertexIndex];
                 var newOutlineVertex = GetConnectedOutlineVertexIndex(vertex, isMesh3D);
                 if (newOutlineVertex == -1)
+                {
                     continue;
+                }
+
                 checkedVertices.Add(vertexIndex);
 
                 var newOutline = new List<Node> { vertex };
@@ -642,9 +709,14 @@ namespace Maes.Map.MapGen
                     var vertexB = triangle[j];
                     var isChecked = isMesh3D ? _checkedVertices3D.Contains(vertexB.VertexIndex) : _checkedVertices2D.Contains(vertexB.VertexIndex);
                     if (vertexB == vertexA || isChecked)
+                    {
                         continue;
+                    }
+
                     if (IsOutlineEdge(vertexA.VertexIndex, vertexB.VertexIndex, isMesh3D))
+                    {
                         return vertexB.VertexIndex;
+                    }
                 }
             }
             return -1;
@@ -660,7 +732,10 @@ namespace Maes.Map.MapGen
             for (var i = 0; i < trianglesContainingVertexA.Count; i++)
             {
                 if (!trianglesContainingVertexA[i].Contains(vertexIndexB))
+                {
                     continue;
+                }
+
                 sharedTriangleCount++;
                 if (sharedTriangleCount > 1)
                 {
@@ -800,13 +875,24 @@ namespace Maes.Map.MapGen
                 // this way we can deduct the configuration from the active nodes
                 // like below.
                 if (TopLeft.IsWall)
+                {
                     Configuration += 0b1000;
+                }
+
                 if (TopRight.IsWall)
+                {
                     Configuration += 0b0100;
+                }
+
                 if (BottomRight.IsWall)
+                {
                     Configuration += 0b0010;
+                }
+
                 if (BottomLeft.IsWall)
+                {
                     Configuration += 0b0001;
+                }
             }
         }
 

@@ -55,7 +55,11 @@ namespace Maes.Utilities
         public static float GetAngleRelativeToX(this Vector2 vector)
         {
             var angle = Vector2.SignedAngle(Vector2.right, vector);
-            if (angle < 0) angle = 360 + angle;
+            if (angle < 0)
+            {
+                angle = 360 + angle;
+            }
+
             return angle;
         }
 

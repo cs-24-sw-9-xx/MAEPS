@@ -65,10 +65,10 @@ namespace Maes.Statistics
         {
             _vertices.Clear();
             var vertexDistance = 1f / ResolutionMultiplier;
-            for (int y = 0; y < _heightInTiles; y++)
+            for (var y = 0; y < _heightInTiles; y++)
             {
                 var translatedY = y + _offset.y;
-                for (int x = 0; x < _widthInTiles; x++)
+                for (var x = 0; x < _widthInTiles; x++)
                 {
                     var translatedX = x + _offset.x;
                     AddTileTriangleVertices(translatedX, translatedY, vertexDistance);
@@ -128,14 +128,16 @@ namespace Maes.Statistics
         {
             _triangles.Clear();
             // The vertices are already arranged in the correct order (ie. triangle 0 has vertices indexed 0, 1, 2)
-            for (int i = 0; i < _vertices.Count; i++)
+            for (var i = 0; i < _vertices.Count; i++)
+            {
                 _triangles.Add(i);
+            }
         }
 
         // Colors each triangle depending on its current state
         private void InitializeColors(SimulationMap<TCell> newMap)
         {
-            foreach ((int index, TCell cell) in newMap)
+            foreach ((var index, var cell) in newMap)
             {
                 var vertexIndex = index * 3;
                 var color = InitializeCellColor(cell);

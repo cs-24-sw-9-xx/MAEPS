@@ -19,7 +19,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.Collections.Generic;
 
 using Maes.Map;
@@ -175,7 +174,7 @@ namespace Maes.Robot
         /// <summary>
         /// Returns debugging info specific to the controller implementation.
         /// </summary>
-        String GetDebugInfo();
+        string GetDebugInfo();
 
         /// <summary>
         /// Senses robots within range (configured in the simulation's <see cref="RobotConstraints"/>).

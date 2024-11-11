@@ -35,13 +35,19 @@ namespace Maes.Robot.Task
         private float _previousRotation;
 
         private bool _isCompleted;
-        public bool IsCompleted() => _isCompleted;
+        public bool IsCompleted()
+        {
+            return _isCompleted;
+        }
 
         public FiniteRotationTask(Transform robotTransform, float degreesToRotate)
         {
             if (degreesToRotate < -180f || degreesToRotate > 180f)
+            {
                 throw new ArgumentException($"Given rotation must be between -180° and 180° " +
                                             $"but target rotation was {degreesToRotate}");
+            }
+
             _degreesToRotate = degreesToRotate;
             _robotTransform = robotTransform;
             _startingAngle = robotTransform.rotation.eulerAngles.z;
@@ -49,7 +55,10 @@ namespace Maes.Robot.Task
 
         public MovementDirective GetNextDirective()
         {
-            if (_isCompleted) return MovementDirective.NoMovement();
+            if (_isCompleted)
+            {
+                return MovementDirective.NoMovement();
+            }
 
             // Find the current amount of rotation since starting the task
             var absRotation = GetAbsoluteDegreesRotated();
@@ -62,8 +71,8 @@ namespace Maes.Robot.Task
             var remainingRotation = Math.Abs(_degreesToRotate) - absRotation;
 
             // Calculate how often we need 
-            int stopTimeTicks = GetStopTime(currentRotationRate);
-            float degreesRotatedBeforeStop = GetDegreesRotated(currentRotationRate, stopTimeTicks);
+            var stopTimeTicks = GetStopTime(currentRotationRate);
+            var degreesRotatedBeforeStop = GetDegreesRotated(currentRotationRate, stopTimeTicks);
 
             // Calculate how far the robot is from reaching the target rotation if we stop applying force now
             var targetDelta = remainingRotation - degreesRotatedBeforeStop;
@@ -86,7 +95,10 @@ namespace Maes.Robot.Task
             }
 
             // Determine rotation direction
-            if (_degreesToRotate > 0) forceMultiplier *= -1;
+            if (_degreesToRotate > 0)
+            {
+                forceMultiplier *= -1;
+            }
 
             return new MovementDirective(forceMultiplier, -forceMultiplier);
         }
@@ -107,7 +119,7 @@ namespace Maes.Robot.Task
             //return (float) (-3.81 * currentRotationRate * Math.Pow(Math.E, -(1f / 3.81f) * ticks) + offset) - currentRotationRate;
 
             var rotation = 0f;
-            for (int i = 0; i < ticks; i++)
+            for (var i = 0; i < ticks; i++)
             {
                 rotation += GetRotationRate(currentRotationRate, i + 1);
             }

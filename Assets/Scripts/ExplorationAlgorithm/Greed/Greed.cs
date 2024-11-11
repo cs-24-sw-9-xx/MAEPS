@@ -139,14 +139,20 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_controller.IsCurrentlyColliding())
             {
                 if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
+                {
                     _controller.StopCurrentTask();
+                }
                 else
                 {
                     var openTile = _map.GetNearestTileFloodFill(_position, SlamTileStatus.Open);
                     if (openTile.HasValue)
+                    {
                         _controller.MoveTo(openTile.Value);
+                    }
                     else
+                    {
                         _controller.Move(1, true);
+                    }
                 }
                 _waypoint = null;
                 return;
@@ -183,7 +189,9 @@ namespace Maes.ExplorationAlgorithm.Greed
                     if (_logicTicks % 10 == 0)
                     {
                         if (_previousPosition == _position)
+                        {
                             _deadlockTimer++;
+                        }
                         else
                         {
                             _previousPosition = _position;
@@ -215,9 +223,13 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_logicTicks % 10 == 0)
             {
                 if (_previousPosition == _position)
+                {
                     _deadlockTimer++;
+                }
                 else
+                {
                     _deadlockTimer = 0;
+                }
             }
             _previousPosition = _position;
         }

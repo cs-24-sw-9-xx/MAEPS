@@ -56,8 +56,12 @@ namespace Maes.Map
             HeightInTiles = heightInTiles;
             _tiles = new SimulationMapTile<TCell>[widthInTiles, heightInTiles];
             for (var x = 0; x < widthInTiles; x++)
+            {
                 for (var y = 0; y < heightInTiles; y++)
+                {
                     _tiles[x, y] = new SimulationMapTile<TCell>(cellFactory);
+                }
+            }
         }
 
         // Private constructor for a pre-specified set of tiles. This is used in the FMap function
@@ -80,18 +84,22 @@ namespace Maes.Map
             var triangles = tile.GetTriangles();
             var mainTriangleIndex = tile.CoordinateDecimalsToTriangleIndex(localCoordinate.x % 1.0f, localCoordinate.y % 1.0f);
             // Calculate the number of triangles preceding this tile
-            int triangleOffset = ((int)localCoordinate.x) * 8 + ((int)localCoordinate.y) * WidthInTiles * 8;
+            var triangleOffset = ((int)localCoordinate.x) * 8 + ((int)localCoordinate.y) * WidthInTiles * 8;
             if (mainTriangleIndex % 2 == 0)
+            {
                 return ((mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]), (mainTriangleIndex + 1 + triangleOffset, triangles[mainTriangleIndex + 1]));
+            }
             else
+            {
                 return ((mainTriangleIndex - 1 + triangleOffset, triangles[mainTriangleIndex - 1]), (mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]));
+            }
         }
 
         // Returns the cells of the tile at the given coordinate along with index of the first cell
         private (int, List<TCell>) GetTileCellsByWorldCoordinate(Vector2 worldCoord)
         {
             var localCoord = WorldCoordinateToCoarseTileCoordinate(worldCoord);
-            int triangleOffset = ((int)localCoord.x) * 8 + ((int)localCoord.y) * WidthInTiles * 8;
+            var triangleOffset = ((int)localCoord.x) * 8 + ((int)localCoord.y) * WidthInTiles * 8;
             return (triangleOffset, _tiles[(int)localCoord.x, (int)localCoord.y].GetTriangles());
         }
 
@@ -113,7 +121,7 @@ namespace Maes.Map
         }
 
         // Assigns the given value to the triangle cell at the given coordinate
-        void SetCell(Vector2 coordinate, TCell newCell)
+        private void SetCell(Vector2 coordinate, TCell newCell)
         {
             var localCoordinate = WorldCoordinateToCoarseTileCoordinate(coordinate);
             var tile = _tiles[(int)localCoordinate.x, (int)localCoordinate.y];
@@ -131,7 +139,7 @@ namespace Maes.Map
         }
 
         // Takes a world coordinates and removes the offset and scale to translate it to a local map coordinate
-        Vector2 WorldCoordinateToCoarseTileCoordinate(Vector2 worldCoordinate)
+        private Vector2 WorldCoordinateToCoarseTileCoordinate(Vector2 worldCoordinate)
         {
             var localCoordinate = (worldCoordinate - ScaledOffset);
             if (!IsWithinLocalMapBounds(localCoordinate))
@@ -147,13 +155,13 @@ namespace Maes.Map
 
         // Takes a world coordinates and removes the offset and scale to translate it to a local map coordinate
         // This unsafe version may return a coordinate that is outside the bounds of the map
-        Vector2 WorldCoordinateToLocalMapCoordinateUnsafe(Vector2 worldCoordinate)
+        private Vector2 WorldCoordinateToLocalMapCoordinateUnsafe(Vector2 worldCoordinate)
         {
             return worldCoordinate - ScaledOffset;
         }
 
         // Checks that the given coordinate is within the local map bounds
-        bool IsWithinLocalMapBounds(Vector2 localCoordinates)
+        private bool IsWithinLocalMapBounds(Vector2 localCoordinates)
         {
             return localCoordinates.x >= 0.0f && localCoordinates.x < WidthInTiles
                                               && localCoordinates.y >= 0.0f && localCoordinates.y < HeightInTiles;
@@ -162,23 +170,27 @@ namespace Maes.Map
         // Generates a new SimulationMap<T2> by mapping the given function over all cells of this map
         public SimulationMap<TNewCell> FMap<TNewCell>(Func<TCell, TNewCell> mapper)
         {
-            SimulationMapTile<TNewCell>[,] mappedTiles = new SimulationMapTile<TNewCell>[WidthInTiles, HeightInTiles];
-            for (int x = 0; x < WidthInTiles; x++)
-                for (int y = 0; y < HeightInTiles; y++)
+            var mappedTiles = new SimulationMapTile<TNewCell>[WidthInTiles, HeightInTiles];
+            for (var x = 0; x < WidthInTiles; x++)
+            {
+                for (var y = 0; y < HeightInTiles; y++)
+                {
                     mappedTiles[x, y] = _tiles[x, y].FMap(mapper);
+                }
+            }
 
-            return new SimulationMap<TNewCell>(mappedTiles, this.ScaledOffset);
+            return new SimulationMap<TNewCell>(mappedTiles, ScaledOffset);
         }
 
         // Enumerates all triangles paired with their index
         public IEnumerator<(int, TCell)> GetEnumerator()
         {
-            for (int y = 0; y < HeightInTiles; y++)
+            for (var y = 0; y < HeightInTiles; y++)
             {
-                for (int x = 0; x < WidthInTiles; x++)
+                for (var x = 0; x < WidthInTiles; x++)
                 {
                     var triangles = _tiles[x, y].GetTriangles();
-                    for (int t = 0; t < 8; t++)
+                    for (var t = 0; t < 8; t++)
                     {
                         yield return ((x * 8 + y * WidthInTiles * 8) + t, triangles[t]);
                     }

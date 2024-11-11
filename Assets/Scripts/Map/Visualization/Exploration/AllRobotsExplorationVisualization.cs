@@ -43,7 +43,9 @@ namespace Maes.Map.Visualization.Exploration
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
         {
             foreach (var cellWithIndex in exploredCells)
+            {
                 _newlyExploredCells.Add(cellWithIndex);
+            }
         }
 
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
@@ -68,7 +70,11 @@ namespace Maes.Map.Visualization.Exploration
 
         private static Color32 ExplorationCellToColor(ExplorationCell cell)
         {
-            if (!cell.IsExplorable) return ExplorationVisualizer.SolidColor;
+            if (!cell.IsExplorable)
+            {
+                return ExplorationVisualizer.SolidColor;
+            }
+
             return (cell.IsExplored) ? ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
         }
     }

@@ -57,15 +57,22 @@ namespace Maes.Map.Visualization.Exploration
 
         private Color32 ExplorationCellToColor(ExplorationCell cell, int currentTick)
         {
-            if (!cell.CanBeCovered) return ExplorationVisualizer.SolidColor;
-            if (!cell.IsCovered) return ExplorationVisualizer.StandardCellColor;
+            if (!cell.CanBeCovered)
+            {
+                return ExplorationVisualizer.SolidColor;
+            }
+
+            if (!cell.IsCovered)
+            {
+                return ExplorationVisualizer.StandardCellColor;
+            }
 
             // The color of every single cell is updated every tick (this is very slow on larger maps)
             // If needed this could possibly be optimized to only update the entire map every 10 ticks
             // and only update the currently visible cells the other 9 ticks.
             // (This would require that this class had access to all currently visible cells (not just newly explored cells))   
             var ticksSinceLastCovered = currentTick - cell.LastCoverageTimeInTicks;
-            float coldness = Mathf.Min((float)ticksSinceLastCovered / (float)_logicTicksBeforeCold, 1.0f);
+            var coldness = Mathf.Min((float)ticksSinceLastCovered / (float)_logicTicksBeforeCold, 1.0f);
             return Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
         }
     }

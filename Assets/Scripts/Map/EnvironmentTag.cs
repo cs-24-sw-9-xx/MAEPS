@@ -44,7 +44,7 @@ namespace Maes.Map
             WorldPosition = model.transform.position;
             MapPosition = WorldPosition;
 
-            this._model.GetComponent<VisibleTagInfoHandler>().SetTag(this);
+            _model.GetComponent<VisibleTagInfoHandler>().SetTag(this);
         }
 
         public override string ToString()
@@ -59,7 +59,7 @@ namespace Maes.Map
 
         public string GetDebugInfo()
         {
-            Vector2 position = GlobalSettings.IsRosMode ? Geometry.ToROSCoord(MapPosition) : MapPosition;
+            var position = GlobalSettings.IsRosMode ? Geometry.ToROSCoord(MapPosition) : MapPosition;
 
             return $"Tag content:  {Content}\n"
                    + $"Deposited by: Robot{Sender}\n"

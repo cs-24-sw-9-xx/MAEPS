@@ -77,7 +77,9 @@ namespace Maes.Robot
         private void OnCollisionEnter2D(Collision2D other)
         {
             if (!_collidingGameObjects.Contains(other.gameObject))
+            {
                 _collidingGameObjects.Add(other.gameObject);
+            }
 
             Controller.NotifyCollided();
         }
@@ -87,7 +89,9 @@ namespace Maes.Robot
             _collidingGameObjects.Remove(other.gameObject);
 
             if (_collidingGameObjects.Count == 0)
+            {
                 Controller.NotifyCollisionExit();
+            }
         }
 
         public void OnMouseDown()
@@ -110,7 +114,7 @@ namespace Maes.Robot
         {
             var envTagHolder = GameObject.Find("EnvTagHolder");
             var gameObj = Instantiate(Resources.Load<GameObject>("TagPost"), envTagHolder.transform);
-            gameObj.transform.position = this.transform.position + new Vector3(0, 0, -0.1f);
+            gameObj.transform.position = transform.position + new Vector3(0, 0, -0.1f);
             gameObj.SetActive(false);
             gameObj.name = $"robot{id}-" + gameObj.name;
             return gameObj;

@@ -66,7 +66,7 @@ namespace Maes.TransformToNav2
         {
             // This module should not be enabled (i.e. run start) until explicitly told so
             // This allows for setting parameters before start runs.
-            this.enabled = false;
+            enabled = false;
         }
 
         private void Start()
@@ -81,7 +81,7 @@ namespace Maes.TransformToNav2
             m_TimeNextScanSeconds = Clock.Now + PublishPeriodSeconds;
         }
 
-        void BeginScan()
+        private void BeginScan()
         {
             m_isScanning = true;
             m_TimeLastScanBeganSeconds = Clock.Now;
@@ -172,7 +172,9 @@ namespace Maes.TransformToNav2
             var measurementsSoFar = TimeBetweenMeasurementsSeconds == 0 ? NumMeasurementsPerScan :
                 1 + Mathf.FloorToInt((float)(Clock.time - m_TimeLastScanBeganSeconds) / TimeBetweenMeasurementsSeconds);
             if (measurementsSoFar > NumMeasurementsPerScan)
+            {
                 measurementsSoFar = NumMeasurementsPerScan;
+            }
 
             var yawBaseDegrees = -transform.eulerAngles.z; //transform.eulerAngles.z;
             //Debug.Log($"Trace base angle: {transform.eulerAngles.z + 90}");

@@ -41,7 +41,10 @@ namespace Maes
 
         public static MaesConfigType? LoadConfig()
         {
-            if (PreloadedConfig != null) return PreloadedConfig;
+            if (PreloadedConfig != null)
+            {
+                return PreloadedConfig;
+            }
 
             string configFileName;
             try
@@ -180,7 +183,7 @@ namespace Maes
             public int? SuggestedStartingPointX { get; set; } = null;
             public int? SuggestedStartingPointY { get; set; } = null;
 
-            public bool HasSuggestedStartingPoint => this.SuggestedStartingPointX != null && this.SuggestedStartingPointY != null;
+            public bool HasSuggestedStartingPoint => SuggestedStartingPointX != null && SuggestedStartingPointY != null;
 
             public Vector2Int SuggestedStartingPointAsVector =>
                 new(SuggestedStartingPointX!.Value, SuggestedStartingPointY!.Value);
