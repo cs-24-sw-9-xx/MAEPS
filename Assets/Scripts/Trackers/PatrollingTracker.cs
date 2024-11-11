@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Assets.Scripts.Map.Visualization.Patrolling;
 using Maes.Map;
 using Maes.Map.MapGen;
-using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
-
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -116,7 +115,8 @@ namespace Maes.Trackers
 
         public void ShowTargetWaypointSelected()
         {
-            // TODO: Implement
+             if(_selectedRobot == null) return;
+            SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
         public void ShowVisibleSelected()

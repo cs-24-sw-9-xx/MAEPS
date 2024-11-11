@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 using Maes.Map;
-
 using UnityEngine;
 
 namespace Maes.Statistics
@@ -75,6 +74,12 @@ namespace Maes.Statistics
                 var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
                 _vertexVisualizers[vertex].GetComponent<MeshRenderer>().material.color = color;
             }
+        }
+
+        public void ShowTargetWaypoint(Vertex targetVertex)
+        {
+            var yellowColor = new Color(255, 255, 0, 255);
+            _vertexVisualizers[targetVertex].GetComponent<MeshRenderer>().material.color = yellowColor;
         }
     }
 }
