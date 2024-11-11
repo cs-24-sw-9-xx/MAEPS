@@ -126,6 +126,8 @@ jobs:
 
   lint:
     name: Quality Check
+    needs: checklicense
+    if: needs.checklicense.outputs.is_unity_license_set == 'true'
     runs-on: ubuntu-latest
     container: unityci/editor:ubuntu-2021.3.45f1-linux-il2cpp-3
     steps:
