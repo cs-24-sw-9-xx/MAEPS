@@ -130,6 +130,10 @@ jobs:
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
       - name: Print the files in the folder
         run: ls
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - name: Format CustomScriptsAssembly.csproj
         run: dotnet format CustomScriptsAssembly.csproj --verify-no-changes --verbosity diagnostic
       - name: Format PlayModeTests.csproj
