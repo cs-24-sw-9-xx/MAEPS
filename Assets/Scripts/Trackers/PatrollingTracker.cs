@@ -63,6 +63,11 @@ namespace Maes.Trackers
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
+
+            if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
+            {
+                _visualizer.ShowDefaultColor(vertex);
+            }
         }
 
         protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
@@ -118,6 +123,12 @@ namespace Maes.Trackers
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
         }
 
+        protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
+        {
+            _visualizer.ResetWaypointsColor();
+            base.SetVisualizationMode(newMode);
+        }
+
         public void ShowWaypointHeatMap()
         {
             _visualizer.meshRenderer.enabled = false;
@@ -138,6 +149,7 @@ namespace Maes.Trackers
 
         public void ShowTargetWaypointSelected()
         {
+            _visualizer.meshRenderer.enabled = false;
             if (_selectedRobot == null)
             {
                 throw new Exception("Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
@@ -148,6 +160,7 @@ namespace Maes.Trackers
 
         public void ShowVisibleSelected()
         {
+            _visualizer.meshRenderer.enabled = false;
             if (_selectedRobot == null)
             {
                 throw new Exception("Cannot change to 'ShowVisibleSelected' Visualization mode when no robot is selected");
