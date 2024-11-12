@@ -10,6 +10,8 @@ using TMPro;
 
 using UnityEngine.UI;
 
+using XCharts.Runtime;
+
 namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
