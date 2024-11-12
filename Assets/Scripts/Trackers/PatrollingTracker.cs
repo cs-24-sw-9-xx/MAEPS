@@ -12,6 +12,8 @@ using Maes.Statistics;
 
 using UnityEngine;
 
+using XCharts.Runtime;
+
 namespace Maes.Trackers
 {
     // TODO: Change Tile to another type, Implemented in the next PR
