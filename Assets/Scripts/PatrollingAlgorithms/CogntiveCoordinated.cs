@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,15 +13,14 @@ namespace Maes.PatrollingAlgorithms
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private bool _isPatrolling = false;
         private List<Vertex> _currentPath = new List<Vertex>();
-        private Vertex _pathStart;
-        private int i = 0;
+        //private Vertex? _pathStart; // = new Vertex(0, Vector2Int.zero);
+        private int _iterator = 0;
 
         public override string GetDebugInfo()
         {
             return 
                 base.GetDebugInfo() +
                 $"Highest idle: {HighestIdle().Position}\n" +
-                $"pathStart: {_pathStart.Position}\n" +
                 $"Init done: {_isPatrolling}\n";
         }
 
@@ -31,33 +31,33 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            _pathStart = GetClosestVertex();
+            //_pathStart = GetClosestVertex();
             MakePath();
-            TargetVertex = _currentPath[i]; 
+            TargetVertex = _currentPath[_iterator]; 
             _isPatrolling = true;
         }
-
-        private void MakePath()
-        {
-            if (_currentPath != null && i < _currentPath.Count)
-            {
-                return;
-            }
-
-            i = 0;
-            _currentPath = FindShortestPath(_pathStart, HighestIdle());
-            _pathStart = _currentPath.Last();
-        }
-
+        
         protected override Vertex NextVertex()
         {
             MakePath();
-            Vertex next = _currentPath[i];  
-            i++;
+            var next = _currentPath[_iterator];  
+            _iterator++;
 
             return next;
         }
 
+        private void MakePath()
+        {
+            if (_currentPath != null && _iterator < _currentPath.Count)
+            {
+                return;
+            }
+
+            _iterator = 0;
+            _currentPath = AStar(GetClosestVertex(), HighestIdle());
+            //_pathStart = _currentPath.Last();
+        }
+        
         private Vertex HighestIdle()
         {
             return _vertices.OrderBy((x)=>x.LastTimeVisitedTick).First();
@@ -65,26 +65,28 @@ namespace Maes.PatrollingAlgorithms
 
         private Vertex GetClosestVertex()
         {
-            Vertex closestVertex = null;
-            float closestDistance = float.MaxValue;
-            Vector2Int myPossition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            Vertex? closestVertex = null;
+            var closestDistance = float.MaxValue;
+            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
             foreach (var vertex in _vertices)
             {
-                float distance = Vector2Int.Distance(myPossition, vertex.Position);
-                if (distance < closestDistance)
+                var distance = Vector2Int.Distance(position, vertex.Position);
+                if (!(distance < closestDistance))
                 {
-                    closestDistance = distance;
-                    closestVertex = vertex;
+                    continue;
                 }
+
+                closestDistance = distance;
+                closestVertex = vertex;
             }
-            return closestVertex;
+            return closestVertex ?? throw new InvalidOperationException("There are no vertices!");
         }
        
-        public List<Vertex> FindShortestPath(Vertex start, Vertex target)
+        /*private static List<Vertex> FindShortestPath(Vertex start, Vertex target)
         { //BFS search
-            Dictionary<Vertex, Vertex> parents = new Dictionary<Vertex, Vertex>();
-            Queue<Vertex> queue = new Queue<Vertex>();
-            HashSet<Vertex> visited = new HashSet<Vertex>();
+            var parents = new Dictionary<Vertex, Vertex>();
+            var queue = new Queue<Vertex>();
+            var visited = new HashSet<Vertex>();
 
             queue.Enqueue(start);
             visited.Add(start);
@@ -92,34 +94,101 @@ namespace Maes.PatrollingAlgorithms
 
             while (queue.Count > 0)
             {
-                Vertex current = queue.Dequeue();
+                var current = queue.Dequeue();
                                
                 if (current.Equals(target))
                 {
-                    return ConstructPath(parents, target);
+                    var path = new List<Vertex>();
+                    for (var curr = target; curr != null; curr = parents[curr])
+                    {
+                        path.Insert(0, curr);
+                    }
+                    return path;
                 }
 
-                foreach (Vertex neighbor in current.Neighbors)
+                foreach (var neighbor in current.Neighbors)
                 {
-                    if (!visited.Contains(neighbor))
+                    if (visited.Contains(neighbor))
                     {
-                        queue.Enqueue(neighbor);
-                        visited.Add(neighbor);
-                        parents[neighbor] = current;
+                        continue;
+                    }
+
+                    queue.Enqueue(neighbor);
+                    visited.Add(neighbor);
+                    parents[neighbor] = current;
+                }
+            }
+            throw new InvalidOperationException("There are no path");
+        }*/
+        
+        private static List<Vertex> AStar(Vertex start, Vertex target)
+        {
+            // Dictionary to store the cost of the path from the start to each vertex (g-cost)
+            var gCost = new Dictionary<Vertex, float> { [start] = 0 };
+
+            // Dictionary to store estimated total cost from start to target (f-cost)
+            var fCost = new Dictionary<Vertex, float> { [start] = Heuristic(start, target) };
+
+            // Dictionary to store the path (i.e., the vertex that leads to each vertex)
+            var cameFrom = new Dictionary<Vertex, Vertex>();
+
+            // Open set initialized with the starting vertex
+            var openSet = new HashSet<Vertex> { start };
+
+            while (openSet.Count > 0)
+            {
+                // Select vertex in openSet with lowest f-cost
+                var current = openSet.OrderBy(v => fCost.ContainsKey(v) ? fCost[v] : float.MaxValue).First();
+
+                // If reached target, reconstruct path
+                if (current.Equals(target))
+                {
+                    Debug.Log("current == target");
+                    return ReconstructPath(cameFrom, current);
+                }
+
+                openSet.Remove(current);
+
+                // Explore neighbors
+                foreach (var neighbor in current.Neighbors)
+                {
+                    float tentativeGCost = gCost[current] + Vector2Int.Distance(current.Position, neighbor.Position) * neighbor.Weight;
+
+                    // If a cheaper path to neighbor is found
+                    if (!gCost.ContainsKey(neighbor) || tentativeGCost < gCost[neighbor])
+                    {
+                        // Record the best path to neighbor and its costs
+                        cameFrom[neighbor] = current;
+                        gCost[neighbor] = tentativeGCost;
+                        fCost[neighbor] = tentativeGCost + Heuristic(neighbor, target);
+
+                        // Add neighbor to open set if not present
+                        openSet.Add(neighbor);
                     }
                 }
             }
-            return null;
+
+            Debug.Log("empty list");
+            // Return empty path if target is unreachable
+            return new List<Vertex>();
         }
 
-        private List<Vertex> ConstructPath(Dictionary<Vertex, Vertex> parents, Vertex target)
+        private static List<Vertex> ReconstructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
         {
-            List<Vertex> path = new List<Vertex>();
-            for (Vertex current = target; current != null; current = parents[current])
+            var path = new List<Vertex> { current };
+            while (cameFrom.ContainsKey(current))
             {
-                path.Insert(0, current);
+                current = cameFrom[current];
+                path.Add(current);
             }
+            path.Reverse();
             return path;
+        }
+
+        private static float Heuristic(Vertex a, Vertex b)
+        {
+            // Use Manhattan distance as the heuristic for grid-based graphs
+            return Vector2Int.Distance(a.Position, b.Position);
         }
     }
 }

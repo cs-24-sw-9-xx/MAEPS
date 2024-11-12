@@ -36,26 +36,20 @@ using System.Collections.Generic;
 
 using Maes.Map.MapGen;
 using Maes.Robot;
-using Maes.Algorithms;
-using MAES.Map.RobotSpawners;
 using Maes.PatrollingAlgorithms;
-using MAES.Simulation;
-using MAES.Simulation.SimulationScenarios;
+using Maes.Simulation;
+using Maes.Simulation.SimulationScenarios;
 
-namespace Maes
+namespace Maes.ExperimentSimulations
 {
     using MySimulator = PatrollingSimulator;
     using MySimulationScenario = PatrollingSimulationScenario;
     
     internal class CognitiveCoordinatedExperiment : MonoBehaviour
     {
-        private MySimulator _simulator;
-
         private void Start()
         {
-            const int randomSeed = 12345;
-
-            var constraintName = "Global"; //The type of robot comm
+            const string constraintName = "Global"; //The type of robot comm
             var rc = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
@@ -69,27 +63,23 @@ namespace Maes
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) =>
-                {
-                    return true;
-                }
-            );
+                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => true);
 
-            var simulator = MySimulator.GetInstance();
+            var simulator = new MySimulator();
             var random = new System.Random(12345);
             
-            var constraintIterator = 0;
-            var algorithmName = "cognitive_coordinated"; 
+            const string algorithmName = "cognitive_coordinated"; 
             var algorithm = new CognitiveCoordinated();
-            constraintIterator++;
             
             var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
-            int size = 100;
+            var size = 100;
 
             for (var amountOfRobots = 1; amountOfRobots < 10; amountOfRobots += 2)
             {
                 var robotCount = amountOfRobots;
                 simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                    totalCycles: 4,
+                    stopAfterDiff: false,
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         buildingConfig,
@@ -109,6 +99,8 @@ namespace Maes
                 }
 
                 simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                    totalCycles: 4,
+                    stopAfterDiff: false,
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
@@ -124,6 +116,8 @@ namespace Maes
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                totalCycles: 4,
+                stopAfterDiff: false,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,
