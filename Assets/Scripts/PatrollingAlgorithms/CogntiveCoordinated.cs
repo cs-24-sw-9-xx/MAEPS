@@ -20,13 +20,16 @@ namespace Maes.PatrollingAlgorithms
             return 
                 base.GetDebugInfo() +
                 $"Highest idle: {HighestIdle().Position}\n" +
-                $"Init done:  {_isPatrolling}\n";
+                $"pathStart: {_pathStart.Position}\n" +
+                $"Init done: {_isPatrolling}\n";
         }
-
 
         protected override void Preliminaries()
         {
-            if (_isPatrolling) return;
+            if (_isPatrolling)
+            {
+                return;
+            }
 
             _pathStart = GetClosestVertex();
             MakePath();
@@ -60,26 +63,27 @@ namespace Maes.PatrollingAlgorithms
             return _vertices.OrderBy((x)=>x.LastTimeVisitedTick).First();
         }
 
-        private Vertex GetClosestVertex(){
+        private Vertex GetClosestVertex()
+        {
             Vertex closestVertex = null;
             float closestDistance = float.MaxValue;
             Vector2Int myPossition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
-            foreach (var vertex in _vertices){
+            foreach (var vertex in _vertices)
+            {
                 float distance = Vector2Int.Distance(myPossition, vertex.Position);
-                if (distance < closestDistance){
+                if (distance < closestDistance)
+                {
                     closestDistance = distance;
                     closestVertex = vertex;
                 }
             }
             return closestVertex;
         }
+       
         public List<Vertex> FindShortestPath(Vertex start, Vertex target)
-        {
-            // Dictionary to store the parent of each visited vertex
+        { //BFS search
             Dictionary<Vertex, Vertex> parents = new Dictionary<Vertex, Vertex>();
-            // Queue for BFS
             Queue<Vertex> queue = new Queue<Vertex>();
-            // Set to track visited vertices
             HashSet<Vertex> visited = new HashSet<Vertex>();
 
             queue.Enqueue(start);
