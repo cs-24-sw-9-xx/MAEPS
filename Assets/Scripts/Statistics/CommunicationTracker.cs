@@ -23,14 +23,13 @@ using System.Collections.Generic;
 using System.Linq;
 
 using static Maes.Robot.CommunicationManager;
-using static Maes.Statistics.ExplorationTracker;
 
 namespace Maes.Statistics
 {
     public class CommunicationTracker
     {
-        public readonly Dictionary<int, SnapShot<bool>> InterconnectionSnapShot = new();
-        public readonly Dictionary<int, SnapShot<float>> BiggestClusterPercentageSnapshots = new();
+        public readonly Dictionary<int, bool> InterconnectionSnapShot = new();
+        public readonly Dictionary<int, float> BiggestClusterPercentageSnapshots = new();
         public Dictionary<(int, int), CommunicationInfo>? AdjacencyMatrixRef;
         public List<HashSet<int>>? CommunicationGroups = null;
 
@@ -55,7 +54,7 @@ namespace Maes.Statistics
             // if we have exactly one group, then every agent must be in it!
             if (CommunicationGroups.Count == 1)
             {
-                BiggestClusterPercentageSnapshots[tick] = new SnapShot<float>(tick, 100.0f);
+                BiggestClusterPercentageSnapshots[tick] = 100.0f;
             }
             else
             {
@@ -63,7 +62,7 @@ namespace Maes.Statistics
                 CommunicationGroups.Sort((e1, e2) => e2.Count.CompareTo(e1.Count));
                 var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) => sum + e1.Count);
                 var percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * (float)100;
-                BiggestClusterPercentageSnapshots[tick] = new SnapShot<float>(tick, percentage);
+                BiggestClusterPercentageSnapshots[tick] = percentage;
             }
         }
 
@@ -73,11 +72,11 @@ namespace Maes.Statistics
             {
                 if (AreAllAgentsConnected(tick))
                 {
-                    InterconnectionSnapShot[tick] = new SnapShot<bool>(tick, true);
+                    InterconnectionSnapShot[tick] = true;
                 }
                 else
                 {
-                    InterconnectionSnapShot[tick] = new SnapShot<bool>(tick, false);
+                    InterconnectionSnapShot[tick] = false;
                 }
             }
 
