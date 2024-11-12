@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Assets.Scripts.Map.Visualization.Patrolling;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;

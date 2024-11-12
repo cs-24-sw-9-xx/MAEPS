@@ -1,9 +1,8 @@
-using Maes.Map.Visualization.Patrolling;
 using Maes.PatrollingAlgorithms;
 using Maes.Robot;
 using Maes.Statistics;
 
-namespace Maes.Assets.Scripts.Map.Visualization.Patrolling
+namespace Maes.Map.Visualization.Patrolling
 {
     internal class PatrollingTargetWaypointVisualizationMode : IPatrollingVisualizationMode
     {
