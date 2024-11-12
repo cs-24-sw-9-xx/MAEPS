@@ -114,7 +114,11 @@ namespace Maes.Trackers
 
         public void ShowTargetWaypointSelected()
         {
-             if(_selectedRobot == null) return;
+            if (_selectedRobot == null)
+            {
+                return;
+            }
+
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
