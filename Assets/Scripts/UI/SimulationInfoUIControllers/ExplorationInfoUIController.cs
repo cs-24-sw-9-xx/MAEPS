@@ -187,7 +187,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 SelectVisualizationButton(AllCoverageHeatMapButton);
             }
-            else if (mode is CurrentlyVisibleAreaVisualization)
+            else if (mode is CurrentlyVisibleAreaVisualizationExploration)
             {
                 SelectVisualizationButton(SelectVisibleAreaButton);
             }
