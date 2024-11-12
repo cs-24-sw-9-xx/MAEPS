@@ -49,20 +49,23 @@ namespace Maes.TransformToNav2
             return node.Transform.ToROSTransformStamped(Clock.time);
         }
 
-        static void PopulateChildNodes(TransformTreeNode tfNode) {
-            var acceptedNames = new List<string>() {"base_footprint", "base_link", "base_scan"};
+        private static void PopulateChildNodes(TransformTreeNode tfNode)
+        {
+            var acceptedNames = new List<string>() { "base_footprint", "base_link", "base_scan" };
             var parentTransform = tfNode.Transform;
-            for (var childIndex = 0; childIndex < parentTransform.childCount; ++childIndex) {
+            for (var childIndex = 0; childIndex < parentTransform.childCount; ++childIndex)
+            {
                 var childTransform = parentTransform.GetChild(childIndex);
                 var childGO = childTransform.gameObject;
-                
-                if (acceptedNames.Contains(childGO.name)) {
+
+                if (acceptedNames.Contains(childGO.name))
+                {
                     var childNode = new TransformTreeNode(childGO);
                     tfNode.Children.Add(childNode);
                 }
             }
         }
 
-        
+
     }
 }

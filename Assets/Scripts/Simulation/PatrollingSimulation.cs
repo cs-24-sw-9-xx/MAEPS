@@ -18,22 +18,31 @@ namespace Maes.Simulation
         public override PatrollingVisualizer Visualizer => patrollingVisualizer;
 
         public override PatrollingTracker Tracker => PatrollingTracker;
-        
+
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
-            
-            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario.RobotConstraints, patrollingMap);
-            
+
+            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario, patrollingMap);
+
             patrollingVisualizer.SetPatrollingMap(patrollingMap);
-            
+
             RobotSpawner.SetPatrolling(patrollingMap, PatrollingTracker);
         }
 
         public override bool HasFinishedSim()
         {
-            // TODO: Implement
-            return false;
+            if (_scenario.TotalCycles != PatrollingTracker.CompletedCycles)
+            {
+                return false;
+            }
+
+            if (!PatrollingTracker.StopAfterDiff)
+            {
+                return true;
+            }
+
+            return PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= 0.025;
         }
     }
 }

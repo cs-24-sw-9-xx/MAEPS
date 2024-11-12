@@ -20,7 +20,9 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using UnityEngine;
+
 using static Maes.Map.SlamMap;
 
 namespace Maes.Map.PathFinding

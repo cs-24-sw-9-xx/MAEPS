@@ -30,17 +30,19 @@ using UnityEngine;
 
 using Object = UnityEngine.Object;
 
-namespace Maes.Simulation {
+namespace Maes.Simulation
+{
     public abstract class Simulator<TSimulation, TAlgorithm, TScenario>
         where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
         where TAlgorithm : IAlgorithm
         where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
         public SimulationManager<TSimulation, TAlgorithm, TScenario> SimulationManager { get; }
-        
+
         private readonly GameObject _maesGameObject;
 
-        protected Simulator() {
+        protected Simulator()
+        {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
@@ -50,27 +52,36 @@ namespace Maes.Simulation {
         protected abstract GameObject LoadSimulatorGameObject();
 
         // Clears the singleton instance and removes the simulator game object
-        public void Destroy() {
+        public void Destroy()
+        {
             Object.Destroy(_maesGameObject);
         }
-        
-        public void EnqueueScenario(TScenario scenario) {
+
+        public void EnqueueScenario(TScenario scenario)
+        {
             SimulationManager.EnqueueScenario(scenario);
             SimulationManager.InitialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<TScenario> scenario) {
-            foreach (var simulationScenario in scenario) {
+        public void EnqueueScenarios(IEnumerable<TScenario> scenario)
+        {
+            foreach (var simulationScenario in scenario)
+            {
                 SimulationManager.EnqueueScenario(simulationScenario);
             }
         }
-        
-        public void PressPlayButton() {
+
+        public void PressPlayButton()
+        {
             if (SimulationManager.PlayState == SimulationPlayState.Play)
+            {
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
+            }
+
             if (!SimulationManager.HasActiveScenario())
+            {
                 throw new InvalidOperationException("You must enqueue at least one scenario before starting the" +
                                                     " simulation");
-
+            }
 
             SimulationManager.AttemptSetPlayState(SimulationPlayState.Play);
         }

@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
-using UnityEngine;
 
 using Maes.Map;
+
+using UnityEngine;
 
 namespace Maes.PatrollingAlgorithms
 {
@@ -13,7 +14,7 @@ namespace Maes.PatrollingAlgorithms
 
         public override string GetDebugInfo()
         {
-            return 
+            return
                 base.GetDebugInfo() +
                 $"Init done:  {_isPatrolling}\n";
         }
@@ -21,25 +22,31 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void Preliminaries()
         {
-            if (_isPatrolling) return;
+            if (_isPatrolling)
+            {
+                return;
+            }
 
             var vertex = GetClosestVertex();
-            TargetVertex = vertex; 
+            TargetVertex = vertex;
             _isPatrolling = true;
         }
 
         protected override Vertex NextVertex()
         {
-            return TargetVertex.Neighbors.OrderBy((x)=>x.LastTimeVisitedTick).First();
+            return TargetVertex.Neighbors.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
-        private Vertex GetClosestVertex(){
+        private Vertex GetClosestVertex()
+        {
             Vertex? closestVertex = null;
             var closestDistance = float.MaxValue;
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
-            foreach (var vertex in _vertices){
+            foreach (var vertex in _vertices)
+            {
                 var distance = Vector2Int.Distance(position, vertex.Position);
-                if (distance < closestDistance){
+                if (distance < closestDistance)
+                {
                     closestDistance = distance;
                     closestVertex = vertex;
                 }

@@ -19,13 +19,13 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-using Maes.Robot;
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms;
+using Maes.Map;
+using Maes.Robot;
 
 using UnityEngine;
 
@@ -89,7 +89,7 @@ namespace Maes.ExplorationAlgorithm.Greed
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Destination, (int) Type);
+                return HashCode.Combine(Destination, (int)Type);
             }
 
             public static bool operator ==(Waypoint left, Waypoint right)
@@ -139,14 +139,20 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_controller.IsCurrentlyColliding())
             {
                 if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
+                {
                     _controller.StopCurrentTask();
+                }
                 else
                 {
                     var openTile = _map.GetNearestTileFloodFill(_position, SlamTileStatus.Open);
                     if (openTile.HasValue)
+                    {
                         _controller.MoveTo(openTile.Value);
+                    }
                     else
+                    {
                         _controller.Move(1, true);
+                    }
                 }
                 _waypoint = null;
                 return;
@@ -183,7 +189,9 @@ namespace Maes.ExplorationAlgorithm.Greed
                     if (_logicTicks % 10 == 0)
                     {
                         if (_previousPosition == _position)
+                        {
                             _deadlockTimer++;
+                        }
                         else
                         {
                             _previousPosition = _position;
@@ -215,9 +223,13 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_logicTicks % 10 == 0)
             {
                 if (_previousPosition == _position)
+                {
                     _deadlockTimer++;
+                }
                 else
+                {
                     _deadlockTimer = 0;
+                }
             }
             _previousPosition = _position;
         }
@@ -255,24 +267,24 @@ namespace Maes.ExplorationAlgorithm.Greed
     }
 
     public class HeartbeatMessage
+    {
+        private readonly SlamMap _map;
+
+        public HeartbeatMessage(SlamMap map)
         {
-            private readonly SlamMap _map;
-
-            public HeartbeatMessage(SlamMap map)
-            {
-                _map = map;
-            }
-
-            public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
-            {
-                List<SlamMap> maps = new() { heartbeatMessage._map, _map };
-                SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
-                return this;
-            }
-
-            public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat
-            {
-                return this;
-            }
+            _map = map;
         }
+
+        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
+        {
+            List<SlamMap> maps = new() { heartbeatMessage._map, _map };
+            SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+            return this;
+        }
+
+        public HeartbeatMessage Process() //Combine all, then process, but not really anything to process for heartbeat
+        {
+            return this;
+        }
+    }
 }

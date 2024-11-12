@@ -36,8 +36,8 @@ using Random = System.Random;
 
 namespace PlayModeTests
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
 
     public class MaterialCommunicationTest
     {
@@ -124,7 +124,10 @@ namespace PlayModeTests
             // The first robot will broadcast immediately
             _robotTestAlgorithms[0].UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Broadcast("Test Message");
+                if (tick == 0)
+                {
+                    controller.Broadcast("Test Message");
+                }
             };
 
             // The second robot will continuously receive broadcasts
@@ -148,13 +151,19 @@ namespace PlayModeTests
 
             algorithm1.UpdateFunction = (tick, controller) =>
             {
-                if (tick == 0) controller.Broadcast(sentMessage);
+                if (tick == 0)
+                {
+                    controller.Broadcast(sentMessage);
+                }
             };
 
             algorithm2.UpdateFunction = (_, controller) =>
             {
                 var results = controller.ReceiveBroadcast();
-                if (results.Count != 0) receivedMessage = results[0] as string;
+                if (results.Count != 0)
+                {
+                    receivedMessage = results[0] as string;
+                }
             };
 
             _maes.PressPlayButton();
@@ -193,14 +202,18 @@ namespace PlayModeTests
             algorithm1.UpdateFunction = (tick, controller) =>
             {
                 if (tick == 0)
+                {
                     controller.Broadcast(sentMessage);
+                }
             };
 
             algorithm2.UpdateFunction = (_, controller) =>
             {
                 var results = controller.ReceiveBroadcast();
                 if (results.Count != 0)
+                {
                     receivedMessage = results[0] as string;
+                }
             };
 
             _maes.PressPlayButton();
@@ -263,7 +276,7 @@ namespace PlayModeTests
                 yield return null;
             }
 
-            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0,1)].SignalStrength;
+            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0, 1)].SignalStrength;
 
             Assert.AreEqual(-27, signalStrength);
         }
@@ -307,7 +320,7 @@ namespace PlayModeTests
         [TestCase(10, ExpectedResult = null)]
         public IEnumerator Broadcast_WallDistanceIsApproximatelyCorrect(int wallThickness)
         {
-            float foundWallDistance = float.PositiveInfinity;
+            var foundWallDistance = float.PositiveInfinity;
             InitSimulator(
                 generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
                 new List<Vector2Int> { new(0, -2), new(0, 3 + wallThickness) },

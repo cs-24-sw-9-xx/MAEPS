@@ -35,8 +35,8 @@ using UnityEngine;
 
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     internal class HenrikExample : MonoBehaviour
     {
@@ -93,7 +93,7 @@ namespace Maes.ExperimentSimulations
             var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
-            for (int i = 0; i < 100; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
                 randNumbers.Add(val);
@@ -102,7 +102,7 @@ namespace Maes.ExperimentSimulations
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
             var buildingConfigList100 = new List<BuildingMapConfig>();
-            foreach (int val in randNumbers)
+            foreach (var val in randNumbers)
             {
                 buildingConfigList100.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
             }

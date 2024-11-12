@@ -49,7 +49,7 @@ namespace Maes.TransformToNav2
 
         private float m_CurrentScanAngleStart;
         private float m_CurrentScanAngleEnd;
-    
+
         // Set by Start
         private ROSConnection m_Ros = null!;
         private double m_TimeNextScanSeconds = -1;
@@ -58,17 +58,19 @@ namespace Maes.TransformToNav2
 
         private bool m_isScanning;
         private double m_TimeLastScanBeganSeconds = -1;
-    
+
         [SerializeField]
         public GameObject m_WrapperObject = null!;
 
-        private void Awake() {
+        private void Awake()
+        {
             // This module should not be enabled (i.e. run start) until explicitly told so
             // This allows for setting parameters before start runs.
-            this.enabled = false;
+            enabled = false;
         }
 
-        private void Start() {
+        private void Start()
+        {
             ScanTopic = "/" + m_WrapperObject.name + ScanTopic; // Prepend robot name as namespace
             m_Ros = ROSConnection.GetOrCreateInstance();
             m_Ros.RegisterPublisher<LaserScanMsg>(ScanTopic);
@@ -79,7 +81,7 @@ namespace Maes.TransformToNav2
             m_TimeNextScanSeconds = Clock.Now + PublishPeriodSeconds;
         }
 
-        void BeginScan()
+        private void BeginScan()
         {
             m_isScanning = true;
             m_TimeLastScanBeganSeconds = Clock.Now;
@@ -131,7 +133,7 @@ namespace Maes.TransformToNav2
                 intensities = new float[m_ranges.Count],
                 ranges = m_ranges.ToArray(),
             };
-        
+
             m_Ros.Publish(ScanTopic, msg);
 
             m_NumMeasurementsTaken = 0;
@@ -170,7 +172,9 @@ namespace Maes.TransformToNav2
             var measurementsSoFar = TimeBetweenMeasurementsSeconds == 0 ? NumMeasurementsPerScan :
                 1 + Mathf.FloorToInt((float)(Clock.time - m_TimeLastScanBeganSeconds) / TimeBetweenMeasurementsSeconds);
             if (measurementsSoFar > NumMeasurementsPerScan)
+            {
                 measurementsSoFar = NumMeasurementsPerScan;
+            }
 
             var yawBaseDegrees = -transform.eulerAngles.z; //transform.eulerAngles.z;
             //Debug.Log($"Trace base angle: {transform.eulerAngles.z + 90}");
@@ -199,7 +203,7 @@ namespace Maes.TransformToNav2
                 // Even if Raycast didn't find a valid hit, we still count it as a measurement
                 ++m_NumMeasurementsTaken;
             }
-        
+
             if (m_NumMeasurementsTaken >= NumMeasurementsPerScan)
             {
                 if (m_NumMeasurementsTaken > NumMeasurementsPerScan)

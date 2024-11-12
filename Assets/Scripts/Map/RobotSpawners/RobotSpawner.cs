@@ -45,7 +45,7 @@ namespace Maes.Map.RobotSpawners
 
         // Set by SimulationBase
         public RobotConstraints RobotConstraints = null!;
-        
+
         // Set by Awake
         private GameObject _robotPrefab = null!;
 
@@ -60,23 +60,29 @@ namespace Maes.Map.RobotSpawners
 
             // Ensure enough spawn positions were given
             if (numberOfRobots != spawnPositions.Count)
+            {
                 throw new Exception($"Wrong number of spawn positions given relative to " +
                                     $"number of robots. Expected: {numberOfRobots}, but got: {spawnPositions.Count}");
+            }
 
             // Ensure the same spawn position is not given twice
             if (spawnPositions.Distinct().Count() != spawnPositions.Count)
+            {
                 throw new Exception(
                     "Could not spawn robots. A spawn point is in the list of spawn points more than once");
+            }
 
             // ROS uses a rotated coordinate system, and the spawn points are given in ROS Coordinates
             if (GlobalSettings.IsRosMode)
+            {
                 spawnPositions = spawnPositions.Select(pos => Geometry.FromROSCoord(pos)).ToList();
+            }
 
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
             var possibleSpawnTiles = new List<Vector2Int>();
-            for (int x = 0; x < collisionMap.WidthInTiles; x++)
+            for (var x = 0; x < collisionMap.WidthInTiles; x++)
             {
-                for (int y = 0; y < collisionMap.HeightInTiles; y++)
+                for (var y = 0; y < collisionMap.HeightInTiles; y++)
                 {
                     if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
                     {
@@ -93,7 +99,7 @@ namespace Maes.Map.RobotSpawners
             spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x - (int)collisionMap.ScaledOffset.x,
                                                 pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
 
-            int robotId = 0;
+            var robotId = 0;
             foreach (var spawn in spawnPositions)
             {
                 possibleSpawnTiles = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).ToList();
@@ -139,22 +145,29 @@ namespace Maes.Map.RobotSpawners
             var possibleSpawnTiles = roomWithoutEdgeTiles.Except(secondLayerOfEdgesTiles).ToList();
 
             if (possibleSpawnTiles.Count < numberOfRobots)
+            {
                 throw new ArgumentException("Room not big enough to fit the robots");
+            }
 
             // Make them spawn in a ordered fashion
             possibleSpawnTiles.Sort((c1, c2) =>
             {
                 if (c1.x == c2.x)
+                {
                     return c1.y - c2.y;
+                }
+
                 return c1.x - c2.x;
             });
 
 
-            int robotId = 0;
+            var robotId = 0;
             foreach (var tile in possibleSpawnTiles)
             {
                 if (robotId == numberOfRobots)
+                {
                     break;
+                }
 
                 robots.Add(CreateRobot(
                     x: tile.x,
@@ -182,13 +195,13 @@ namespace Maes.Map.RobotSpawners
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
         public List<MonaRobot> SpawnRobotsTogether(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, Vector2Int? suggestedStartingPoint, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
-            List<MonaRobot> robots = new List<MonaRobot>();
+            var robots = new List<MonaRobot>();
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            List<Vector2Int> possibleSpawnTiles = new List<Vector2Int>();
+            var possibleSpawnTiles = new List<Vector2Int>();
 
-            for (int x = 0; x < collisionMap.WidthInTiles; x++)
+            for (var x = 0; x < collisionMap.WidthInTiles; x++)
             {
-                for (int y = 0; y < collisionMap.HeightInTiles; y++)
+                for (var y = 0; y < collisionMap.HeightInTiles; y++)
                 {
                     if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
                     {
@@ -203,7 +216,10 @@ namespace Maes.Map.RobotSpawners
             possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
 
             // If no suggestions made, simply spawn around 0,0
-            if (suggestedStartingPoint == null) suggestedStartingPoint = new Vector2Int(0, 0);
+            if (suggestedStartingPoint == null)
+            {
+                suggestedStartingPoint = new Vector2Int(0, 0);
+            }
             // Offset suggested starting point to map
             suggestedStartingPoint = new Vector2Int(suggestedStartingPoint.Value.x - (int)collisionMap.ScaledOffset.x,
                     suggestedStartingPoint.Value.y - (int)collisionMap.ScaledOffset.y);
@@ -219,13 +235,13 @@ namespace Maes.Map.RobotSpawners
             queue.Enqueue(startCoord);
             while (queue.Count > 0 && spawnTilesSelected.Count < numberOfRobots)
             {
-                Vector2Int tile = queue.Dequeue();
+                var tile = queue.Dequeue();
                 spawnTilesSelected.Add(tile);
 
                 // Check immediate neighbours
-                for (int x = tile.x - 1; x <= tile.x + 1; x++)
+                for (var x = tile.x - 1; x <= tile.x + 1; x++)
                 {
-                    for (int y = tile.y - 1; y <= tile.y + 1; y++)
+                    for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if (IsInMapRange(x, y, collisionMap.WidthInTiles, collisionMap.HeightInTiles)
                             && (y == tile.y || x == tile.x))
@@ -257,7 +273,7 @@ namespace Maes.Map.RobotSpawners
                 }
             }
 
-            int robotId = 0;
+            var robotId = 0;
             foreach (var spawnTile in spawnTilesSelected)
             {
                 var robot = CreateRobot(
@@ -289,7 +305,7 @@ namespace Maes.Map.RobotSpawners
             var robots = new List<MonaRobot>();
 
             var hallWays = collisionMap.Rooms.FindAll(r => r.IsHallWay).ToList();
-            List<Vector2Int> possibleSpawnTiles = new List<Vector2Int>();
+            var possibleSpawnTiles = new List<Vector2Int>();
             foreach (var hallWay in hallWays)
             {
                 possibleSpawnTiles.AddRange(hallWay.Tiles.Except(hallWay.EdgeTiles));
@@ -315,11 +331,13 @@ namespace Maes.Map.RobotSpawners
             });
 
 
-            int robotId = 0;
+            var robotId = 0;
             foreach (var tile in possibleSpawnTiles)
             {
                 if (robotId == numberOfRobots)
+                {
                     break;
+                }
 
                 robots.Add(CreateRobot(
                     x: tile.x,
@@ -335,7 +353,7 @@ namespace Maes.Map.RobotSpawners
 
             return robots;
         }
-        
+
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {
@@ -344,8 +362,11 @@ namespace Maes.Map.RobotSpawners
             var robot = robotGameObject.GetComponent<MonaRobot>();
             // robotRelativeSize is a floating point value in ]0,1.0]. 1.0 = robot is the same size as a tile.
             if (0.001f > relativeSize && relativeSize > 1.0000001f)
+            {
                 throw new ArgumentException(
                     "Robot relative size cannot exceed 1.0f or be below 0.001f. Otherwise some areas of the map may be impossible to explore");
+            }
+
             robot.transform.localScale = new Vector3(
                 0.495f * relativeSize,
                 0.495f * relativeSize,
@@ -354,8 +375,8 @@ namespace Maes.Map.RobotSpawners
 
             robot.outLine.enabled = false;
 
-            float RTOffset = 0.01f; // Offset is used, since being exactly at integer value positions can cause issues with ray tracing
-            float marchingSquareOffset = 0.5f; // Offset to put robots back on coarsemap tiles instead of marching squares.
+            var RTOffset = 0.01f; // Offset is used, since being exactly at integer value positions can cause issues with ray tracing
+            var marchingSquareOffset = 0.5f; // Offset to put robots back on coarsemap tiles instead of marching squares.
             robot.transform.position = new Vector3(x + RTOffset + collisionMap.ScaledOffset.x + marchingSquareOffset,
                 y + RTOffset + collisionMap.ScaledOffset.y + marchingSquareOffset);
 
@@ -408,7 +429,10 @@ namespace Maes.Map.RobotSpawners
         private static List<Vector2Int> FindEdgeTiles(List<Vector2Int> tiles, bool checkDiagonal)
         {
             var tilesHashSet = new HashSet<Vector2Int>();
-            foreach (var tile in tiles) tilesHashSet.Add(tile);
+            foreach (var tile in tiles)
+            {
+                tilesHashSet.Add(tile);
+            }
 
             // An edge is any tile, where a neighbor is missing in the set of tiles.
             var edgeTiles = new List<Vector2Int>();
@@ -416,28 +440,37 @@ namespace Maes.Map.RobotSpawners
             foreach (var tile in tilesHashSet)
             {
                 var isEdge = false;
-                for (int x = tile.x - 1; x <= tile.x + 1; x++)
+                for (var x = tile.x - 1; x <= tile.x + 1; x++)
                 {
-                    for (int y = tile.y - 1; y <= tile.y + 1; y++)
+                    for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if (checkDiagonal)
                         {
                             if (x == tile.x || y == tile.y)
                             {
                                 var neighbour = new Vector2Int(x, y);
-                                if (!tilesHashSet.Contains(neighbour)) isEdge = true;
+                                if (!tilesHashSet.Contains(neighbour))
+                                {
+                                    isEdge = true;
+                                }
                             }
                         }
                         else
                         {
                             var neighbour = new Vector2Int(x, y);
-                            if (!tilesHashSet.Contains(neighbour)) isEdge = true;
+                            if (!tilesHashSet.Contains(neighbour))
+                            {
+                                isEdge = true;
+                            }
                         }
 
                     }
                 }
 
-                if (isEdge) edgeTiles.Add(tile);
+                if (isEdge)
+                {
+                    edgeTiles.Add(tile);
+                }
             }
 
             return edgeTiles;

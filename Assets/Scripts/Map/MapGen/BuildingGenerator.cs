@@ -22,7 +22,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
+
 using Random = System.Random;
 
 namespace Maes.Map.MapGen
@@ -95,30 +97,40 @@ namespace Maes.Map.MapGen
             var connectedRooms = new List<Room>();
             var nonConnectedRooms = new List<Room>();
 
-            var wallThickness = config.WallThickness+1;
+            var wallThickness = config.WallThickness + 1;
 
             foreach (var room in sortedRooms)
             {
                 if (room.IsAccessibleFromMainRoom)
+                {
                     connectedRooms.Add(room);
+                }
                 else
+                {
                     nonConnectedRooms.Add(room);
+                }
             }
 
             if (nonConnectedRooms.Count == 0)
+            {
                 return connectedMap;
+            }
 
             foreach (var connectedRoom in connectedRooms)
             {
                 foreach (var nonConnectedRoom in nonConnectedRooms)
                 {
                     if (connectedRoom == nonConnectedRoom || connectedRoom.IsConnected(nonConnectedRoom))
+                    {
                         continue;
+                    }
 
                     // If they share any wall, they must be adjacent
                     var sharedWallTiles = connectedRoom.GetSharedWallTiles(nonConnectedRoom, wallThickness);
                     if (sharedWallTiles.Count <= 0)
+                    {
                         continue;
+                    }
 
                     // The maxima of x and y are needed to isolate the coordinates for each line of wall
                     var biggestXValue = sharedWallTiles.Max(tile => tile.x);
@@ -128,12 +140,17 @@ namespace Maes.Map.MapGen
 
                     var maxDoors = random.Next(1, 4);
                     if (smallestYValue == biggestYValue || smallestXValue == biggestXValue)
+                    {
                         maxDoors = 1;
+                    }
+
                     var doorsMade = 0;
                     var doorPadding = Math.Max(config.DoorPadding, wallThickness);
 
                     if (doorsMade >= maxDoors)
+                    {
                         continue;
+                    }
 
                     // A shared wall with the smallest y value
                     // A shared line/wall in the bottom
@@ -145,12 +162,18 @@ namespace Maes.Map.MapGen
                             (line.Count - 1) - (int)config.DoorWidth - doorPadding);
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
+                        {
                             for (var j = 0; j < wallThickness; j++)
+                            {
                                 connectedMap[doorStartingPoint.x + i, doorStartingPoint.y + j] = new Tile(TileType.Room);
+                            }
+                        }
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
+                        {
                             continue;
+                        }
                     }
 
                     // Shared wall with the biggest y value
@@ -163,12 +186,18 @@ namespace Maes.Map.MapGen
                             (line.Count - 1) - (int)config.DoorWidth - doorPadding);
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
+                        {
                             for (var j = -1; j < wallThickness; j++)
+                            {
                                 connectedMap[doorStartingPoint.x + i, doorStartingPoint.y - j] = new Tile(TileType.Room);
+                            }
+                        }
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
+                        {
                             continue;
+                        }
                     }
 
                     // A shared wall with the smallest x value
@@ -181,12 +210,18 @@ namespace Maes.Map.MapGen
                             (line.Count - 1) - (int)config.DoorWidth - doorPadding);
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
+                        {
                             for (var j = 0; j < wallThickness; j++)
+                            {
                                 connectedMap[doorStartingPoint.x + j, doorStartingPoint.y + i] = new Tile(TileType.Room);
+                            }
+                        }
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                         if (++doorsMade >= maxDoors)
+                        {
                             continue;
+                        }
                     }
 
                     // A shared wall with the biggest x value
@@ -199,8 +234,12 @@ namespace Maes.Map.MapGen
                             (line.Count - 1) - (int)config.DoorWidth - doorPadding);
                         var doorStartingPoint = line[doorStartingIndex];
                         for (var i = 0; i < config.DoorWidth; i++)
+                        {
                             for (var j = -1; j < wallThickness; j++)
+                            {
                                 connectedMap[doorStartingPoint.x - j, doorStartingPoint.y + i] = new Tile(TileType.Room);
+                            }
+                        }
 
                         Room.ConnectRooms(connectedRoom, nonConnectedRoom);
                     }
@@ -229,11 +268,19 @@ namespace Maes.Map.MapGen
                 var o2y = o2.Tiles[0].y;
 
                 if (map[o1x, o1y] == map[o2x, o2y])
+                {
                     return o2.RoomSize - o1.RoomSize;
+                }
+
                 if (map[o1x, o1y].Type == TileType.Hall && map[o2x, o2y].Type != TileType.Hall)
+                {
                     return -1;
+                }
+
                 if (map[o1x, o1y].Type != TileType.Hall && map[o2x, o2y].Type == TileType.Hall)
+                {
                     return 1;
+                }
 
                 return o2.RoomSize - o1.RoomSize;
             });
@@ -287,7 +334,9 @@ namespace Maes.Map.MapGen
             var shouldSplit = random.Next(0, 100) <= config.RoomSplitChancePercent;
 
             if (!shouldSplit && !forceSplit)
+            {
                 return;
+            }
 
             // Find where to split
             // Rotate 90 degrees every time an room is split
@@ -370,7 +419,7 @@ namespace Maes.Map.MapGen
                 var biggestX = region.Select(coordinate => coordinate.x).Max();
                 var smallestY = region.Select(coordinate => coordinate.y).Min();
                 var biggestY = region.Select(coordinate => coordinate.y).Max();
-                var tile= _type ?? throw new InvalidOperationException("_type is null");
+                var tile = _type ?? throw new InvalidOperationException("_type is null");
                 var innerTile = _type ?? throw new InvalidOperationException("_type is null");
                 //while (innerTile.Type == tile.Type)
                 //    innerTile = _type;
@@ -387,11 +436,19 @@ namespace Maes.Map.MapGen
 
                     foreach (var coordinate in box)
                     {
-                        if (!IsInMapRange(coordinate.x, coordinate.y, mapWithRoomWalls)) continue;
+                        if (!IsInMapRange(coordinate.x, coordinate.y, mapWithRoomWalls))
+                        {
+                            continue;
+                        }
+
                         if (i == 0 || i == wallThickness - 1)
+                        {
                             mapWithRoomWalls[coordinate.x, coordinate.y] = tile;
+                        }
                         else
+                        {
                             mapWithRoomWalls[coordinate.x, coordinate.y] = innerTile;
+                        }
                     }
                 }
             }

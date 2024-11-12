@@ -21,6 +21,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
 
@@ -105,7 +106,9 @@ namespace Maes.Map.MapGen
                 for (var y = 0; y < map.GetLength(1); y++)
                 {
                     if (mapFlags[x, y] != notCounted || !tileTypes.Contains(map[x, y].Type))
+                    {
                         continue;
+                    }
 
                     var newRegion = GetRegionTiles(x, y, map);
                     regions.Add(newRegion);
@@ -146,9 +149,15 @@ namespace Maes.Map.MapGen
                     for (var y = tile.y - 1; y <= tile.y + 1; y++)
                     {
                         if (!IsInMapRange(x, y, map) || (y != tile.y && x != tile.x))
+                        {
                             continue;
+                        }
+
                         if (mapFlags[x, y] != notCounted || map[x, y].Type != tileType)
+                        {
                             continue;
+                        }
+
                         mapFlags[x, y] = counted;
                         queue.Enqueue(new Vector2Int(x, y));
                     }
@@ -199,7 +208,9 @@ namespace Maes.Map.MapGen
         protected void DrawMap(Tile[,] map)
         {
             if (MapToDraw == null)
+            {
                 return;
+            }
 
             var width = map.GetLength(0);
             var height = map.GetLength(1);

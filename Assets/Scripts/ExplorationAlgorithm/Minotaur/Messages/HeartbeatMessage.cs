@@ -19,14 +19,13 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.Map;
-
 using System.Collections.Generic;
-
-using UnityEngine;
 using System.Linq;
 
 using Maes.Algorithms;
+using Maes.Map;
+
+using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -57,7 +56,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
 
                 var amount = heartbeatMessage.doorways.Count;
-                for (int i = 0; i < amount; i++)
+                for (var i = 0; i < amount; i++)
                 {
                     var doorway = heartbeatMessage.doorways[i];
                     if (doorways.Contains(doorway))
@@ -91,4 +90,3 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         }
     }
 }
-

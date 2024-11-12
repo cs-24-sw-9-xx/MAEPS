@@ -21,12 +21,13 @@
 
 using System;
 
-namespace Maes.Statistics {
+namespace Maes.Statistics
+{
 
     public interface ICell
     {
-        bool IsExplorable { get; } 
-        bool IsExplored { get; } 
+        bool IsExplorable { get; }
+        bool IsExplored { get; }
         bool IsCovered { get; }
         bool CanBeCovered { get; set; }
         void RegisterExploration(int currentTimeTicks);
@@ -36,52 +37,63 @@ namespace Maes.Statistics {
     public abstract class Cell : ICell
     {
         // --- Exploration over time --- 
-        public bool IsExplorable { get; } 
-        public bool IsExplored { get; private set; } 
+        public bool IsExplorable { get; }
+        public bool IsExplored { get; private set; }
 
         // --- Coverage over time  ---
         public bool IsCovered { get; private set; }
         public bool CanBeCovered { get; set; } = true;
-        
+
         // --- Redundant Coverage ---
         public int CoverageTimeInTicks; // The amount of ticks that this cell has been covered
         public int ExplorationTimeInTicks; // The amount of ticks that this has been explored
-        
+
         //  --- Heatmap ---
         public int LastExplorationTimeInTicks; // The last time that this cell was seen by a robot 
         public int LastCoverageTimeInTicks; // The last time that this cell was covered by a robot
-        
+
         /// <summary>
         /// Called to register that a robot has seen this tile this tick
         /// </summary>
-        public void RegisterExploration(int currentTimeTicks) {
+        public void RegisterExploration(int currentTimeTicks)
+        {
             if (!IsExplorable)
+            {
                 throw new Exception("Registered exploration for a tile that was marked not explorable");
+            }
+
             ExplorationTimeInTicks += 1;
             LastExplorationTimeInTicks = currentTimeTicks;
             IsExplored = true;
         }
 
-        public void RegisterCoverage(int currenTimeTicks) {
+        public void RegisterCoverage(int currenTimeTicks)
+        {
             if (!CanBeCovered)
+            {
                 throw new Exception("Registered coverage for a tile that was marked not coverable");
+            }
+
             CoverageTimeInTicks += 1;
             LastCoverageTimeInTicks = currenTimeTicks;
             IsCovered = true;
         }
 
-        protected Cell(bool isExplorable) {
+        protected Cell(bool isExplorable)
+        {
             IsExplorable = isExplorable;
         }
     }
-    
-    public class ExplorationCell : Cell {
+
+    public class ExplorationCell : Cell
+    {
         public ExplorationCell(bool isExplorable) : base(isExplorable)
         {
         }
     }
-    
-    public class PatrollingCell : Cell {
+
+    public class PatrollingCell : Cell
+    {
         public PatrollingCell(bool isExplorable) : base(isExplorable)
         {
         }

@@ -26,31 +26,38 @@ using Maes.Statistics;
 
 using UnityEngine;
 
-namespace Maes.Map.Visualization.Exploration {
-    internal class CurrentlyVisibleAreaVisualization : IExplorationVisualizationMode {
-        
+namespace Maes.Map.Visualization.Exploration
+{
+    internal class CurrentlyVisibleAreaVisualization : IExplorationVisualizationMode
+    {
+
         private readonly SimulationMap<ExplorationCell> _explorationMap;
         private readonly Robot2DController _selectedRobot;
 
-        public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) {
+        public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot)
+        {
             _selectedRobot = selectedRobot;
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells) {
+        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        {
             /* Ignore new exploration data as we are interested in all VISIBLE cells */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells) {
+        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        {
             /* Coverage data not needed */
         }
 
-        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick) {
+        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
+        {
             visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
         }
-        
-        private Color32 ExplorationCellToColor(int index) {
-            return _selectedRobot.SlamMap.CurrentlyVisibleTriangles.Contains(index) ? 
+
+        private Color32 ExplorationCellToColor(int index)
+        {
+            return _selectedRobot.SlamMap.CurrentlyVisibleTriangles.Contains(index) ?
                     ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
         }
     }

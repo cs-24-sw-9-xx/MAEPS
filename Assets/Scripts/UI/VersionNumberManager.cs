@@ -22,17 +22,21 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.UI {
-    internal class VersionNumberManager: MonoBehaviour {
-        
-        private void Start() {
+namespace Maes.UI
+{
+    internal class VersionNumberManager : MonoBehaviour
+    {
+
+        private void Start()
+        {
             UpdateVersionNumberText();
         }
 
-        private void UpdateVersionNumberText() {
-            var versionNumberText = this.gameObject.GetComponent<Text>();
+        private void UpdateVersionNumberText()
+        {
+            var versionNumberText = gameObject.GetComponent<Text>();
             versionNumberText.text = "v." + Application.version;
-            
+
         }
     }
 }

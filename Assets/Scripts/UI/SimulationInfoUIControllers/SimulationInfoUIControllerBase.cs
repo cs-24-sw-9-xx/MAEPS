@@ -28,7 +28,8 @@ using Maes.Simulation.SimulationScenarios;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.UI.SimulationInfoUIControllers {
+namespace Maes.UI.SimulationInfoUIControllers
+{
     public abstract class SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationInfoUIController
     where TSimulation : class, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm
@@ -40,7 +41,7 @@ namespace Maes.UI.SimulationInfoUIControllers {
         public Text TagDebugText = null!;
 
         public Text MouseCoordinateText = null!;
-        
+
         public Button StickyCameraButton = null!;
 
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
@@ -51,32 +52,35 @@ namespace Maes.UI.SimulationInfoUIControllers {
         protected delegate void SimulationModification(TSimulation? simulation);
 
         protected SimulationModification? _mostRecentMapVisualizationModification;
-        
+
         protected readonly Color _mapVisualizationColor = Color.white;
         protected readonly Color _mapVisualizationSelectedColor = new Color(150 / 255f, 200 / 255f, 150 / 255f);
-        
+
         protected List<Button> _mapVisualizationToggleGroup = new();
 
         protected abstract void AfterStart();
 
         private void Start()
         {
-            StickyCameraButton.onClick.AddListener(() => {
+            StickyCameraButton.onClick.AddListener(() =>
+            {
                 CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
                 StickyCameraButton.image.color = CameraController.singletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             });
-            
+
             AfterStart();
         }
 
         public virtual void Update() { }
 
-        public virtual void ClearSelectedRobot() {
+        public virtual void ClearSelectedRobot()
+        {
             CameraController.singletonInstance.stickyCam = false;
             StickyCameraButton.image.color = _mapVisualizationColor;
         }
 
-        public void UpdateMouseCoordinates(Vector2 mousePosition) {
+        public void UpdateMouseCoordinates(Vector2 mousePosition)
+        {
             var xNumberString = $"{mousePosition.x:00.00}".PadLeft(6);
             var yNumberString = $"{mousePosition.y:00.00}".PadLeft(6);
             MouseCoordinateText.text = $"(x: {xNumberString}, y: {yNumberString})";
@@ -84,21 +88,25 @@ namespace Maes.UI.SimulationInfoUIControllers {
 
         // This function executes the given map visualization change and remembers it.
         // Whenever the simulator creates a new simulation the most recent visualization change is repeated 
-        protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc) {
+        protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc)
+        {
             _mostRecentMapVisualizationModification = modificationFunc;
             modificationFunc(Simulation);
         }
 
-        public void UpdateAlgorithmDebugInfo(string info) {
+        public void UpdateAlgorithmDebugInfo(string info)
+        {
             AlgorithmDebugText.text = info;
         }
 
 
-        public void UpdateControllerDebugInfo(string info) {
+        public void UpdateControllerDebugInfo(string info)
+        {
             ControllerDebugText.text = info;
         }
 
-        public void UpdateTagDebugInfo(string info) {
+        public void UpdateTagDebugInfo(string info)
+        {
             TagDebugText.text = info;
         }
 
@@ -113,14 +121,17 @@ namespace Maes.UI.SimulationInfoUIControllers {
         protected abstract void UpdateStatistics(TSimulation? simulation);
 
         public void UpdateStatistics(ISimulation? simulation)
-        { 
-            UpdateStatistics((TSimulation?) simulation);
+        {
+            UpdateStatistics((TSimulation?)simulation);
         }
 
         // Highlights the selected map visualization button
-        protected void SelectVisualizationButton(Button selectedButton) {
-            foreach (var button in _mapVisualizationToggleGroup) 
+        protected void SelectVisualizationButton(Button selectedButton)
+        {
+            foreach (var button in _mapVisualizationToggleGroup)
+            {
                 button.image.color = _mapVisualizationColor;
+            }
 
             selectedButton.image.color = _mapVisualizationSelectedColor;
         }

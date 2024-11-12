@@ -45,9 +45,9 @@ using UnityEngine;
 
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = PatrollingSimulator;
     using MySimulationScenario = PatrollingSimulationScenario;
-    
+    using MySimulator = PatrollingSimulator;
+
     internal class ConscientiousReactiveExperiment : MonoBehaviour
     {
         private void Start()
@@ -106,7 +106,7 @@ namespace Maes.ExperimentSimulations
             var simulator = new MySimulator();
             var random = new System.Random(12345);
             var randNumbers = new List<int>();
-            for (int i = 0; i < 100; i++)
+            for (var i = 0; i < 100; i++)
             {
                 var val = random.Next(0, 1000000);
                 randNumbers.Add(val);
@@ -114,9 +114,9 @@ namespace Maes.ExperimentSimulations
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-            
+
             var buildingConfigList100 = new List<BuildingMapConfig>();
-            foreach (int val in randNumbers)
+            foreach (var val in randNumbers)
             {
                 buildingConfigList100.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
             }
@@ -137,12 +137,14 @@ namespace Maes.ExperimentSimulations
                         foreach (var (algorithmName, algorithm) in algorithms)
                         {
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                                                             totalCycles: 4,
+                                                                             stopAfterDiff: false,
                                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size/2, size/2), random.Next(-size/2, size/2)),
+                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)),
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)
@@ -155,6 +157,8 @@ namespace Maes.ExperimentSimulations
                             }
 
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                                                             totalCycles: 4,
+                                                                             stopAfterDiff: false,
                                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                                  collisionMap: buildingConfig,
@@ -173,6 +177,8 @@ namespace Maes.ExperimentSimulations
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                totalCycles: 4,
+                stopAfterDiff: false,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,

@@ -22,16 +22,19 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Maes.UI {
-    internal class Tooltip : MonoBehaviour {
+namespace Maes.UI
+{
+    internal class Tooltip : MonoBehaviour
+    {
         // Set by Awake
         private Text _text = null!;
         private RectTransform _backgroundTransform = null!;
         private RectTransform _parentTransform = null!;
-        
+
         private static Tooltip _instance = null!;
 
-        private void Awake() {
+        private void Awake()
+        {
             _instance = this;
             _text = transform.Find("Text").GetComponent<Text>();
             _backgroundTransform = transform.Find("Background").GetComponent<RectTransform>();
@@ -39,7 +42,8 @@ namespace Maes.UI {
             HideTooltip();
         }
 
-        private void ShowTooltip(string text) {
+        private void ShowTooltip(string text)
+        {
             gameObject.SetActive(true);
             _text.text = text;
             var padding = 2f;
@@ -47,22 +51,26 @@ namespace Maes.UI {
             _backgroundTransform.sizeDelta = bgSize;
         }
 
-        private void HideTooltip() {
+        private void HideTooltip()
+        {
             gameObject.SetActive(false);
         }
 
-        private void Update() {
+        private void Update()
+        {
             // Have the tooltip follow the mouse-pointer around.
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentTransform, 
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentTransform,
                 Input.mousePosition, null, out var localPoint);
             transform.localPosition = localPoint + new Vector2(2f, 2f);
         }
 
-        public static void ShowTooltip_Static(string text) {
+        public static void ShowTooltip_Static(string text)
+        {
             _instance.ShowTooltip(text);
         }
 
-        public static void HideTooltip_Static() {
+        public static void HideTooltip_Static()
+        {
             _instance.HideTooltip();
         }
     }

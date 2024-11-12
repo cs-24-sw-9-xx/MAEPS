@@ -19,29 +19,28 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
-using Maes.Map.MapGen;
-using Maes.Robot;
-
-using UnityEngine;
-
 using System.Collections.Generic;
-using System.Linq;
-using Maes.ExplorationAlgorithm.Greed;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Maes.Algorithms;
+using Maes.ExplorationAlgorithm.Greed;
+using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.ExplorationAlgorithm.Voronoi;
+using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
+using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = ExplorationSimulator;
     using MySimulationScenario = ExplorationSimulationScenario;
+    using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
     public class ExplorationExperimentBase : MonoBehaviour
     {
@@ -86,7 +85,7 @@ namespace Maes.ExperimentSimulations
             var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
-            for (int i = 0; i < mapIterations; i++)
+            for (var i = 0; i < mapIterations; i++)
             {
                 var val = random.Next(0, 1000000);
                 randNumbers.Add(val);

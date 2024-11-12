@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+
 using Maes.Map;
 
 using UnityEngine;
@@ -29,12 +30,12 @@ namespace Maes.Statistics
     public class ExplorationVisualizer : Visualizer<ExplorationCell>
     {
         public LayerMask _foglayer;
-        
+
         private GameObject? _fogOfWarPlane;
         private Mesh? _fogMesh;
         private Vector3[]? _fogVertices;
         private Color[]? _fogColors;
-        
+
         public static readonly Color32 ExploredColor = new Color32(32, 130, 57, 255);
         public static readonly Color32 CoveredColor = new Color32(32, 80, 240, 255);
         public static readonly Color32 SlamSeenColor = new Color32(50, 120, 180, 255);
@@ -44,7 +45,7 @@ namespace Maes.Statistics
         public override void SetSimulationMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
         {
             base.SetSimulationMap(newMap, offset);
-            
+
             //Fog of War related stuff below
             _fogOfWarPlane = GameObject.Find("FogPlaneBetter");
             if (_fogOfWarPlane != null)
@@ -52,11 +53,11 @@ namespace Maes.Statistics
                 _fogMesh = _fogOfWarPlane.GetComponent<MeshFilter>().mesh;
                 _fogVertices = _fogMesh.vertices;
                 _fogColors = new Color[_fogVertices.Length];
-                for (int i = 0; i < _fogColors.Length; i++)
+                for (var i = 0; i < _fogColors.Length; i++)
                 {
                     _fogColors[i] = Color.black;
                 }
-                for (int i = 0; i < _fogVertices.Length; i++)
+                for (var i = 0; i < _fogVertices.Length; i++)
                 {
                     _fogVertices[i] = _fogOfWarPlane.transform.TransformPoint(_fogVertices[i]);
                 }
@@ -68,7 +69,10 @@ namespace Maes.Statistics
         {
             var color = SolidColor;
             if (cell.IsExplorable)
+            {
                 color = cell.IsExplored ? ExploredColor : StandardCellColor;
+            }
+
             return color;
         }
 
@@ -87,13 +91,14 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogMesh != null && _fogColors != null) {
-                    for (int i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
+                if (_fogMesh != null && _fogColors != null)
+                {
+                    for (var i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
                         var ray = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);
                         if (Physics.Raycast(ray, out var hit, 1000, _foglayer, QueryTriggerInteraction.Collide))
                         {
-                            int vertexIndexHit = GetClosestVertex(hit, _fogMesh.triangles);
+                            var vertexIndexHit = GetClosestVertex(hit, _fogMesh.triangles);
                             _fogColors[vertexIndexHit].a = 0;
                             UpdateFogColor();
                         }
@@ -104,7 +109,7 @@ namespace Maes.Statistics
             _mesh.colors32 = _colors;
         }
 
-        void UpdateFogColor()
+        private void UpdateFogColor()
         {
             if (_fogMesh != null)
             {
@@ -115,21 +120,31 @@ namespace Maes.Statistics
         private static int GetClosestVertex(RaycastHit aHit, int[] aTriangles)
         {
             var b = aHit.barycentricCoordinate;
-            int index = aHit.triangleIndex * 3;
+            var index = aHit.triangleIndex * 3;
             if (index < 0 || index + 2 >= aTriangles.Length)
+            {
                 return -1;
+            }
 
             if (b.x > b.y)
             {
                 if (b.x > b.z)
+                {
                     return aTriangles[index]; // x
+                }
                 else
+                {
                     return aTriangles[index + 2]; // z
+                }
             }
             else if (b.y > b.z)
+            {
                 return aTriangles[index + 1]; // y
+            }
             else
+            {
                 return aTriangles[index + 2]; // z
+            }
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         public class BiddingMessage : IMinotaurMessage
         {
             private readonly int _requestorRobotID;
-            private Dictionary<int, int> _allBids = new();
+            private readonly Dictionary<int, int> _allBids = new();
             private readonly Doorway _doorway;
 
             public BiddingMessage(int requestorRobotID, Dictionary<int, int> allBids, Doorway doorway)
@@ -45,7 +45,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             {
                 if (biddingMessage._doorway == _doorway && biddingMessage._requestorRobotID == _requestorRobotID)
                 {
-                    foreach ((int key, int value) in biddingMessage._allBids)
+                    foreach ((var key, var value) in biddingMessage._allBids)
                     {
                         _allBids[key] = value; //This would overwrite bid values for the requestor and doorway, if it somehow changes, through it shouldnt
                     }
@@ -60,7 +60,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 {
                     return Combine(biddingMessage, minotaur);
                 }
-                
+
                 return this;
             }
             public IMinotaurMessage Process(MinotaurAlgorithm minotaur)
@@ -72,7 +72,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                     {
                         var orderedBids = _allBids.OrderBy(key => key.Value);
                         var winnerbids = orderedBids.Take((_allBids.Count + 1) / 2);
-                        foreach ((int key, int value) in winnerbids)
+                        foreach ((var key, var value) in winnerbids)
                         {
                             winnerIDList.Add(key);
                         }

@@ -161,7 +161,7 @@ namespace Maes.Utilities.Priority_Queue
         {
             get
             {
-                lock(_queue)
+                lock (_queue)
                 {
                     return _queue.Count;
                 }
@@ -177,9 +177,9 @@ namespace Maes.Utilities.Priority_Queue
         {
             get
             {
-                lock(_queue)
+                lock (_queue)
                 {
-                    if(_queue.Count <= 0)
+                    if (_queue.Count <= 0)
                     {
                         throw new InvalidOperationException("Cannot call .First on an empty queue");
                     }
@@ -195,7 +195,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public void Clear()
         {
-            lock(_queue)
+            lock (_queue)
             {
                 _queue.Clear();
                 _itemToNodesCache.Clear();
@@ -209,7 +209,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool Contains(TItem item)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 return item == null ? _nullNodesCache.Count > 0 : _itemToNodesCache.ContainsKey(item);
             }
@@ -222,14 +222,14 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public TItem Dequeue()
         {
-            lock(_queue)
+            lock (_queue)
             {
-                if(_queue.Count <= 0)
+                if (_queue.Count <= 0)
                 {
                     throw new InvalidOperationException("Cannot call Dequeue() on an empty queue");
                 }
 
-                SimpleNode node =_queue.Dequeue();
+                var node = _queue.Dequeue();
                 RemoveFromNodeCache(node);
                 return node.Data;
             }
@@ -243,7 +243,7 @@ namespace Maes.Utilities.Priority_Queue
         /// <returns></returns>
         private SimpleNode EnqueueNoLockOrCache(TItem item, TPriority priority)
         {
-            SimpleNode node = new SimpleNode(item);
+            var node = new SimpleNode(item);
             if (_queue.Count == _queue.MaxSize)
             {
                 _queue.Resize(_queue.MaxSize * 2 + 1);
@@ -260,7 +260,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public void Enqueue(TItem item, TPriority priority)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 IList<SimpleNode> nodes;
                 if (item == null)
@@ -272,7 +272,7 @@ namespace Maes.Utilities.Priority_Queue
                     nodes = new List<SimpleNode>();
                     _itemToNodesCache[item] = nodes;
                 }
-                SimpleNode node = EnqueueNoLockOrCache(item, priority);
+                var node = EnqueueNoLockOrCache(item, priority);
                 nodes.Add(node);
             }
         }
@@ -285,7 +285,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool EnqueueWithoutDuplicates(TItem item, TPriority priority)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 IList<SimpleNode> nodes;
                 if (item == null)
@@ -305,7 +305,7 @@ namespace Maes.Utilities.Priority_Queue
                     nodes = new List<SimpleNode>();
                     _itemToNodesCache[item] = nodes;
                 }
-                SimpleNode node = EnqueueNoLockOrCache(item, priority);
+                var node = EnqueueNoLockOrCache(item, priority);
                 nodes.Add(node);
                 return true;
             }
@@ -319,7 +319,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public void Remove(TItem item)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 SimpleNode removeMe;
                 IList<SimpleNode> nodes;
@@ -383,7 +383,7 @@ namespace Maes.Utilities.Priority_Queue
             lock (_queue)
             {
                 var findMe = GetExistingNode(item);
-                if(findMe == null)
+                if (findMe == null)
                 {
                     throw new InvalidOperationException("Cannot call GetPriority() on a node which is not enqueued: " + item);
                 }
@@ -423,13 +423,13 @@ namespace Maes.Utilities.Priority_Queue
             {
                 if (_queue.Count > 0)
                 {
-                    SimpleNode node = _queue.Dequeue();
+                    var node = _queue.Dequeue();
                     first = node.Data;
                     RemoveFromNodeCache(node);
                     return true;
                 }
             }
-            
+
             first = default;
             return false;
         }
@@ -443,7 +443,7 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool TryRemove(TItem item)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 SimpleNode removeMe;
                 IList<SimpleNode> nodes;
@@ -485,10 +485,10 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool TryUpdatePriority(TItem item, TPriority priority)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 var updateMe = GetExistingNode(item);
-                if(updateMe == null)
+                if (updateMe == null)
                 {
                     return false;
                 }
@@ -508,10 +508,10 @@ namespace Maes.Utilities.Priority_Queue
         /// </summary>
         public bool TryGetPriority(TItem item, out TPriority? priority)
         {
-            lock(_queue)
+            lock (_queue)
             {
                 var findMe = GetExistingNode(item);
-                if(findMe == null)
+                if (findMe == null)
                 {
                     priority = default;
                     return false;
@@ -524,11 +524,11 @@ namespace Maes.Utilities.Priority_Queue
 
         public IEnumerator<TItem> GetEnumerator()
         {
-            List<TItem> queueData = new List<TItem>();
+            var queueData = new List<TItem>();
             lock (_queue)
             {
                 //Copy to a separate list because we don't want to 'yield return' inside a lock
-                foreach(var node in _queue)
+                foreach (var node in _queue)
                 {
                     queueData.Add(node.Data);
                 }
@@ -544,12 +544,12 @@ namespace Maes.Utilities.Priority_Queue
 
         public bool IsValidQueue()
         {
-            lock(_queue)
+            lock (_queue)
             {
                 // Check all items in cache are in the queue
-                foreach (IList<SimpleNode> nodes in _itemToNodesCache.Values)
+                foreach (var nodes in _itemToNodesCache.Values)
                 {
-                    foreach (SimpleNode node in nodes)
+                    foreach (var node in nodes)
                     {
                         if (!_queue.Contains(node))
                         {
@@ -559,7 +559,7 @@ namespace Maes.Utilities.Priority_Queue
                 }
 
                 // Check all items in queue are in cache
-                foreach (SimpleNode node in _queue)
+                foreach (var node in _queue)
                 {
                     if (GetExistingNode(node.Data) == null)
                     {

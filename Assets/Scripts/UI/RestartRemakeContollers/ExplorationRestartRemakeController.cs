@@ -6,6 +6,6 @@ namespace Maes.UI.RestartRemakeContollers
 {
     public class ExplorationRestartRemakeController : RestartRemakeController<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
-        
+
     }
 }

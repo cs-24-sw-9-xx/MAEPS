@@ -14,6 +14,7 @@ using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
 using Maes.Robot.Task;
+
 using UnityEngine;
 
 namespace Maes.ExplorationAlgorithm.HenrikAlgo
@@ -24,7 +25,7 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
         private IRobotController _robotController = null!;
         private Vector2Int? _targetTile;
         private uint _ticksSinceHeartbeat;
-        
+
         public void SetController(Robot2DController controller)
         {
             _robotController = controller;

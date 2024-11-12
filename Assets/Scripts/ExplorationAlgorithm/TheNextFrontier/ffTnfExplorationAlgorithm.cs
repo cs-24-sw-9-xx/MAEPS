@@ -29,29 +29,36 @@ using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 
-namespace Maes.ExplorationAlgorithm.TheNextFrontier {
-    public class FfTnfExplorationAlgorithm : IExplorationAlgorithm { //This whole thing should probably just be an option or subclass of normal tnf, this is bad code
-        private static class Gaussian {
+namespace Maes.ExplorationAlgorithm.TheNextFrontier
+{
+    public class FfTnfExplorationAlgorithm : IExplorationAlgorithm
+    { //This whole thing should probably just be an option or subclass of normal tnf, this is bad code
+        private static class Gaussian
+        {
             private const float A = 5f, B = .5f, C = .1f; // Magnitude, Mean, and Spread.
             private const float Alpha = -1 / (C * C * 2);
             private const float Beta = B / (C * C);
             private static readonly float Gamma;
 
-            static Gaussian() { // My best suggested constexpr substitute
+            static Gaussian()
+            { // My best suggested constexpr substitute
                 Gamma = Mathf.Log(A) - B * B / (2 * C * C);
             }
 
             /// <returns>
             /// value based on <a href="https://en.wikipedia.org/wiki/Gaussian_function#Properties">this</a> formula.
             /// </returns>
-            public static float Gauss(float x) {
+            public static float Gauss(float x)
+            {
                 return Mathf.Exp(Alpha * x * x + Beta * x + Gamma);
             }
         }
 
-        private enum TnfStatus {
+        private enum TnfStatus
+        {
             AwaitMoving,
             AwaitRotating,
             AwaitNextFrontier,
@@ -86,38 +93,47 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
         private readonly List<(int, Vector2)> _currentDestinations = new();
 
 
-        private class Frontier {
+        private class Frontier
+        {
             public readonly List<(Vector2Int, float)> Cells;
 
-            public Frontier(List<(Vector2Int, float)> cells) {
+            public Frontier(List<(Vector2Int, float)> cells)
+            {
                 Cells = cells;
                 UtilityValue = -1;
             }
 
             public float UtilityValue { get; set; }
         }
-        
-        public FfTnfExplorationAlgorithm(int alpha, int beta, int randomSeed) {
+
+        public FfTnfExplorationAlgorithm(int alpha, int beta, int randomSeed)
+        {
             Alpha = alpha;
             Beta = beta;
             _robotTnfStatus = TnfStatus.AwaitNextFrontier;
             _random = new System.Random(randomSeed);
         }
 
-        private float InformationPotential((Vector2Int, float) cell, List<(Vector2Int, float)> neighbours) {
+        private float InformationPotential((Vector2Int, float) cell, List<(Vector2Int, float)> neighbours)
+        {
             return Gaussian.Gauss(cell.Item2) + neighbours.Sum(neighbour => Gaussian.Gauss(neighbour.Item2));
         }
 
-        private float InformationFactor(Frontier frontier) {
+        private float InformationFactor(Frontier frontier)
+        {
             return frontier.Cells.Sum(c => InformationPotential(c, GetNeighbouringCells(c))) / _frontiers!.Count;
         }
 
-        private List<(Vector2Int, float)> GetNeighbouringCells((Vector2Int, float) cell) {
+        private List<(Vector2Int, float)> GetNeighbouringCells((Vector2Int, float) cell)
+        {
             var res = new List<(Vector2Int, float)>();
 
-            for (var x = cell.Item1.x - 1; x <= cell.Item1.x + 1; x++) {
-                for (var y = cell.Item1.y - 1; y <= cell.Item1.y + 1; y++) {
-                    if (x == cell.Item1.x && y == cell.Item1.y) {
+            for (var x = cell.Item1.x - 1; x <= cell.Item1.x + 1; x++)
+            {
+                for (var y = cell.Item1.y - 1; y <= cell.Item1.y + 1; y++)
+                {
+                    if (x == cell.Item1.x && y == cell.Item1.y)
+                    {
                         continue;
                     }
                     var position = new Vector2Int(x, y);
@@ -129,29 +145,35 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             return res;
         }
 
-        private float WavefrontNormalized(Frontier frontier, Vector2 fromPosition, float normalizerConstant) {
+        private float WavefrontNormalized(Frontier frontier, Vector2 fromPosition, float normalizerConstant)
+        {
             var wave = Wavefront(frontier, fromPosition).ToList();
             var distFactor = Mathf.Sqrt(wave.Select(d => d / normalizerConstant).Sum());
             return distFactor;
         }
 
-        private float DistanceFactor(Frontier f, Vector2 from, float normalizerConstant) {
+        private float DistanceFactor(Frontier f, Vector2 from, float normalizerConstant)
+        {
             var val = WavefrontNormalized(f, from, normalizerConstant);
             return Mathf.Pow(val, Alpha - 1) * Mathf.Pow(1 - val, Beta - 1);
         }
 
-        private IEnumerable<float> Wavefront(Frontier frontier, Vector2 fromPosition) {
+        private IEnumerable<float> Wavefront(Frontier frontier, Vector2 fromPosition)
+        {
             return frontier.Cells.Select(cell => Vector2.Distance(fromPosition, cell.Item1));
         }
 
-        private float CoordinationFactor(Frontier frontier) {
+        private float CoordinationFactor(Frontier frontier)
+        {
             _lastSeenNeighbours = _robotController.SenseNearbyRobots();
-            if (_lastSeenNeighbours.Count <= 0) {
+            if (_lastSeenNeighbours.Count <= 0)
+            {
                 return 0;
             }
 
             var sum = 0f;
-            foreach (var neighbour in _lastSeenNeighbours) {
+            foreach (var neighbour in _lastSeenNeighbours)
+            {
                 var pos = _robotPos + Geometry.VectorFromDegreesAndMagnitude(neighbour.Angle, neighbour.Distance);
                 var normalizerConstant = _frontiers!.Max(f => f.Cells.Select(c => Vector2.Distance(pos, c.Item1)).Max());
                 sum += WavefrontNormalized(frontier, pos, normalizerConstant);
@@ -159,13 +181,16 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             return sum;
         }
 
-        private float FrontierCoordinationFactor(Frontier frontier) {
-            if (_currentDestinations.Count <= 0) {
+        private float FrontierCoordinationFactor(Frontier frontier)
+        {
+            if (_currentDestinations.Count <= 0)
+            {
                 return 0;
             }
             var sum = 0f;
 
-            foreach (var destination in _currentDestinations) {
+            foreach (var destination in _currentDestinations)
+            {
                 var destinationCoordinates = destination.Item2;
                 var normalizerConstant = _frontiers!.Max(f => f.Cells.Select(c => Vector2.Distance(destinationCoordinates, c.Item1)).Max());
                 sum += WavefrontNormalized(frontier, destinationCoordinates, normalizerConstant);
@@ -174,25 +199,31 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             return sum;
         }
 
-        private float UtilityFunction(Frontier frontier, float normalizerConstant) {
+        private float UtilityFunction(Frontier frontier, float normalizerConstant)
+        {
             //Debug.Log("Information:" + InformationFactor(frontier) + " Distance:" + DistanceFactor(frontier, _robotPos, normalizerConstant) + " Coordination:" + CoordinationFactor(frontier) + " Frontier:" + FrontierCoordinationFactor(frontier));
             return InformationFactor(frontier) + DistanceFactor(frontier, _robotPos, normalizerConstant) - CoordinationFactor(frontier) - (FrontierCoordinationFactor(frontier) * 1f);
         }
 
-        public void UpdateLogic() {
+        public void UpdateLogic()
+        {
             _robotPos = _map.GetApproximatePosition();
             _robotPosInt = Vector2Int.RoundToInt(_robotPos);
 
-            if (_logicTicksSinceLastCommunication == 0) {
+            if (_logicTicksSinceLastCommunication == 0)
+            {
                 _lastSeenNeighbours = _robotController.SenseNearbyRobots();
-                if (_lastSeenNeighbours.Any()) {
+                if (_lastSeenNeighbours.Any())
+                {
                     _robotController.StopCurrentTask();
                     _isCommunicating = true;
-                    if (_path != null && _path.Count > 0) {
-                        PathStep lastStep = _path.Last.Value;
-                        _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), (Vector2) lastStep.End));
+                    if (_path != null && _path.Count > 0)
+                    {
+                        var lastStep = _path.Last.Value;
+                        _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), (Vector2)lastStep.End));
                     }
-                    else {
+                    else
+                    {
                         _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), _robotPos));
                     }
                 }
@@ -202,29 +233,35 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             _logicTicksSinceLastCommunication++;
             _logicTicksSinceLastCommunication %= 20;
 
-            if (_robotController.HasCollidedSinceLastLogicTick()) {
+            if (_robotController.HasCollidedSinceLastLogicTick())
+            {
                 _robotController.StopCurrentTask();
                 _bonked = true;
                 _robotTnfStatus = TnfStatus.AwaitCollisionMitigation;
             }
 
-            if (_robotController.IsCurrentlyColliding()) {
+            if (_robotController.IsCurrentlyColliding())
+            {
                 _ticksSpentColliding++;
             }
 
-            if (_ticksSpentColliding == 5) {
+            if (_ticksSpentColliding == 5)
+            {
                 HardReset();
             }
 
-            if (_isCommunicating) {
+            if (_isCommunicating)
+            {
                 AwaitCommunication();
                 _isCommunicating = false;
             }
 
-            switch (_robotTnfStatus) {
+            switch (_robotTnfStatus)
+            {
                 case TnfStatus.AwaitNextFrontier:
                     var nextFrontier = CalculateNextFrontier(_robotPos);
-                    if (nextFrontier == null) {
+                    if (nextFrontier == null)
+                    {
                         break;
                     }
                     MoveToFrontier(nextFrontier);
@@ -241,7 +278,8 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             }
         }
 
-        private void HardReset() {
+        private void HardReset()
+        {
             _robotTnfStatus = TnfStatus.AwaitNextFrontier;
             _robotController.StopCurrentTask();
             _frontiers = null;
@@ -254,9 +292,15 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             _ticksSpentColliding = 0;
         }
 
-        private void CollisionMitigation() {
-            if (_robotController.GetStatus() != RobotStatus.Idle) return;
-            if (_bonked) {
+        private void CollisionMitigation()
+        {
+            if (_robotController.GetStatus() != RobotStatus.Idle)
+            {
+                return;
+            }
+
+            if (_bonked)
+            {
                 _bonked = false;
                 _robotController.Move(.1f, true);
                 return;
@@ -265,16 +309,20 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             var possibleOptions = GetNeighbouringCells((_robotPosInt, 0)).Select(c => c.Item1).ToList();
             var blockedOptions = new List<Vector2Int>();
             var others = _robotController.SenseNearbyRobots();
-            foreach (var bot in others) {
+            foreach (var bot in others)
+            {
                 blockedOptions.Add(Vector2Int.RoundToInt(bot.GetRelativePosition(_robotPos, _map.GetApproximateGlobalDegrees())));
             }
-            foreach (var position in possibleOptions) {
-                if (_map.GetTileStatus(position) == SlamMap.SlamTileStatus.Solid) {
+            foreach (var position in possibleOptions)
+            {
+                if (_map.GetTileStatus(position) == SlamMap.SlamTileStatus.Solid)
+                {
                     blockedOptions.Add(position);
                 }
             }
             possibleOptions = possibleOptions.Except(blockedOptions).ToList();
-            if (!possibleOptions.Any()) {
+            if (!possibleOptions.Any())
+            {
                 return;
             }
             var pickedOption = possibleOptions[_random.Next(0, possibleOptions.Count - 1)];
@@ -284,53 +332,67 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             _robotTnfStatus = TnfStatus.AwaitMoving;
         }
 
-        private void AwaitCommunication() {
+        private void AwaitCommunication()
+        {
             var received = _robotController.ReceiveBroadcast();
-            if (!received.Any()) {
+            if (!received.Any())
+            {
                 return;
             }
-            var newMaps = new List<SlamMap> {_robotController.GetSlamMap()};
-            foreach (var package in received) {
-                var pack = ((ISlamAlgorithm, int, Vector2)) package;
+            var newMaps = new List<SlamMap> { _robotController.GetSlamMap() };
+            foreach (var package in received)
+            {
+                var pack = ((ISlamAlgorithm, int, Vector2))package;
                 newMaps.Add((SlamMap)pack.Item1);
-                if (_currentDestinations.Any(dict => dict.Item1 == pack.Item2)){
+                if (_currentDestinations.Any(dict => dict.Item1 == pack.Item2))
+                {
                     var index = _currentDestinations.FindIndex(dict => dict.Item1 == pack.Item2);
                     _currentDestinations[index] = (pack.Item2, pack.Item3);
-                } else {
+                }
+                else
+                {
                     _currentDestinations.Add((pack.Item2, pack.Item3));
                 }
             }
 
             // Largest Robot ID synchronizes to save on Simulator CPU time
-            if (!received.Cast<(ISlamAlgorithm, int, Vector2)>().Any(p => p.Item2 > _robotId)) {
+            if (!received.Cast<(ISlamAlgorithm, int, Vector2)>().Any(p => p.Item2 > _robotId))
+            {
                 SlamMap.Synchronize(newMaps);
             }
-            if (_robotTnfStatus == TnfStatus.OutOfFrontiers) {
+            if (_robotTnfStatus == TnfStatus.OutOfFrontiers)
+            {
                 _robotTnfStatus = TnfStatus.AwaitNextFrontier;
             }
 
         }
-        
-        private Frontier? CalculateNextFrontier(Vector2 currentPosition) {
+
+        private Frontier? CalculateNextFrontier(Vector2 currentPosition)
+        {
             _frontiers = GetFrontiers();
 
-            if (_frontiers.Count <= 0) {
+            if (_frontiers.Count <= 0)
+            {
                 return null;
             }
             var normalizerConstant = _frontiers.Max(f => f.Cells.Select(c => Vector2.Distance(currentPosition, c.Item1)).Max());
-            foreach (var frontier in _frontiers) {
+            foreach (var frontier in _frontiers)
+            {
                 frontier.UtilityValue = UtilityFunction(frontier, normalizerConstant);
             }
             return _frontiers.OrderByDescending(f => f.UtilityValue).First();
 
         }
 
-        private void MoveToFrontier(Frontier bestFrontier) {
+        private void MoveToFrontier(Frontier bestFrontier)
+        {
             var targetCell = GetFrontierMoveTarget(bestFrontier);
             var path = _map.GetTnfPathAsPathSteps(targetCell);
-            if (path == null) {
+            if (path == null)
+            {
                 _frontiers!.Remove(bestFrontier);
-                if (!_frontiers.Any()) {
+                if (!_frontiers.Any())
+                {
                     _robotTnfStatus = TnfStatus.OutOfFrontiers;
                     return;
                 }
@@ -340,7 +402,8 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             }
 
             _path = new LinkedList<PathStep>(path);
-            if (!_path.Any()) {
+            if (!_path.Any())
+            {
                 _robotTnfStatus = TnfStatus.AwaitNextFrontier;
                 return;
             }
@@ -351,7 +414,8 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             StartMoving();
         }
 
-        private Vector2Int GetFrontierMoveTarget(Frontier frontier) {
+        private Vector2Int GetFrontierMoveTarget(Frontier frontier)
+        {
             var count = frontier.Cells.Count;
             var first = 0;
             var middle = count / 2;
@@ -363,69 +427,88 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             return _map.GetTileCenterRelativePosition(dest).Distance < MinimumMoveDistance ? frontier.Cells[middle].Item1 : dest;
         }
 
-        private void DoMovement(LinkedList<PathStep>? path) {
-            if (_robotController.GetStatus() == RobotStatus.Idle) {
-                if (path != null && path.Count > 0) {
-                    if (_robotTnfStatus != TnfStatus.AwaitRotating) {
+        private void DoMovement(LinkedList<PathStep>? path)
+        {
+            if (_robotController.GetStatus() == RobotStatus.Idle)
+            {
+                if (path != null && path.Count > 0)
+                {
+                    if (_robotTnfStatus != TnfStatus.AwaitRotating)
+                    {
                         var nextStep = path.First;
                         _nextTileInPath = nextStep.Value;
                         path.Remove(nextStep);
                     }
                     _robotTnfStatus = TnfStatus.AwaitMoving;
                 }
-                else {
+                else
+                {
                     StartMoving();
-                    if (_nextTileInPath == null) {
+                    if (_nextTileInPath == null)
+                    {
                         _robotTnfStatus = TnfStatus.AwaitNextFrontier;
                     }
                     return;
                 }
-                if (_nextTileInPath != null) {
+                if (_nextTileInPath != null)
+                {
                     StartMoving();
                 }
-                else {
+                else
+                {
                     _robotTnfStatus = TnfStatus.AwaitNextFrontier;
                 }
             }
         }
 
-        private void StartMoving() {
-            if (_robotController.GetStatus() != RobotStatus.Idle || _nextTileInPath == null) {
+        private void StartMoving()
+        {
+            if (_robotController.GetStatus() != RobotStatus.Idle || _nextTileInPath == null)
+            {
                 return;
             }
             var relativePosition = _map.GetTileCenterRelativePosition(_nextTileInPath.End);
-            if (relativePosition.Distance < MinimumMoveDistance) {
+            if (relativePosition.Distance < MinimumMoveDistance)
+            {
                 _nextTileInPath = null;
                 return;
             }
-            if (Mathf.Abs(relativePosition.RelativeAngle) <= AngleDelta) {
+            if (Mathf.Abs(relativePosition.RelativeAngle) <= AngleDelta)
+            {
                 _robotController.Move(relativePosition.Distance);
                 _robotTnfStatus = TnfStatus.AwaitMoving;
             }
-            else {
+            else
+            {
                 _robotController.Rotate(relativePosition.RelativeAngle);
                 _robotTnfStatus = TnfStatus.AwaitRotating;
             }
         }
 
-        private List<Frontier> GetFrontiers() {
+        private List<Frontier> GetFrontiers()
+        {
             var res = new List<Frontier>();
             var edges = new LinkedList<(Vector2Int, float)>();
             var map = _map.GetExploredTiles();
 
             // Find edges
             var mapAsList = map.ToList();
-            foreach (var cell in mapAsList) {
+            foreach (var cell in mapAsList)
+            {
                 var isEdge = false;
-                for (var x = cell.Key.x - 1; x <= cell.Key.x + 1; x++) {
-                    for (var y = cell.Key.y - 1; y <= cell.Key.y + 1; y++) {
+                for (var x = cell.Key.x - 1; x <= cell.Key.x + 1; x++)
+                {
+                    for (var y = cell.Key.y - 1; y <= cell.Key.y + 1; y++)
+                    {
                         var neighbour = new Vector2Int(x, y);
-                        if (!map.ContainsKey(neighbour)) {
+                        if (!map.ContainsKey(neighbour))
+                        {
                             isEdge = true;
                         }
                     }
                 }
-                if (isEdge && cell.Value != SlamMap.SlamTileStatus.Solid) {
+                if (isEdge && cell.Value != SlamMap.SlamTileStatus.Solid)
+                {
                     edges.AddFirst(cell.ToTnfCell());
                 }
             }
@@ -433,20 +516,25 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             // build frontiers by connected cells
             var fCellCount = 0u;
             var eCellCount = edges.Count;
-            while (eCellCount > fCellCount) {
+            while (eCellCount > fCellCount)
+            {
                 var q = new Queue<(Vector2Int, float)>();
                 q.Enqueue(edges.First());
 
                 var frontier = new List<(Vector2Int, float)>();
-                while (q.Count > 0) {
+                while (q.Count > 0)
+                {
                     var next = q.Dequeue();
                     edges.Remove(next);
                     frontier.Add(next);
                     fCellCount++;
-                    for (int x = next.Item1.x - 1; x <= next.Item1.x + 1; x++) {
-                        for (int y = next.Item1.y - 1; y <= next.Item1.y + 1; y++) {
+                    for (var x = next.Item1.x - 1; x <= next.Item1.x + 1; x++)
+                    {
+                        for (var y = next.Item1.y - 1; y <= next.Item1.y + 1; y++)
+                        {
                             var position = new Vector2Int(x, y);
-                            if (edges.Any(e => e.Item1 == position)) {
+                            if (edges.Any(e => e.Item1 == position))
+                            {
                                 var newCell = edges.First(c => c.Item1 == position);
                                 q.Enqueue(newCell);
                                 edges.Remove(newCell);
@@ -462,22 +550,25 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier {
             return res;
         }
 
-        public bool IsOutOfFrontiers() {
+        public bool IsOutOfFrontiers()
+        {
             return _robotTnfStatus == TnfStatus.OutOfFrontiers;
         }
 
-        public void SetController(Robot2DController controller) {
+        public void SetController(Robot2DController controller)
+        {
             _robotController = controller;
             _map = _robotController.GetSlamMap().GetCoarseMap();
             _robotId = _robotController.GetRobotID();
         }
 
-        public string GetDebugInfo() {
+        public string GetDebugInfo()
+        {
             var sb = new StringBuilder();
             sb.AppendLine($"TnfStatus: {_robotTnfStatus.ToString()}");
             sb.AppendLine(_nextTileInPath != null ? $"Current movement target: {_nextTileInPath.End}" : "");
             return sb.ToString();
         }
-        
+
     }
 }

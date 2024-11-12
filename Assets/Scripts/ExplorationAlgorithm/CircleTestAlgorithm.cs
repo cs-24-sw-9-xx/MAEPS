@@ -33,7 +33,7 @@ namespace Maes.ExplorationAlgorithm
     {
         // Set by SetController
         private Robot2DController _controller = null!;
-        
+
         private readonly List<Vector2Int> _points = new();
         private readonly float _leftForce, _rightForce;
         private bool _turning;
@@ -77,7 +77,7 @@ namespace Maes.ExplorationAlgorithm
                 _points.Add(position);
             }
             // Add a point if we have created a half circle assuming it starts at y=0
-            if (_controller.Transform.position.y < 0) 
+            if (_controller.Transform.position.y < 0)
             {
                 _points.Add(position);
             }

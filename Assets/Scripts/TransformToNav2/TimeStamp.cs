@@ -44,7 +44,7 @@ namespace Maes.TransformToNav2
         }
 
         // (From a ROS2 Time message)
-        TimeStamp(int sec, uint nsec)
+        private TimeStamp(int sec, uint nsec)
         {
             Seconds = sec;
             NanoSeconds = nsec;

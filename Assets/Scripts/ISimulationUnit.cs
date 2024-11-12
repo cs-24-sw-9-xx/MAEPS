@@ -19,8 +19,10 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-namespace Maes {
-    public interface ISimulationUnit {
+namespace Maes
+{
+    public interface ISimulationUnit
+    {
         void LogicUpdate();
 
         void PhysicsUpdate();

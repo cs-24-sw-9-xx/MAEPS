@@ -1,8 +1,9 @@
 using System;
 using System.Linq;
-using UnityEngine;
 
 using Maes.Map;
+
+using UnityEngine;
 
 /// <summary>
 /// The random reactive patrolling algorithm from "Multi-Agent Movement Coordination in Patrolling", 2002
@@ -24,7 +25,10 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void Preliminaries()
         {
-            if (_isPatrolling) return;
+            if (_isPatrolling)
+            {
+                return;
+            }
 
             var vertex = GetClosestVertex();
             TargetVertex = vertex;

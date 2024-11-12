@@ -15,9 +15,9 @@ namespace Maes.Map.MapPatrollingGen
             var width = simulationMap.WidthInTiles;
             var height = simulationMap.HeightInTiles;
 
-            for (int x = 0; x < width; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (var y = 0; y < height; y++)
                 {
                     var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];
@@ -61,7 +61,8 @@ namespace Maes.Map.MapPatrollingGen
                         vertex.AddNeighbor(otherVertex);
                     }
 
-                    if (DoRoomsOverlap(room, otherRoom)) {
+                    if (DoRoomsOverlap(room, otherRoom))
+                    {
                         Debug.LogError($"Room {room.FromWhichAlgo} overlaps with Room {otherRoom.FromWhichAlgo}");
                     }
                 }
@@ -264,7 +265,8 @@ namespace Maes.Map.MapPatrollingGen
             return Vector2Int.Distance(first, second) <= 1.0f;
         }
 
-        private static bool DoRoomsOverlap(SplitRoom first, SplitRoom second) {
+        private static bool DoRoomsOverlap(SplitRoom first, SplitRoom second)
+        {
             return first.Tiles.Any(f => second.Tiles.Any(s => f == s));
         }
 

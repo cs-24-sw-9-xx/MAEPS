@@ -19,13 +19,13 @@ namespace Maes.Simulation
         public override void SetScenario(ExplorationSimulationScenario scenario)
         {
             base.SetScenario(scenario);
-            
+
             ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
         }
 
         public override bool HasFinishedSim()
         {
-            return ExplorationTracker.ExploredProportion > 0.99f;
+            return ExplorationTracker.ExploredProportion > 0.99f || SimulatedLogicTicks > 3600 * 10;
         }
 
         public override void OnSimulationFinished()
@@ -36,8 +36,9 @@ namespace Maes.Simulation
             }
         }
 
-        private void CreateStatisticsFile() {
-            var csvWriter = new ExplorationStatisticsCSVWriter(this,$"{_scenario.StatisticsFileName}");
+        private void CreateStatisticsFile()
+        {
+            var csvWriter = new ExplorationStatisticsCSVWriter(this, $"{_scenario.StatisticsFileName}");
             csvWriter.CreateCsvFile(",");
         }
     }

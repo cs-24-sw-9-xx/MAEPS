@@ -23,9 +23,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Maes.Map;
 using Maes.Robot.Task;
 using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Robot
@@ -50,13 +52,13 @@ namespace Maes.Robot
 
         // Set by RobotSpawner
         internal CommunicationManager CommunicationManager { get; set; } = null!;
-        
+
         // Set by RobotSpawner
         public SlamMap SlamMap { get; set; } = null!;
 
         // Set by RobotSpawner
         public RobotConstraints Constraints { get; set; } = null!;
-        
+
         private Queue<Vector2Int> _currentPath = new();
         private Vector2Int _currentTarget;
 
@@ -99,7 +101,7 @@ namespace Maes.Robot
             RightWheel = rightWheel;
             _robot = robot;
         }
-        
+
         public MonaRobot GetRobot()
         {
             return _robot;
@@ -135,7 +137,7 @@ namespace Maes.Robot
 
         public void NotifyCollisionExit()
         {
-            this._isCurrentlyColliding = false;
+            _isCurrentlyColliding = false;
         }
 
         public void UpdateMotorPhysics()
@@ -176,7 +178,9 @@ namespace Maes.Robot
             if (_isCurrentlyColliding && isAttemptingToMoveForwards)
             {
                 if (_physicsUpdatesSinceStartingMovement > _movementUpdatesBeforeRedeclaringCollision)
+                {
                     NotifyCollided();
+                }
 
                 _physicsUpdatesSinceStartingMovement += 1;
             }
@@ -190,7 +194,9 @@ namespace Maes.Robot
             var directive = _currentTask?.GetNextDirective();
 
             if (directive != null)
+            {
                 ApplyWheelForce(directive);
+            }
 
             // Delete task once completed
             var isCurrentTaskCompleted = _currentTask?.IsCompleted() ?? false;
@@ -200,7 +206,9 @@ namespace Maes.Robot
             }
 
             if (directive != null)
+            {
                 ApplyWheelForce(directive);
+            }
         }
 
         // The robot is rotated relative to Unity's coordinate system, so 'up' is actually forward for the robot
@@ -220,7 +228,9 @@ namespace Maes.Robot
             // Force changes depending on whether the robot is rotating or accelerating
             var force = MoveForce;
             if (directive.IsRotational())
+            {
                 force = RotateForce;
+            }
 
             // Apply force at teach wheel
             _rigidbody.AddForceAtPosition(forward * (force * directive.LeftWheelSpeed), leftPosition);
@@ -237,7 +247,11 @@ namespace Maes.Robot
 
         public RobotStatus GetStatus()
         {
-            if (_currentStatus == RobotStatus.Idle && _currentTask != null) return RobotStatus.Moving;
+            if (_currentStatus == RobotStatus.Idle && _currentTask != null)
+            {
+                return RobotStatus.Moving;
+            }
+
             return _currentStatus;
         }
 
@@ -286,10 +300,11 @@ namespace Maes.Robot
         }
 
         // Asserts that the current status is idle, and throws an exception if not
-        protected void AssertRobotIsInIdleState(String attemptedActionName)
+        protected void AssertRobotIsInIdleState(string attemptedActionName)
         {
             var currentStatus = GetStatus();
             if (currentStatus != RobotStatus.Idle)
+            {
                 throw new InvalidOperationException("Tried to start action: '" + attemptedActionName
                                                                                + "' rotation action but current status is: "
                                                                                + Enum.GetName(typeof(RobotStatus),
@@ -297,6 +312,7 @@ namespace Maes.Robot
                                                                                + "Can only start '" +
                                                                                attemptedActionName
                                                                                + "' action when current status is Idle");
+            }
         }
 
 
@@ -318,15 +334,17 @@ namespace Maes.Robot
         public IRobotController.DetectedWall? DetectWall(float globalAngle)
         {
             if (globalAngle < 0 || globalAngle > 360)
+            {
                 throw new ArgumentException("Global angle argument must be between 0 and 360." +
                                             $"Given angle was {globalAngle}");
+            }
 
             var result = CommunicationManager.DetectWall(_robot, globalAngle);
             if (result == null)
             {
                 return null;
             }
-            
+
             var intersection = result.Value.Item1;
             var distance = Vector2.Distance(intersection, _robot.transform.position);
             var intersectingWallAngle = result.Value.Item2;
@@ -336,14 +354,18 @@ namespace Maes.Robot
 
             // Convert to relative wall angle to range 0-90
             relativeWallAngle %= 180;
-            if (relativeWallAngle > 90) relativeWallAngle = 180 - relativeWallAngle;
+            if (relativeWallAngle > 90)
+            {
+                relativeWallAngle = 180 - relativeWallAngle;
+            }
+
             return new IRobotController.DetectedWall(distance, relativeWallAngle);
         }
 
         public string GetDebugInfo()
         {
             var info = new StringBuilder();
-            info.Append($"id: {this._robot.id}\n");
+            info.Append($"id: {_robot.id}\n");
             info.AppendLine($"Current task: {_currentTask?.GetType()}");
             info.AppendLine(
                 $"World Position: {Transform.position.x.ToString("#.0")}, {Transform.position.y.ToString("#.0")}");
@@ -368,32 +390,59 @@ namespace Maes.Robot
         /// <param name="tile">COARSEGRAINED tile as final target</param>
         public void PathAndMoveTo(Vector2Int tile)
         {
-            if (GetStatus() != RobotStatus.Idle) return;
-            if (_currentPath.Any() && _currentPath.Last() != tile) _currentPath.Clear();
+            if (GetStatus() != RobotStatus.Idle)
+            {
+                return;
+            }
+
+            if (_currentPath.Any() && _currentPath.Last() != tile)
+            {
+                _currentPath.Clear();
+            }
+
             if (!_currentPath.Any())
             {
                 var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
-                if (robotCurrentPosition == tile) return;
+                if (robotCurrentPosition == tile)
+                {
+                    return;
+                }
+
                 var pathList = SlamMap.CoarseMap.GetPath(tile, false);
-                if (pathList == null) return;
+                if (pathList == null)
+                {
+                    return;
+                }
+
                 _currentPath = new Queue<Vector2Int>(pathList);
                 _currentTarget = _currentPath.Dequeue();
             }
-            if (SlamMap.CoarseMap.GetTileStatus(_currentTarget) == SlamMap.SlamTileStatus.Solid) _currentTarget = _currentPath.Dequeue();
+            if (SlamMap.CoarseMap.GetTileStatus(_currentTarget) == SlamMap.SlamTileStatus.Solid)
+            {
+                _currentTarget = _currentPath.Dequeue();
+            }
+
             var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget);
             if (relativePosition.Distance < 0.5f)
             {
-                if (!_currentPath.Any()) return;
+                if (!_currentPath.Any())
+                {
+                    return;
+                }
+
                 _currentTarget = _currentPath.Dequeue();
                 relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget);
             }
             #region DrawPath
             Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (int i = 0; i < _currentPath.Count-1; i++)
+            for (var i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToList();
                 if (i == 0)
+                {
                     Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(_currentTarget), SlamMap.CoarseMap.TileToWorld(pathSteps[i]), Color.cyan, 2);
+                }
+
                 Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(pathSteps[i]), SlamMap.CoarseMap.TileToWorld(pathSteps[i + 1]), Color.cyan, 2);
             }
             if (_currentPath.Any())
@@ -402,8 +451,14 @@ namespace Maes.Robot
                 Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(lastStep.Last()), SlamMap.CoarseMap.TileToWorld(lastStep.First()), Color.cyan, 2);
             }
             #endregion
-            if (Math.Abs(relativePosition.RelativeAngle) > 1.5f) Rotate(relativePosition.RelativeAngle);
-            else if (relativePosition.Distance > 0.5f) Move(relativePosition.Distance);
+            if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
+            {
+                Rotate(relativePosition.RelativeAngle);
+            }
+            else if (relativePosition.Distance > 0.5f)
+            {
+                Move(relativePosition.Distance);
+            }
         }
 
         /// <summary>
@@ -413,9 +468,19 @@ namespace Maes.Robot
         public void MoveTo(Vector2Int target)
         {
             var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(target);
-            if (GetStatus() != RobotStatus.Idle || relativePosition.Distance < 0.5f) return;
-            if (Math.Abs(relativePosition.RelativeAngle) > 0.5f) Rotate(relativePosition.RelativeAngle);
-            else Move(relativePosition.Distance);
+            if (GetStatus() != RobotStatus.Idle || relativePosition.Distance < 0.5f)
+            {
+                return;
+            }
+
+            if (Math.Abs(relativePosition.RelativeAngle) > 0.5f)
+            {
+                Rotate(relativePosition.RelativeAngle);
+            }
+            else
+            {
+                Move(relativePosition.Distance);
+            }
         }
 
 
@@ -425,7 +490,7 @@ namespace Maes.Robot
         }
 
         // Deposits an environment tag at the current position of the robot
-        public void DepositTag(String content)
+        public void DepositTag(string content)
         {
             CommunicationManager.DepositTag(_robot, content);
         }
@@ -450,7 +515,7 @@ namespace Maes.Robot
             return CommunicationManager.SenseNearbyRobots(_robot.id)
                 .Select(e => new SensedObject<int>(
                     e.Distance,
-                    Vector2.SignedAngle(this._robot.transform.up,
+                    Vector2.SignedAngle(_robot.transform.up,
                                                 new Vector2(Mathf.Cos(e.Angle * Mathf.Deg2Rad),
                                                             Mathf.Sin(e.Angle * Mathf.Deg2Rad))),
                     e.item))
@@ -459,7 +524,7 @@ namespace Maes.Robot
 
         public SlamMap GetSlamMap()
         {
-            return this.SlamMap;
+            return SlamMap;
         }
 
         public bool IsRotating()

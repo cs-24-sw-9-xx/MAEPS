@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using UnityEngine;
 
 namespace Maes.Utilities
@@ -46,7 +47,9 @@ namespace Maes.Utilities
             MidPoint = (start + end) / 2f;
 
             if (start.x > end.x)
+            {
                 (start, end) = (end, start);
+            }
 
             _minY = Mathf.Min(start.y, end.y);
             _maxY = Mathf.Max(start.y, end.y);
@@ -84,7 +87,10 @@ namespace Maes.Utilities
         public bool IsGrowing()
         {
             if (IsVertical || _isHorizontal)
+            {
                 throw new Exception("Cannot call IsGrowing on Horizontal or Vertical lines");
+            }
+
             return _a > 0f;
         }
 
@@ -98,7 +104,7 @@ namespace Maes.Utilities
             var linePoints = Rasterize();
             var otherLinePoints = otherLine.Rasterize().ToArray();
             (Vector2 linePoint, Vector2 otherLinePoint) result = (Vector2.zero, Vector2.zero);
-            float minDistance = float.MaxValue;
+            var minDistance = float.MaxValue;
             foreach (var point in linePoints)
             {
                 foreach (var otherPoint in otherLinePoints)
@@ -107,7 +113,7 @@ namespace Maes.Utilities
                     if (minDistance > distance)
                     {
                         minDistance = distance;
-                        result = (point, otherPoint); 
+                        result = (point, otherPoint);
                     }
                 }
             }
@@ -126,10 +132,14 @@ namespace Maes.Utilities
                         return (closestPoints.linePoint + closestPoints.otherLinePoint) / 2;
                     }
                     else
+                    {
                         return null;
+                    }
                 }
                 else
+                {
                     return IsVertical ? new(_b, otherline._b) : new(otherline._b, _b);
+                }
             }
             else
             {
@@ -152,9 +162,13 @@ namespace Maes.Utilities
                 // Return intersection if it is within bounds of this line
 
                 if (infinite || yIntersection <= _maxY && yIntersection >= _minY)
+                {
                     return new Vector2(Start.x, yIntersection);
+                }
                 else
+                {
                     return null;
+                }
             }
             else if (_isHorizontal) // Optimization
             {
@@ -162,18 +176,26 @@ namespace Maes.Utilities
                 if (Mathf.Abs(a_2) < 0.0001f)
                 {
                     if (Mathf.Abs(b_2 - _b) < 0.0001f)
+                    {
                         return MidPoint;
+                    }
                     else
+                    {
                         return null;
+                    }
                 }
 
                 // y = ax + b, solved for x gives x = (y - b) / a (using the y of this horizontal line)
                 var xIntersection = (Start.y - b_2) / a_2;
                 // Return intersection if it is within bounds of this line
                 if (infinite || xIntersection >= _minX && xIntersection <= _maxX)
+                {
                     return new Vector2(xIntersection, Start.y);
+                }
                 else
+                {
                     return null;
+                }
             }
             else
             {
@@ -182,15 +204,23 @@ namespace Maes.Utilities
                 {
                     // If the two parallel lines intersect then return the midpoint of this line as intersection
                     if (Mathf.Abs(b_2 - _b) < 0.0001f)
+                    {
                         return MidPoint;
+                    }
                     else
+                    {
                         return null;
+                    }
                 }
 
                 // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
                 var intersectX = (b_2 - _b) / (_a - a_2);
                 // Check if intersection is outside line segment
-                if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f) return null;
+                if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
+                {
+                    return null;
+                }
+
                 var intersectY = _a * intersectX + _b;
                 // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
                 //           " at " + intersectX + ", " + intersectY);
