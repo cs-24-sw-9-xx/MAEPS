@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -42,7 +41,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
             _mapVisualizationToggleGroup = new List<Button>() {
-                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton
+                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
             };
             SelectVisualizationButton(WaypointHeatMapButton);
 
@@ -76,12 +75,34 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             TargetWaypointSelectedButton.onClick.AddListener(() =>
             {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowTargetWaypointSelected());
+                ExecuteAndRememberMapVisualizationModification(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
+                        sim.PatrollingTracker.ShowTargetWaypointSelected();
+                    }
+                });
             });
 
             VisibleSelectedButton.onClick.AddListener(() =>
             {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowVisibleSelected());
+                ExecuteAndRememberMapVisualizationModification(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
+                        sim.PatrollingTracker.ShowVisibleSelected();
+                    }
+                });
             });
         }
 
@@ -98,6 +119,14 @@ namespace Maes.UI.SimulationInfoUIControllers
             else if (mode is PatrollingHeatMapVisualizationMode)
             {
                 SelectVisualizationButton(PatrollingHeatMapButton);
+            }
+            else if (mode is PatrollingTargetWaypointVisualizationMode)
+            {
+                SelectVisualizationButton(TargetWaypointSelectedButton);
+            }
+            else if (mode is CurrentlyVisibleAreaVisualizationPatrollingMode)
+            {
+                SelectVisualizationButton(VisibleSelectedButton);
             }
             else
             {

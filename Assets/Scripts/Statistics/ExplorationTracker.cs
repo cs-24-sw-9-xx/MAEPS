@@ -153,7 +153,7 @@ namespace Maes.Statistics
             _selectedRobot = robot;
             if (_selectedRobot != null)
             {
-                SetVisualizationMode(new CurrentlyVisibleAreaVisualization(_map, _selectedRobot.Controller));
+                SetVisualizationMode(new CurrentlyVisibleAreaVisualizationExploration(_map, _selectedRobot.Controller));
             }
             else
             {
@@ -190,7 +190,7 @@ namespace Maes.Statistics
                 throw new Exception("Cannot change to 'ShowSelectedRobotVisibleArea' visualization mode when no robot is selected");
             }
 
-            SetVisualizationMode(new CurrentlyVisibleAreaVisualization(_map, _selectedRobot.Controller));
+            SetVisualizationMode(new CurrentlyVisibleAreaVisualizationExploration(_map, _selectedRobot.Controller));
         }
 
         public void ShowSelectedRobotSlamMap()

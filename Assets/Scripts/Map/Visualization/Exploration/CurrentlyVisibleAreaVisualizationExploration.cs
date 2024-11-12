@@ -21,24 +21,16 @@
 
 using System.Collections.Generic;
 
+using Maes.Map.Visualization.Common;
 using Maes.Robot;
 using Maes.Statistics;
 
-using UnityEngine;
-
 namespace Maes.Map.Visualization.Exploration
 {
-    internal class CurrentlyVisibleAreaVisualization : IExplorationVisualizationMode
+    internal class CurrentlyVisibleAreaVisualizationExploration : CurrentlyVisibleAreaVisualization<ExplorationCell, ExplorationVisualizer>, IExplorationVisualizationMode
     {
 
-        private readonly SimulationMap<ExplorationCell> _explorationMap;
-        private readonly Robot2DController _selectedRobot;
-
-        public CurrentlyVisibleAreaVisualization(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot)
-        {
-            _selectedRobot = selectedRobot;
-            _explorationMap = explorationMap;
-        }
+        public CurrentlyVisibleAreaVisualizationExploration(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) : base(explorationMap, selectedRobot) { }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
         {
@@ -48,17 +40,6 @@ namespace Maes.Map.Visualization.Exploration
         public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
         {
             /* Coverage data not needed */
-        }
-
-        public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
-        {
-            visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
-        }
-
-        private Color32 ExplorationCellToColor(int index)
-        {
-            return _selectedRobot.SlamMap.CurrentlyVisibleTriangles.Contains(index) ?
-                    ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
         }
     }
 }

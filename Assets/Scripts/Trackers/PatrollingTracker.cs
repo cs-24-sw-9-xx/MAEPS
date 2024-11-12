@@ -1,11 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map;
 using Maes.Map.MapGen;
-using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
-
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -88,7 +87,19 @@ namespace Maes.Trackers
 
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
-            // TODO: Implement
+            _selectedRobot = robot;
+            if (_selectedRobot != null)
+            {
+                _visualizer.meshRenderer.enabled = true;
+                SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+            }
+            else
+            {
+                _visualizer.meshRenderer.enabled = true;
+                // Revert to waypoint heatmap visualization when current robot is deselected
+                // while visualization mode is based on the selected robot
+                SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+            }
         }
 
         protected override void CreateSnapShot()
@@ -127,12 +138,23 @@ namespace Maes.Trackers
 
         public void ShowTargetWaypointSelected()
         {
-            // TODO: Implement
+            if (_selectedRobot == null)
+            {
+                throw new Exception("Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
+            }
+
+            SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
         public void ShowVisibleSelected()
         {
-            // TODO: Implement
+            if (_selectedRobot == null)
+            {
+                throw new Exception("Cannot change to 'ShowVisibleSelected' Visualization mode when no robot is selected");
+            }
+
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
         }
     }
 }

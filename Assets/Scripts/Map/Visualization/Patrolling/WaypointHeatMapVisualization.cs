@@ -1,7 +1,6 @@
-using Maes.Map.Visualization.Patrolling;
 using Maes.Statistics;
 
-namespace Maes.Map.Visualization
+namespace Maes.Map.Visualization.Patrolling
 {
     public class WaypointHeatMapVisualizationMode : IPatrollingVisualizationMode
     {
