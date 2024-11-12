@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.Assets.Scripts.Map.Visualization.Patrolling;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
