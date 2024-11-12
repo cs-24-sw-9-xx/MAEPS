@@ -82,6 +82,20 @@ namespace Maes.Robot
         void PathAndMoveTo(Vector2Int tile);
 
         /// <summary>
+        /// Estimates the time of arrival for the robot to reach the specified destination.
+        /// Uses the path from PathAndMoveTo and the robots max speed to calculate the ETA.
+        /// </summary>
+        /// <param name="tile">COARSEGRAINED tile as final target</param>
+        float EstimateTimeToTarget(Vector2Int tile);
+
+        /// <summary>
+        /// Estimates the distance for robot to reach the specified destination.
+        /// Uses the path from PathAndMoveTo to calculate distance.
+        /// </summary>
+        /// <param name="tile">COARSEGRAINED tile as final target</param>
+        float EstimateDistanceToTarget(Vector2Int tile);
+
+        /// <summary>
         /// Calls the pathfinding and makes the robot move towards a certain tile on the map through known territory
         /// Doesn's cause movement if there is no path to the tile
         /// </summary>

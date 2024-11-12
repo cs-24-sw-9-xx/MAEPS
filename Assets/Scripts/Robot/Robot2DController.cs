@@ -469,6 +469,36 @@ namespace Maes.Robot
         }
 
         /// <summary>
+        /// Estimates the time of arrival for the robot to reach the specified destination.
+        /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
+        /// </summary>
+        /// <param name="tile">COARSEGRAINED tile as final target</param>
+        public float EstimateTimeToTarget(Vector2Int tile)
+        {
+            // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
+
+            var distance = EstimateDistanceToTarget(tile);
+            return distance / Constraints.RelativeMoveSpeed;
+        }
+
+        /// <summary>
+        /// Estimates the distance for robot to reach the specified destination.
+        /// Uses the path from PathAndMoveTo to calculate distance.
+        /// </summary>
+        /// <param name="tile">COARSEGRAINED tile as final target</param>
+        public float EstimateDistanceToTarget(Vector2Int tile)
+        {
+            var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
+            var distance = Vector2.Distance(robotCurrentPosition, _currentTarget);
+            var currentPosition = _currentTarget;
+            foreach (var nextTarget in _currentPath)
+            {
+                distance += Vector2.Distance(currentPosition, nextTarget);
+            }
+            return distance;
+        }
+
+        /// <summary>
         /// Rotates and moves directly to target unless already moving or already on target
         /// </summary>
         /// <param name="target">COARSEGRAINED tile to move to</param>
