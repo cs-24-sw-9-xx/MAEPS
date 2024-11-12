@@ -29,6 +29,9 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button CoverageHeatMapButton = null!;
         public Button PatrollingHeatMapButton = null!;
 
+        public Button TargetWaypointSelectedButton = null!;
+        public Button VisibleSelectedButton = null!;
+
         protected override void AfterStart()
         {
             _mapVisualizationToggleGroup = new List<Button>() {
@@ -62,6 +65,16 @@ namespace Maes.UI.SimulationInfoUIControllers
             PatrollingHeatMapButton.onClick.AddListener(() =>
             {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
+            });
+
+            TargetWaypointSelectedButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowTargetWaypointSelected());
+            });
+
+            VisibleSelectedButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowVisibleSelected());
             });
         }
 
