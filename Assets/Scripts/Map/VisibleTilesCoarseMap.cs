@@ -66,7 +66,7 @@ namespace Maes.Map
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is solid
-            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.GetVisibleTileStatus(slamTile.x, slamTile.y) == SlamMap.SlamTileStatus.Unseen)
             {
                 return true;
             }
@@ -96,12 +96,7 @@ namespace Maes.Map
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is not solid
-            if (!_slamMap.CurrentlyVisibleTiles.ContainsKey(slamTile))
-            {
-                return false;
-            }
-
-            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.GetVisibleTileStatus(slamTile.x, slamTile.y) == SlamMap.SlamTileStatus.Unseen)
             {
                 return false;
             }

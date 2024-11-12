@@ -266,9 +266,9 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         private void UpdateExploredStatusOfTiles()
         {
             var currentPosition = _robotController.GetSlamMap().GetCoarseMap().GetApproximatePosition();
-            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
             var currentlyVisibleCoarseTiles = _robotController.GetSlamMap().GetCoarseMap()
-                .FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList());
+                .FromSlamMapCoordinates(visibleTilesList);
 
             foreach (var visibleTile in currentlyVisibleCoarseTiles)
             {
@@ -496,8 +496,8 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         private List<Vector2Int> FindClosestOcclusionPoints()
         {
             var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
-            var visibleTilesMaps = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var visibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesMaps.Keys).ToList();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var visibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesList).ToList();
 
             var robotPosition = coarseMap.GetApproximatePosition();
 
@@ -690,8 +690,8 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             var robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
 
             // Assign tiles to robots to create regions
-            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList()).ToHashSet();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesList).ToHashSet();
             for (var x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
             {
                 for (var y = myPosition.y - _voronoiRegionMaxDistance; y < myPosition.y + _voronoiRegionMaxDistance; y++)
