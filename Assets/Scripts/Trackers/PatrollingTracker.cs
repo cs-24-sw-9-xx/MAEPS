@@ -12,8 +12,6 @@ using Maes.Statistics;
 
 using UnityEngine;
 
-using XCharts.Runtime;
-
 namespace Maes.Trackers
 {
     // TODO: Change Tile to another type, Implemented in the next PR
@@ -31,7 +29,7 @@ namespace Maes.Trackers
         public int CompletedCycles { get; private set; }
         public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
         public ScatterChart Chart { get; set; }
-        
+
         private List<float> GraphIdlenessList { get; } = new();
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
@@ -75,12 +73,12 @@ namespace Maes.Trackers
 
             // Example: How to plot the data
             // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 250 == 0 && Chart.series.Count < 60000 )
+            if (_currentTick % 250 == 0 && Chart.series.Count < 60000)
             {
                 Chart.AddXAxisData("" + _currentTick);
                 Chart.AddData(0, WorstGraphIdleness);
             }
-            
+
             // TODO: Remove this when the code UI is set up, just for showing that it works
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
         }

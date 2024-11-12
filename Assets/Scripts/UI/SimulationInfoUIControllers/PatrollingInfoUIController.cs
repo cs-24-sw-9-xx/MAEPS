@@ -10,8 +10,6 @@ using TMPro;
 
 using UnityEngine.UI;
 
-using XCharts.Runtime;
-
 namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
@@ -38,7 +36,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected override void AfterStart()
         {
             InitIdleGraph();
-            
+
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
             _mapVisualizationToggleGroup = new List<Button>() {
                 WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
@@ -183,26 +181,26 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
         }
-        
+
         private void ToggleGraph()
         {
             Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
         }
-        
+
         private void InitIdleGraph()
         {
             Chart.Init();
             var xAxis = Chart.EnsureChartComponent<XAxis>();
             xAxis.splitNumber = 10;
             xAxis.boundaryGap = true;
-            xAxis.type =  Axis.AxisType.Category;
+            xAxis.type = Axis.AxisType.Category;
 
             var yAxis = Chart.EnsureChartComponent<YAxis>();
-            yAxis.type =  Axis.AxisType.Value;
+            yAxis.type = Axis.AxisType.Value;
             Chart.RemoveData();
             var series = Chart.AddSerie<Scatter>("scatter");
             series.symbol.size = 4;
-            
+
             Simulation!.PatrollingTracker.Chart = Chart;
         }
     }
