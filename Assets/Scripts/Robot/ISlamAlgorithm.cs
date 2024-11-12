@@ -45,12 +45,7 @@ namespace Maes.Robot
         /// If the key is not present in the dictionary the tile is not explored. </returns>
         public Dictionary<Vector2Int, SlamMap.SlamTileStatus> GetExploredTiles();
 
-        /// <summary>
-        /// The method returns all tiles that can currently be seen by the robot. Vision range is determined by
-        /// lidar range in <see cref="RobotConstraints"/> 
-        /// </summary>
-        /// <returns>a dictionary containing the tile status of all currently visible tiles</returns>
-        public Dictionary<Vector2Int, SlamMap.SlamTileStatus> GetCurrentlyVisibleTiles();
+        public SlamMap.SlamTileStatus GetVisibleTileStatus(int x, int y);
 
         /// <returns> The current position of the robot as a slam tile coordinate (rounded down) </returns>
         public Vector2Int GetCurrentPosition();

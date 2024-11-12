@@ -42,7 +42,7 @@ namespace Maes.Map
         private readonly int _widthInTiles, _heightInTiles;
 
         private SlamTileStatus[,] _tiles;
-        public Dictionary<Vector2Int, SlamTileStatus> CurrentlyVisibleTiles;
+        private readonly VisibleTile[,] _currentlyVisibleTiles;
         public readonly HashSet<int> CurrentlyVisibleTriangles = new();
         private readonly SimulationMap<Tile> _collisionMap;
         private readonly IPathFinder _pathFinder;
@@ -62,6 +62,8 @@ namespace Maes.Map
         // Low resolution map only considering what is visible now
         private readonly VisibleTilesCoarseMap _visibleTilesCoarseMap;
 
+        private int _visibleTilesGeneration;
+
         public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
             _collisionMap = collisionMap;
@@ -70,11 +72,11 @@ namespace Maes.Map
             _heightInTiles = collisionMap.HeightInTiles * 2;
             _offset = collisionMap.ScaledOffset;
 
-            CurrentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
             _random = new Random(randomSeed);
             _pathFinder = new AStar();
 
             _tiles = robotConstraints.MapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
+            _currentlyVisibleTiles = new VisibleTile[_widthInTiles, _heightInTiles];
             CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, robotConstraints.MapKnown);
             _visibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
@@ -159,8 +161,38 @@ namespace Maes.Map
 
         public void ResetRobotVisibility()
         {
-            CurrentlyVisibleTiles = new Dictionary<Vector2Int, SlamTileStatus>();
+            _visibleTilesGeneration++;
             CurrentlyVisibleTriangles.Clear();
+        }
+
+        public SlamTileStatus GetVisibleTileStatus(int x, int y)
+        {
+            var visibleTile = _currentlyVisibleTiles[x, y];
+
+            if (visibleTile.Generation != _visibleTilesGeneration)
+            {
+                return SlamTileStatus.Unseen;
+            }
+
+            return visibleTile.TileStatus;
+        }
+
+        public List<Vector2Int> GetVisibleTiles()
+        {
+            var visibleTilesList = new List<Vector2Int>();
+            for (var x = 0; x < _widthInTiles; x++)
+            {
+                for (var y = 0; y < _heightInTiles; y++)
+                {
+                    var tile = _currentlyVisibleTiles[x, y];
+                    if (tile.Generation == _visibleTilesGeneration && tile.TileStatus != SlamTileStatus.Unseen)
+                    {
+                        visibleTilesList.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            return visibleTilesList;
         }
 
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, bool isOpen)
@@ -168,10 +200,11 @@ namespace Maes.Map
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
             CurrentlyVisibleTriangles.Add(triangleIndex);
 
-            if (!CurrentlyVisibleTiles.ContainsKey(localCoordinate) || CurrentlyVisibleTiles[localCoordinate] != SlamTileStatus.Solid)
+            var visibleTile = _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y];
+            if (visibleTile.Generation != _visibleTilesGeneration || visibleTile.TileStatus != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                CurrentlyVisibleTiles[localCoordinate] = newStatus;
+                _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y] = new VisibleTile(_visibleTilesGeneration, newStatus);
                 CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
         }
@@ -179,7 +212,8 @@ namespace Maes.Map
         public SlamTileStatus GetVisibleTileByTriangleIndex(int triangleIndex)
         {
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
-            return CurrentlyVisibleTiles.GetValueOrDefault(localCoordinate, SlamTileStatus.Unseen);
+            var visibleTile = _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y];
+            return visibleTile.Generation == _visibleTilesGeneration ? visibleTile.TileStatus : SlamTileStatus.Unseen;
         }
 
         public SlamTileStatus GetTileByTriangleIndex(int triangleIndex)
@@ -299,11 +333,6 @@ namespace Maes.Map
             }
 
             return res;
-        }
-
-        public Dictionary<Vector2Int, SlamTileStatus> GetCurrentlyVisibleTiles()
-        {
-            return CurrentlyVisibleTiles;
         }
 
         public SlamTileStatus GetTileStatus(Vector2Int tile, bool optimistic = false)
@@ -479,5 +508,41 @@ namespace Maes.Map
             return new Vector3(WorldTile.x, WorldTile.y, -0.01f) + (Vector3)_offset;
         }
 
+        private readonly struct VisibleTile : IEquatable<VisibleTile>
+        {
+            public readonly int Generation;
+            public readonly SlamTileStatus TileStatus;
+
+            public VisibleTile(int generation, SlamTileStatus tileStatus)
+            {
+                Generation = generation;
+                TileStatus = tileStatus;
+            }
+
+            public bool Equals(VisibleTile other)
+            {
+                return Generation == other.Generation && TileStatus == other.TileStatus;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is VisibleTile other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Generation, (int)TileStatus);
+            }
+
+            public static bool operator ==(VisibleTile left, VisibleTile right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(VisibleTile left, VisibleTile right)
+            {
+                return !left.Equals(right);
+            }
+        }
     }
 }
