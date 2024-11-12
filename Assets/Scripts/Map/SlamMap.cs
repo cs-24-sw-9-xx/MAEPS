@@ -168,19 +168,12 @@ namespace Maes.Map
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
             CurrentlyVisibleTriangles.Add(triangleIndex);
 
-            if (!CurrentlyVisibleTiles.ContainsKey(localCoordinate))
+            if (!CurrentlyVisibleTiles.ContainsKey(localCoordinate) || CurrentlyVisibleTiles[localCoordinate] != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
                 CurrentlyVisibleTiles[localCoordinate] = newStatus;
                 CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
-            else if (CurrentlyVisibleTiles[localCoordinate] != SlamTileStatus.Solid)
-            {
-                var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                CurrentlyVisibleTiles[localCoordinate] = newStatus;
-                CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
-            }
-
         }
 
         public SlamTileStatus GetVisibleTileByTriangleIndex(int triangleIndex)
