@@ -237,8 +237,13 @@ namespace Maes.Simulation
 
         public virtual void OnSimulationFinished()
         {
-            // Override me for functionality.
+            if (GlobalSettings.ShouldWriteCsvResults)
+            {
+                CreateStatisticsFile();
+            }
         }
+
+        protected virtual void CreateStatisticsFile() { }
 
         public void ShowAllTags()
         {

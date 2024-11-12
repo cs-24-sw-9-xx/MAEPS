@@ -9,7 +9,38 @@ on:
  
 ### Refer to https://game.ci/docs/github/getting-started
 jobs:
+  setup:
+    name: Setup Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - name: Cache .NET tools
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet/tools
+          key: dotnet-tools-${{ runner.os }}-8.0
+          restore-keys: |
+            dotnet-tools-${{ runner.os }}
+      - name: Cache Packages
+        uses: actions/cache@v3
+        with:
+          path: Assets/Packages
+          key: Packages
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install NuGetForUnity.Cli
+        run: dotnet tool install --global NuGetForUnity.Cli
+      - name: Restore NuGet Packages for Unity Project
+        run: nugetforunity restore .
+
   test:
+    needs: setup
     permissions:
       checks: write
     name: Run all tests ✨
@@ -22,6 +53,10 @@ jobs:
         with:
           path: Library
           key: Library-test
+      - uses: actions/cache/restore@v3
+        with:
+          path: Assets/Packages
+          key: Packages
       - uses: game-ci/unity-test-runner@v4
         id: testRunner
         env:
@@ -39,7 +74,7 @@ jobs:
   
   
   build:
-    needs: test
+    needs: [setup, test]
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
@@ -57,6 +92,10 @@ jobs:
         with:
           path: Library
           key: Library-${{ matrix.targetPlatform }}
+      - uses: actions/cache/restore@v3
+        with:
+          path: Assets/Packages
+          key: Packages
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -76,6 +115,16 @@ jobs:
     container: unityci/editor:ubuntu-2022.3.51f1-linux-il2cpp-3.1.0
     steps:
       - uses: actions/checkout@v1
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Install NuGetForUnity.Cli
+        run: |
+          dotnet tool install --global NuGetForUnity.Cli
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+      - name: Restore NuGet Packages for Unity Project
+        run: nugetforunity restore .
       - name: Generate Solution
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -85,11 +134,5 @@ jobs:
         run: |
           unity-editor -nographics -logFile /dev/stdout -quit -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" -serial "$UNITY_SERIAL"
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
-      - name: Print the files in the folder
-        run: ls
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0.x
       - name: Format
         run: dotnet format MAEPS.sln --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/" --verify-no-changes

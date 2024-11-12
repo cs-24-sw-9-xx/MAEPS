@@ -27,6 +27,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Exploration;
 using Maes.Robot;
+using Maes.Statistics.Exploration;
 using Maes.Trackers;
 
 using UnityEngine;
@@ -47,22 +48,8 @@ namespace Maes.Statistics
         // where each mini-tile is composed of two triangles
         public float CoverageProportion => _coverageCalculator.CoverageProportion;
 
-        public List<SnapShot<float>> _coverSnapshots = new List<SnapShot<float>>();
-        public List<SnapShot<float>> _exploreSnapshots = new List<SnapShot<float>>();
-        public List<SnapShot<float>> _distanceSnapshots = new List<SnapShot<float>>();
+        public readonly List<ExplorationSnapShot> snapShots = new();
         private float mostRecentDistance;
-
-        public struct SnapShot<TValue>
-        {
-            public readonly int Tick;
-            public readonly TValue Value;
-
-            public SnapShot(int tick, TValue value)
-            {
-                Tick = tick;
-                Value = value;
-            }
-        }
 
         private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new List<(int, ExplorationCell)>();
 
@@ -78,9 +65,7 @@ namespace Maes.Statistics
 
         protected override void CreateSnapShot()
         {
-            _coverSnapshots.Add(new SnapShot<float>(_currentTick, CoverageProportion * 100));
-            _exploreSnapshots.Add(new SnapShot<float>(_currentTick, ExploredProportion * 100));
-            _distanceSnapshots.Add(new SnapShot<float>(_currentTick, mostRecentDistance));
+            snapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, mostRecentDistance));
         }
 
         private float CalculateAverageDistance(IReadOnlyList<MonaRobot> robots)
@@ -133,6 +118,7 @@ namespace Maes.Statistics
         protected override void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots)
         {
             mostRecentDistance = CalculateAverageDistance(robots);
+            base.OnAfterFirstTick(robots);
         }
 
         protected override void AfterRayTracingARobot(MonaRobot robot)
