@@ -113,5 +113,15 @@ namespace Maes.Trackers
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
         }
+
+        public void ShowTargetWaypointSelected()
+        {
+            // TODO: Implement
+        }
+
+        public void ShowVisibleSelected()
+        {
+            // TODO: Implement
+        }
     }
 }
