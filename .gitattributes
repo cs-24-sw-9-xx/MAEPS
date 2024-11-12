@@ -1,0 +1,4 @@
+* text=auto
+
+# Fix git changing line endings on windows
+*.cs text eol=lf
