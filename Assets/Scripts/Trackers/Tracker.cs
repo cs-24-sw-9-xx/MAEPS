@@ -163,7 +163,7 @@ namespace Maes.Trackers
 
         protected virtual void AfterRayTracingARobot(MonaRobot robot) { }
 
-        protected void SetVisualizationMode(TVisualizationMode newMode)
+        protected virtual void SetVisualizationMode(TVisualizationMode newMode)
         {
             _currentVisualizationMode = newMode;
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
