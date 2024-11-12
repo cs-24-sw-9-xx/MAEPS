@@ -75,7 +75,7 @@ namespace Maes.Trackers
 
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
-            // TODO: Implement
+            _selectedRobot = robot;
         }
 
         protected override void CreateSnapShot()
