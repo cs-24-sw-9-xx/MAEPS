@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 
 using Maes.Map;
@@ -60,6 +59,14 @@ namespace Maes.Statistics
             }
         }
 
+        public void ResetWaypointsColor()
+        {
+            foreach (var vertex in _patrollingMap.Vertices)
+            {
+                _vertexVisualizers[vertex].GetComponent<MeshRenderer>().material.color = vertex.Color;
+            }
+        }
+
         public void ShowWaypointHeatMap(int currentTick)
         {
 
@@ -74,6 +81,24 @@ namespace Maes.Statistics
                 var coldness = Mathf.Min((float)ticksSinceLastExplored / (float)GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
                 var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
                 _vertexVisualizers[vertex].GetComponent<MeshRenderer>().material.color = color;
+            }
+        }
+
+        public void ShowTargetWaypoint(Vertex targetVertex)
+        {
+            var yellowColor = new Color(255, 255, 0, 255);
+            _vertexVisualizers[targetVertex].GetComponent<MeshRenderer>().material.color = yellowColor;
+        }
+
+        public void ShowDefaultColor(Vertex vertex)
+        {
+            if (_vertexVisualizers.TryGetValue(vertex, out var vertexObject))
+            {
+                vertexObject.GetComponent<MeshRenderer>().material.color = vertex.Color;
+            }
+            else
+            {
+                Debug.LogError($"Vertex {vertex.Position} not found in visualizer");
             }
         }
     }

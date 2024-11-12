@@ -1,17 +1,18 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map;
 using Maes.Map.MapGen;
-using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
-
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 
 using UnityEngine;
+
+using XCharts.Runtime;
 
 namespace Maes.Trackers
 {
@@ -29,6 +30,7 @@ namespace Maes.Trackers
         public float AverageGraphIdleness => GraphIdlenessList.Count != 0 ? GraphIdlenessList.Average() : 0;
         public int CompletedCycles { get; private set; }
         public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
+        public ScatterChart Chart { get; set; }
 
         private List<float> GraphIdlenessList { get; } = new();
         //TODO: TotalCycles is not set any where in the code
@@ -61,6 +63,11 @@ namespace Maes.Trackers
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
+
+            if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
+            {
+                _visualizer.ShowDefaultColor(vertex);
+            }
         }
 
         protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
@@ -71,13 +78,33 @@ namespace Maes.Trackers
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             GraphIdlenessList.Add(CurrentGraphIdleness);
 
+            // Example: How to plot the data
+            // TODO: Plot the correct data and fix data limit.
+            if (_currentTick % 250 == 0 && Chart.series.Count < 60000)
+            {
+                Chart.AddXAxisData("" + _currentTick);
+                Chart.AddData(0, WorstGraphIdleness);
+            }
+
             // TODO: Remove this when the code UI is set up, just for showing that it works
             Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
-            // TODO: Implement
+            _selectedRobot = robot;
+            if (_selectedRobot != null)
+            {
+                _visualizer.meshRenderer.enabled = true;
+                SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+            }
+            else
+            {
+                _visualizer.meshRenderer.enabled = true;
+                // Revert to waypoint heatmap visualization when current robot is deselected
+                // while visualization mode is based on the selected robot
+                SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+            }
         }
 
         protected override void CreateSnapShot()
@@ -96,6 +123,12 @@ namespace Maes.Trackers
             CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
         }
 
+        protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
+        {
+            _visualizer.ResetWaypointsColor();
+            base.SetVisualizationMode(newMode);
+        }
+
         public void ShowWaypointHeatMap()
         {
             _visualizer.meshRenderer.enabled = false;
@@ -112,6 +145,29 @@ namespace Maes.Trackers
         {
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
+        }
+
+        public void ShowTargetWaypointSelected()
+        {
+            _visualizer.meshRenderer.enabled = false;
+            if (_selectedRobot == null)
+            {
+                throw new Exception("Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
+            }
+
+            SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
+        }
+
+        public void ShowVisibleSelected()
+        {
+            _visualizer.meshRenderer.enabled = false;
+            if (_selectedRobot == null)
+            {
+                throw new Exception("Cannot change to 'ShowVisibleSelected' Visualization mode when no robot is selected");
+            }
+
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
         }
     }
 }

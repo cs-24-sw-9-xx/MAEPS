@@ -19,6 +19,7 @@ namespace Maes.Statistics
 
         public static readonly Color32 SolidColor = new Color32(0, 0, 0, 255);
         public static readonly Color32 StandardCellColor = new Color32(170, 170, 170, 255);
+        public static readonly Color32 VisibleColor = new Color32(32, 130, 57, 255);
 
         private int _widthInTiles, _heightInTiles;
         private Vector3 _offset;

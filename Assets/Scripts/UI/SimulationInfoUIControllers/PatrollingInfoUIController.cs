@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.Map.Visualization;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -11,10 +10,13 @@ using TMPro;
 
 using UnityEngine.UI;
 
+using XCharts.Runtime;
+
 namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
+        public ScatterChart Chart = null!;
         public Image ProgressBarMask = null!;
         public TextMeshProUGUI ProgressText = null!;
 
@@ -29,10 +31,17 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button CoverageHeatMapButton = null!;
         public Button PatrollingHeatMapButton = null!;
 
+        public Button TargetWaypointSelectedButton = null!;
+        public Button VisibleSelectedButton = null!;
+        public Button ToogleIdleGraphButton = null!;
+
         protected override void AfterStart()
         {
+            InitIdleGraph();
+
+            ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
             _mapVisualizationToggleGroup = new List<Button>() {
-                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton
+                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
             };
             SelectVisualizationButton(WaypointHeatMapButton);
 
@@ -63,6 +72,38 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
             });
+
+            TargetWaypointSelectedButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
+                        sim.PatrollingTracker.ShowTargetWaypointSelected();
+                    }
+                });
+            });
+
+            VisibleSelectedButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim =>
+                {
+                    if (sim != null)
+                    {
+                        if (!sim.HasSelectedRobot())
+                        {
+                            sim.SelectFirstRobot();
+                        }
+
+                        sim.PatrollingTracker.ShowVisibleSelected();
+                    }
+                });
+            });
         }
 
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
@@ -78,6 +119,14 @@ namespace Maes.UI.SimulationInfoUIControllers
             else if (mode is PatrollingHeatMapVisualizationMode)
             {
                 SelectVisualizationButton(PatrollingHeatMapButton);
+            }
+            else if (mode is PatrollingTargetWaypointVisualizationMode)
+            {
+                SelectVisualizationButton(TargetWaypointSelectedButton);
+            }
+            else if (mode is CurrentlyVisibleAreaVisualizationPatrollingMode)
+            {
+                SelectVisualizationButton(VisibleSelectedButton);
             }
             else
             {
@@ -133,6 +182,28 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void SetAverageGraphIdleness(float idleness)
         {
             AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
+        }
+
+        private void ToggleGraph()
+        {
+            Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
+        }
+
+        private void InitIdleGraph()
+        {
+            Chart.Init();
+            var xAxis = Chart.EnsureChartComponent<XAxis>();
+            xAxis.splitNumber = 10;
+            xAxis.boundaryGap = true;
+            xAxis.type = Axis.AxisType.Category;
+
+            var yAxis = Chart.EnsureChartComponent<YAxis>();
+            yAxis.type = Axis.AxisType.Value;
+            Chart.RemoveData();
+            var series = Chart.AddSerie<Scatter>("scatter");
+            series.symbol.size = 4;
+
+            Simulation!.PatrollingTracker.Chart = Chart;
         }
     }
 }
