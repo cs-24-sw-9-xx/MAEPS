@@ -472,28 +472,48 @@ namespace Maes.Robot
         /// Estimates the time of arrival for the robot to reach the specified destination.
         /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
         /// </summary>
-        /// <param name="tile">COARSEGRAINED tile as final target</param>
-        public float EstimateTimeToTarget(Vector2Int tile)
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        public float? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
             // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
 
-            var distance = EstimateDistanceToTarget(tile);
-            return distance / Constraints.RelativeMoveSpeed;
+            var distance = EstimateDistanceToTarget(target);
+            return distance == null ? null : distance / Constraints.RelativeMoveSpeed;
         }
 
         /// <summary>
         /// Estimates the distance for robot to reach the specified destination.
         /// Uses the path from PathAndMoveTo to calculate distance.
         /// </summary>
-        /// <param name="tile">COARSEGRAINED tile as final target</param>
-        public float EstimateDistanceToTarget(Vector2Int tile)
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
             var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
-            var distance = Vector2.Distance(robotCurrentPosition, _currentTarget);
-            var currentPosition = _currentTarget;
-            foreach (var nextTarget in _currentPath)
+            if (robotCurrentPosition == target)
             {
-                distance += Vector2.Distance(currentPosition, nextTarget);
+                return 0f;
+            }
+
+            var pathList = SlamMap.CoarseMap.GetPath(target, acceptPartialPaths, beOptimistic);
+            Debug.Log($"Path parts: {pathList.Count}");
+            if (pathList == null)
+            {
+                return null;
+            }
+
+            var distance = 0f;
+            for (var i = 0; i < pathList.Count - 1; i++)
+            {
+                // Get current point and next point
+                var point1 = pathList[i];
+                var point2 = pathList[i + 1];
+                
+                // Calculate the Euclidean distance between the two points
+                distance += Vector2.Distance(point1, point2);
             }
             return distance;
         }
