@@ -83,17 +83,22 @@ namespace Maes.Robot
 
         /// <summary>
         /// Estimates the time of arrival for the robot to reach the specified destination.
-        /// Uses the path from PathAndMoveTo and the robots max speed to calculate the ETA.
+        /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
         /// </summary>
-        /// <param name="tile">COARSEGRAINED tile as final target</param>
-        float EstimateTimeToTarget(Vector2Int tile);
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        float? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false);
 
         /// <summary>
         /// Estimates the distance for robot to reach the specified destination.
         /// Uses the path from PathAndMoveTo to calculate distance.
         /// </summary>
-        /// <param name="tile">COARSEGRAINED tile as final target</param>
-        float EstimateDistanceToTarget(Vector2Int tile);
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false);
+
 
         /// <summary>
         /// Calls the pathfinding and makes the robot move towards a certain tile on the map through known territory
