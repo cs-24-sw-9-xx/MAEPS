@@ -19,6 +19,7 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using System;
 using System.Collections.Generic;
 
 namespace Maes.Utilities
@@ -29,7 +30,7 @@ namespace Maes.Utilities
 
         public delegate bool XBetterThanY<T>(T x, T y);
 
-        public static T TakeBest<T>(T[] values, XBetterThanY<T> xBetterThanY)
+        public static T TakeBest<T>(Span<T> values, XBetterThanY<T> xBetterThanY)
         {
             var currentMin = values[0];
             for (var i = 1; i < values.Length; i++)

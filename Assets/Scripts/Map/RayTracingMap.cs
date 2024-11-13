@@ -20,7 +20,6 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
 
 using Maes.Utilities;
 
@@ -460,24 +459,27 @@ namespace Maes.Map
 
             // When starting a ray trace, it must be determined which of the 3 edges are to be considered to the
             // initial "entering" edge
-            public int FindInitialEnteringEdge(float direction, float a, float b)
+            public unsafe int FindInitialEnteringEdge(float direction, float a, float b)
             {
-                var intersectionsAndEdge = new List<(Vector2, int)>();
+                var intersectionsAndEdge = (Span<(Vector2, int)>)stackalloc (Vector2, int)[3];
+                var i = 0;
                 for (var edge = 0; edge < 3; edge++)
                 {
                     var intersection = Lines[edge].GetIntersection(a, b);
                     if (intersection != null)
                     {
-                        intersectionsAndEdge.Add((intersection.Value, edge));
+                        intersectionsAndEdge[i++] = (intersection.Value, edge);
                     }
                 }
+
+                var span = intersectionsAndEdge[..i];
 
 
                 if (direction <= 90 || direction >= 270)
                 {
                     // Entering point must be the left most intersection
                     return Functional
-                        .TakeBest(intersectionsAndEdge, (intersection1, intersection2)
+                        .TakeBest(span, (intersection1, intersection2)
                             => intersection1.Item1.x < intersection2.Item1.x)
                         .Item2;
                 }
@@ -485,7 +487,7 @@ namespace Maes.Map
                 {
                     // Entering point must be the right most intersection
                     return Functional
-                        .TakeBest(intersectionsAndEdge, (intersection1, intersection2)
+                        .TakeBest(span, (intersection1, intersection2)
                             => intersection1.Item1.x > intersection2.Item1.x)
                         .Item2;
                 }
