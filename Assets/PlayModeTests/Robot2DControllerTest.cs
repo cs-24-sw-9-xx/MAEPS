@@ -62,7 +62,7 @@ namespace PlayModeTests
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed),
+                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
@@ -177,6 +177,27 @@ namespace PlayModeTests
             var targetPositionDelta = Mathf.Abs(expectedAngle - actualAngle);
             Debug.Log($"Actual final angle: {actualAngle}  vs  expected angle: {expectedAngle}");
             Assert.LessOrEqual(targetPositionDelta, maximumDeviationDegrees);
+        }
+
+        [UnityTest]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(2.1f, ExpectedResult = null)]
+        [TestCase(2.5f, ExpectedResult = null)]
+        [TestCase(3.0f, ExpectedResult = null)]
+        public IEnumerator EstimateDistanceToTarget_IsDistanceCorrectTest(float actualDistance)
+        {
+            var coarseMapStartingPosition = Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
+            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize());
+            var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
+
+            var estimatedDistance = _robot.Controller.EstimateDistanceToTarget(coarseMapTargetPosition);
+
+            const float maximumDeviation = 0.5f;
+            Debug.Log($"{nameof(coarseMapStartingPosition)}: {coarseMapStartingPosition}, {nameof(coarseMapTargetPosition)}: {coarseMapTargetPosition}, {nameof(actualDistance)}: {actualDistance}");
+            Debug.Log($"Actual distance: {actualDistance}, estimated distance: {estimatedDistance}");
+            var targetPositionDelta = Math.Abs(actualDistance - estimatedDistance.Value);
+            Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
+            yield return null;
         }
     }
 }
