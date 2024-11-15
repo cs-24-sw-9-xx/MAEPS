@@ -58,7 +58,7 @@ namespace Maes.Statistics
                     _visualizers.Add(edgeVisualizer);
                 }
             }
-            
+
             //TODO: Add a better way to debug point generation, its is currently outcommented
             // if (_patrollingMap.DebugPoints != null)
             // {
