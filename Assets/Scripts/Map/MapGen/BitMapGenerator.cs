@@ -23,6 +23,8 @@ using System;
 
 using UnityEngine;
 
+using Random = System.Random;
+
 namespace Maes.Map.MapGen
 {
     public class BitMapGenerator : MapGenerator
@@ -40,23 +42,24 @@ namespace Maes.Map.MapGen
             _bitmap = bitmap;
             _wallHeight = wallHeight;
             _borderSize = borderSize;
-            Tile.Rand = new System.Random(seed);
 
             _borderSize = Math.Max(2, borderSize);
+
+            var random = new Random(seed);
 
             // Clear and destroy objects from previous map
             ClearMap();
 
             // Add border around map
-            var borderedMap = CreateBorderedMap(_bitmap, _bitmap.GetLength(0), _bitmap.GetLength(1), _borderSize);
+            var borderedMap = CreateBorderedMap(_bitmap, _bitmap.GetLength(0), _bitmap.GetLength(1), _borderSize, random);
 
             // Get rooms needed for mesh creation
-            var (survivingRooms, cleanedMap) = RemoveRoomsAndWallsBelowThreshold(0, 0, borderedMap);
+            var (survivingRooms, cleanedMap) = RemoveRoomsAndWallsBelowThreshold(0, 0, borderedMap, random);
 
             // The rooms should now reflect their relative shifted positions after adding borders round map.
             survivingRooms.ForEach(r => r.OffsetCoordsBy(_borderSize, _borderSize));
 
-            MapToDraw = cleanedMap;
+            _mapToDraw = cleanedMap;
 
             // Create mesh
             var meshGen = GetComponent<MeshGenerator>();
@@ -64,7 +67,7 @@ namespace Maes.Map.MapGen
                 true, survivingRooms);
 
             // Rotate to fit 2D view
-            Plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
+            _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
             ResizePlaneToFitMap(_bitmap.GetLength(1), _bitmap.GetLength(0));
             MovePlaneAndWallRoofToFitWallHeight(_wallHeight);
 
@@ -73,9 +76,9 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            if (MapToDraw != null)
+            if (_mapToDraw != null)
             {
-                DrawMap(MapToDraw);
+                DrawMap(_mapToDraw);
             }
         }
     }

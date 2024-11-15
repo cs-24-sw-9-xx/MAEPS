@@ -178,7 +178,7 @@ namespace Maes.Map.MapPatrollingGen
         /// Finds the left tile where a right vertical split should happen.
         /// Returns y axis.
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="splitRoom"></param>
         /// <returns></returns>
         private static int? RightVerticalSplit(SplitRoom splitRoom)
         {
@@ -209,7 +209,7 @@ namespace Maes.Map.MapPatrollingGen
         /// Finds the left tile where a left vertical split should happen.
         /// Returns y axis.
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="splitRoom"></param>
         /// <returns></returns>
         private static int? LeftVerticalSplit(SplitRoom splitRoom)
         {

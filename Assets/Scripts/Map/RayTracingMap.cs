@@ -42,7 +42,7 @@ namespace Maes.Map
             _map = map;
             var totalTriangles = map.WidthInTiles * map.HeightInTiles * 8;
             var trianglesPerRow = map.WidthInTiles * 8;
-            var vertexDistance = 0.5f; // Vertices and in triangles are 0.5 tiles apart
+            const float vertexDistance = 0.5f; // Vertices and in triangles are 0.5 tiles apart
 
             _traceableTriangles = new RayTracingTriangle[totalTriangles];
             for (var x = 0; x < map.WidthInTiles; x++)
@@ -173,15 +173,15 @@ namespace Maes.Map
             );
         }
 
-        public struct TriangleTrace
+        private struct TriangleTrace
         {
-            public int enteringEdge;
-            public int nextTriangleIndex;
+            public int EnteringEdge;
+            public int NextTriangleIndex;
 
             public TriangleTrace(int enteringEdge, int nextTriangleIndex)
             {
-                this.enteringEdge = enteringEdge;
-                this.nextTriangleIndex = nextTriangleIndex;
+                EnteringEdge = enteringEdge;
+                NextTriangleIndex = nextTriangleIndex;
             }
         }
 
@@ -224,7 +224,7 @@ namespace Maes.Map
                 }
 
                 // Invoke the given function on the cell, and only continue if it returns true
-                if (!shouldContinueFromCell(trace.nextTriangleIndex, triangle.Cell))
+                if (!shouldContinueFromCell(trace.NextTriangleIndex, triangle.Cell))
                 {
                     break;
                 }
@@ -234,12 +234,12 @@ namespace Maes.Map
                 traceCount++;
 
                 // Break if the next triangle is outside the map bounds
-                if (trace.nextTriangleIndex < 0 || trace.nextTriangleIndex >= _traceableTriangles.Length)
+                if (trace.NextTriangleIndex < 0 || trace.NextTriangleIndex >= _traceableTriangles.Length)
                 {
                     break;
                 }
 
-                triangle = _traceableTriangles[trace.nextTriangleIndex];
+                triangle = _traceableTriangles[trace.NextTriangleIndex];
 
                 // Optimization - Only start performance distance checks once we have performed a certain amount of traces
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
@@ -262,10 +262,12 @@ namespace Maes.Map
         // intersecting line (relative to the x-axis) 
         public (Vector2, float)? FindIntersection(Vector2 startingPoint, float angleDegrees, float distance, CellFunction shouldContinue)
         {
+#if DEBUG
             if (angleDegrees < 0f || angleDegrees > 360f)
             {
                 throw new ArgumentException($"Given angle must be range 0-360 degrees. Angle was: {angleDegrees}");
             }
+#endif
 
             var startingIndex = _map.GetTriangleIndex(startingPoint);
 
@@ -300,12 +302,12 @@ namespace Maes.Map
                 }
 
                 // Invoke the given function on the cell, and return the current intersection if it returns true
-                if (!shouldContinue(trace.nextTriangleIndex, triangle.Cell))
+                if (!shouldContinue(trace.NextTriangleIndex, triangle.Cell))
                 {
                     // Find intersection point
-                    var intersection = triangle.Lines[trace.enteringEdge].GetIntersection(a, b)!.Value;
+                    var intersection = triangle.Lines[trace.EnteringEdge].GetIntersection(a, b)!.Value;
                     // Find the angle of the intersecting line
-                    var intersectingLineAngle = triangle.GetLineAngle(trace.enteringEdge);
+                    var intersectingLineAngle = triangle.GetLineAngle(trace.EnteringEdge);
                     return (intersection, intersectingLineAngle);
                 }
 
@@ -314,12 +316,12 @@ namespace Maes.Map
                 traceCount++;
 
                 // Break if the next triangle is outside the map bounds
-                if (trace.nextTriangleIndex < 0 || trace.nextTriangleIndex >= _traceableTriangles.Length)
+                if (trace.NextTriangleIndex < 0 || trace.NextTriangleIndex >= _traceableTriangles.Length)
                 {
                     break;
                 }
 
-                triangle = _traceableTriangles[trace.nextTriangleIndex];
+                triangle = _traceableTriangles[trace.NextTriangleIndex];
 
                 // Optimization - Only start performance distance checks once we have performed a certain amount of traces
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
@@ -338,22 +340,23 @@ namespace Maes.Map
             return null;
         }
 
-        private class RayTracingTriangle
+        private struct RayTracingTriangle
         {
             public readonly Line2D[] Lines;
             private readonly int[] _neighbourIndex;
-            public TCell Cell = default!;
+            public TCell Cell;
 
             public RayTracingTriangle(Vector2 p1, Vector2 p2, Vector2 p3, int[] neighbourIndex)
             {
                 Lines = new[] { new Line2D(p1, p2), new Line2D(p2, p3), new Line2D(p3, p1) };
                 _neighbourIndex = neighbourIndex;
+                Cell = default!;
             }
 
             // Returns the side at which the trace exited the triangle, the exit intersection point
             // and the index of the triangle that the trace enters next
             // Takes the edge that this tile was entered from, and the linear equation ax+b for the trace 
-            public void RayTrace(ref TriangleTrace trace, in float angle, in float a, in float b)
+            public void RayTrace(ref TriangleTrace trace, float angle, float a, float b)
             {
                 // Variable for storing an intersection and the corresponding edge
                 Vector2? intersection = null;
@@ -362,7 +365,7 @@ namespace Maes.Map
                 {
                     // The line must exit the triangle in one of the two edges that the line did not enter through
                     // Therefore only check intersection for these two lines
-                    if (edge == trace.enteringEdge)
+                    if (edge == trace.EnteringEdge)
                     {
                         continue;
                     }
@@ -381,7 +384,7 @@ namespace Maes.Map
                         // Otherwise, since there is no intersection on this line, it has to be the other one (that isn't the entering edge)
                         // If the entering edge is 2, the next edge must be 1
                         // Otherwise the next edge can only be 2 (the cases where enter edge is 0 or 1)
-                        intersectionEdge = trace.enteringEdge == 2 ? 1 : 2;
+                        intersectionEdge = trace.EnteringEdge == 2 ? 1 : 2;
                         break;
                     }
                     else // There is an intersection for this edge
@@ -401,7 +404,7 @@ namespace Maes.Map
                             var intersectionValue = intersection.Value;
                             if (currentIntersectionValue.y > intersectionValue.y)
                             {
-                                intersection = currentIntersection;
+                                intersection = currentIntersectionValue;
                                 intersectionEdge = edge;
                             }
                             else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
@@ -410,13 +413,13 @@ namespace Maes.Map
                                 if (angle < 90 && currentIntersectionValue.x > intersectionValue.x)
                                 {
                                     // For 0-90 degrees prefer intersection with highest x value
-                                    intersection = currentIntersection;
+                                    intersection = currentIntersectionValue;
                                     intersectionEdge = edge;
                                 }
                                 else if (angle > 90 && currentIntersectionValue.x < intersectionValue.x)
                                 {
                                     // For 90-180 degrees prefer intersection with lowest x value
-                                    intersection = currentIntersection;
+                                    intersection = currentIntersectionValue;
                                     intersectionEdge = edge;
                                 }
                             }
@@ -428,7 +431,7 @@ namespace Maes.Map
                             // For 180-360 degrees prefer intersection with lowest y-value
                             if (currentIntersectionValue.y < intersectionValue.y)
                             {
-                                intersection = currentIntersection;
+                                intersection = currentIntersectionValue;
                                 intersectionEdge = edge;
                             }
                             else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
@@ -437,13 +440,13 @@ namespace Maes.Map
                                 if (angle < 270 && currentIntersectionValue.x < intersectionValue.x)
                                 {
                                     // For 180-270 degrees prefer intersection with highest x value
-                                    intersection = currentIntersection;
+                                    intersection = currentIntersectionValue;
                                     intersectionEdge = edge;
                                 }
                                 else if (angle > 270 && currentIntersectionValue.x > intersectionValue.x)
                                 {
                                     // For 270-360 degrees prefer intersection with lowest x value
-                                    intersection = currentIntersection;
+                                    intersection = currentIntersectionValue;
                                     intersectionEdge = edge;
                                 }
                             }
@@ -454,8 +457,8 @@ namespace Maes.Map
                 if (intersectionEdge != -1)
                 {
                     // Modify out parameter (Slight performance increase over returning a value)
-                    trace.enteringEdge = intersectionEdge;
-                    trace.nextTriangleIndex = _neighbourIndex[intersectionEdge];
+                    trace.EnteringEdge = intersectionEdge;
+                    trace.NextTriangleIndex = _neighbourIndex[intersectionEdge];
                     return;
                 }
 

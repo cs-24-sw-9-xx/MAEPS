@@ -59,7 +59,7 @@ namespace Maes.Map
 
         public string GetDebugInfo()
         {
-            var position = GlobalSettings.IsRosMode ? Geometry.ToROSCoord(MapPosition) : MapPosition;
+            var position = GlobalSettings.IsRosMode ? Geometry.ToRosCoord(MapPosition) : MapPosition;
 
             return $"Tag content:  {Content}\n"
                    + $"Deposited by: Robot{Sender}\n"

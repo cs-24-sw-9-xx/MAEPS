@@ -34,12 +34,12 @@ namespace Maes.Simulation
         protected override void CreateStatisticsFile()
         {
             var resultForFileName = "e??-c??";
-            if (ExplorationTracker.snapShots.Any())
+            if (ExplorationTracker.SnapShots.Any())
             {
-                resultForFileName = $"e{ExplorationTracker.snapShots[^1].Explored}-c{ExplorationTracker.snapShots[^1].Covered}";
+                resultForFileName = $"e{ExplorationTracker.SnapShots[^1].Explored}-c{ExplorationTracker.SnapShots[^1].Covered}";
             }
 
-            var path = GlobalSettings.StatisticsOutPutPath + _scenario.StatisticsFileName + "_" + resultForFileName;
+            var path = $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}_{resultForFileName}";
             new ExplorationCsvDataWriter(this, path).CreateCsvFile();
         }
     }

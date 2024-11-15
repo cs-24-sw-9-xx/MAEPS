@@ -53,7 +53,8 @@ namespace Maes.Simulation
 
         protected override void CreateStatisticsFile()
         {
-            var folderPath = GlobalSettings.StatisticsOutPutPath + _scenario.StatisticsFileName + DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture);
+            var folderPath =
+                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
             Directory.CreateDirectory(folderPath);
 
             var patrollingFilename = Path.Join(folderPath, "patrolling");

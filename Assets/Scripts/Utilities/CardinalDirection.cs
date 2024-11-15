@@ -29,7 +29,6 @@ namespace Maes.Utilities
     // Represents the 8 directions found on a compass 
     public readonly struct CardinalDirection : IEquatable<CardinalDirection>
     {
-        public const int CardinalDirectionsCount = 8;
         // Index representing 8 neighbouring tags/tiles
         public static readonly CardinalDirection
             East = new(0),
@@ -57,29 +56,29 @@ namespace Maes.Utilities
         private static readonly CardinalDirection[] Directions =
             {East, SouthEast, South, SouthWest, West, NorthWest, North, NorthEast};
 
-        public readonly int Index;
+        private readonly int _index;
         public readonly Vector2Int Vector;
 
         // Can only be constructed locally. Must be accessed through public static instances
         private CardinalDirection(int index)
         {
-            Index = index;
+            _index = index;
             Vector = CalculateDirectionVector(index);
         }
 
         public CardinalDirection OppositeDirection()
         {
-            return GetDirection((Index + 4) % 8);
+            return GetDirection((_index + 4) % 8);
         }
 
         public float DirectionToAngle()
         {
-            return ((8 - Index) % 8) * 45;
+            return ((8 - _index) % 8) * 45;
         }
 
         public bool IsDiagonal()
         {
-            return Index % 2 != 0;
+            return _index % 2 != 0;
         }
 
         // Converts the given absolute angle (relative to the x-axis) to the closest corresponding cardinal direction
@@ -108,12 +107,12 @@ namespace Maes.Utilities
 
         public CardinalDirection Next()
         {
-            return GetDirection(Index + 1);
+            return GetDirection(_index + 1);
         }
 
         public CardinalDirection Previous()
         {
-            return GetDirection(Index - 1);
+            return GetDirection(_index - 1);
         }
 
         private static Vector2Int CalculateDirectionVector(int index)
@@ -144,7 +143,7 @@ namespace Maes.Utilities
 
         public CardinalDirection GetRelativeDirection(RelativeDirection dir)
         {
-            return GetDirection(Index + (int)dir);
+            return GetDirection(_index + (int)dir);
         }
 
         public static CardinalDirection[] GetCardinalAndOrdinalDirections()
@@ -186,7 +185,7 @@ namespace Maes.Utilities
 
         public CardinalDirection Counterclockwise()
         {
-            return Index switch
+            return _index switch
             {
                 //East
                 0 => North,
@@ -204,7 +203,7 @@ namespace Maes.Utilities
                 6 => West,
                 //Northeast
                 7 => NorthWest,
-                _ => new CardinalDirection(-1),
+                _ => new CardinalDirection(-1)
             };
         }
 
@@ -220,7 +219,7 @@ namespace Maes.Utilities
 
         public override string ToString()
         {
-            return Index switch
+            return _index switch
             {
                 0 => "East",
                 1 => "Southeast",
@@ -230,13 +229,13 @@ namespace Maes.Utilities
                 5 => "Northwest",
                 6 => "North",
                 7 => "Northeast",
-                _ => "",
+                _ => ""
             };
         }
 
         public bool Equals(CardinalDirection other)
         {
-            return Index == other.Index;
+            return _index == other._index;
         }
 
         public override bool Equals(object? obj)
@@ -246,7 +245,7 @@ namespace Maes.Utilities
 
         public override int GetHashCode()
         {
-            return Index;
+            return _index;
         }
 
         public static bool operator ==(CardinalDirection left, CardinalDirection right)

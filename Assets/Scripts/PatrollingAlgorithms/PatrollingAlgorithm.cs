@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 using Maes.Algorithms;
 using Maes.Map;
@@ -66,16 +67,19 @@ namespace Maes.PatrollingAlgorithms
         public virtual string GetDebugInfo()
         {
             return
-                AlgorithmName + "\n" +
-                $"Target vertex position: {TargetVertex.Position}\n";
+                new StringBuilder()
+                    .AppendLine(AlgorithmName)
+                    .Append("Target vertex position: ")
+                    .AppendLine(TargetVertex.Position.ToString())
+                    .ToString();
         }
 
-        protected Vertex GetClosestVertex()
+        private Vertex GetClosestVertex()
         {
-            Vertex? closestVertex = null;
-            var closestDistance = float.MaxValue;
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
-            foreach (var vertex in _vertices)
+            var closestVertex = _vertices[0];
+            var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
+            foreach (var vertex in _vertices.AsSpan(1))
             {
                 var distance = Vector2Int.Distance(position, vertex.Position);
                 if (distance < closestDistance)
@@ -84,7 +88,8 @@ namespace Maes.PatrollingAlgorithms
                     closestVertex = vertex;
                 }
             }
-            return closestVertex ?? throw new InvalidOperationException("There are no vertices!");
+
+            return closestVertex;
         }
     }
 }

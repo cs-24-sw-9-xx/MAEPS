@@ -35,7 +35,6 @@ namespace Maes.Map.PathFinding
 {
     public class AStar : IPathFinder
     {
-
         private class AStarTile
         {
             public readonly int X, Y;
@@ -44,6 +43,7 @@ namespace Maes.Map.PathFinding
             public readonly float TotalCost;
 
             private readonly AStarTile? _parent;
+            private readonly int _depth;
 
             public AStarTile(int x, int y, AStarTile? parent, float heuristic, float cost)
             {
@@ -53,30 +53,31 @@ namespace Maes.Map.PathFinding
                 Heuristic = heuristic;
                 Cost = cost;
                 TotalCost = cost + heuristic;
+                _depth = parent?._depth + 1 ?? 0;
             }
 
-            public List<Vector2Int> Path()
+            public Vector2Int[] Path()
             {
-                var path = new List<Vector2Int>();
+                var path = new Vector2Int[_depth + 1];
+                var i = _depth;
 
                 var current = this;
                 while (current != null)
                 {
-                    path.Add(new Vector2Int(current.X, current.Y));
+                    path[i--] = new Vector2Int(current.X, current.Y);
                     current = current._parent;
                 }
 
-                path.Reverse();
                 return path;
             }
         }
 
-        public List<Vector2Int>? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
         {
             return GetPath(startCoordinate, targetCoordinate, pathFindingMap, true, acceptPartialPaths);
         }
 
-        public List<Vector2Int>? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
             var candidates = new SimplePriorityQueue<AStarTile, float>();
             var bestCandidateOnTile = new Dictionary<Vector2Int, AStarTile>();
@@ -88,18 +89,17 @@ namespace Maes.Map.PathFinding
             if (!IsAnyNeighborStatus(targetCoordinate, pathFindingMap, SlamTileStatus.Open).HasValue)
             {
                 var nearestTile = GetNearestTileFloodFill(pathFindingMap, targetCoordinate, SlamTileStatus.Open);
-                targetCoordinate = nearestTile.HasValue ? nearestTile.Value : targetCoordinate;
+                targetCoordinate = nearestTile ?? targetCoordinate;
             }
 
             var loopCount = 0;
             while (candidates.Count > 0)
             {
-
                 var currentTile = candidates.Dequeue();
                 var currentCoordinate = new Vector2Int(currentTile.X, currentTile.Y);
 
                 // Skip if a better candidate has been added to the queue since this was added
-                if (bestCandidateOnTile.ContainsKey(currentCoordinate) && bestCandidateOnTile[currentCoordinate] != currentTile)
+                if (bestCandidateOnTile.TryGetValue(currentCoordinate, out var betterCandidate) && betterCandidate != currentTile)
                 {
                     continue;
                 }
@@ -139,7 +139,7 @@ namespace Maes.Map.PathFinding
                     var heuristic = OctileHeuristic(candidateCoord, targetCoordinate);
                     var candidateCost = cost + heuristic;
                     // Check if this path is 'cheaper' than any previous path to this candidate tile 
-                    if (!bestCandidateOnTile.ContainsKey(candidateCoord) || bestCandidateOnTile[candidateCoord].TotalCost > candidateCost)
+                    if (!bestCandidateOnTile.TryGetValue(candidateCoord, out var bestCandidate) || bestCandidate.TotalCost > candidateCost)
                     {
                         var newTile = new AStarTile(candidateCoord.x, candidateCoord.y, currentTile, heuristic, cost);
                         // Save this as the new best candidate for this tile
@@ -235,11 +235,11 @@ namespace Maes.Map.PathFinding
         }
 
         // Converts the given A* path to PathSteps (containing a line and a list of all tiles intersected in this path)
-        public List<PathStep> PathToSteps(List<Vector2Int> path, float robotRadius)
+        public List<PathStep> PathToSteps(Vector2Int[] path, float robotRadius)
         {
-            if (path.Count == 1)
+            if (path.Length == 1)
             {
-                return new List<PathStep> { new PathStep(path[0], path[0], new HashSet<Vector2Int>() { path[0] }) };
+                return new List<PathStep> { new(path[0], path[0], new HashSet<Vector2Int> { path[0] }) };
             }
 
             var steps = new List<PathStep>();
@@ -250,7 +250,7 @@ namespace Maes.Map.PathFinding
             var currentDirection = CardinalDirection.FromVector(currentTile - stepStart);
             AddIntersectingTiles(stepStart, currentDirection, crossedTiles);
 
-            foreach (var nextTile in path.Skip(2))
+            foreach (var nextTile in path.AsSpan(2))
             {
                 var newDirection = CardinalDirection.FromVector(nextTile - currentTile);
                 if (newDirection != currentDirection)
@@ -296,28 +296,28 @@ namespace Maes.Map.PathFinding
                     return neighborHit.Value;
                 }
 
-                var directions = CardinalDirection.GetCardinalDirections().Select(dir => dir.Vector);
+                var directions = CardinalDirection.GetCardinalDirections();
                 foreach (var dir in directions)
                 {
-                    if (!pathFindingMap.IsWithinBounds(target + dir)
-                        || (excludedTiles != null && excludedTiles.Contains(target + dir))
-                        || pathFindingMap.GetTileStatus(target + dir) == SlamTileStatus.Solid)
+                    if (!pathFindingMap.IsWithinBounds(target + dir.Vector)
+                        || (excludedTiles != null && excludedTiles.Contains(target + dir.Vector))
+                        || pathFindingMap.GetTileStatus(target + dir.Vector) == SlamTileStatus.Solid)
                     {
                         continue;
                     }
 
-                    neighborHit = IsAnyNeighborStatus(target + dir, pathFindingMap, lookupStatus);
-                    if (neighborHit.HasValue && pathFindingMap.IsWithinBounds(target + dir))
+                    neighborHit = IsAnyNeighborStatus(target + dir.Vector, pathFindingMap, lookupStatus);
+                    if (neighborHit.HasValue && pathFindingMap.IsWithinBounds(target + dir.Vector))
                     {
                         return neighborHit.Value;
                     }
 
-                    if (visitedTargetsList.Contains(target + dir) || !pathFindingMap.IsWithinBounds(target + dir))
+                    if (visitedTargetsList.Contains(target + dir.Vector) || !pathFindingMap.IsWithinBounds(target + dir.Vector))
                     {
                         continue;
                     }
-                    targetQueue.Enqueue(target + dir);
-                    visitedTargetsList.Add(target + dir);
+                    targetQueue.Enqueue(target + dir.Vector);
+                    visitedTargetsList.Add(target + dir.Vector);
                 }
             }
 

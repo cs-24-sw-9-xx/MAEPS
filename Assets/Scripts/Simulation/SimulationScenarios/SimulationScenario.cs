@@ -46,7 +46,6 @@ namespace Maes.Simulation.SimulationScenarios
     where TSimulation : ISimulation
     where TAlgorithm : IAlgorithm
     {
-        protected readonly int Seed;
         public readonly SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim;
 
         public MapFactory MapSpawner { get; }
@@ -63,14 +62,12 @@ namespace Maes.Simulation.SimulationScenarios
             string? statisticsFileName = null
             )
         {
-            Seed = seed;
             HasFinishedSim = hasFinishedSim ?? (simulation => simulation.HasFinishedSim());
             // Default to generating a cave map when no map generator is specified
             MapSpawner = mapSpawner ?? (generator => generator.GenerateMap(new CaveMapConfig(seed)));
             RobotSpawner = robotSpawner;
             RobotConstraints = robotConstraints ?? new RobotConstraints();
-            StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/', '-')}" +
-                $"_{DateTime.Now.ToLongTimeString().Replace(' ', '-').Replace(':', '-')}";
+            StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/', '-')}_{DateTime.Now.ToLongTimeString().Replace(' ', '-').Replace(':', '-')}";
         }
     }
 }

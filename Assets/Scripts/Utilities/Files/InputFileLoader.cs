@@ -23,9 +23,8 @@ using System.IO;
 
 namespace Maes.Utilities.Files
 {
-    internal class InputFileLoader
+    public static class InputFileLoader
     {
-
         public static string GetDefaultInputPath()
         {
             return Path.Join(Path.Join(Directory.GetCurrentDirectory(), "Assets"), "Maps");

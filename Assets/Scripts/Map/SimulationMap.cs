@@ -90,14 +90,12 @@ namespace Maes.Map
             {
                 return ((mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]), (mainTriangleIndex + 1 + triangleOffset, triangles[mainTriangleIndex + 1]));
             }
-            else
-            {
-                return ((mainTriangleIndex - 1 + triangleOffset, triangles[mainTriangleIndex - 1]), (mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]));
-            }
+
+            return ((mainTriangleIndex - 1 + triangleOffset, triangles[mainTriangleIndex - 1]), (mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]));
         }
 
         // Returns the cells of the tile at the given coordinate along with index of the first cell
-        private (int, List<TCell>) GetTileCellsByWorldCoordinate(Vector2 worldCoord)
+        private (int, TCell[]) GetTileCellsByWorldCoordinate(Vector2 worldCoord)
         {
             var localCoord = WorldCoordinateToCoarseTileCoordinate(worldCoord);
             var triangleOffset = ((int)localCoord.x) * 8 + ((int)localCoord.y) * WidthInTiles * 8;

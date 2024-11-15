@@ -73,9 +73,9 @@ namespace Maes.Utilities
             }
         }
 
-        public List<Vector2> GetPoints()
+        public Vector2[] GetPoints()
         {
-            return new List<Vector2> { Start, End };
+            return new[] { Start, End };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,10 +88,12 @@ namespace Maes.Utilities
         // Returns true if the y value of the line grows as x increases
         public bool IsGrowing()
         {
+#if DEBUG
             if (_isVertical || _isHorizontal)
             {
                 throw new Exception("Cannot call IsGrowing on Horizontal or Vertical lines");
             }
+#endif
 
             return _a > 0f;
         }
@@ -134,24 +136,19 @@ namespace Maes.Utilities
                         var closestPoints = GetClosestPoints(otherLine);
                         return (closestPoints.linePoint + closestPoints.otherLinePoint) / 2;
                     }
-                    else
-                    {
-                        return null;
-                    }
+
+                    return null;
                 }
-                else
-                {
-                    return _isVertical ? new(_b, otherLine._b) : new(otherLine._b, _b);
-                }
+
+                return _isVertical ? new(_b, otherLine._b) : new(otherLine._b, _b);
             }
-            else
+
+            if (otherLine._isVertical)
             {
-                if (otherLine._isVertical)
-                {
-                    return otherLine.GetIntersection(_a, _b, infinite);
-                }
-                return GetIntersection(otherLine._a, otherLine._b, infinite);
+                return otherLine.GetIntersection(_a, _b, infinite);
             }
+
+            return GetIntersection(otherLine._a, otherLine._b, infinite);
         }
 
         // Checks for intersection with an infinite line described by a_1 x + b_2 
@@ -168,12 +165,11 @@ namespace Maes.Utilities
                 {
                     return new Vector2(Start.x, yIntersection);
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
-            else if (_isHorizontal) // Optimization
+
+            if (_isHorizontal) // Optimization
             {
                 // Parallel lines case
                 if (Mathf.Abs(a2 - _a) < 0.0001f)
@@ -195,40 +191,34 @@ namespace Maes.Utilities
                 {
                     return new Vector2(xIntersection, Start.y);
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
-            else
+
+            // Parallel lines case
+            if (Mathf.Abs(a2 - _a) <= 0.0001f)
             {
-                // Parallel lines case
-                if (Mathf.Abs(a2 - _a) <= 0.0001f)
+                // If the two parallel lines intersect then return the midpoint of this line as intersection
+                if (Mathf.Abs(b2 - _b) < 0.0001f)
                 {
-                    // If the two parallel lines intersect then return the midpoint of this line as intersection
-                    if (Mathf.Abs(b2 - _b) < 0.0001f)
-                    {
-                        return MidPoint;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return MidPoint;
                 }
 
-                // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
-                var intersectX = (b2 - _b) / (_a - a2);
-                // Check if intersection is outside line segment
-                if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
-                {
-                    return null;
-                }
-
-                var intersectY = _a * intersectX + _b;
-                // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
-                //           " at " + intersectX + ", " + intersectY);
-                return new Vector2(intersectX, intersectY);
+                return null;
             }
+
+            // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
+            var intersectX = (b2 - _b) / (_a - a2);
+            // Check if intersection is outside line segment
+            if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
+            {
+                return null;
+            }
+
+            var intersectY = _a * intersectX + _b;
+            // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
+            //           " at " + intersectX + ", " + intersectY);
+            return new Vector2(intersectX, intersectY);
         }
 
         /// <summary>

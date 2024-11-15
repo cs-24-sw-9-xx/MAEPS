@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Maes.Visualizers
 {
     public interface IVisualizer<TVisualizerTile>
-    where TVisualizerTile : ICell
+    where TVisualizerTile : Cell
     {
         void SetSimulationMap(SimulationMap<TVisualizerTile> newMap, Vector3 offset);
     }

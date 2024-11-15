@@ -47,7 +47,7 @@ namespace Maes.Map.Visualization.Exploration
 
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
         {
-            visualizer.SetAllColors((index) =>
+            visualizer.SetAllColors(index =>
             {
                 var coordinate = _map.TriangleIndexToCoordinate(index);
                 var status = _map.GetTileStatus(coordinate);

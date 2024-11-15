@@ -24,45 +24,47 @@ using System.Linq;
 
 using UnityEngine;
 
+using Random = System.Random;
+
 
 namespace Maes.Map.MapGen
 {
     public abstract class MapGenerator : MonoBehaviour
     {
         // Set by Awake
-        protected Transform Plane = null!;
-        protected Transform InnerWalls2D = null!;
-        protected Transform InnerWalls3D = null!;
-        protected Transform WallRoof = null!;
+        protected Transform _plane = null!;
+        protected Transform _innerWalls2D = null!;
+        protected Transform _innerWalls3D = null!;
+        protected Transform _wallRoof = null!;
         private MeshGenerator _meshGenerator = null!;
 
         // Variable used for drawing gizmos on selection for debugging.
-        protected Tile[,]? MapToDraw = null;
+        protected Tile[,]? _mapToDraw = null;
 
         public void Awake()
         {
-            Plane = transform.Find("CaveFloor").GetComponent<Transform>();
-            InnerWalls2D = transform.Find("InnerWalls2D").GetComponent<Transform>();
-            InnerWalls3D = transform.Find("InnerWalls3D").GetComponent<Transform>();
-            WallRoof = transform.Find("WallRoof").GetComponent<Transform>();
+            _plane = transform.Find("CaveFloor").GetComponent<Transform>();
+            _innerWalls2D = transform.Find("InnerWalls2D").GetComponent<Transform>();
+            _innerWalls3D = transform.Find("InnerWalls3D").GetComponent<Transform>();
+            _wallRoof = transform.Find("WallRoof").GetComponent<Transform>();
             _meshGenerator = GetComponent<MeshGenerator>();
         }
 
         protected void MovePlaneAndWallRoofToFitWallHeight(float wallHeight)
         {
-            var newPosition = WallRoof.position;
+            var newPosition = _wallRoof.position;
             newPosition.z = -wallHeight;
-            WallRoof.position = newPosition;
+            _wallRoof.position = newPosition;
 
-            newPosition = InnerWalls2D.position;
+            newPosition = _innerWalls2D.position;
             newPosition.z = -wallHeight;
-            InnerWalls2D.position = newPosition;
+            _innerWalls2D.position = newPosition;
         }
 
         protected void ResizePlaneToFitMap(int bitMapHeight, int bitMapWidth, float padding = 0.1f)
         {
             // Resize plane below cave to fit size
-            Plane.localScale = new Vector3(((bitMapWidth) / 10f) + padding,
+            _plane.localScale = new Vector3(((bitMapWidth) / 10f) + padding,
                 1,
                 (bitMapHeight / 10f) + padding);
         }
@@ -72,10 +74,10 @@ namespace Maes.Map.MapGen
             _meshGenerator.ClearMesh();
         }
 
-        protected Tile[,] CreateBorderedMap(Tile[,] map, int width, int height, int borderSize)
+        protected static Tile[,] CreateBorderedMap(Tile[,] map, int width, int height, int borderSize, Random random)
         {
             var borderedMap = new Tile[width + (borderSize * 2), height + (borderSize * 2)];
-            var tile = Tile.GetRandomWall();
+            var tile = Tile.GetRandomWall(random);
             for (var x = 0; x < borderedMap.GetLength(0); x++)
             {
                 for (var y = 0; y < borderedMap.GetLength(1); y++)
@@ -166,20 +168,28 @@ namespace Maes.Map.MapGen
 
             return tiles;
         }
-        protected bool IsInMapRange(int x, int y, Tile[,] map)
+        protected static bool IsInMapRange(int x, int y, Tile[,] map)
         {
             return x >= 0 && x < map.GetLength(0) && y >= 0 && y < map.GetLength(1);
         }
 
         protected (List<Room> surviningRooms, Tile[,] map) RemoveRoomsAndWallsBelowThreshold(int wallThreshold, int roomThreshold,
-            Tile[,] map)
+            Tile[,] map, Random random)
         {
             var cleanedMap = (Tile[,])map.Clone();
             var wallRegions = GetRegions(cleanedMap, Tile.Walls());
 
-            foreach (var tile in wallRegions.Where(wallRegion => wallRegion.Count < wallThreshold).SelectMany(wallRegion => wallRegion))
+            foreach (var wallRegion in wallRegions)
             {
-                cleanedMap[tile.x, tile.y] = new Tile(TileType.Room);
+                if (wallRegion.Count >= wallThreshold)
+                {
+                    continue;
+                }
+
+                foreach (var tile in wallRegion)
+                {
+                    cleanedMap[tile.x, tile.y] = new Tile(TileType.Room);
+                }
             }
 
             var roomRegions = GetRegions(cleanedMap, TileType.Room);
@@ -189,7 +199,7 @@ namespace Maes.Map.MapGen
             {
                 if (roomRegion.Count < roomThreshold)
                 {
-                    var tileType = Tile.GetRandomWall();
+                    var tileType = Tile.GetRandomWall(random);
                     foreach (var tile in roomRegion)
                     {
                         cleanedMap[tile.x, tile.y] = tileType;
@@ -207,7 +217,7 @@ namespace Maes.Map.MapGen
         // Draw the gizmo of the map for debugging purposes.
         protected void DrawMap(Tile[,] map)
         {
-            if (MapToDraw == null)
+            if (_mapToDraw == null)
             {
                 return;
             }
@@ -238,9 +248,9 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            if (MapToDraw != null)
+            if (_mapToDraw != null)
             {
-                DrawMap(MapToDraw);
+                DrawMap(_mapToDraw);
             }
         }
     }

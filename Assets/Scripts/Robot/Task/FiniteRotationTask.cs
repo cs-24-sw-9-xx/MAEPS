@@ -44,8 +44,8 @@ namespace Maes.Robot.Task
         {
             if (degreesToRotate < -180f || degreesToRotate > 180f)
             {
-                throw new ArgumentException($"Given rotation must be between -180° and 180° " +
-                                            $"but target rotation was {degreesToRotate}");
+                throw new ArgumentException(
+                    $"Given rotation must be between -180° and 180° but target rotation was {degreesToRotate}");
             }
 
             _degreesToRotate = degreesToRotate;
@@ -105,7 +105,7 @@ namespace Maes.Robot.Task
 
 
         // Returns the time (in ticks from now) at which the velocity of the robot will be approximately 0 (<0.001) 
-        private int GetStopTime(float currentRotationRate)
+        private static int GetStopTime(float currentRotationRate)
         {
             return (int)(-3.81f * Mathf.Log(0.01f / currentRotationRate));
         }
@@ -127,11 +127,11 @@ namespace Maes.Robot.Task
             return rotation;
         }
 
-        // Returns the speed of rotaion (measured in degrees per tick) after waiting the given amount of ticks without
+        // Returns the speed of rotation (measured in degrees per tick) after waiting the given amount of ticks without
         // applying force
-        private float GetRotationRate(float startingRate, int ticks)
+        private static float GetRotationRate(float startingRate, int ticks)
         {
-            return (float)(startingRate * Math.Pow(Math.E, -ticks / 3.81f));
+            return startingRate * Mathf.Pow((float)Math.E, -ticks / 3.81f);
         }
 
 

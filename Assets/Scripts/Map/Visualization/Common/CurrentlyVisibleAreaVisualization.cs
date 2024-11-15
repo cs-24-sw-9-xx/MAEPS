@@ -5,15 +5,15 @@ using UnityEngine;
 
 namespace Maes.Map.Visualization.Common
 {
-    internal class CurrentlyVisibleAreaVisualization<TCell, TVisualizer> : IVisualizationMode<TCell, TVisualizer>
-        where TCell : ICell
+    internal abstract class CurrentlyVisibleAreaVisualization<TCell, TVisualizer> : IVisualizationMode<TCell, TVisualizer>
+        where TCell : Cell
         where TVisualizer : Visualizer<TCell>
     {
 
         private readonly SimulationMap<TCell> _map;
         private readonly Robot2DController _selectedRobot;
 
-        public CurrentlyVisibleAreaVisualization(SimulationMap<TCell> map, Robot2DController selectedRobot)
+        protected CurrentlyVisibleAreaVisualization(SimulationMap<TCell> map, Robot2DController selectedRobot)
         {
             _selectedRobot = selectedRobot;
             _map = map;

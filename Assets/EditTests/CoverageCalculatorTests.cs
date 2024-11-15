@@ -54,8 +54,8 @@ namespace EditTests
         private static SimulationMap<Tile> GenerateCollisionMap()
         {
             var tiles = new SimulationMapTile<Tile>[Width, Height];
-            Tile.Rand = new Random(RandomSeed);
-            var wall = Tile.GetRandomWall();
+            var random = new Random(RandomSeed);
+            var wall = Tile.GetRandomWall(random);
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)

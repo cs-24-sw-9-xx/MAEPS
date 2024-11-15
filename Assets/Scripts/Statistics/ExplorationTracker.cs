@@ -48,10 +48,10 @@ namespace Maes.Statistics
         // where each mini-tile is composed of two triangles
         public float CoverageProportion => _coverageCalculator.CoverageProportion;
 
-        public readonly List<ExplorationSnapShot> snapShots = new();
-        private float mostRecentDistance;
+        public readonly List<ExplorationSnapShot> SnapShots = new();
+        private float _mostRecentDistance;
 
-        private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new List<(int, ExplorationCell)>();
+        private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new();
 
         public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
             : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type)))
@@ -65,34 +65,41 @@ namespace Maes.Statistics
 
         protected override void CreateSnapShot()
         {
-            snapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, mostRecentDistance));
+            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, _mostRecentDistance));
         }
 
-        private float CalculateAverageDistance(MonaRobot[] robots)
+        private static float CalculateAverageDistance(MonaRobot[] robots)
         {
-            var averages = new List<float>();
-            foreach (var robot in robots)
+            var sum = 0f;
+            var count = 0;
+            for (var i = 0; i < robots.Length; i++)
             {
+                var robot = robots[i];
                 var robotPosition = robot.transform.position;
-                foreach (var otherRobot in robots)
+                for (var j = i + 1; j < robots.Length; j++)
                 {
+                    var otherRobot = robots[j];
                     var otherRobotPosition = otherRobot.transform.position;
-                    averages.Add((float)Math.Sqrt(Math.Pow(robotPosition.x - otherRobotPosition.x, 2) + Math.Pow(robotPosition.y - otherRobotPosition.y, 2) + Math.Pow(robotPosition.z - otherRobotPosition.z, 2)));
+                    sum += Mathf.Sqrt(
+                        Mathf.Pow(robotPosition.x - otherRobotPosition.x, 2) +
+                        Mathf.Pow(robotPosition.y - otherRobotPosition.y, 2) +
+                        Mathf.Pow(robotPosition.z - otherRobotPosition.z, 2));
+                    count++;
                 }
             }
 
-            var sum = averages.Sum();
-            return sum / averages.Count;
+            return sum / count;
         }
 
-        private List<(int, ExplorationCell)> newlyCoveredCells = new() { };
+        private readonly List<(int, ExplorationCell)> _newlyCoveredCells = new();
+
         protected override void UpdateCoverageStatus(MonaRobot robot)
         {
-            newlyCoveredCells = new List<(int, ExplorationCell)> { };
+            _newlyCoveredCells.Clear();
             base.UpdateCoverageStatus(robot);
         }
 
-        protected override CoverageCalculator<ExplorationCell>.MiniTileConsumer preCoverageTileConsumer => (index1, triangle1, index2, triangle2) =>
+        protected override void PreCoverageTileConsumer(int index1, ExplorationCell triangle1, int index2, ExplorationCell triangle2)
         {
             if (triangle1.IsCovered)
             {
@@ -100,13 +107,13 @@ namespace Maes.Statistics
             }
 
             // This tile was not covered before, register as newly covered
-            newlyCoveredCells.Add((index1, triangle1));
-            newlyCoveredCells.Add((index2, triangle2));
-        };
+            _newlyCoveredCells.Add((index1, triangle1));
+            _newlyCoveredCells.Add((index2, triangle2));
+        }
 
         protected override void AfterUpdateCoverageStatus(MonaRobot robot)
         {
-            _currentVisualizationMode.RegisterNewlyCoveredCells(robot, newlyCoveredCells);
+            _currentVisualizationMode.RegisterNewlyCoveredCells(robot, _newlyCoveredCells);
         }
 
         private Vector2Int GetCoverageMapPosition(Vector2 robotPosition)
@@ -117,7 +124,7 @@ namespace Maes.Statistics
 
         protected override void OnAfterFirstTick(MonaRobot[] robots)
         {
-            mostRecentDistance = CalculateAverageDistance(robots);
+            _mostRecentDistance = CalculateAverageDistance(robots);
             base.OnAfterFirstTick(robots);
         }
 

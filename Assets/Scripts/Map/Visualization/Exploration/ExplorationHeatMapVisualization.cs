@@ -52,7 +52,7 @@ namespace Maes.Map.Visualization.Exploration
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
         {
             // The entire map has to be replaced every tick since all colors are time dependent
-            visualizer.SetAllColors(_explorationMap, (cell) => ExplorationCellToColor(cell, currentTick));
+            visualizer.SetAllColors(_explorationMap, cell => ExplorationCellToColor(cell, currentTick));
         }
 
         private Color32 ExplorationCellToColor(ExplorationCell cell, int currentTick)
