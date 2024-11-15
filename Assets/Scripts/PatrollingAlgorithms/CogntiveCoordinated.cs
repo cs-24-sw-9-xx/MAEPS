@@ -2,9 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 using Maes.Map;
+
+using UnityEngine;
 
 namespace Maes.PatrollingAlgorithms
 {
@@ -13,12 +14,13 @@ namespace Maes.PatrollingAlgorithms
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private bool _isPatrolling = false;
         private List<Vertex> _currentPath = new List<Vertex>();
-        //private Vertex? _pathStart; // = new Vertex(0, Vector2Int.zero);
         private int _iterator = 0;
+        private int _logicTicks = 0;
+        private int _ticksSinceHeartbeat = 0;
 
         public override string GetDebugInfo()
         {
-            return 
+            return
                 base.GetDebugInfo() +
                 $"Highest idle: {HighestIdle().Position}\n" +
                 $"Init done: {_isPatrolling}\n";
@@ -26,21 +28,41 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void Preliminaries()
         {
+            _logicTicks++;
+            _ticksSinceHeartbeat++;
+
+            if (_ticksSinceHeartbeat == 10)
+            {
+                var ownHeartbeat = new HeartbeatMessage(HighestIdle());
+                _ticksSinceHeartbeat = 0;
+                _controller.Broadcast(ownHeartbeat);
+            }
+
+            var receivedHeartbeat = new Queue<HeartbeatMessage>(_controller.ReceiveBroadcast().OfType<HeartbeatMessage>());
+
+            if (receivedHeartbeat.Count > 1)
+            {
+                var combinedMessage = receivedHeartbeat.Dequeue();
+                foreach (var message in receivedHeartbeat)
+                {
+                    combinedMessage = combinedMessage.Combine(message);
+                }
+            }
+
             if (_isPatrolling)
             {
                 return;
             }
 
-            //_pathStart = GetClosestVertex();
             MakePath();
-            TargetVertex = _currentPath[_iterator]; 
+            TargetVertex = _currentPath[_iterator];
             _isPatrolling = true;
         }
-        
+
         protected override Vertex NextVertex()
         {
             MakePath();
-            var next = _currentPath[_iterator];  
+            var next = _currentPath[_iterator];
             _iterator++;
 
             return next;
@@ -48,19 +70,19 @@ namespace Maes.PatrollingAlgorithms
 
         private void MakePath()
         {
-            if (_currentPath != null && _iterator < _currentPath.Count)
+            if (_iterator < _currentPath.Count)
             {
                 return;
             }
 
             _iterator = 0;
+            
             _currentPath = AStar(GetClosestVertex(), HighestIdle());
-            //_pathStart = _currentPath.Last();
         }
-        
+
         private Vertex HighestIdle()
         {
-            return _vertices.OrderBy((x)=>x.LastTimeVisitedTick).First();
+            return _vertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
         private Vertex GetClosestVertex()
@@ -81,46 +103,7 @@ namespace Maes.PatrollingAlgorithms
             }
             return closestVertex ?? throw new InvalidOperationException("There are no vertices!");
         }
-       
-        /*private static List<Vertex> FindShortestPath(Vertex start, Vertex target)
-        { //BFS search
-            var parents = new Dictionary<Vertex, Vertex>();
-            var queue = new Queue<Vertex>();
-            var visited = new HashSet<Vertex>();
 
-            queue.Enqueue(start);
-            visited.Add(start);
-            parents[start] = null;
-
-            while (queue.Count > 0)
-            {
-                var current = queue.Dequeue();
-                               
-                if (current.Equals(target))
-                {
-                    var path = new List<Vertex>();
-                    for (var curr = target; curr != null; curr = parents[curr])
-                    {
-                        path.Insert(0, curr);
-                    }
-                    return path;
-                }
-
-                foreach (var neighbor in current.Neighbors)
-                {
-                    if (visited.Contains(neighbor))
-                    {
-                        continue;
-                    }
-
-                    queue.Enqueue(neighbor);
-                    visited.Add(neighbor);
-                    parents[neighbor] = current;
-                }
-            }
-            throw new InvalidOperationException("There are no path");
-        }*/
-        
         private static List<Vertex> AStar(Vertex start, Vertex target)
         {
             // Dictionary to store the cost of the path from the start to each vertex (g-cost)
@@ -141,9 +124,8 @@ namespace Maes.PatrollingAlgorithms
                 var current = openSet.OrderBy(v => fCost.ContainsKey(v) ? fCost[v] : float.MaxValue).First();
 
                 // If reached target, reconstruct path
-                if (current.Equals(target))
+                if (current.Position == target.Position)
                 {
-                    Debug.Log("current == target");
                     return ReconstructPath(cameFrom, current);
                 }
 
@@ -152,7 +134,7 @@ namespace Maes.PatrollingAlgorithms
                 // Explore neighbors
                 foreach (var neighbor in current.Neighbors)
                 {
-                    float tentativeGCost = gCost[current] + Vector2Int.Distance(current.Position, neighbor.Position) * neighbor.Weight;
+                    var tentativeGCost = gCost[current] + Vector2Int.Distance(current.Position, neighbor.Position);
 
                     // If a cheaper path to neighbor is found
                     if (!gCost.ContainsKey(neighbor) || tentativeGCost < gCost[neighbor])
@@ -167,8 +149,6 @@ namespace Maes.PatrollingAlgorithms
                     }
                 }
             }
-
-            Debug.Log("empty list");
             // Return empty path if target is unreachable
             return new List<Vertex>();
         }
@@ -189,6 +169,23 @@ namespace Maes.PatrollingAlgorithms
         {
             // Use Manhattan distance as the heuristic for grid-based graphs
             return Vector2Int.Distance(a.Position, b.Position);
+        }
+    }
+
+    public class HeartbeatMessage
+    {    
+        private readonly Vertex _vertex;
+
+        public HeartbeatMessage(Vertex vertex)
+        {
+            _vertex = vertex;
+        }
+
+        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
+        {
+            List<Vertex> vertices = new() { heartbeatMessage._vertex, _vertex};
+            // noget sync noget...
+            return this;
         }
     }
 }
