@@ -22,7 +22,7 @@ namespace Maes.Map.RobotSpawners
         {
             var robot = base.CreateRobot(x, y, relativeSize, robotId, algorithm, collisionMap, seed);
 
-            algorithm.SetPatrollingMap((PatrollingMap)_patrollingMap.Clone());
+            algorithm.SetPatrollingMap(_patrollingMap.Clone());
             algorithm.SubscribeOnReachVertex(_tracker.OnReachedVertex);
 
             return robot;

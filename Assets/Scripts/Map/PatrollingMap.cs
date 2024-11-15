@@ -1,25 +1,42 @@
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Utilities;
+
 namespace Maes.Map
 {
-    public class PatrollingMap : ICloneable
+    public class PatrollingMap : ICloneable<PatrollingMap>
     {
-        public readonly IReadOnlyList<Vertex> Vertices;
+        public readonly Vertex[] Vertices;
 
         //TODO: Add a better way to debug point generation, its is currently outcommented
         // public IReadOnlyList<Vertex> DebugPoints { get; set; }
 
-        public PatrollingMap(IEnumerable<Vertex> vertices)
+        public PatrollingMap(Vertex[] vertices)
         {
-            Vertices = vertices.ToList();
+            Vertices = vertices;
         }
 
-        public object Clone()
+        public PatrollingMap Clone()
         {
-            return new PatrollingMap(Vertices.Select(v => (Vertex)v.Clone()).ToArray());
+            var originalToCloned = new Dictionary<Vertex, Vertex>();
+            foreach (var originalVertex in Vertices)
+            {
+                var clonedVertex = new Vertex(originalVertex.Id, originalVertex.Weight, originalVertex.Position, originalVertex.Color);
+                originalToCloned.Add(originalVertex, clonedVertex);
+            }
+
+            foreach (var (originalVertex, clonedVertex) in originalToCloned)
+            {
+                foreach (var originalVertexNeighbor in originalVertex.Neighbors)
+                {
+                    var clonedVertexNeighbor = originalToCloned[originalVertexNeighbor];
+                    clonedVertex.AddNeighbor(clonedVertexNeighbor);
+                }
+            }
+
+            return new PatrollingMap(originalToCloned.Values.ToArray());
         }
     }
 }
