@@ -75,7 +75,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         private int Beta { get; }
 
         private List<Frontier>? _frontiers;
-        private List<SensedObject<int>>? _lastSeenNeighbours;
+        private SensedObject<int>[]? _lastSeenNeighbours;
 
         private Vector2 _robotPos = new Vector2(0, 0);
         private Vector2Int _robotPosInt = new Vector2Int(0, 0);
@@ -166,7 +166,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         private float CoordinationFactor(Frontier frontier)
         {
             _lastSeenNeighbours = _robotController.SenseNearbyRobots();
-            if (_lastSeenNeighbours.Count <= 0)
+            if (_lastSeenNeighbours.Length <= 0)
             {
                 return 0;
             }
