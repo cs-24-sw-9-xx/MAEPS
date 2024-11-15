@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Map.PathFinding;
 using Maes.Robot;
@@ -284,6 +285,7 @@ namespace Maes.Map
         /// <summary>
         /// Converts the given <see cref="SlamMap"/> coordinate to a local coordinate.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int FromSlamMapCoordinate(Vector2Int slamCoord)
         {
             return slamCoord / 2;
@@ -292,15 +294,9 @@ namespace Maes.Map
         /// <summary>
         /// Converts a list of <see cref="SlamMap"/> coordinates to a list of local coordinates.
         /// </summary>
-        public IEnumerable<Vector2Int> FromSlamMapCoordinates(IEnumerable<Vector2Int> slamCoords)
+        public HashSet<Vector2Int> FromSlamMapCoordinates(IEnumerable<Vector2Int> slamCoords)
         {
-            var coarseCoords = new HashSet<Vector2Int>();
-            foreach (var slamCoord in slamCoords)
-            {
-                coarseCoords.Add(FromSlamMapCoordinate(slamCoord));
-            }
-
-            return coarseCoords;
+            return new HashSet<Vector2Int>(slamCoords.Select(FromSlamMapCoordinate));
         }
 
         /// <summary>
@@ -592,7 +588,19 @@ namespace Maes.Map
         private bool CheckIfAnyIsStatus(Vector2Int coordinate, SlamMap.SlamTileStatus status)
         {
             var statuses = GetSlamTileStatuses(coordinate);
-            return statuses.Any(coord => coord == status);
+
+            // Optimization
+            // Old: return statuses.Any(coord => coord == status);
+
+            foreach (var s in statuses)
+            {
+                if (s == status)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

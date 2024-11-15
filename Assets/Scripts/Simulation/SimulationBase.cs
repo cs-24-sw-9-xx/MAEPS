@@ -19,8 +19,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System.Collections.Generic;
-
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
@@ -55,9 +53,12 @@ namespace Maes.Simulation
 
         public TRobotSpawner RobotSpawner = null!;
 
-        public IReadOnlyList<MonaRobot> Robots => _robots;
-
-        private List<MonaRobot> _robots = new();
+        // Set by SetScenario
+        public MonaRobot[] Robots
+        {
+            get;
+            private set;
+        } = null!;
 
         public abstract TVisualizer Visualizer { get; }
 
@@ -108,7 +109,7 @@ namespace Maes.Simulation
             RobotSpawner.CommunicationManager = CommunicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            _robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
+            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner).ToArray();
             CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
             {
@@ -215,7 +216,7 @@ namespace Maes.Simulation
 
         public void UpdateDebugInfo()
         {
-            if (_selectedRobot != null)
+            if (_selectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
                 {
@@ -229,7 +230,7 @@ namespace Maes.Simulation
                 }
 
             }
-            if (_selectedTag != null)
+            if (_selectedTag is not null)
             {
                 SimInfoUIController.UpdateTagDebugInfo(_selectedTag.GetDebugInfo());
             }

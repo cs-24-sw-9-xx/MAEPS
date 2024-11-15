@@ -167,7 +167,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         private float CoordinationFactor(Frontier frontier)
         {
             var lastSeenNeighbours = _robotController.SenseNearbyRobots();
-            if (lastSeenNeighbours.Count <= 0)
+            if (lastSeenNeighbours.Length <= 0)
             {
                 return 0;
             }

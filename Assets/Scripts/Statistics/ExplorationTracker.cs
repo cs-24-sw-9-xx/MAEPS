@@ -68,7 +68,7 @@ namespace Maes.Statistics
             snapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, mostRecentDistance));
         }
 
-        private float CalculateAverageDistance(IReadOnlyList<MonaRobot> robots)
+        private float CalculateAverageDistance(MonaRobot[] robots)
         {
             var averages = new List<float>();
             foreach (var robot in robots)
@@ -115,7 +115,7 @@ namespace Maes.Statistics
             return new Vector2Int((int)robotPosition.x, (int)robotPosition.y);
         }
 
-        protected override void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots)
+        protected override void OnAfterFirstTick(MonaRobot[] robots)
         {
             mostRecentDistance = CalculateAverageDistance(robots);
             base.OnAfterFirstTick(robots);

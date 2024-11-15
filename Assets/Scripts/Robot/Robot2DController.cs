@@ -47,6 +47,7 @@ namespace Maes.Robot
         private Vector3? _previousRightWheelPosition;
 
         private readonly MonaRobot _robot;
+        private readonly Transform _robotTransform;
         private RobotStatus _currentStatus = RobotStatus.Idle;
         private ITask? _currentTask;
 
@@ -100,6 +101,7 @@ namespace Maes.Robot
             LeftWheel = leftWheel;
             RightWheel = rightWheel;
             _robot = robot;
+            _robotTransform = _robot.transform;
         }
 
         public MonaRobot GetRobot()
@@ -143,8 +145,8 @@ namespace Maes.Robot
         public void UpdateMotorPhysics()
         {
             // Calculate movement delta between current and last physics tick
-            var leftWheelVelocityVector = LeftWheel.transform.position - _previousLeftWheelPosition ?? Vector3.zero;
-            var rightWheelVelocityVector = RightWheel.transform.position - _previousRightWheelPosition ?? Vector3.zero;
+            var leftWheelVelocityVector = LeftWheel.position - _previousLeftWheelPosition ?? Vector3.zero;
+            var rightWheelVelocityVector = RightWheel.position - _previousRightWheelPosition ?? Vector3.zero;
 
             // For each wheel, determine whether it has moved forwards or backwards
             var forward = Transform.forward;
@@ -195,7 +197,7 @@ namespace Maes.Robot
 
             if (directive != null)
             {
-                ApplyWheelForce(directive);
+                ApplyWheelForce(directive.Value);
             }
 
             // Delete task once completed
@@ -207,7 +209,7 @@ namespace Maes.Robot
 
             if (directive != null)
             {
-                ApplyWheelForce(directive);
+                ApplyWheelForce(directive.Value);
             }
         }
 
@@ -346,7 +348,7 @@ namespace Maes.Robot
             }
 
             var intersection = result.Value.Item1;
-            var distance = Vector2.Distance(intersection, _robot.transform.position);
+            var distance = Vector2.Distance(intersection, _robotTransform.position);
             var intersectingWallAngle = result.Value.Item2;
 
             // Calculate angle of wall relative to current forward angle of the robot
@@ -377,7 +379,7 @@ namespace Maes.Robot
 
         public void Move(float distanceInMeters, bool reverse = false)
         {
-            AssertRobotIsInIdleState($"Move forwards {distanceInMeters} meters");
+            AssertRobotIsInIdleState("Move forwards");
             _currentTask = new FiniteMovementTask(Transform, distanceInMeters, Constraints.RelativeMoveSpeed, reverse);
         }
 
@@ -504,13 +506,13 @@ namespace Maes.Robot
 
         private RelativeObject<T> ToRelativePosition<T>(Vector2 tagPosition, T item)
         {
-            var robotPosition = (Vector2)_robot.transform.position;
+            var robotPosition = (Vector2)_robotTransform.position;
             var distance = Vector2.Distance(robotPosition, tagPosition);
             var angle = Vector2.SignedAngle(GetRobotDirectionVector(), tagPosition - robotPosition);
             return new RelativeObject<T>(distance, angle, item);
         }
 
-        public List<SensedObject<int>> SenseNearbyRobots()
+        public SensedObject<int>[] SenseNearbyRobots()
         {
             return CommunicationManager.SenseNearbyRobots(_robot.id)
                 .Select(e => new SensedObject<int>(
@@ -519,7 +521,7 @@ namespace Maes.Robot
                                                 new Vector2(Mathf.Cos(e.Angle * Mathf.Deg2Rad),
                                                             Mathf.Sin(e.Angle * Mathf.Deg2Rad))),
                     e.item))
-                .ToList();
+                .ToArray();
         }
 
         public SlamMap GetSlamMap()
