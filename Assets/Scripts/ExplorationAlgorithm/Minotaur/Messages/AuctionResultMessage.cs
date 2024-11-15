@@ -22,6 +22,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.Map;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -48,7 +49,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 if (_winnerList.Contains(minotaur._controller.GetRobotID()))
                 {
                     minotaur._controller.StopCurrentTask();
-                    minotaur._waypoint = new Waypoint(minotaur._map.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.NearestDoor, true);
+                    minotaur._waypoint = new Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.NearestDoor, true);
                     minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                     return this;
                 }
