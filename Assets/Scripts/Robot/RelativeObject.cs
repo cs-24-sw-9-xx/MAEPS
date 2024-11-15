@@ -24,12 +24,12 @@ using System;
 namespace Maes.Robot
 {
     // Represents a relative position to some object of type T
-    public class RelativeObject<T>
+    public readonly struct RelativeObject<T>
     {
 
         public readonly float Distance;
         public readonly float RelativeAngle;
-        public T Item;
+        public readonly T Item;
 
         public RelativeObject(float distance, float relativeAngle, T item)
         {

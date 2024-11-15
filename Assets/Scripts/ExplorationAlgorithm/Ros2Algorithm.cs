@@ -219,7 +219,7 @@ namespace Maes.ExplorationAlgorithm
             info.AppendLine($"Position: ({robotPosition.x},{robotPosition.y})");
             info.AppendLine($"Status: {Enum.GetName(typeof(RobotStatus), _controller.GetStatus())}");
             info.AppendLine($"Is Colliding: {_controller.IsCurrentlyColliding()}");
-            info.AppendLine($"Number of nearby robots: {_controller.SenseNearbyRobots().Count}");
+            info.AppendLine($"Number of nearby robots: {_controller.SenseNearbyRobots().Length}");
             info.AppendLine($"Number Incoming broadcast msg: {_controller.ReceiveBroadcast().Count}");
             info.AppendLine($"Number of nearby env tags: {_controller.ReadNearbyTags().Count}");
             info.AppendLine($"rosLinearSpeed: {_rosLinearSpeed}");

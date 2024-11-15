@@ -77,7 +77,7 @@ namespace Maes.Map.PathFinding
 
         public List<Vector2Int>? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
-            IPriorityQueue<AStarTile, float> candidates = new SimplePriorityQueue<AStarTile, float>();
+            var candidates = new SimplePriorityQueue<AStarTile, float>();
             var bestCandidateOnTile = new Dictionary<Vector2Int, AStarTile>();
             var startTileHeuristic = OctileHeuristic(startCoordinate, targetCoordinate);
             var startingTile = new AStarTile(startCoordinate.x, startCoordinate.y, null, startTileHeuristic, 0);

@@ -49,7 +49,7 @@ namespace Maes.Trackers
             _coverageCalculator = new CoverageCalculator<TCell>(_map, collisionMap);
         }
 
-        public void LogicUpdate(IReadOnlyList<MonaRobot> robots)
+        public void LogicUpdate(MonaRobot[] robots)
         {
             // The user can specify the tick interval at which the slam map is updated. 
             var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam &&
@@ -95,7 +95,7 @@ namespace Maes.Trackers
 
         public abstract void SetVisualizedRobot(MonaRobot? robot);
 
-        protected virtual void OnAfterFirstTick(IReadOnlyList<MonaRobot> robots)
+        protected virtual void OnAfterFirstTick(MonaRobot[] robots)
         {
             foreach (var robot in robots)
             {
@@ -106,7 +106,7 @@ namespace Maes.Trackers
         protected abstract void CreateSnapShot();
 
         // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(IReadOnlyList<MonaRobot> robots, bool shouldUpdateSlamMap)
+        private void PerformRayTracing(MonaRobot[] robots, bool shouldUpdateSlamMap)
         {
             var visibilityRange = _constraints.SlamRayTraceRange;
 

@@ -324,7 +324,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 return true;
             }
 
-            if (_robotController.SenseNearbyRobots().Count > 0)
+            if (_robotController.SenseNearbyRobots().Length > 0)
             {
                 switch (_currentSearchPhase)
                 {
@@ -685,7 +685,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             //}
 
             // Find furthest away robot. Voronoi partition should include all robots within broadcast range
-            nearbyRobots.Sort((r1, r2) => r1.Distance.CompareTo(r2.Distance));
+            Array.Sort(nearbyRobots, (r1, r2) => r1.Distance.CompareTo(r2.Distance));
 
             var robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
 
