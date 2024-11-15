@@ -15,7 +15,6 @@ namespace Maes.Statistics
         // Set by SetPatrollingMap
         private PatrollingMap _patrollingMap = null!;
 
-        private readonly PatrollingMap _cornerPositions = null!;
         private readonly List<GameObject> _visualizers = new();
 
         private readonly Dictionary<Vertex, GameObject> _vertexVisualizers = new();
