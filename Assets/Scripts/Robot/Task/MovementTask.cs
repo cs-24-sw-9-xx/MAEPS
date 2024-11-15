@@ -39,10 +39,8 @@ namespace Maes.Robot.Task
             {
                 return MovementDirective.Reverse(absForce);
             }
-            else
-            {
-                return MovementDirective.Forward(absForce);
-            }
+
+            return MovementDirective.Forward(absForce);
         }
 
         public bool IsCompleted()

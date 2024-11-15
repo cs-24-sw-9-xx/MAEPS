@@ -17,7 +17,7 @@ namespace Maes.Statistics.Writer
         public CsvDataWriter(List<TSnapShot> snapShots, string filename)
         {
             _snapShots = snapShots;
-            _path = filename + ".csv";
+            _path = $"{filename}.csv";
         }
 
         public void CreateCsvFile(string separator = ",")

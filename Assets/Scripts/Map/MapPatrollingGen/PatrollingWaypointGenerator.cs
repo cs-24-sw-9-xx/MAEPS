@@ -76,8 +76,8 @@ namespace Maes.Map.MapPatrollingGen
             // Horizontal grid check
             if (tiles.Any(t => t == tile + Vector2Int.right)
             && tiles.Any(t => t == tile + Vector2Int.left)
-            && !tiles.Any(t => t == tile + Vector2Int.up)
-            && !tiles.Any(t => t == tile + Vector2Int.down))
+            && tiles.All(t => t != tile + Vector2Int.up)
+            && tiles.All(t => t != tile + Vector2Int.down))
             {
                 return false;
             }
@@ -85,8 +85,8 @@ namespace Maes.Map.MapPatrollingGen
             // Vertical grid check
             if (tiles.Any(t => t == tile + Vector2Int.up)
             && tiles.Any(t => t == tile + Vector2Int.down)
-            && !tiles.Any(t => t == tile + Vector2Int.right)
-            && !tiles.Any(t => t == tile + Vector2Int.left))
+            && tiles.All(t => t != tile + Vector2Int.right)
+            && tiles.All(t => t != tile + Vector2Int.left))
             {
                 return false;
             }

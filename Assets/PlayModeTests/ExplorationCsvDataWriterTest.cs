@@ -29,7 +29,6 @@ namespace PlayModeTests
             {
                 System.IO.Directory.CreateDirectory(Directory);
             }
-
         }
 
         [TearDown]
@@ -60,11 +59,11 @@ namespace PlayModeTests
         [Test]
         public void ExplorationSnapshotToCsvTest()
         {
-            _explorationSimulation.ExplorationTracker.snapShots.Add(new ExplorationSnapShot(1, 0.1f, 0.1f, 1f));
-            _explorationSimulation.ExplorationTracker.snapShots.Add(new ExplorationSnapShot(2, 0.2f, 0.2f, 5f));
-            _explorationSimulation.ExplorationTracker.snapShots.Add(new ExplorationSnapShot(3, 0.5f, 0.3f, 10f));
-            _explorationSimulation.ExplorationTracker.snapShots.Add(new ExplorationSnapShot(4, 0.7f, 0.4f, 10f));
-            _explorationSimulation.ExplorationTracker.snapShots.Add(new ExplorationSnapShot(5, 0.9f, 0.5f, 5f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(1, 0.1f, 0.1f, 1f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(2, 0.2f, 0.2f, 5f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(3, 0.5f, 0.3f, 10f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(4, 0.7f, 0.4f, 10f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(5, 0.9f, 0.5f, 5f));
 
             _explorationSimulation.CommunicationManager.CommunicationTracker.InterconnectionSnapShot.Add(1, true);
             _explorationSimulation.CommunicationManager.CommunicationTracker.InterconnectionSnapShot.Add(3, false);
@@ -87,7 +86,7 @@ namespace PlayModeTests
             var writer = new ExplorationCsvDataWriter(_explorationSimulation, filename);
             writer.CreateCsvFile(Delimiter);
 
-            var lines = File.ReadAllLines(filename + ".csv");
+            var lines = File.ReadAllLines($"{filename}.csv");
             Assert.AreEqual(expectedExplorationSnapShots.Count, lines.Length - 1); // -1 because of header
             for (var i = 0; i < expectedExplorationSnapShots.Count; i++)
             {

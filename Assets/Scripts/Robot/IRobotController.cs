@@ -53,7 +53,7 @@ namespace Maes.Robot
         bool HasCollidedSinceLastLogicTick();
 
         /// <returns> True if the robot is currently touching another object (a wall or another robot). </returns>
-        bool IsCurrentlyColliding();
+        bool IsCurrentlyColliding { get; }
 
         /// <summary>
         /// This method instructs the robot to move <paramref name="distanceInMeters"/>ahead.
@@ -102,6 +102,7 @@ namespace Maes.Robot
         /// This instruction can be manually cancelled by calling <see cref="StopCurrentTask"/>
         /// </summary>
         /// <param name="point"> The point on the slam map that is being rotated around</param>
+        /// <param name="counterClockwise"></param>
         void StartRotatingAroundPoint(Vector2Int point, bool counterClockwise = false);
 
         /// <summary>
@@ -136,7 +137,7 @@ namespace Maes.Robot
         /// Deposits the given tag into the environment at the current position of the robot.
         /// Once placed a tag cannot be removed.
         /// </summary>
-        /// <param name="tag">The tag of type ITag that will be deposited</param>
+        /// <param name="content">The tag of type ITag that will be deposited</param>
         void DepositTag(string content);
 
 
@@ -148,13 +149,13 @@ namespace Maes.Robot
 
         public readonly struct DetectedWall
         {
-            public readonly float distance;
-            public readonly float relativeAngle;
+            public readonly float Distance;
+            public readonly float RelativeAngle;
 
             public DetectedWall(float distance, float relativeAngle)
             {
-                this.distance = distance;
-                this.relativeAngle = relativeAngle;
+                Distance = distance;
+                RelativeAngle = relativeAngle;
             }
         }
 

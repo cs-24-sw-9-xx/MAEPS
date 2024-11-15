@@ -50,8 +50,7 @@ namespace Maes.Map.MapGen
             ClearMap();
 
             var random = new Random(_config.RandomSeed);
-            Tile.Rand = random;
-            _type = Tile.GetRandomWall();
+            _type = Tile.GetRandomWall(random);
 
             var emptyMap = GenerateEmptyMap(_config.BitMapWidth, _config.BitMapHeight);
 
@@ -68,7 +67,7 @@ namespace Maes.Map.MapGen
             var rooms = GetSortedRooms(closedHallwayMap);
             var connectedMap = ConnectRoomsWithDoors(rooms, closedHallwayMap, random, _config);
 
-            var borderedMap = CreateBorderedMap(connectedMap, _config.BitMapWidth, _config.BitMapHeight, _config.BorderSize);
+            var borderedMap = CreateBorderedMap(connectedMap, _config.BitMapWidth, _config.BitMapHeight, _config.BorderSize, random);
 
             // For debugging
             // mapToDraw = borderedMap;
@@ -80,7 +79,7 @@ namespace Maes.Map.MapGen
                 rooms);
 
             // Rotate to fit 2D view
-            Plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
+            _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
 
             ResizePlaneToFitMap(_config.BitMapHeight, _config.BitMapWidth);
 
@@ -89,7 +88,7 @@ namespace Maes.Map.MapGen
             return collisionMap;
         }
 
-        private Tile[,] ConnectRoomsWithDoors(List<Room> sortedRooms, Tile[,] oldMap, Random random,
+        private static Tile[,] ConnectRoomsWithDoors(List<Room> sortedRooms, Tile[,] oldMap, Random random,
             BuildingMapConfig config)
         {
             var connectedMap = (Tile[,])oldMap.Clone();
@@ -262,22 +261,22 @@ namespace Maes.Map.MapGen
             // Descending order. Hallway > other room types
             rooms.Sort((o1, o2) =>
             {
-                var o1x = o1.Tiles[0].x;
-                var o1y = o1.Tiles[0].y;
-                var o2x = o2.Tiles[0].x;
-                var o2y = o2.Tiles[0].y;
+                var o1X = o1.Tiles[0].x;
+                var o1Y = o1.Tiles[0].y;
+                var o2X = o2.Tiles[0].x;
+                var o2Y = o2.Tiles[0].y;
 
-                if (map[o1x, o1y] == map[o2x, o2y])
+                if (map[o1X, o1Y].Type == map[o2X, o2Y].Type)
                 {
                     return o2.RoomSize - o1.RoomSize;
                 }
 
-                if (map[o1x, o1y].Type == TileType.Hall && map[o2x, o2y].Type != TileType.Hall)
+                if (map[o1X, o1Y].Type == TileType.Hall && map[o2X, o2Y].Type != TileType.Hall)
                 {
                     return -1;
                 }
 
-                if (map[o1x, o1y].Type != TileType.Hall && map[o2x, o2y].Type == TileType.Hall)
+                if (map[o1X, o1Y].Type != TileType.Hall && map[o2X, o2Y].Type == TileType.Hall)
                 {
                     return 1;
                 }
@@ -373,16 +372,22 @@ namespace Maes.Map.MapGen
             // Create wall
             if (splitOnXAxis)
             {
-                foreach (var c in roomRegion.Where(c => c.x == wallStartCoordinate))
+                foreach (var c in roomRegion)
                 {
-                    map[c.x, c.y] = tileType;
+                    if (c.x == wallStartCoordinate)
+                    {
+                        map[c.x, c.y] = tileType;
+                    }
                 }
             }
             else
             {
-                foreach (var c in roomRegion.Where(c => c.y == wallStartCoordinate))
+                foreach (var c in roomRegion)
                 {
-                    map[c.x, c.y] = tileType;
+                    if (c.y == wallStartCoordinate)
+                    {
+                        map[c.x, c.y] = tileType;
+                    }
                 }
             }
 
@@ -483,7 +488,7 @@ namespace Maes.Map.MapGen
 
                 if (filteredCoords.Count == 0)
                 {
-                    Debug.Log("The MaxHallInPercent of " + config.MaxHallInPercent + " could not be achieved.");
+                    Debug.Log($"The MaxHallInPercent of {config.MaxHallInPercent} could not be achieved.");
                     break;
                 }
 
@@ -494,9 +499,12 @@ namespace Maes.Map.MapGen
                 if (usingXAxis)
                 {
                     // Fill with hall tiles
-                    foreach (var c in biggestRoom.Where(c => hallStartCoordinate <= c.x && c.x < hallStartCoordinate + config.HallWidth))
+                    foreach (var c in biggestRoom)
                     {
-                        mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
+                        if (hallStartCoordinate <= c.x && c.x < hallStartCoordinate + config.HallWidth)
+                        {
+                            mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
+                        }
                     }
 
                     usingXAxis = false;
@@ -504,9 +512,12 @@ namespace Maes.Map.MapGen
                 else
                 {
                     // Fill with hall tiles
-                    foreach (var c in biggestRoom.Where(c => hallStartCoordinate <= c.y && c.y < hallStartCoordinate + config.HallWidth))
+                    foreach (var c in biggestRoom)
                     {
-                        mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
+                        if (hallStartCoordinate <= c.y && c.y < hallStartCoordinate + config.HallWidth)
+                        {
+                            mapWithHalls[c.x, c.y] = new Tile(TileType.Hall);
+                        }
                     }
 
                     usingXAxis = true;

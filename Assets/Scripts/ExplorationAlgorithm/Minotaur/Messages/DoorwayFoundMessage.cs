@@ -19,6 +19,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
@@ -52,17 +53,17 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             public IMinotaurMessage? Process(MinotaurAlgorithm minotaur)
             {
                 var doorwayTile = CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center);
-                var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, false, false);
+                var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, false);
                 if (pathLengthToDoorway != null)
                 {
                     foreach (var knownDoorway in minotaur._doorways)
                     {
-                        if (pathLengthToDoorway.Contains(CoarseGrainedMap.FromSlamMapCoordinate(knownDoorway.Center)))
+                        if (Array.IndexOf(pathLengthToDoorway, CoarseGrainedMap.FromSlamMapCoordinate(knownDoorway.Center)) != -1)
                         {
                             return null;
                         }
                     }
-                    var bid = new Dictionary<int, int>() { { minotaur._controller.GetRobotID(), pathLengthToDoorway.Count } };
+                    var bid = new Dictionary<int, int>() { { minotaur._controller.GetRobotID(), pathLengthToDoorway.Length } };
                     minotaur._doorways.Add(_doorway);
                     return new BiddingMessage(_requesterID, bid, _doorway);
                 }

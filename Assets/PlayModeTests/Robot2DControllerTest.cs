@@ -26,6 +26,7 @@ using Maes.Robot;
 using Maes.Robot.Task;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
+using Maes.UI;
 
 using NUnit.Framework;
 
@@ -106,7 +107,7 @@ namespace PlayModeTests
             var startingPosition = transform.position;
             var expectedEndingPosition = startingPosition + (controller.GetForwardDirectionVector() * movementDistance);
 
-            _maes.PressPlayButton();
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
@@ -155,7 +156,7 @@ namespace PlayModeTests
 
             expectedAngle %= 360;
 
-            _maes.PressPlayButton();
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)

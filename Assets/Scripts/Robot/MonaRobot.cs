@@ -20,7 +20,6 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
-using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Simulation;
@@ -54,10 +53,16 @@ namespace Maes.Robot
         // Set by RobotSpawner
         public IAlgorithm Algorithm { get; set; } = null!;
 
-        private readonly List<GameObject> _collidingGameObjects = new();
+        private int _collidingGameObjects;
+
+        private GameObject _tagPost = null!;
+
+        private Transform _envTagHolder = null!;
 
         private void Awake()
         {
+            _tagPost = Resources.Load<GameObject>("TagPost");
+            _envTagHolder = GameObject.Find("EnvTagHolder").transform;
             var rigidBody = GetComponent<Rigidbody2D>();
             Controller = new Robot2DController(rigidBody, transform, leftWheelTransform, rightWheelTransform, this);
             Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation ?? throw new InvalidOperationException("No current simulation");
@@ -74,21 +79,18 @@ namespace Maes.Robot
             Controller.UpdateMotorPhysics();
         }
 
-        private void OnCollisionEnter2D(Collision2D other)
+        private void OnCollisionEnter2D(Collision2D _)
         {
-            if (!_collidingGameObjects.Contains(other.gameObject))
-            {
-                _collidingGameObjects.Add(other.gameObject);
-            }
+            _collidingGameObjects++;
 
             Controller.NotifyCollided();
         }
 
-        private void OnCollisionExit2D(Collision2D other)
+        private void OnCollisionExit2D(Collision2D _)
         {
-            _collidingGameObjects.Remove(other.gameObject);
+            _collidingGameObjects--;
 
-            if (_collidingGameObjects.Count == 0)
+            if (_collidingGameObjects == 0)
             {
                 Controller.NotifyCollisionExit();
             }
@@ -96,7 +98,7 @@ namespace Maes.Robot
 
         public void OnMouseDown()
         {
-            CameraController.singletonInstance.movementTransform = transform;
+            CameraController.SingletonInstance.movementTransform = transform;
             OnRobotSelected(this);
         }
 
@@ -112,11 +114,10 @@ namespace Maes.Robot
 
         public GameObject ClaimTag()
         {
-            var envTagHolder = GameObject.Find("EnvTagHolder");
-            var gameObj = Instantiate(Resources.Load<GameObject>("TagPost"), envTagHolder.transform);
+            var gameObj = Instantiate(_tagPost, _envTagHolder);
             gameObj.transform.position = transform.position + new Vector3(0, 0, -0.1f);
             gameObj.SetActive(false);
-            gameObj.name = $"robot{id}-" + gameObj.name;
+            gameObj.name = $"robot{id}-{gameObj.name}";
             return gameObj;
         }
 

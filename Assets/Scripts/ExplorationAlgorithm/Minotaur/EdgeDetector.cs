@@ -102,22 +102,28 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         /// <summary>
         /// Gets the tiles around the robot by casting 360-<paramref name="startAngle"/> rays. These rays expand from the robot and out being stopped by the <paramref name="limiters"/>.
         /// <para></para>
-        /// If only one ray is desired, consider <seealso cref="GetFurthestTileAroundPoint(float, int, List{SlamTileStatus}, bool, bool)"/>
+        /// If only one ray is desired, consider <seealso cref="GetFurthestTileAroundPoint(float, int, List{SlamTileStatus}, Vector2Int?, bool, bool)"/>
         /// </summary>
         /// <param name="range">The distance of the ray</param>
         /// <param name="limiters">What tiles should stop the rays</param>
+        /// <param name="point"></param>
         /// <param name="slamPrecision">Target slam tiles instead of coarse tiles</param>
         /// <param name="startAngle">If set above 0 then this will create arcs instead of circles around the robot, based on <see cref="Vector2.right"/> counter-clockwise</param>
         /// <returns>The unique tiles that were hit</returns>
-        public IEnumerable<Vector2Int> GetTilesAroundPoint(int range, List<SlamTileStatus> limiters, Vector2Int? point = null, bool slamPrecision = false, int startAngle = 0)
+        public HashSet<Vector2Int> GetTilesAroundPoint(int range, List<SlamTileStatus> limiters, Vector2Int? point = null, bool slamPrecision = false, int startAngle = 0)
         {
             IPathFindingMap map = slamPrecision ? _slamMap : _coarseMap;
-            var tiles = new List<Vector2Int>();
+            var tiles = new HashSet<Vector2Int>();
             for (var angle = startAngle; angle < 360; angle++)
             {
-                tiles.Add(GetFurthestTileAroundPoint(_coarseMap.GetApproximateGlobalDegrees() + angle, range, limiters, slamPrecision: slamPrecision));
+                var tile = GetFurthestTileAroundPoint(_coarseMap.GetApproximateGlobalDegrees() + angle, range, limiters, slamPrecision: slamPrecision);
+                if (map.IsWithinBounds(tile))
+                {
+                    tiles.Add(tile);
+                }
             }
-            return tiles.Distinct().Where(tile => map.IsWithinBounds(tile));
+
+            return tiles;
         }
 
         public Vector2Int GetFurthestTileAroundPoint(float angle, int range, List<SlamTileStatus> limiters, Vector2Int? point = null, bool snapToGrid = false, bool slamPrecision = false)

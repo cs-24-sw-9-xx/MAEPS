@@ -255,7 +255,7 @@ namespace Maes
                 var randomSeed = i;
                 var algorithmsAndFileNames = new List<(string, CreateAlgorithmDelegate, RobotConstraints)>
                 {
-                    ("LVD-long-range", seed => new VoronoiExplorationAlgorithm(seed, 1), robotConstraintsLVD),
+                    ("LVD-long-range", seed => new VoronoiExplorationAlgorithm(seed, 1), robotConstraintsLVD)
                 };
                 foreach (var (width, height) in sizes)
                 {
@@ -287,7 +287,7 @@ namespace Maes
                                 numberOfRobots,
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
-                            $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
+                            $"{algorithmName}-building-{width}x{height}-hallway-{randomSeed}"
                         ));
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
@@ -300,7 +300,7 @@ namespace Maes
                                 new Vector2Int(0, 0),
                                 createAlgorithmDelegate),
                             robotConstraints: constraints,
-                            $"{algorithmName}-cave-{width}x{height}-spawnTogether-" + randomSeed
+                            $"{algorithmName}-cave-{width}x{height}-spawnTogether-{randomSeed}"
                         ));
                     }
                 }
@@ -368,7 +368,7 @@ namespace Maes
                             numberOfRobots,
                             createAlgorithmDelegate),
                         robotConstraints: robotConstraints,
-                        $"{algorithmName}-building-{width}x{height}-hallway-" + randomSeed
+                        $"{algorithmName}-building-{width}x{height}-hallway-{randomSeed}"
                     ));
                     // scenarios.Enqueue(new SimulationScenario(
                     //     seed: RandomSeed,
@@ -610,7 +610,7 @@ namespace Maes
                             1,
                             seed => new VoronoiExplorationAlgorithm(seed, 1)),
                         robotConstraints: robotConstraints,
-                        "Voronoi-building-hallway-" + randomSeed
+                        $"Voronoi-building-hallway-{randomSeed}"
                     ));
                 }
                 else
@@ -626,7 +626,7 @@ namespace Maes
                             new Vector2Int(0, 0),
                             seed => new VoronoiExplorationAlgorithm(seed, 1)),
                         robotConstraints: robotConstraints,
-                        "Voronoi-cave-together-" + randomSeed
+                        $"Voronoi-cave-together-{randomSeed}"
                     ));
                 }
             }
@@ -709,7 +709,7 @@ namespace Maes
                             2,
                             seed => new RandomExplorationAlgorithm(seed)),
                         robotConstraints: robotConstraints,
-                        "RBW-building-" + randomSeed
+                        $"RBW-building-{randomSeed}"
                     ));
                 }
                 else
@@ -725,7 +725,7 @@ namespace Maes
                             new Vector2Int(0, 0),
                             seed => new VoronoiExplorationAlgorithm(seed, 2)),
                         robotConstraints: robotConstraints,
-                        "RBW-hallway-" + randomSeed
+                        $"RBW-hallway-{randomSeed}"
                     ));
                 }
             }
@@ -780,7 +780,7 @@ namespace Maes
                         5,
                         _ => new SsbAlgorithm()),
                     robotConstraints: robotConstraints,
-                    "SSB-cave-biggestroom-" + randomSeed
+                    $"SSB-cave-biggestroom-{randomSeed}"
                 ));
             }
 
@@ -847,7 +847,7 @@ namespace Maes
                     15,
                     _ => new TnfExplorationAlgorithm(5, 9, randomSeed)),
                 robotConstraints: robotConstraints,
-                "TNF-building-test-" + randomSeed
+                $"TNF-building-test-{randomSeed}"
             ));
 
             return scenarios;

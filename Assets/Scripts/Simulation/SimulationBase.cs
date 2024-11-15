@@ -37,7 +37,7 @@ namespace Maes.Simulation
 {
     public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
-    where TVisualizerTile : ICell
+    where TVisualizerTile : Cell
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
@@ -77,26 +77,24 @@ namespace Maes.Simulation
 
 
         private MonaRobot? _selectedRobot;
+
         public bool HasSelectedRobot()
         {
             return _selectedRobot != null;
         }
 
         private VisibleTagInfoHandler? _selectedTag;
+
         public bool HasSelectedTag()
         {
             return _selectedTag != null;
         }
 
         // The debugging visualizer provides 
-        protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
+        private readonly DebuggingVisualizer _debugVisualizer = new();
 
         // Set by SetInfoUIController
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController
-        {
-            get;
-            private set;
-        } = null!;
+        private SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController = null!;
 
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
@@ -117,7 +115,6 @@ namespace Maes.Simulation
             }
 
             CommunicationManager.SetRobotReferences(Robots);
-
         }
 
         public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)

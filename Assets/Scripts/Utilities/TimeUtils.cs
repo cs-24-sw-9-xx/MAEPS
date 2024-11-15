@@ -23,7 +23,7 @@ using System;
 
 namespace Maes.Utilities
 {
-    public class TimeUtils
+    public static class TimeUtils
     {
         public static long CurrentTimeMillis()
         {

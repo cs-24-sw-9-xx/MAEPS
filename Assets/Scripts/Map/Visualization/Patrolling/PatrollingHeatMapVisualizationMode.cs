@@ -39,7 +39,7 @@ namespace Maes.Map.Visualization.Patrolling
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             // The entire map has to be replaced every tick since all colors are time dependent
-            visualizer.SetAllColors(_map, (cell) => CellToColor(cell, currentTick));
+            visualizer.SetAllColors(_map, cell => CellToColor(cell, currentTick));
         }
 
         private Color32 CellToColor(PatrollingCell cell, int currentTick)

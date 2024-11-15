@@ -39,7 +39,7 @@ namespace Maes.Statistics
         {
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                var vertexVisualizer = GameObject.Instantiate(VertexVisualizer, transform);
+                var vertexVisualizer = Instantiate(VertexVisualizer, transform);
                 vertexVisualizer.transform.localPosition = (Vector2)vertex.Position;
                 var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
                 meshRenderer.material.color = vertex.Color;
@@ -48,7 +48,7 @@ namespace Maes.Statistics
 
                 foreach (var otherVertex in vertex.Neighbors)
                 {
-                    var edgeVisualizer = GameObject.Instantiate(EdgeVisualizer, transform);
+                    var edgeVisualizer = Instantiate(EdgeVisualizer, transform);
                     var lineRenderer = edgeVisualizer.GetComponent<LineRenderer>();
                     lineRenderer.SetPosition(0, ((Vector3)(Vector2)vertex.Position) + transform.position + Vector3.back);
                     lineRenderer.SetPosition(1, ((Vector3)(Vector2)otherVertex.Position) + transform.position + Vector3.back);

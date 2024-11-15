@@ -20,26 +20,26 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
-using System.Collections.Generic;
 
 using Maes.Utilities;
 
 namespace Maes.Map
 {
-    public class SimulationMapTile<TCell>
+    public readonly struct SimulationMapTile<TCell>
     {
         // A tile is a rectangle consisting of 8 triangle shaped cells.
         // The triangles are arranged in 4 different orientations
         // The triangles are indexed and arranged as shown in this very pretty illustration:
         ///  |4/5|6\7|
         ///  |0\1|2/3|
-        private readonly List<TCell> _triangleCells = new List<TCell>();
+        private readonly TCell[] _triangleCells;
 
         public SimulationMapTile(Functional.Factory<TCell> cellFactory)
         {
+            _triangleCells = new TCell[8];
             for (var i = 0; i < 8; i++)
             {
-                _triangleCells.Add(cellFactory());
+                _triangleCells[i] = cellFactory();
             }
         }
 
@@ -48,7 +48,7 @@ namespace Maes.Map
             _triangleCells[index] = newCellValue;
         }
 
-        private SimulationMapTile(List<TCell> cells)
+        private SimulationMapTile(TCell[] cells)
         {
             _triangleCells = cells;
         }
@@ -56,10 +56,10 @@ namespace Maes.Map
 
         public SimulationMapTile<TNewCell> FMap<TNewCell>(Func<TCell, TNewCell> mapper)
         {
-            var mappedCells = new List<TNewCell>();
-            foreach (var cell in _triangleCells)
+            var mappedCells = new TNewCell[8];
+            for (var i = 0; i < _triangleCells.Length; i++)
             {
-                mappedCells.Add(mapper(cell));
+                mappedCells[i] = mapper(_triangleCells[i]);
             }
 
             return new SimulationMapTile<TNewCell>(mappedCells);
@@ -75,7 +75,6 @@ namespace Maes.Map
 
         public bool IsTrueForAll(Func<TCell, bool> predicate)
         {
-
             foreach (var cell in _triangleCells)
             {
                 if (!predicate(cell))
@@ -100,11 +99,13 @@ namespace Maes.Map
 
         public int CoordinateDecimalsToTriangleIndex(float xDecimal, float yDecimal)
         {
+#if DEBUG
             if (xDecimal < 0.0f || xDecimal > 1.0f || yDecimal < 0.0f || yDecimal > 1.0f)
             {
                 throw new ArgumentException("Coordinate decimals must be between 0.0 and 1.0. " +
                                             "Coordinates were: (" + xDecimal + ", " + yDecimal + " )");
             }
+#endif
 
             if (yDecimal < 0.5)
             {
@@ -148,7 +149,7 @@ namespace Maes.Map
             }
         }
 
-        public List<TCell> GetTriangles()
+        public TCell[] GetTriangles()
         {
             return _triangleCells;
         }

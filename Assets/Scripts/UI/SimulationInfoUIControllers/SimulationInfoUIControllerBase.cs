@@ -19,8 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System.Collections.Generic;
-
 using Maes.Algorithms;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
@@ -35,7 +33,6 @@ namespace Maes.UI.SimulationInfoUIControllers
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-
         public Text AlgorithmDebugText = null!;
         public Text ControllerDebugText = null!;
         public Text TagDebugText = null!;
@@ -54,9 +51,9 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected SimulationModification? _mostRecentMapVisualizationModification;
 
         protected readonly Color _mapVisualizationColor = Color.white;
-        protected readonly Color _mapVisualizationSelectedColor = new Color(150 / 255f, 200 / 255f, 150 / 255f);
+        protected readonly Color _mapVisualizationSelectedColor = new(150 / 255f, 200 / 255f, 150 / 255f);
 
-        protected List<Button> _mapVisualizationToggleGroup = new();
+        protected abstract Button[] MapVisualizationToggleGroup { get; }
 
         protected abstract void AfterStart();
 
@@ -64,8 +61,8 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             StickyCameraButton.onClick.AddListener(() =>
             {
-                CameraController.singletonInstance.stickyCam = !CameraController.singletonInstance.stickyCam;
-                StickyCameraButton.image.color = CameraController.singletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
+                CameraController.SingletonInstance.stickyCam = !CameraController.SingletonInstance.stickyCam;
+                StickyCameraButton.image.color = CameraController.SingletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
             });
 
             AfterStart();
@@ -75,7 +72,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         public virtual void ClearSelectedRobot()
         {
-            CameraController.singletonInstance.stickyCam = false;
+            CameraController.SingletonInstance.stickyCam = false;
             StickyCameraButton.image.color = _mapVisualizationColor;
         }
 
@@ -128,7 +125,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         // Highlights the selected map visualization button
         protected void SelectVisualizationButton(Button selectedButton)
         {
-            foreach (var button in _mapVisualizationToggleGroup)
+            foreach (var button in MapVisualizationToggleGroup)
             {
                 button.image.color = _mapVisualizationColor;
             }

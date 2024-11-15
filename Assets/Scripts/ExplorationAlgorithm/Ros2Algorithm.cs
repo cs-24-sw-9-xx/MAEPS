@@ -115,14 +115,14 @@ namespace Maes.ExplorationAlgorithm
             var robotRotation = _worldPosition.rotation.eulerAngles.z - 90f;
             // Flip signs like also done in TransformTreePublisher 
             // TODO: Maybe create utility function for transforming coordinates between ROS and Maes ? - Philip
-            robotPosition = Geometry.ToROSCoord(robotPosition);
+            robotPosition = Geometry.ToRosCoord(robotPosition);
             // ---- tick ---- //
             state.tick = _tick;
             // ---- Status ---- //
             state.status = Enum.GetName(typeof(RobotStatus), _controller.GetStatus());
 
             // ---- Collision ---- //
-            state.colliding = _controller.IsCurrentlyColliding();
+            state.colliding = _controller.IsCurrentlyColliding;
 
             // ---- Incoming broadcast messages ---- //
             var objectsReceived = _controller.ReceiveBroadcast();
@@ -133,7 +133,7 @@ namespace Maes.ExplorationAlgorithm
             // ---- Nearby Robots ---- //
             var nearbyRobots = _controller.SenseNearbyRobots();
             // Map to relative positions of other robots
-            var otherRobots = nearbyRobots.Select(e => (e.item, e.GetRelativePosition(robotPosition, robotRotation)));
+            var otherRobots = nearbyRobots.Select(e => (item: e.Item, e.GetRelativePosition(robotPosition, robotRotation)));
             // Convert to ros messages
             var nearbyRobotMsgs = otherRobots.Select(e =>
                 new NearbyRobotMsg(e.item.ToString(), new Vector2DMsg(e.Item2.x, e.Item2.y)));
@@ -218,7 +218,7 @@ namespace Maes.ExplorationAlgorithm
             info.AppendLine($"Namespace: {_topicPrefix}");
             info.AppendLine($"Position: ({robotPosition.x},{robotPosition.y})");
             info.AppendLine($"Status: {Enum.GetName(typeof(RobotStatus), _controller.GetStatus())}");
-            info.AppendLine($"Is Colliding: {_controller.IsCurrentlyColliding()}");
+            info.AppendLine($"Is Colliding: {_controller.IsCurrentlyColliding}");
             info.AppendLine($"Number of nearby robots: {_controller.SenseNearbyRobots().Length}");
             info.AppendLine($"Number Incoming broadcast msg: {_controller.ReceiveBroadcast().Count}");
             info.AppendLine($"Number of nearby env tags: {_controller.ReadNearbyTags().Count}");

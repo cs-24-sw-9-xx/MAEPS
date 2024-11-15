@@ -21,7 +21,7 @@
 
 namespace Maes.Robot
 {
-    public class RelativePosition
+    public readonly struct RelativePosition
     {
         public readonly float Distance;
         public readonly float RelativeAngle;

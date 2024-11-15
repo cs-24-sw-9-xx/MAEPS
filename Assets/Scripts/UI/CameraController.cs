@@ -34,7 +34,7 @@ namespace Maes.UI
     internal class CameraController : MonoBehaviour
     {
         // HACK
-        public static CameraController singletonInstance = null!;
+        public static CameraController SingletonInstance = null!;
         public Transform? movementTransform;
 
         // HACK
@@ -71,7 +71,7 @@ namespace Maes.UI
         private void Start()
         {
             _simulationManager = simulationManagerObject.GetComponent<ISimulationManager>();
-            singletonInstance = this;
+            SingletonInstance = this;
             var t = transform; // Temp storage of build-in is (apparently) more efficient than repeated access.
             newPosition = t.position;
             newRotation = t.rotation;
@@ -81,7 +81,6 @@ namespace Maes.UI
 
         private void CameraInitialization()
         {
-
             _cams = new List<CamAssembly>();
             foreach (var c in GetComponentsInChildren<Camera>(includeInactive: true))
             {
@@ -282,7 +281,7 @@ namespace Maes.UI
             // (The frame of reference changes between ros and maes mode)
             if (GlobalSettings.IsRosMode)
             {
-                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(Geometry.ToROSCoord(mouseWorldPosition));
+                _simulationManager.SimulationInfoUIController.UpdateMouseCoordinates(Geometry.ToRosCoord(mouseWorldPosition));
             }
             else if (_simulationManager.CurrentSimulation != null)
             {
@@ -295,7 +294,7 @@ namespace Maes.UI
         {
             // If sticky cam is enabled and a robot is selected, then camera movement is determined entirely by the
             // movement of the robot
-            if (stickyCam && movementTransform != null)
+            if (stickyCam && movementTransform is not null)
             {
                 newPosition = movementTransform.position;
                 return;

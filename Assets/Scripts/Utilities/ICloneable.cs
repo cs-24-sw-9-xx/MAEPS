@@ -2,7 +2,7 @@ using System;
 
 namespace Maes.Utilities
 {
-    public interface ICloneable<T> : ICloneable
+    public interface ICloneable<out T> : ICloneable
         where T : notnull
     {
         new T Clone();

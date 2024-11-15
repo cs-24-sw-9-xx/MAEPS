@@ -23,18 +23,7 @@ using System;
 
 namespace Maes.Statistics
 {
-
-    public interface ICell
-    {
-        bool IsExplorable { get; }
-        bool IsExplored { get; }
-        bool IsCovered { get; }
-        bool CanBeCovered { get; set; }
-        void RegisterExploration(int currentTimeTicks);
-        void RegisterCoverage(int currenTimeTicks);
-    }
-
-    public abstract class Cell : ICell
+    public abstract class Cell
     {
         // --- Exploration over time --- 
         public bool IsExplorable { get; }

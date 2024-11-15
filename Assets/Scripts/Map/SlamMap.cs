@@ -139,12 +139,14 @@ namespace Maes.Map
             return localCoordinate / 2;
         }
 
-        public void SetExploredByTriangle(int triangleIndex, bool isOpen)
+        public void SetExploredByCoordinate(Vector2Int localCoordinate, bool isOpen)
         {
-            var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
-            if (_tiles[localCoordinate.x, localCoordinate.y] != SlamTileStatus.Solid)
+            var x = localCoordinate.x;
+            var y = localCoordinate.y;
+
+            if (_tiles[x, y] != SlamTileStatus.Solid)
             {
-                _tiles[localCoordinate.x, localCoordinate.y] = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
+                _tiles[x, y] = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
             }
         }
 
@@ -199,16 +201,18 @@ namespace Maes.Map
             return visibleTilesList;
         }
 
-        public void SetCurrentlyVisibleByTriangle(int triangleIndex, bool isOpen)
+        public void SetCurrentlyVisibleByTriangle(int triangleIndex, Vector2Int localCoordinate, bool isOpen)
         {
-            var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
+            var x = localCoordinate.x;
+            var y = localCoordinate.y;
+
             _currentlyVisibleTriangles?.Add(triangleIndex);
 
-            var visibleTile = _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y];
+            var visibleTile = _currentlyVisibleTiles[x, y];
             if (visibleTile.Generation != _visibleTilesGeneration || visibleTile.TileStatus != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y] = new VisibleTile(_visibleTilesGeneration, newStatus);
+                _currentlyVisibleTiles[x, y] = new VisibleTile(_visibleTilesGeneration, newStatus);
                 CoarseMap.UpdateTile(CoarseGrainedMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
         }
@@ -391,7 +395,7 @@ namespace Maes.Map
 
         // Combines two SlamTileStatus in a 'optimistic' fashion.
         // If any status is solid both are consider solid. Otherwise if any status is open both are considered open 
-        private SlamTileStatus AggregateStatusOptimistic(SlamTileStatus status1, SlamTileStatus status2)
+        private static SlamTileStatus AggregateStatusOptimistic(SlamTileStatus status1, SlamTileStatus status2)
         {
             if (status1 == SlamTileStatus.Solid || status2 == SlamTileStatus.Solid)
             {
@@ -448,7 +452,7 @@ namespace Maes.Map
             return 1f;
         }
 
-        public List<Vector2Int>? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _pathFinder.GetPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
 
@@ -464,7 +468,7 @@ namespace Maes.Map
             return path;
         }
 
-        public List<Vector2Int>? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
 
@@ -510,8 +514,8 @@ namespace Maes.Map
 
         public Vector3 TileToWorld(Vector2 tile)
         {
-            var WorldTile = tile / 2;
-            return new Vector3(WorldTile.x, WorldTile.y, -0.01f) + (Vector3)_offset;
+            var worldTile = tile / 2;
+            return new Vector3(worldTile.x, worldTile.y, -0.01f) + (Vector3)_offset;
         }
 
         private readonly struct VisibleTile : IEquatable<VisibleTile>

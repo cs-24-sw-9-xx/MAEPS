@@ -27,36 +27,25 @@ using UnityEngine;
 
 namespace Maes.Utilities
 {
-    public class Geometry
+    public static class Geometry
     {
-        public static float DistanceBetween(in Vector2 p1, in Vector2 p2)
+        public static Vector2Int FromRosCoord(Vector2Int rosPosition)
         {
-            return Vector2.Distance(p1, p2);
-            // if (p1.Equals(p2)) return 0f;
-            //
-            // var xDelta = p2.x - p1.x;
-            // var yDelta = p2.y - p1.y;
-            //
-            // return Mathf.Sqrt(Mathf.Pow(xDelta, 2f) + Mathf.Pow(yDelta, 2f));
+            return new Vector2Int(-rosPosition.x, -rosPosition.y);
         }
 
-        public static Vector2Int FromROSCoord(Vector2Int RosPosition)
+        public static Vector2 FromRosCoord(Vector3 rosPosition)
         {
-            return new Vector2Int(-RosPosition.x, -RosPosition.y);
+            return new Vector2(-rosPosition.x, -rosPosition.y);
         }
 
-        public static Vector2 FromROSCoord(Vector3 RosPosition)
-        {
-            return new Vector2(-RosPosition.x, -RosPosition.y);
-        }
-
-        public static Vector2 ToROSCoord(Vector3 MapPosition)
+        public static Vector2 ToRosCoord(Vector3 mapPosition)
         {
             // Map position is robots position in the tile grid. NOT world position / game object position
-            return new Vector2(-MapPosition.x, -MapPosition.y);
+            return new Vector2(-mapPosition.x, -mapPosition.y);
         }
 
-        public static bool IsPointWithinCirle(Vector2Int point, Vector2 circleStartPosition, float maxRadius)
+        public static bool IsPointWithinCircle(Vector2Int point, Vector2 circleStartPosition, float maxRadius)
         {
             return Mathf.Pow(point.x - circleStartPosition.x, 2) + Mathf.Pow(point.y - circleStartPosition.y, 2) < Mathf.Pow(maxRadius, 2);
         }
@@ -71,7 +60,7 @@ namespace Maes.Utilities
         /// <returns>Doorway tiles around the robot within range</returns>
         public static IEnumerable<Vector2Int> PointsWithinCircle(IEnumerable<Vector2Int> points, Vector2 circleStartPosition, float maxRadius)
         {
-            return points.Where(point => IsPointWithinCirle(point, circleStartPosition, maxRadius));
+            return points.Where(point => IsPointWithinCircle(point, circleStartPosition, maxRadius));
         }
 
         public static Vector2 VectorFromDegreesAndMagnitude(float angleDegrees, float magnitude)

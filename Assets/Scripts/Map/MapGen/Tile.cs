@@ -34,26 +34,19 @@ namespace Maes.Map.MapGen
         Brick
     }
 
-    public class Tile
+    public readonly struct Tile
     {
-        public static Random? Rand { get; set; }
-
-        public TileType Type { get; }
+        public readonly TileType Type;
 
         public Tile(TileType type)
         {
             Type = type;
         }
 
-        public static Tile GetRandomWall()
+        public static Tile GetRandomWall(Random random)
         {
-            if (Rand == null)
-            {
-                throw new Exception("Random is not set");
-            }
-
             var typeValues = Enum.GetValues(typeof(TileType));
-            var randomWallInt = Rand.Next((int)TileType.Concrete, typeValues.Length);
+            var randomWallInt = random.Next((int)TileType.Concrete, typeValues.Length);
             return new Tile((TileType)typeValues.GetValue(randomWallInt));
         }
 

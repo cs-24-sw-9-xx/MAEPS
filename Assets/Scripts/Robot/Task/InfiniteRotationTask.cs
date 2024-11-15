@@ -23,11 +23,11 @@ using System;
 
 namespace Maes.Robot.Task
 {
-    internal class InfiniteRotationTasK : ITask
+    internal class InfiniteRotationTask : ITask
     {
         public float ForceMultiplier;
 
-        public InfiniteRotationTasK(float forceMultiplier)
+        public InfiniteRotationTask(float forceMultiplier)
         {
             ForceMultiplier = forceMultiplier;
         }

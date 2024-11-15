@@ -31,11 +31,11 @@ namespace Maes.Map.MapGen
 {
     public class Room : IComparable<Room>
     {
-        public List<Vector2Int> Tiles { get; set; }
+        public List<Vector2Int> Tiles { get; private set; }
 
-        public bool[,] TilesAsArray { get; set; } // If true, it is contained in room
+        public bool[,] TilesAsArray { get; private set; } // If true, it is contained in room
         // The tiles next to the walls surrounding the room
-        public List<Vector2Int> EdgeTiles { get; set; }
+        public List<Vector2Int> EdgeTiles { get; private set; }
         public List<Room> ConnectedRooms { get; set; }
         public int RoomSize { get; set; }
         public bool IsAccessibleFromMainRoom { get; set; }

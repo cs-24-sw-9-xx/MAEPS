@@ -143,12 +143,13 @@ namespace Maes.Map.MapGen
 
             if (Include3DCollider)
             {
+                var innerWalls3DTransform = InnerWalls3D.transform;
                 // We must rotate and move the inner walls before creating the mesh, otherwise
                 // the mesh, and thus the collider, will be created with the wrong orientation
                 // Apparently, Unity does not update this, when the game object is rotated.
-                InnerWalls3D.transform.rotation = Quaternion.AngleAxis(-90, Vector3.right);
-                var oldPosition = InnerWalls3D.transform.position;
-                InnerWalls3D.transform.position = new Vector3(oldPosition.x, oldPosition.y, -wallHeight);
+                innerWalls3DTransform.rotation = Quaternion.AngleAxis(-90, Vector3.right);
+                var oldPosition = innerWalls3DTransform.position;
+                innerWalls3DTransform.position = new Vector3(oldPosition.x, oldPosition.y, -wallHeight);
                 CreateWallMesh(wallHeight, true);
             }
 
@@ -163,7 +164,7 @@ namespace Maes.Map.MapGen
             // Create roof mesh
             var wallRoofMesh = new Mesh
             {
-                vertices = _vertices2D.Select(vertex => vertex.Position).ToArray(),
+                vertices = _vertices2D.Select(vertex => vertex.Position).ToArray()
             };
             var subMesh = 0;
             wallRoofMesh.subMeshCount = Materials.Count;
@@ -182,7 +183,7 @@ namespace Maes.Map.MapGen
             WallRoof.mesh = wallRoofMesh;
         }
 
-        public SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Vector3 offset,
+        private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Vector3 offset,
             bool removeRoundedCorners, List<Room> rooms)
         {
             var width = squareGrid.Squares.GetLength(0);
@@ -319,7 +320,7 @@ namespace Maes.Map.MapGen
                     var topLeft = outline[i];
                     var topRight = outline[i + 1];
                     var wallTypes = new[] { topLeft, topRight }.Where(x => Tile.IsWall(x.Type)).ToList();
-                    if (wallTypes.Count() == 1)
+                    if (wallTypes.Count == 1)
                     {
                         topLeft.Type = wallTypes[0].Type;
                         topRight.Type = wallTypes[0].Type;
@@ -585,7 +586,7 @@ namespace Maes.Map.MapGen
             }
         }
 
-        private void AssignIndexesToVertices(IEnumerable<Node> points, bool isMesh3D)
+        private void AssignIndexesToVertices(Node[] points, bool isMesh3D)
         {
             foreach (var point in points)
             {
@@ -760,7 +761,7 @@ namespace Maes.Map.MapGen
                 VertexB = b;
                 VertexC = c;
 
-                var types = new List<TileType> { a.Type, b.Type, c.Type }.Where(type => Tile.IsWall(type)).ToArray();
+                var types = new List<TileType> { a.Type, b.Type, c.Type }.Where(Tile.IsWall).ToArray();
                 Type = TileType.Room;
                 if (types.Any())
                 {
@@ -784,9 +785,9 @@ namespace Maes.Map.MapGen
             }
         }
 
-        internal class SquareGrid
+        private class SquareGrid
         {
-            public Square[,] Squares;
+            public readonly Square[,] Squares;
             public readonly float XOffset, YOffset;
 
             public SquareGrid(Tile[,] map)
@@ -862,7 +863,7 @@ namespace Maes.Map.MapGen
                     topLeft.Type,
                     topRight.Type,
                     bottomLeft.Type,
-                    bottomRight.Type,
+                    bottomRight.Type
                 };
                 var maxType = types.Max();
 

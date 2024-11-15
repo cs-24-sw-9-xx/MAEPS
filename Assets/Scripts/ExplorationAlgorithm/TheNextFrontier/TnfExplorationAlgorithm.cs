@@ -222,7 +222,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
                 _robotTnfStatus = TnfStatus.AwaitCollisionMitigation;
             }
 
-            if (_robotController.IsCurrentlyColliding())
+            if (_robotController.IsCurrentlyColliding)
             {
                 _ticksSpentColliding++;
             }

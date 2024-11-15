@@ -2,7 +2,7 @@ using CsvHelper.Configuration.Attributes;
 
 namespace Maes.Statistics.Patrolling
 {
-    public class WaypointSnapShot
+    public readonly struct WaypointSnapShot
     {
         public int Tick { get; }
         public int Idleness { get; }

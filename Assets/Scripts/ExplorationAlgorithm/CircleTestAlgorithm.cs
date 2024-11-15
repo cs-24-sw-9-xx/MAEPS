@@ -60,7 +60,7 @@ namespace Maes.ExplorationAlgorithm
         public void UpdateLogic()
         {
             // Don't collect data if dragging against the wall
-            if (_controller.IsCurrentlyColliding())
+            if (_controller.IsCurrentlyColliding)
             {
                 _controller.StopCurrentTask();
                 _shouldEnd = true;

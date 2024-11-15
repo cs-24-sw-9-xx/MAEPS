@@ -587,7 +587,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         private IEnumerable<Doorway> DoorwaysInRange(int radius)
         {
             var slamPosition = _controller.GetSlamMap().GetCurrentPosition();
-            return _doorways.Where(doorway => doorway.Tiles.Any(tile => Geometry.IsPointWithinCirle(tile, slamPosition, radius)));
+            return _doorways.Where(doorway => doorway.Tiles.Any(tile => Geometry.IsPointWithinCircle(tile, slamPosition, radius)));
         }
 
         private List<Line2D> GetWalls(IEnumerable<Vector2Int> tiles)
@@ -931,7 +931,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             {
                 var intersectionPoints = GetIntersectionPoints(slamMap, walls).Distinct()
                                                                               .Where(point => !point.walls.All(wall => wall.Rasterize().Select(tile => Vector2Int.FloorToInt(tile)).Contains(point.intersection)))
-                                                                              .Where(point => Geometry.IsPointWithinCirle(point.intersection, slamPosition, VisionRadius * 2));
+                                                                              .Where(point => Geometry.IsPointWithinCircle(point.intersection, slamPosition, VisionRadius * 2));
                 foreach (var intersection in intersectionPoints)
                 {
                     if (_previousIntersections.Contains(intersection.intersection) || _doorways.Any(doorway => doorway.Tiles.Contains(intersection.intersection)))
@@ -1050,8 +1050,8 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 return Mathf.Infinity;
             }
 
-            List<float> distances = new();
-            for (var i = 0; i < path.Count - 2; i++)
+            var distances = new List<float>();
+            for (var i = 0; i < path.Length - 2; i++)
             {
                 var pathStep = path[i];
                 if (pathStep == path.First())

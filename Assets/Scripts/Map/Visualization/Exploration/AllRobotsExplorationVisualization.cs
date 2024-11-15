@@ -57,16 +57,18 @@ namespace Maes.Map.Visualization.Exploration
         {
             if (_hasBeenInitialized)
             {
-                visualizer.UpdateColors(_newlyExploredCells, ExplorationCellToColor);
+                visualizer.UpdateColors(_newlyExploredCells, CellToColorDelegate);
                 _newlyExploredCells.Clear();
             }
             else
             {
                 // In the first iteration of this visualizer overwrite all colors of previous visualization mode
-                visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
+                visualizer.SetAllColors(_explorationMap, CellToColorDelegate);
                 _hasBeenInitialized = true;
             }
         }
+
+        private static readonly Visualizer<ExplorationCell>.CellToColor CellToColorDelegate = ExplorationCellToColor;
 
         private static Color32 ExplorationCellToColor(ExplorationCell cell)
         {
