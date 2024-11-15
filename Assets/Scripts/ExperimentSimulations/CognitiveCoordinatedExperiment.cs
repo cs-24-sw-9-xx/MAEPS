@@ -31,20 +31,21 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using UnityEngine;
 using System.Collections.Generic;
 
 using Maes.Map.MapGen;
-using Maes.Robot;
 using Maes.PatrollingAlgorithms;
+using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
+using UnityEngine;
+
 namespace Maes.ExperimentSimulations
 {
-    using MySimulator = PatrollingSimulator;
     using MySimulationScenario = PatrollingSimulationScenario;
-    
+    using MySimulator = PatrollingSimulator;
+
     internal class CognitiveCoordinatedExperiment : MonoBehaviour
     {
         private void Start()
@@ -67,10 +68,10 @@ namespace Maes.ExperimentSimulations
 
             var simulator = new MySimulator();
             var random = new System.Random(12345);
-            
-            const string algorithmName = "cognitive_coordinated"; 
+
+            const string algorithmName = "cognitive_coordinated";
             var algorithm = new CognitiveCoordinated();
-            
+
             var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
             var size = 100;
 
