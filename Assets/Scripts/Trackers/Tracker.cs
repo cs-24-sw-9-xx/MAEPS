@@ -81,7 +81,6 @@ namespace Maes.Trackers
             OnLogicUpdate(robots);
 
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
-            _currentTick++;
 
             if (GlobalSettings.ShouldWriteCsvResults
                 && _currentTick != 0
@@ -89,6 +88,7 @@ namespace Maes.Trackers
             {
                 CreateSnapShot();
             }
+            _currentTick++;
         }
 
         protected virtual void OnLogicUpdate(IReadOnlyList<MonaRobot> robots) { }
