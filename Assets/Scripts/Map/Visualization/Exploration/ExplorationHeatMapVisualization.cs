@@ -39,12 +39,12 @@ namespace Maes.Map.Visualization.Exploration
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
         {
             /* No need for newly explored cells as the entire map is replaced every tick */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
         {
             /* Ignore coverage data */
         }

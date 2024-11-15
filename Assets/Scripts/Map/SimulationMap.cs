@@ -22,6 +22,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Maes.Map.MapGen;
 using Maes.Utilities;
@@ -139,9 +140,11 @@ namespace Maes.Map
         }
 
         // Takes a world coordinates and removes the offset and scale to translate it to a local map coordinate
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Vector2 WorldCoordinateToCoarseTileCoordinate(Vector2 worldCoordinate)
         {
             var localCoordinate = (worldCoordinate - ScaledOffset);
+#if DEBUG
             if (!IsWithinLocalMapBounds(localCoordinate))
             {
                 throw new ArgumentException("The given coordinate " + localCoordinate
@@ -149,6 +152,7 @@ namespace Maes.Map
                                                                     + " is not within map bounds: {" + WidthInTiles +
                                                                     ", " + HeightInTiles + "}");
             }
+#endif
 
             return localCoordinate;
         }

@@ -20,7 +20,6 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
-using System.Linq;
 
 using UnityEngine;
 
@@ -28,20 +27,21 @@ namespace Maes.Utilities
 {
 
     // Represents the 8 directions found on a compass 
-    public class CardinalDirection
+    public readonly struct CardinalDirection : IEquatable<CardinalDirection>
     {
-
         public const int CardinalDirectionsCount = 8;
         // Index representing 8 neighbouring tags/tiles
         public static readonly CardinalDirection
-            East = new CardinalDirection(0),
-            SouthEast = new CardinalDirection(1),
-            South = new CardinalDirection(2),
-            SouthWest = new CardinalDirection(3),
-            West = new CardinalDirection(4),
-            NorthWest = new CardinalDirection(5),
-            North = new CardinalDirection(6),
-            NorthEast = new CardinalDirection(7);
+            East = new(0),
+            SouthEast = new(1),
+            South = new(2),
+            SouthWest = new(3),
+            West = new(4),
+            NorthWest = new(5),
+            North = new(6),
+            NorthEast = new(7);
+
+        private static readonly CardinalDirection[] CardinalDirections = { East, South, West, North };
 
         public enum RelativeDirection
         {
@@ -64,7 +64,7 @@ namespace Maes.Utilities
         private CardinalDirection(int index)
         {
             Index = index;
-            Vector = CalculateDirectionVector();
+            Vector = CalculateDirectionVector(index);
         }
 
         public CardinalDirection OppositeDirection()
@@ -85,10 +85,12 @@ namespace Maes.Utilities
         // Converts the given absolute angle (relative to the x-axis) to the closest corresponding cardinal direction
         public static CardinalDirection DirectionFromDegrees(float degrees)
         {
+#if DEBUG
             if (degrees < 0f)
             {
                 throw new ArgumentException($"Degrees must be above zero, was: {degrees}");
             }
+#endif
 
             var offset = (int)(((degrees + 22.5f) % 360) / 45f);
             return Directions[(8 - offset) % 8];
@@ -114,25 +116,25 @@ namespace Maes.Utilities
             return GetDirection(Index - 1);
         }
 
-        private Vector2Int CalculateDirectionVector()
+        private static Vector2Int CalculateDirectionVector(int index)
         {
             var xDir = 0;
             var yDir = 0;
 
-            if (Index > 6 || (Index < 2 && Index >= 0))
+            if (index > 6 || (index < 2 && index >= 0))
             {
                 xDir = 1;
             }
-            else if (Index < 6 && Index > 2)
+            else if (index < 6 && index > 2)
             {
                 xDir = -1;
             }
 
-            if (Index > 4)
+            if (index > 4)
             {
                 yDir = 1;
             }
-            else if (Index < 4 && Index > 0)
+            else if (index < 4 && index > 0)
             {
                 yDir = -1;
             }
@@ -152,12 +154,20 @@ namespace Maes.Utilities
 
         public static CardinalDirection[] GetCardinalDirections()
         {
-            return new[] { East, South, West, North };
+            return CardinalDirections;
         }
 
         public static CardinalDirection FromVector(Vector2Int vector)
         {
-            return GetCardinalAndOrdinalDirections().First(dir => dir.Vector == vector);
+            foreach (var direction in GetCardinalAndOrdinalDirections())
+            {
+                if (direction.Vector == vector)
+                {
+                    return direction;
+                }
+            }
+
+            throw new InvalidOperationException("Could not find cardinal direction from vector");
         }
 
         public static CardinalDirection VectorToDirection(Vector2 vector)
@@ -222,6 +232,31 @@ namespace Maes.Utilities
                 7 => "Northeast",
                 _ => "",
             };
+        }
+
+        public bool Equals(CardinalDirection other)
+        {
+            return Index == other.Index;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is CardinalDirection other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Index;
+        }
+
+        public static bool operator ==(CardinalDirection left, CardinalDirection right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(CardinalDirection left, CardinalDirection right)
+        {
+            return !left.Equals(right);
         }
     }
 }

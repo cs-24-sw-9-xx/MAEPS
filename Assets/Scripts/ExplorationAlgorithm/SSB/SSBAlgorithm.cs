@@ -315,7 +315,7 @@ namespace Maes.ExplorationAlgorithm.SSB
                 // (This can happen when all sub tiles tiles are revealed)
                 // The first one (current tile of the robot) is skipped as the robot may be standing on a partly solid
                 // tile, either because it spawned there or because it was pushed there by other robots 
-                if (_nextBackTrackStep!.CrossedTiles.Skip(1).Any(t => _map.GetTileStatus(t, true) == SlamMap.SlamTileStatus.Solid))
+                if (_nextBackTrackStep.Value.CrossedTiles.Skip(1).Any(t => _map.GetTileStatus(t, true) == SlamMap.SlamTileStatus.Solid))
                 {
                     _nextBackTrackStep = null;
                     _backtrackingPath = null;
@@ -325,10 +325,10 @@ namespace Maes.ExplorationAlgorithm.SSB
             }
 
             // Assert that we have reserved all the tiles for the next path step
-            if (!_reservationSystem.AllTilesReservedByThisRobot(_nextBackTrackStep!.CrossedTiles))
+            if (!_reservationSystem.AllTilesReservedByThisRobot(_nextBackTrackStep.Value.CrossedTiles))
             {
                 // If there are conflicting reservations then this path is now invalid
-                if (_reservationSystem.AnyTilesReservedByOtherRobot(_nextBackTrackStep!.CrossedTiles))
+                if (_reservationSystem.AnyTilesReservedByOtherRobot(_nextBackTrackStep.Value.CrossedTiles))
                 {
                     _backtrackingPath = null;
                     _nextBackTrackStep = null;
@@ -346,7 +346,7 @@ namespace Maes.ExplorationAlgorithm.SSB
                 else
                 {
                     // otherwise try to reserve the tiles of this path step and wait for confirmation
-                    _reservationSystem.Reserve(_nextBackTrackStep!.CrossedTiles);
+                    _reservationSystem.Reserve(_nextBackTrackStep.Value.CrossedTiles);
                     _ticksToWait = 1;
                 }
                 return;
@@ -356,7 +356,7 @@ namespace Maes.ExplorationAlgorithm.SSB
             _ticksWaitedInDeadlock = 0;
 
             // Check if the robot needs to move to reach next step target 
-            var relativeTarget = _map.GetTileCenterRelativePosition(_nextBackTrackStep!.End);
+            var relativeTarget = _map.GetTileCenterRelativePosition(_nextBackTrackStep.Value.End);
             if (relativeTarget.Distance > 0.2f)
             {
                 MoveTo(relativeTarget);
@@ -559,7 +559,7 @@ namespace Maes.ExplorationAlgorithm.SSB
 
             // Find relative position of neighbour located in target direction
             var targetRelativePosition = _map
-                .GetTileCenterRelativePosition(_map.GetGlobalNeighbour(targetDirection));
+                .GetTileCenterRelativePosition(_map.GetGlobalNeighbour(targetDirection.Value));
             // Assert that we are pointed in the right direction
             if (Mathf.Abs(targetRelativePosition.RelativeAngle) <= 1.5f)
             {

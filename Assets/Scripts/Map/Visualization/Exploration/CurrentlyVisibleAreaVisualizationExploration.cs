@@ -32,12 +32,12 @@ namespace Maes.Map.Visualization.Exploration
 
         public CurrentlyVisibleAreaVisualizationExploration(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) : base(explorationMap, selectedRobot) { }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
         {
             /* Ignore new exploration data as we are interested in all VISIBLE cells */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
         {
             /* Coverage data not needed */
         }

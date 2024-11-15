@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms;
+using Maes.Map;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -76,14 +77,14 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                         {
                             winnerIDList.Add(key);
                         }
-                        minotaur._waypoint = new Waypoint(minotaur._map.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.Door, true);
+                        minotaur._waypoint = new Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.Door, true);
                         minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                         minotaur._doorways.Find(x => x.Center == _doorway.Center).Explored = true;
                         return new AuctionResultMessage(winnerIDList, _doorway);
                     }
                     else if (_allBids.Count / 2 == 1)
                     {
-                        minotaur._waypoint = new Waypoint(minotaur._map.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.Door, true);
+                        minotaur._waypoint = new Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), Waypoint.WaypointType.Door, true);
                         minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                         minotaur._doorways.Find(x => x.Center == _doorway.Center).Explored = true;
                         return this;

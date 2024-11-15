@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Map.MapGen;
 using Maes.Map.PathFinding;
@@ -43,7 +44,10 @@ namespace Maes.Map
 
         private SlamTileStatus[,] _tiles;
         private readonly VisibleTile[,] _currentlyVisibleTiles;
-        public readonly HashSet<int> CurrentlyVisibleTriangles = new();
+
+        public HashSet<int> CurrentlyVisibleTriangles => _currentlyVisibleTriangles ??= new HashSet<int>();
+
+        private HashSet<int>? _currentlyVisibleTriangles;
         private readonly SimulationMap<Tile> _collisionMap;
         private readonly IPathFinder _pathFinder;
 
@@ -162,7 +166,7 @@ namespace Maes.Map
         public void ResetRobotVisibility()
         {
             _visibleTilesGeneration++;
-            CurrentlyVisibleTriangles.Clear();
+            _currentlyVisibleTriangles?.Clear();
         }
 
         public SlamTileStatus GetVisibleTileStatus(int x, int y)
@@ -198,14 +202,14 @@ namespace Maes.Map
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, bool isOpen)
         {
             var localCoordinate = TriangleIndexToCoordinate(triangleIndex);
-            CurrentlyVisibleTriangles.Add(triangleIndex);
+            _currentlyVisibleTriangles?.Add(triangleIndex);
 
             var visibleTile = _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y];
             if (visibleTile.Generation != _visibleTilesGeneration || visibleTile.TileStatus != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
                 _currentlyVisibleTiles[localCoordinate.x, localCoordinate.y] = new VisibleTile(_visibleTilesGeneration, newStatus);
-                CoarseMap.UpdateTile(CoarseMap.FromSlamMapCoordinate(localCoordinate), newStatus);
+                CoarseMap.UpdateTile(CoarseGrainedMap.FromSlamMapCoordinate(localCoordinate), newStatus);
             }
         }
 
@@ -231,6 +235,7 @@ namespace Maes.Map
 
         public void UpdateApproxPosition(Vector2 worldPosition)
         {
+            // TODO: This looks like a bug
             if (Math.Abs(_robotConstraints.SlamPositionInaccuracy) < 0.0000001f)
             {
                 ApproximatePosition = worldPosition;
@@ -335,6 +340,7 @@ namespace Maes.Map
             return res;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SlamTileStatus GetTileStatus(Vector2Int tile, bool optimistic = false)
         {
             return _tiles[tile.x, tile.y];

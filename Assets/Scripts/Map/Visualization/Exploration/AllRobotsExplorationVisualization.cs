@@ -40,7 +40,7 @@ namespace Maes.Map.Visualization.Exploration
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
         {
             foreach (var cellWithIndex in exploredCells)
             {
@@ -48,7 +48,7 @@ namespace Maes.Map.Visualization.Exploration
             }
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
         {
             /* Ignore coverage */
         }

@@ -24,7 +24,7 @@ using System.Collections.Generic;
 
 namespace Maes.Utilities
 {
-    public class Functional
+    public static class Functional
     {
         public delegate T Factory<T>();
 

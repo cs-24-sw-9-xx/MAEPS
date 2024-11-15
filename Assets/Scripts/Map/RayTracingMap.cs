@@ -194,10 +194,12 @@ namespace Maes.Map
         public void Raytrace(Vector2 startingPoint, float angleDegrees, float distance,
             CellFunction shouldContinueFromCell)
         {
+#if DEBUG
             if (angleDegrees < 0f || angleDegrees > 360f)
             {
                 throw new ArgumentException($"Given angle must be between 0-360 degrees. Angle was: {angleDegrees}");
             }
+#endif
 
             var startingIndex = _map.GetTriangleIndex(startingPoint);
 
@@ -217,7 +219,7 @@ namespace Maes.Map
             {
                 if (traceCount > maxTraces)
                 { // Safety measure for avoiding infinite loops 
-                    Debug.Log($"Equation: {a}x + {b}");
+                    Debug.LogError($"Equation: {a}x + {b}");
                     throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}");
                 }
 
@@ -395,21 +397,23 @@ namespace Maes.Map
                         // This is a conflict resolution measure to avoid infinite loops.
                         else if (angle >= 0 && angle <= 180)
                         {
-                            if (currentIntersection.Value.y > intersection.Value.y)
+                            var currentIntersectionValue = currentIntersection.Value;
+                            var intersectionValue = intersection.Value;
+                            if (currentIntersectionValue.y > intersectionValue.y)
                             {
                                 intersection = currentIntersection;
                                 intersectionEdge = edge;
                             }
-                            else if (Mathf.Abs(currentIntersection.Value.y - intersection.Value.y) < 0.0001f)
+                            else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
                             {
                                 // If the y-axis is the same then choose by x-axis instead
-                                if (angle < 90 && currentIntersection.Value.x > intersection.Value.x)
+                                if (angle < 90 && currentIntersectionValue.x > intersectionValue.x)
                                 {
                                     // For 0-90 degrees prefer intersection with highest x value
                                     intersection = currentIntersection;
                                     intersectionEdge = edge;
                                 }
-                                else if (angle > 90 && currentIntersection.Value.x < intersection.Value.x)
+                                else if (angle > 90 && currentIntersectionValue.x < intersectionValue.x)
                                 {
                                     // For 90-180 degrees prefer intersection with lowest x value
                                     intersection = currentIntersection;
@@ -419,22 +423,24 @@ namespace Maes.Map
                         }
                         else
                         {
+                            var currentIntersectionValue = currentIntersection.Value;
+                            var intersectionValue = intersection.Value;
                             // For 180-360 degrees prefer intersection with lowest y-value
-                            if (currentIntersection.Value.y < intersection.Value.y)
+                            if (currentIntersectionValue.y < intersectionValue.y)
                             {
                                 intersection = currentIntersection;
                                 intersectionEdge = edge;
                             }
-                            else if (Mathf.Abs(currentIntersection.Value.y - intersection.Value.y) < 0.0001f)
+                            else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
                             {
                                 // If the y-axis is the same choose by x-axis instead
-                                if (angle < 270 && currentIntersection.Value.x < intersection.Value.x)
+                                if (angle < 270 && currentIntersectionValue.x < intersectionValue.x)
                                 {
                                     // For 180-270 degrees prefer intersection with highest x value
                                     intersection = currentIntersection;
                                     intersectionEdge = edge;
                                 }
-                                else if (angle > 270 && currentIntersection.Value.x > intersection.Value.x)
+                                else if (angle > 270 && currentIntersectionValue.x > intersectionValue.x)
                                 {
                                     // For 270-360 degrees prefer intersection with lowest x value
                                     intersection = currentIntersection;
@@ -472,23 +478,34 @@ namespace Maes.Map
                     }
                 }
 
-                var span = intersectionsAndEdge[..i];
-
-
                 if (direction <= 90 || direction >= 270)
                 {
                     // Entering point must be the left most intersection
-                    return Functional
-                        .TakeBest(span, (intersection1, intersection2)
-                            => intersection1.Item1.x < intersection2.Item1.x)
+                    var currentMin = intersectionsAndEdge[0];
+                    for (var i1 = 1; i1 < i; i1++)
+                    {
+                        if (intersectionsAndEdge[i1].Item1.x < currentMin.Item1.x)
+                        {
+                            currentMin = intersectionsAndEdge[i1];
+                        }
+                    }
+
+                    return currentMin
                         .Item2;
                 }
                 else
                 {
                     // Entering point must be the right most intersection
-                    return Functional
-                        .TakeBest(span, (intersection1, intersection2)
-                            => intersection1.Item1.x > intersection2.Item1.x)
+                    var currentMin = intersectionsAndEdge[0];
+                    for (var i1 = 1; i1 < i; i1++)
+                    {
+                        if (intersectionsAndEdge[i1].Item1.x > currentMin.Item1.x)
+                        {
+                            currentMin = intersectionsAndEdge[i1];
+                        }
+                    }
+
+                    return currentMin
                         .Item2;
                 }
             }

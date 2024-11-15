@@ -286,9 +286,9 @@ namespace Maes.Map
         /// Converts the given <see cref="SlamMap"/> coordinate to a local coordinate.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector2Int FromSlamMapCoordinate(Vector2Int slamCoord)
+        public static Vector2Int FromSlamMapCoordinate(Vector2Int slamCoord)
         {
-            return slamCoord / 2;
+            return new Vector2Int(slamCoord.x >> 1, slamCoord.y >> 1);
         }
 
         /// <summary>
@@ -302,7 +302,8 @@ namespace Maes.Map
         /// <summary>
         /// Converts the given local coordinate to a <see cref="SlamMap"/> coordinate.
         /// </summary>
-        public Vector2Int ToSlamMapCoordinate(Vector2 localCoordinate)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int ToSlamMapCoordinate(Vector2 localCoordinate)
         {
             return Vector2Int.FloorToInt(localCoordinate * 2);
         }
@@ -579,28 +580,25 @@ namespace Maes.Map
 
         private bool CheckIfAllSlamStatusesSolid(Vector2Int coordinate)
         {
-            var statuses = GetSlamTileStatuses(coordinate);
-            var solids = statuses.Count(coord => coord != SlamMap.SlamTileStatus.Open);
+            var slamCoord = coordinate * 2;
+            var solids =
+                (_slamMap.GetTileStatus(slamCoord) != SlamMap.SlamTileStatus.Open ? 1 : 0) +
+                    (_slamMap.GetTileStatus(slamCoord + Vector2Int.right) != SlamMap.SlamTileStatus.Open ? 1 : 0) +
+                    (_slamMap.GetTileStatus(slamCoord + Vector2Int.up) != SlamMap.SlamTileStatus.Open ? 1 : 0) +
+                    (_slamMap.GetTileStatus(slamCoord + Vector2Int.up + Vector2Int.right) != SlamMap.SlamTileStatus.Open ? 1 : 0);
 
             return solids == 4;
         }
 
         private bool CheckIfAnyIsStatus(Vector2Int coordinate, SlamMap.SlamTileStatus status)
         {
-            var statuses = GetSlamTileStatuses(coordinate);
+            var slamCoord = coordinate * 2;
+            return
+                _slamMap.GetTileStatus(slamCoord) == status ||
+                _slamMap.GetTileStatus(slamCoord + Vector2Int.right) == status ||
+                _slamMap.GetTileStatus(slamCoord + Vector2Int.up) == status ||
+                _slamMap.GetTileStatus(slamCoord + Vector2Int.up + Vector2Int.right) == status;
 
-            // Optimization
-            // Old: return statuses.Any(coord => coord == status);
-
-            foreach (var s in statuses)
-            {
-                if (s == status)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -608,11 +606,13 @@ namespace Maes.Map
         /// </summary>
         public void UpdateTile(Vector2Int courseCoord, SlamMap.SlamTileStatus observedStatus)
         {
+            var x = courseCoord.x;
+            var y = courseCoord.y;
             // If some sub-tile of the coarse tile is known to be solid, then new status does not matter
             // Otherwise assign the new status (either open or solid)
-            if (_optimisticTileStatuses[courseCoord.x, courseCoord.y] != SlamMap.SlamTileStatus.Solid)
+            if (_optimisticTileStatuses[x, y] != SlamMap.SlamTileStatus.Solid)
             {
-                _optimisticTileStatuses[courseCoord.x, courseCoord.y] = observedStatus;
+                _optimisticTileStatuses[x, y] = observedStatus;
             }
         }
 

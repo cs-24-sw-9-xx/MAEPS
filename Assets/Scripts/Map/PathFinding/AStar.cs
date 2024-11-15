@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Utilities;
 using Maes.Utilities.Priority_Queue;
@@ -206,7 +207,8 @@ namespace Maes.Map.PathFinding
             return bestCandidate;
         }
 
-        private bool IsSolid(Vector2Int coord, IPathFindingMap map, bool optimistic)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsSolid(Vector2Int coord, IPathFindingMap map, bool optimistic)
         {
             return optimistic
                 ? map.IsOptimisticSolid(coord)
@@ -267,7 +269,7 @@ namespace Maes.Map.PathFinding
             return steps;
         }
 
-        public void AddIntersectingTiles(Vector2Int from, CardinalDirection direction, HashSet<Vector2Int> tiles)
+        public static void AddIntersectingTiles(Vector2Int from, CardinalDirection direction, HashSet<Vector2Int> tiles)
         {
             tiles.Add(from);
             tiles.Add(from + direction.Vector);
@@ -324,17 +326,17 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int? IsAnyNeighborStatus(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, SlamTileStatus status, bool optimistic = false)
         {
-            var directions = CardinalDirection.GetCardinalDirections().Select(dir => dir.Vector);
+            var directions = CardinalDirection.GetCardinalDirections();
             foreach (var dir in directions)
             {
-                if (!pathFindingMap.IsWithinBounds(targetCoordinate + dir))
+                if (!pathFindingMap.IsWithinBounds(targetCoordinate + dir.Vector))
                 {
                     continue;
                 }
 
-                if (pathFindingMap.GetTileStatus(targetCoordinate + dir, optimistic) == status)
+                if (pathFindingMap.GetTileStatus(targetCoordinate + dir.Vector, optimistic) == status)
                 {
-                    return targetCoordinate + dir;
+                    return targetCoordinate + dir.Vector;
                 }
             }
             return null;

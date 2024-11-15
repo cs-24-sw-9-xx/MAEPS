@@ -22,6 +22,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.Map;
 
 namespace Maes.ExplorationAlgorithm.Minotaur
 {
@@ -50,13 +51,13 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             /// </summary>
             public IMinotaurMessage? Process(MinotaurAlgorithm minotaur)
             {
-                var doorwayTile = minotaur._map.FromSlamMapCoordinate(_doorway.Center);
+                var doorwayTile = CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center);
                 var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, false, false);
                 if (pathLengthToDoorway != null)
                 {
                     foreach (var knownDoorway in minotaur._doorways)
                     {
-                        if (pathLengthToDoorway.Contains(minotaur._map.FromSlamMapCoordinate(knownDoorway.Center)))
+                        if (pathLengthToDoorway.Contains(CoarseGrainedMap.FromSlamMapCoordinate(knownDoorway.Center)))
                         {
                             return null;
                         }
