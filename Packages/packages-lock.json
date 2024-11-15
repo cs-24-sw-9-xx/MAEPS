@@ -21,6 +21,13 @@
       "dependencies": {},
       "hash": "0d0e4af9c79d63224ae26f1a3e822300b1475da7"
     },
+    "com.nol1fe.delaunator": {
+      "version": "git+https://github.com/nol1fe/delaunator-sharp.git?path=DelaunatorSharp.Unity",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "8fadb8adada27aecf031e315a73790ca07431a78"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
