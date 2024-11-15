@@ -31,10 +31,11 @@ namespace Maes.Map.MapPatrollingGen
             }
 
             var delaunator = new Delaunator(points.ToArray());
-            foreach (var triangle in delaunator.Triangles)
+            for (var i = 0; i < delaunator.Triangles.Length; i++)
             {
+                var triangle = delaunator.Triangles[i];
                 var centerpoint = delaunator.GetCentroid(triangle);
-                centerCoordinatePoints.Add(new Vertex(0, new Vector2Int((int)centerpoint.X, (int)centerpoint.Y)));
+                centerCoordinatePoints.Add(new Vertex(i, 0, new Vector2Int((int)centerpoint.X, (int)centerpoint.Y)));
             }
 
             //TODO: Connect neighboring centerpoints with edges, currently only the centerpoints are generated

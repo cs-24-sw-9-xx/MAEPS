@@ -1,17 +1,17 @@
 using Maes.Map;
 
-using UnityEngine;
-
 namespace Maes.Trackers
 {
-    public class VertexDetails : Vertex
+    public class VertexDetails
     {
         public int MaxIdleness { get; set; } = 0;
 
-        public VertexDetails(float weight, Vector2Int position, Color? color = null) : base(weight, position, color)
-        {
-        }
+        public Vertex Vertex { get; }
 
-        public VertexDetails(Vertex vertex) : base(vertex.Weight, vertex.Position, vertex.Color) { }
+
+        public VertexDetails(Vertex vertex)
+        {
+            Vertex = vertex;
+        }
     }
 }

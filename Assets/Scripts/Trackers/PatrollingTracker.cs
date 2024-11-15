@@ -19,19 +19,22 @@ namespace Maes.Trackers
     // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
-        private PatrollingMap Map { get; }
-        private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
-
         public int WorstGraphIdleness { get; private set; }
+
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; }
-        public float CurrentGraphIdleness { get; private set; }
-        public float AverageGraphIdleness => GraphIdlenessList.Count != 0 ? GraphIdlenessList.Average() : 0;
-        public int CompletedCycles { get; private set; }
-        public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
-        public ScatterChart Chart { get; set; }
 
-        private List<float> GraphIdlenessList { get; } = new();
+        public float CurrentGraphIdleness { get; private set; }
+
+        public float AverageGraphIdleness => _graphIdlenessList.Count != 0 ? _graphIdlenessList.Average() : 0;
+
+        public int CompletedCycles { get; private set; }
+
+        public float? AverageGraphDiffLastTwoCyclesProportion => _graphIdlenessList.Count >= 2 ? Mathf.Abs(_graphIdlenessList[^1] - _graphIdlenessList[^2]) / _graphIdlenessList[^2] : null;
+
+        public ScatterChart Chart { get; set; } = null!;
+
+
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
@@ -39,36 +42,39 @@ namespace Maes.Trackers
         public readonly List<PatrollingSnapShot> SnapShots = new();
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
 
+        private readonly Dictionary<int, VertexDetails> _vertices;
+
+        private readonly List<float> _graphIdlenessList = new();
+
         public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
-            Map = map;
-            Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
+            _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
             StopAfterDiff = scenario.StopAfterDiff;
-            WaypointSnapShots = Vertices.Keys.ToDictionary(k => k, _ => new List<WaypointSnapShot>());
+            WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
 
-        public void OnReachedVertex(Vertex vertex, int atTick)
+        public void OnReachedVertex(int vertexId, int atTick)
         {
-            if (!Vertices.TryGetValue(vertex.Position, out var vertexDetails))
+            if (!_vertices.TryGetValue(vertexId, out var vertexDetails))
             {
-                return;
+                throw new InvalidOperationException("Invalid vertex");
             }
 
-            var idleness = atTick - vertexDetails.LastTimeVisitedTick;
+            var idleness = atTick - vertexDetails.Vertex.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
-            vertexDetails.VisitedAtTick(atTick);
+            vertexDetails.Vertex.VisitedAtTick(atTick);
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
 
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
-                _visualizer.ShowDefaultColor(vertex);
+                _visualizer.ShowDefaultColor(vertexDetails.Vertex);
             }
         }
 
@@ -78,7 +84,7 @@ namespace Maes.Trackers
 
             WorstGraphIdleness = eachVertexIdleness.Max();
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
-            GraphIdlenessList.Add(CurrentGraphIdleness);
+            _graphIdlenessList.Add(CurrentGraphIdleness);
 
             // Example: How to plot the data
             // TODO: Plot the correct data and fix data limit.
@@ -110,20 +116,20 @@ namespace Maes.Trackers
         {
             SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
 
-            foreach (var vertex in Vertices)
+            foreach (var vertex in _vertices.Values)
             {
-                WaypointSnapShots[vertex.Key].Add(new WaypointSnapShot(_currentTick, _currentTick - vertex.Value.LastTimeVisitedTick, vertex.Value.NumberOfVisits));
+                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(_currentTick, _currentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
         }
 
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
-            return Vertices.Values.Select(vertex => _currentTick - vertex.LastTimeVisitedTick).ToArray();
+            return _vertices.Values.Select(vertex => _currentTick - vertex.Vertex.LastTimeVisitedTick).ToArray();
         }
 
         private void SetCompletedCycles()
         {
-            CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
+            CompletedCycles = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)

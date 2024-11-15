@@ -6,20 +6,26 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class Vertex : ICloneable
+    public class Vertex
     {
-        private readonly HashSet<Vertex> _neighbors = new();
+        private readonly HashSet<Vertex> _neighbors;
+        public int Id { get; }
         public float Weight { get; }
         public int LastTimeVisitedTick { get; private set; }
         public Vector2Int Position { get; }
         public Color Color { get; }
         public int NumberOfVisits { get; private set; }
 
-        public Vertex(float weight, Vector2Int position, Color? color = null)
+        public Vertex(int id, float weight, Vector2Int position, Color? color = null)
         {
+            Id = id;
             Weight = weight;
             Position = position;
             Color = color ?? Color.green;
+            LastTimeVisitedTick = 0;
+            NumberOfVisits = 0;
+
+            _neighbors = new();
         }
 
         public IReadOnlyCollection<Vertex> Neighbors => _neighbors;
@@ -32,26 +38,19 @@ namespace Maes.Map
 
         public void AddNeighbor(Vertex neighbor)
         {
-            if (!Equals(neighbor, this))
+#if DEBUG
+            if (Equals(neighbor))
             {
-                _neighbors.Add(neighbor);
+                throw new InvalidOperationException("Cannot add self as neighbor");
             }
+#endif
+
+            _neighbors.Add(neighbor);
         }
 
         public void RemoveNeighbor(Vertex neighbor)
         {
             _neighbors.Remove(neighbor);
-        }
-
-        public object Clone()
-        {
-            var vertex = new Vertex(Weight, Position, Color);
-            foreach (var neighbor in _neighbors)
-            {
-                vertex.AddNeighbor(neighbor);
-            }
-
-            return vertex;
         }
     }
 }
