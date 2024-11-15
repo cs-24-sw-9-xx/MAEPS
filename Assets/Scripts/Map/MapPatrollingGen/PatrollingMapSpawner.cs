@@ -14,7 +14,7 @@ namespace Maes.Map.MapPatrollingGen
             // vertices.Add(new Vertex(0, new Vector2Int(20, 10)));
             // var patrollingMap = new PatrollingMap(vertices);
             // patrollingMap.Corners = (System.Collections.Generic.IReadOnlyList<Vertex>)PatrollingWaypointGenerator.GetPossibleWaypoints(map);
-            
+
             return patrollingMap;
         }
     }

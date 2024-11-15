@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+
 using DelaunatorSharp;
+
 using Maes.Map.MapGen;
+
 using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
@@ -12,7 +15,7 @@ namespace Maes.Map.MapPatrollingGen
         {
             // Get all wall tiles
             var wallTiles = GetWallsTiles(simulationMap);
-            
+
             // The delaunator library requires a list of IPoint, so we convert the Vector2Int to IPoint
             var points = new List<IPoint>();
 
@@ -33,7 +36,7 @@ namespace Maes.Map.MapPatrollingGen
                 var centerpoint = delaunator.GetCentroid(triangle);
                 centerCoordinatePoints.Add(new Vertex(0, new Vector2Int((int)centerpoint.X, (int)centerpoint.Y)));
             }
-           
+
             //TODO: Connect neighboring centerpoints with edges, currently only the centerpoints are generated
             return centerCoordinatePoints;
         }
@@ -86,7 +89,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 return false;
             }
-           
+
             // Returns true otherwise due to the fact that it is a corner tile
             return true;
         }
