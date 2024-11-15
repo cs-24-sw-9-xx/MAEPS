@@ -8,7 +8,7 @@ namespace Maes.Map.MapPatrollingGen
 {
     public class PatrollingWaypointGenerator
     {
-        public static IEnumerable<Vertex> GetPossibleWaypoints(SimulationMap<Tile> simulationMap)
+        public static List<Vertex> GetPossibleWaypoints(SimulationMap<Tile> simulationMap)
         {
             // Get all wall tiles
             var wallTiles = GetWallsTiles(simulationMap);
@@ -33,20 +33,21 @@ namespace Maes.Map.MapPatrollingGen
                 var centerpoint = delaunator.GetCentroid(triangle);
                 centerCoordinatePoints.Add(new Vertex(0, new Vector2Int((int)centerpoint.X, (int)centerpoint.Y)));
             }
-
+           
             //TODO: Connect neighboring centerpoints with edges, currently only the centerpoints are generated
             return centerCoordinatePoints;
         }
-        private static IEnumerable<Vector2Int> GetWallsTiles(SimulationMap<Tile> simulationMap)
+        private static List<Vector2Int> GetWallsTiles(SimulationMap<Tile> simulationMap)
         {
             var wallTiles = new List<Vector2Int>();
             var width = simulationMap.WidthInTiles;
             var height = simulationMap.HeightInTiles;
 
             // The outer wall is two tiles thick, so we start at 1 and end at width-1 and height-1
-            for (var x = 1; x <= width-1; x++)
+            // we asume that the walls are one tile thick
+            for (var x = 0; x <= width; x++)
             {
-                for (var y = 1; y <= height-1; y++)
+                for (var y = 0; y <= height; y++)
                 {
                     var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];
@@ -60,7 +61,13 @@ namespace Maes.Map.MapPatrollingGen
             return wallTiles;
         }
 
-        private static bool IsCornerTile(Vector2Int tile, IEnumerable<Vector2Int> tiles)
+        /// <summary>
+        /// Checks if the tile is a corner tile. We asume the walls are one tile thick
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <param name="tiles"></param>
+        /// <returns></returns>
+        private static bool IsCornerTile(Vector2Int tile, List<Vector2Int> tiles)
         {
             // Horizontal grid check
             if (tiles.Any(t => t == tile + Vector2Int.right)
