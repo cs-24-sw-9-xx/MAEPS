@@ -6,9 +6,9 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
-using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Patrolling;
 
 using UnityEngine;
 
@@ -19,7 +19,6 @@ namespace Maes.Trackers
     // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
-        private PatrollingSimulation PatrollingSimulation { get; }
         private PatrollingMap Map { get; }
         private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
 
@@ -37,14 +36,17 @@ namespace Maes.Trackers
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
 
-        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulation patrollingSimulation, PatrollingSimulationScenario scenario,
+        public readonly List<PatrollingSnapShot> SnapShots = new();
+        public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
+
+        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
-            PatrollingSimulation = patrollingSimulation;
             Map = map;
             Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
             StopAfterDiff = scenario.StopAfterDiff;
+            WaypointSnapShots = Vertices.Keys.ToDictionary(k => k, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
@@ -74,7 +76,7 @@ namespace Maes.Trackers
         {
             var eachVertexIdleness = GetEachVertexIdleness();
 
-            WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, eachVertexIdleness.Max());
+            WorstGraphIdleness = eachVertexIdleness.Max();
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             GraphIdlenessList.Add(CurrentGraphIdleness);
 
@@ -85,9 +87,6 @@ namespace Maes.Trackers
                 Chart.AddXAxisData("" + _currentTick);
                 Chart.AddData(0, WorstGraphIdleness);
             }
-
-            // TODO: Remove this when the code UI is set up, just for showing that it works
-            Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
@@ -109,13 +108,17 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            // TODO: Implement
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
+
+            foreach (var vertex in Vertices)
+            {
+                WaypointSnapShots[vertex.Key].Add(new WaypointSnapShot(_currentTick, _currentTick - vertex.Value.LastTimeVisitedTick, vertex.Value.NumberOfVisits));
+            }
         }
 
         private IReadOnlyList<int> GetEachVertexIdleness()
         {
-            var currentTick = PatrollingSimulation.SimulatedLogicTicks;
-            return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
+            return Vertices.Values.Select(vertex => _currentTick - vertex.LastTimeVisitedTick).ToArray();
         }
 
         private void SetCompletedCycles()

@@ -40,7 +40,7 @@ namespace Maes.Simulation
             }
 
             var path = GlobalSettings.StatisticsOutPutPath + _scenario.StatisticsFileName + "_" + resultForFileName;
-            new ExplorationCsvDataWriter(this, path).CreateCsvFile(",");
+            new ExplorationCsvDataWriter(this, path).CreateCsvFile();
         }
     }
 }
