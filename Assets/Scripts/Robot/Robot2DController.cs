@@ -480,13 +480,15 @@ namespace Maes.Robot
             // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
             var distForMaxSpeed = 2.5f;
             var distance = EstimateDistanceToTarget(target);
-            if (distance == null){
+            if (distance == null)
+            {
                 return null;
             }
             var dist = distance.Value;
             var startDist = Math.Min(dist, 2.5f);
             var startTime = (int)Math.Floor(Math.Pow(CorrectForRelativeMoveSpeed(startDist, Constraints.RelativeMoveSpeed), 0.85));
-            if (dist <= distForMaxSpeed){
+            if (dist <= distForMaxSpeed)
+            {
                 return startTime;
             }
             else
@@ -495,7 +497,8 @@ namespace Maes.Robot
                 return (int)Math.Ceiling(CorrectForRelativeMoveSpeed(dist, Constraints.RelativeMoveSpeed)) + startTime;
             }
 
-            static float CorrectForRelativeMoveSpeed(float distance, float relativeMoveSpeed){
+            static float CorrectForRelativeMoveSpeed(float distance, float relativeMoveSpeed)
+            {
                 return distance * 3.2f / (0.21f + (relativeMoveSpeed / 3.0f));
             }
         }
@@ -527,7 +530,7 @@ namespace Maes.Robot
                 // Get current point and next point
                 var point1 = pathList[i];
                 var point2 = pathList[i + 1];
-                
+
                 // Calculate the Euclidean distance between the two points
                 distance += Vector2.Distance(point1, point2);
             }
