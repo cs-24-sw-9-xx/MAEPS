@@ -74,10 +74,8 @@ namespace Maes.ExperimentSimulations
 
             var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
             var size = 100;
-
-            for (var amountOfRobots = 1; amountOfRobots < 10; amountOfRobots += 2)
-            {
-                var robotCount = amountOfRobots;
+            
+                var robotCount = 3;
                 simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
@@ -112,7 +110,7 @@ namespace Maes.ExperimentSimulations
                     statisticsFileName:
                     $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
                     robotConstraints: rc));
-            }
+            
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);

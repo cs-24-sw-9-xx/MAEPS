@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +14,8 @@ namespace Maes.PatrollingAlgorithms
         private bool _isPatrolling = false;
         private List<Vertex> _currentPath = new List<Vertex>();
         private int _iterator = 0;
-        private int _logicTicks = 0;
-        private int _ticksSinceHeartbeat = 0;
-
+        private Dictionary<int,Vertex> _unavailableVertices =  new Dictionary<int,Vertex>();
+        
         public override string GetDebugInfo()
         {
             return
@@ -28,24 +26,14 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void Preliminaries()
         {
-            _logicTicks++;
-            _ticksSinceHeartbeat++;
+            var receivedHeartbeat = _controller.ReceiveBroadcastWithId().OfType<KeyValuePair<int, Vertex>>();
 
-            if (_ticksSinceHeartbeat == 10)
+            var enumerable = receivedHeartbeat.ToList();
+            if (enumerable.Count > 1)
             {
-                var ownHeartbeat = new HeartbeatMessage(HighestIdle());
-                _ticksSinceHeartbeat = 0;
-                _controller.Broadcast(ownHeartbeat);
-            }
-
-            var receivedHeartbeat = new Queue<HeartbeatMessage>(_controller.ReceiveBroadcast().OfType<HeartbeatMessage>());
-
-            if (receivedHeartbeat.Count > 1)
-            {
-                var combinedMessage = receivedHeartbeat.Dequeue();
-                foreach (var message in receivedHeartbeat)
+                foreach (var message in enumerable)
                 {
-                    combinedMessage = combinedMessage.Combine(message);
+                    _unavailableVertices[message.Key] = message.Value;
                 }
             }
 
@@ -54,21 +42,21 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            MakePath();
+            ConstructPath();
             TargetVertex = _currentPath[_iterator];
             _isPatrolling = true;
         }
 
         protected override Vertex NextVertex()
         {
-            MakePath();
+            ConstructPath();
             var next = _currentPath[_iterator];
             _iterator++;
 
             return next;
         }
 
-        private void MakePath()
+        private void ConstructPath()
         {
             if (_iterator < _currentPath.Count)
             {
@@ -78,11 +66,16 @@ namespace Maes.PatrollingAlgorithms
             _iterator = 0;
             
             _currentPath = AStar(GetClosestVertex(), HighestIdle());
+            
+            var ownHeartbeat = HighestIdle();
+            _controller.Broadcast(ownHeartbeat);
         }
 
         private Vertex HighestIdle()
         {
-            return _vertices.OrderBy((x) => x.LastTimeVisitedTick).First();
+            // excluding the vertices other agents are pathing towards
+            var availableVertices = _vertices.Except(_unavailableVertices.Values).ToList(); 
+            return availableVertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
         private Vertex GetClosestVertex()
@@ -169,23 +162,6 @@ namespace Maes.PatrollingAlgorithms
         {
             // Use Manhattan distance as the heuristic for grid-based graphs
             return Vector2Int.Distance(a.Position, b.Position);
-        }
-    }
-
-    public class HeartbeatMessage
-    {    
-        private readonly Vertex _vertex;
-
-        public HeartbeatMessage(Vertex vertex)
-        {
-            _vertex = vertex;
-        }
-
-        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
-        {
-            List<Vertex> vertices = new() { heartbeatMessage._vertex, _vertex};
-            // noget sync noget...
-            return this;
         }
     }
 }
