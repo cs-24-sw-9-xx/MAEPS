@@ -525,7 +525,7 @@ namespace Maes.Robot
             }
 
             var distance = 0f;
-            for (var i = 0; i < pathList.Count - 1; i++)
+            for (var i = 0; i < pathList.Count() - 1; i++)
             {
                 // Get current point and next point
                 var point1 = pathList[i];
