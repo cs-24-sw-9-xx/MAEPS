@@ -194,16 +194,26 @@ namespace Maes.UI.SimulationInfoUIControllers
             Chart.Init();
             var xAxis = Chart.EnsureChartComponent<XAxis>();
             xAxis.splitNumber = 10;
-            xAxis.boundaryGap = true;
-            xAxis.type = Axis.AxisType.Category;
+            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+            xAxis.type = Axis.AxisType.Value;
 
             var yAxis = Chart.EnsureChartComponent<YAxis>();
+            yAxis.splitNumber = 10;
             yAxis.type = Axis.AxisType.Value;
+            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
             Chart.RemoveData();
             var series = Chart.AddSerie<Scatter>("scatter");
             series.symbol.size = 4;
 
+            var zoom = Chart.EnsureChartComponent<DataZoom>();
+            zoom.enable = true;
+            zoom.filterMode = DataZoom.FilterMode.Filter;
+            zoom.start = 0;
+            zoom.end = 100;
+
             Simulation!.PatrollingTracker.Chart = Chart;
+            Simulation!.PatrollingTracker.Zoom = zoom;
+
         }
     }
 }
