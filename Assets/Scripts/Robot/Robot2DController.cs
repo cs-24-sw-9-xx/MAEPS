@@ -513,7 +513,7 @@ namespace Maes.Robot
         public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
             var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
-            if (robotCurrentPosition == target)
+            if (SlamMap.CoarseMap.GetTileCenterRelativePosition(target).Distance < 0.5f)
             {
                 return 0f;
             }
