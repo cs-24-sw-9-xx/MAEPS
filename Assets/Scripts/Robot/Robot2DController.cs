@@ -475,12 +475,12 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public float? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
+        public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
             // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
 
             var distance = EstimateDistanceToTarget(target);
-            return distance == null ? null : distance / Constraints.RelativeMoveSpeed;
+            return distance == null ? null : (int)Math.Ceiling(distance.Value / Constraints.RelativeMoveSpeed);
         }
 
         /// <summary>
@@ -499,7 +499,6 @@ namespace Maes.Robot
             }
 
             var pathList = SlamMap.CoarseMap.GetPath(target, acceptPartialPaths, beOptimistic);
-            Debug.Log($"Path parts: {pathList.Count}");
             if (pathList == null)
             {
                 return null;

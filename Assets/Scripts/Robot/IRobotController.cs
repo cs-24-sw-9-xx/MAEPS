@@ -88,7 +88,7 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        float? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false);
+        int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false);
 
         /// <summary>
         /// Estimates the distance for robot to reach the specified destination.
