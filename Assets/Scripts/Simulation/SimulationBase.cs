@@ -72,6 +72,11 @@ namespace Maes.Simulation
         // Set by SetScenario
         protected SimulationMap<Tile> _collisionMap = null!;
 
+        public SimulationMap<Tile> GetCollisionMap()
+        {
+            return _collisionMap;
+        }
+
         // Set by SetScenario
         public CommunicationManager CommunicationManager { get; private set; } = null!;
 
