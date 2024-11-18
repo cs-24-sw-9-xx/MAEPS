@@ -10,9 +10,6 @@ namespace Maes.Map
     {
         public readonly Vertex[] Vertices;
 
-        //TODO: Add a better way to debug point generation, its is currently outcommented
-        // public IReadOnlyList<Vertex> DebugPoints { get; set; }
-
         public PatrollingMap(Vertex[] vertices)
         {
             Vertices = vertices;

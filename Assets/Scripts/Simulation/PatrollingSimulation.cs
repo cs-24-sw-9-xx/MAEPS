@@ -27,7 +27,7 @@ namespace Maes.Simulation
 
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
-            var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
+            var patrollingMap = WatchmanRouteSolver.MakePatrollingMap(_collisionMap);
 
             PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, scenario, patrollingMap);
 
