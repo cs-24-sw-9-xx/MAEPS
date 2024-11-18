@@ -34,7 +34,7 @@ namespace Maes.Trackers
         public float AverageGraphIdleness => _graphIdlenessList.Count != 0 ? _graphIdlenessList.Average() : 0;
 
         public int CompletedCycles { get; private set; }
-        
+
         public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
 
         public ScatterChart Chart { get; set; } = null!;
@@ -92,17 +92,17 @@ namespace Maes.Trackers
             WorstGraphIdleness = eachVertexIdleness.Max();
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             _graphIdlenessList.Add(CurrentGraphIdleness);
-            
+
             // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 100 == 0 && Chart.gameObject.activeSelf)
+            if (_currentTick % 50 == 0 && Chart.gameObject.activeSelf)
             {
-                if(Chart.series[0].data.Count >= 250)
+                //Update zoom to only follow the most recent data.
+                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
                 {
                     Zoom.start = 55;
                     Zoom.end = 95;
-                    Chart.RefreshDataZoom();
                 }
-                
+
                 Chart.AddData(0, _currentTick, WorstGraphIdleness);
                 Chart.RefreshDataZoom();
             }

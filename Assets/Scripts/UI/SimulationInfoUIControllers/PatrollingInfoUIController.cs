@@ -196,7 +196,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             xAxis.splitNumber = 10;
             xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
             xAxis.type = Axis.AxisType.Value;
-            
+
             var yAxis = Chart.EnsureChartComponent<YAxis>();
             yAxis.splitNumber = 10;
             yAxis.type = Axis.AxisType.Value;
@@ -210,7 +210,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             zoom.filterMode = DataZoom.FilterMode.Filter;
             zoom.start = 0;
             zoom.end = 100;
-            
+
             Simulation!.PatrollingTracker.Chart = Chart;
             Simulation!.PatrollingTracker.Zoom = zoom;
 
