@@ -16,12 +16,12 @@ namespace Maes.Map.MapPatrollingGen
             return new PatrollingMap(connectedvertices);
         }
 
-        private static List<Vertex> ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
+        private static Vertex[] ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             const int numberOfReverstNearestNeighbors = 1;
             var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverstNearestNeighbors);
-
-            var vertices = guardPositions.ConvertAll(pos => new Vertex(0, pos));
+            var i = 0;
+            var vertices = guardPositions.Select(pos => new Vertex(i++, 0, pos)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
@@ -322,7 +322,7 @@ namespace Maes.Map.MapPatrollingGen
         }
 
         private static void ConnectIslands(
-            List<Vertex> vertices,
+            Vertex[] vertices,
             Dictionary<(Vector2Int, Vector2Int), int> distanceDict)
         {
             var visited = new HashSet<Vertex>();
