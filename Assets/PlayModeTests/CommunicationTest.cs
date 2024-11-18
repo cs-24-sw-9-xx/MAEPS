@@ -51,8 +51,8 @@ namespace PlayModeTests
             var bitmap = new Tile[MapWidth, MapHeight];
             var firstWallRowY = MapHeight / 2;
             var lastWallRowY = firstWallRowY + wallThicknessInTiles;
-            Tile.Rand = new Random(RandomSeed);
-            var wall = Tile.GetRandomWall();
+            var random = new Random(RandomSeed);
+            var wall = Tile.GetRandomWall(random);
 
             for (var x = 0; x < MapWidth; x++)
             {

@@ -36,11 +36,11 @@ namespace Maes.Statistics
         private Vector3[]? _fogVertices;
         private Color[]? _fogColors;
 
-        public static readonly Color32 ExploredColor = new Color32(32, 130, 57, 255);
-        public static readonly Color32 CoveredColor = new Color32(32, 80, 240, 255);
-        public static readonly Color32 SlamSeenColor = new Color32(50, 120, 180, 255);
-        public static readonly Color32 WarmColor = new Color32(200, 60, 60, 255);
-        public static readonly Color32 ColdColor = new Color32(50, 120, 180, 255);
+        public static readonly Color32 ExploredColor = new(32, 130, 57, 255);
+        public static readonly Color32 CoveredColor = new(32, 80, 240, 255);
+        public static readonly Color32 SlamSeenColor = new(50, 120, 180, 255);
+        public static readonly Color32 WarmColor = new(200, 60, 60, 255);
+        public static readonly Color32 ColdColor = new(50, 120, 180, 255);
 
         public override void SetSimulationMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
         {
@@ -79,7 +79,7 @@ namespace Maes.Statistics
         /// <summary>
         /// Updates the colors of the triangles corresponding to the given list of exploration cells.
         /// </summary>
-        public void UpdateColors(IEnumerable<(int, ExplorationCell)> cellsWithIndices, CellToColor cellToColor)
+        public void UpdateColors(HashSet<(int, ExplorationCell)> cellsWithIndices, CellToColor cellToColor)
         {
             foreach (var (index, cell) in cellsWithIndices)
             {
@@ -91,7 +91,7 @@ namespace Maes.Statistics
 
                 //Fog of War colorchange below, done for every vertex that is seen and explored
                 //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogMesh != null && _fogColors != null)
+                if (_fogMesh is not null && _fogColors != null)
                 {
                     for (var i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
                     {
@@ -132,19 +132,16 @@ namespace Maes.Statistics
                 {
                     return aTriangles[index]; // x
                 }
-                else
-                {
-                    return aTriangles[index + 2]; // z
-                }
+
+                return aTriangles[index + 2]; // z
             }
-            else if (b.y > b.z)
+
+            if (b.y > b.z)
             {
                 return aTriangles[index + 1]; // y
             }
-            else
-            {
-                return aTriangles[index + 2]; // z
-            }
+
+            return aTriangles[index + 2]; // z
         }
     }
 }

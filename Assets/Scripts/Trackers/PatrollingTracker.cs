@@ -6,9 +6,9 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
-using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Patrolling;
 
 using UnityEngine;
 
@@ -19,75 +19,100 @@ namespace Maes.Trackers
     // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
-        private PatrollingSimulation PatrollingSimulation { get; }
-        private PatrollingMap Map { get; }
-        private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
-
         public int WorstGraphIdleness { get; private set; }
+
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; }
-        public float CurrentGraphIdleness { get; private set; }
-        public float AverageGraphIdleness => GraphIdlenessList.Count != 0 ? GraphIdlenessList.Average() : 0;
-        public int CompletedCycles { get; private set; }
-        public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
-        public ScatterChart Chart { get; set; }
 
-        private List<float> GraphIdlenessList { get; } = new();
+        public float CurrentGraphIdleness { get; private set; }
+
+        public float AverageGraphIdleness => _totalGraphIdleness / _ticks;
+
+        public int CompletedCycles { get; private set; }
+
+        public float? AverageGraphDiffLastTwoCyclesProportion => null; // This was broken anyway.
+
+        public ScatterChart Chart { get; set; } = null!;
+
+        public DataZoom Zoom { get; set; } = null!;
+
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
 
-        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulation patrollingSimulation, PatrollingSimulationScenario scenario,
+        public readonly List<PatrollingSnapShot> SnapShots = new();
+        public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
+
+        private readonly Dictionary<int, VertexDetails> _vertices;
+
+        private float _totalGraphIdleness;
+        private int _ticks;
+
+        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
-            PatrollingSimulation = patrollingSimulation;
-            Map = map;
-            Vertices = map.Vertices.ToDictionary(vertex => vertex.Position, vertex => new VertexDetails(vertex));
+            _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
             StopAfterDiff = scenario.StopAfterDiff;
+            WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
         }
 
-        public void OnReachedVertex(Vertex vertex, int atTick)
+        public void OnReachedVertex(int vertexId, int atTick)
         {
-            if (!Vertices.TryGetValue(vertex.Position, out var vertexDetails))
+            if (!_vertices.TryGetValue(vertexId, out var vertexDetails))
             {
-                return;
+                throw new InvalidOperationException("Invalid vertex");
             }
 
-            var idleness = atTick - vertexDetails.LastTimeVisitedTick;
+            var idleness = atTick - vertexDetails.Vertex.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
-            vertexDetails.VisitedAtTick(atTick);
+            vertexDetails.Vertex.VisitedAtTick(atTick);
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
             SetCompletedCycles();
 
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
-                _visualizer.ShowDefaultColor(vertex);
+                _visualizer.ShowDefaultColor(vertexDetails.Vertex);
             }
         }
 
         protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
         {
-            var eachVertexIdleness = GetEachVertexIdleness();
-
-            WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, eachVertexIdleness.Max());
-            CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
-            GraphIdlenessList.Add(CurrentGraphIdleness);
-
-            // Example: How to plot the data
-            // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 250 == 0 && Chart.series.Count < 60000)
+            var worstGraphIdleness = 0;
+            var graphIdlenessSum = 0;
+            foreach (var vertex in _vertices)
             {
-                Chart.AddXAxisData("" + _currentTick);
-                Chart.AddData(0, WorstGraphIdleness);
+                var idleness = _currentTick - vertex.Value.Vertex.LastTimeVisitedTick;
+                if (worstGraphIdleness < idleness)
+                {
+                    worstGraphIdleness = idleness;
+                }
+
+                graphIdlenessSum += idleness;
             }
 
-            // TODO: Remove this when the code UI is set up, just for showing that it works
-            Debug.Log($"Worst graph idleness: {WorstGraphIdleness}, Current graph idleness: {CurrentGraphIdleness}, Average graph idleness: {AverageGraphIdleness}");
+            WorstGraphIdleness = worstGraphIdleness;
+            CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
+            _totalGraphIdleness += CurrentGraphIdleness;
+            _ticks++;
+
+            // TODO: Plot the correct data and fix data limit.
+            if (_currentTick % 50 == 0 && Chart != null && Chart.gameObject.activeSelf)
+            {
+                //Update zoom to only follow the most recent data.
+                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
+                {
+                    Zoom.start = 55;
+                    Zoom.end = 95;
+                }
+
+                Chart.AddData(0, _currentTick, WorstGraphIdleness);
+                Chart.RefreshDataZoom();
+            }
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
@@ -109,18 +134,17 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            // TODO: Implement
-        }
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
 
-        private IReadOnlyList<int> GetEachVertexIdleness()
-        {
-            var currentTick = PatrollingSimulation.SimulatedLogicTicks;
-            return Vertices.Values.Select(vertex => currentTick - vertex.LastTimeVisitedTick).ToArray();
+            foreach (var vertex in _vertices.Values)
+            {
+                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(_currentTick, _currentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+            }
         }
 
         private void SetCompletedCycles()
         {
-            CompletedCycles = Vertices.Values.Select(v => v.NumberOfVisits).Min();
+            CompletedCycles = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)

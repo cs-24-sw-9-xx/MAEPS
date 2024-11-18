@@ -21,7 +21,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.Greed;
@@ -139,7 +138,6 @@ namespace Maes.ExperimentSimulations
                 {
                     var robotCount = amountOfRobots;
 
-                    var regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether_.*\.csv");
                     if (robotCount == 5 && mapConfig.RandomSeed == 585462)
                     {
                         simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
@@ -173,33 +171,16 @@ namespace Maes.ExperimentSimulations
                         spawningPosHashSet.Add(new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)));
                     }
 
-                    regex = new Regex($@"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig\.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart_.*\.csv");
-                    if (false)
-                    {
-                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                                            mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                            robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                                                collisionMap: buildingConfig,
-                                                seed: 123,
-                                                numberOfRobots: robotCount,
-                                                spawnPositions: spawningPosHashSet.ToList(),
-                                                createAlgorithmDelegate: algorithms[algorithmName]),
-                                            statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                            robotConstraints: constraintsDict[constraintName]));
-                    }
-                    else
-                    {
-                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                                        mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                                            collisionMap: buildingConfig,
-                                            seed: 123,
-                                            numberOfRobots: robotCount,
-                                            spawnPositions: spawningPosHashSet.ToList(),
-                                            createAlgorithmDelegate: algorithms[algorithmName]),
-                                        statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                        robotConstraints: constraintsDict[constraintName]));
-                    }
+                    simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                                    mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                                        collisionMap: buildingConfig,
+                                        seed: 123,
+                                        numberOfRobots: robotCount,
+                                        spawnPositions: spawningPosHashSet.ToList(),
+                                        createAlgorithmDelegate: algorithms[algorithmName]),
+                                    statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
+                                    robotConstraints: constraintsDict[constraintName]));
                 }
             }
 

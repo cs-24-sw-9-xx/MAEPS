@@ -27,7 +27,6 @@ using Maes.Algorithms;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.TransformToNav2;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -61,8 +60,8 @@ namespace Maes.Map.RobotSpawners
             // Ensure enough spawn positions were given
             if (numberOfRobots != spawnPositions.Count)
             {
-                throw new Exception($"Wrong number of spawn positions given relative to " +
-                                    $"number of robots. Expected: {numberOfRobots}, but got: {spawnPositions.Count}");
+                throw new Exception(
+                    $"Wrong number of spawn positions given relative to number of robots. Expected: {numberOfRobots}, but got: {spawnPositions.Count}");
             }
 
             // Ensure the same spawn position is not given twice
@@ -75,7 +74,7 @@ namespace Maes.Map.RobotSpawners
             // ROS uses a rotated coordinate system, and the spawn points are given in ROS Coordinates
             if (GlobalSettings.IsRosMode)
             {
-                spawnPositions = spawnPositions.Select(pos => Geometry.FromROSCoord(pos)).ToList();
+                spawnPositions = spawnPositions.Select(FromRosCoord).ToList();
             }
 
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
@@ -216,10 +215,7 @@ namespace Maes.Map.RobotSpawners
             possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
 
             // If no suggestions made, simply spawn around 0,0
-            if (suggestedStartingPoint == null)
-            {
-                suggestedStartingPoint = new Vector2Int(0, 0);
-            }
+            suggestedStartingPoint ??= new Vector2Int(0, 0);
             // Offset suggested starting point to map
             suggestedStartingPoint = new Vector2Int(suggestedStartingPoint.Value.x - (int)collisionMap.ScaledOffset.x,
                     suggestedStartingPoint.Value.y - (int)collisionMap.ScaledOffset.y);
@@ -375,10 +371,10 @@ namespace Maes.Map.RobotSpawners
 
             robot.outLine.enabled = false;
 
-            var RTOffset = 0.01f; // Offset is used, since being exactly at integer value positions can cause issues with ray tracing
-            var marchingSquareOffset = 0.5f; // Offset to put robots back on coarsemap tiles instead of marching squares.
-            robot.transform.position = new Vector3(x + RTOffset + collisionMap.ScaledOffset.x + marchingSquareOffset,
-                y + RTOffset + collisionMap.ScaledOffset.y + marchingSquareOffset);
+            const float rtOffset = 0.01f; // Offset is used, since being exactly at integer value positions can cause issues with ray tracing
+            const float marchingSquareOffset = 0.5f; // Offset to put robots back on coarsemap tiles instead of marching squares.
+            robot.transform.position = new Vector3(x + rtOffset + collisionMap.ScaledOffset.x + marchingSquareOffset,
+                y + rtOffset + collisionMap.ScaledOffset.y + marchingSquareOffset);
 
             if (GlobalSettings.IsRosMode)
             {
@@ -477,7 +473,7 @@ namespace Maes.Map.RobotSpawners
         }
 
 
-        private bool IsInMapRange(int x, int y, int mapWidth, int mapHeight)
+        private static bool IsInMapRange(int x, int y, int mapWidth, int mapHeight)
         {
             return x >= 0 && x < mapWidth && y >= 0 && y < mapHeight;
         }

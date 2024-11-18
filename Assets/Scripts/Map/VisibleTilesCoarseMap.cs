@@ -45,7 +45,7 @@ namespace Maes.Map
             _aStar = new AStar();
         }
 
-        public List<Vector2Int>? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _aStar.GetPath(coarseTileFrom, coarseTileTo, this, true, acceptPartialPaths);
 
@@ -56,7 +56,7 @@ namespace Maes.Map
 
             // Due to rounding errors when converting slam tiles to path tiles, the target may not be correct
             // This replaces the final tile with the actual target.
-            path[path.Count - 1] = coarseTileTo;
+            path[^1] = coarseTileTo;
 
             return path;
         }
@@ -66,7 +66,7 @@ namespace Maes.Map
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is solid
-            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.GetVisibleTileStatus(slamTile.x, slamTile.y) == SlamMap.SlamTileStatus.Unseen)
             {
                 return true;
             }
@@ -96,12 +96,7 @@ namespace Maes.Map
             var slamTile = ToSlamMapCoordinate(coordinate);
 
             // Anything not currently visible is not solid
-            if (!_slamMap.CurrentlyVisibleTiles.ContainsKey(slamTile))
-            {
-                return false;
-            }
-
-            if (_slamMap.CurrentlyVisibleTiles[slamTile] == SlamMap.SlamTileStatus.Unseen)
+            if (_slamMap.GetVisibleTileStatus(slamTile.x, slamTile.y) == SlamMap.SlamTileStatus.Unseen)
             {
                 return false;
             }
@@ -132,7 +127,7 @@ namespace Maes.Map
             return slamCoord / 2;
         }
 
-        public Vector2Int ToSlamMapCoordinate(Vector2Int localCoordinate)
+        public static Vector2Int ToSlamMapCoordinate(Vector2Int localCoordinate)
         {
             return localCoordinate * 2;
         }
@@ -172,7 +167,7 @@ namespace Maes.Map
         // Combines two SlamTileStatus in a 'optimistic' fashion.
         // If any status is solid both are consider solid. Otherwise, if any status is open both are considered open
         // Unseen is returned only if all statuses are unseen 
-        private SlamMap.SlamTileStatus AggregateStatusOptimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
+        private static SlamMap.SlamTileStatus AggregateStatusOptimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
         {
             if (status1 == SlamMap.SlamTileStatus.Solid || status2 == SlamMap.SlamTileStatus.Solid)
             {
@@ -189,7 +184,7 @@ namespace Maes.Map
 
         // Combines two SlamTileStatus in a 'pessimistic' fashion.
         // If any status is solid both are consider solid. If any status is unseen both are considered unseen 
-        private SlamMap.SlamTileStatus AggregateStatusPessimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
+        private static SlamMap.SlamTileStatus AggregateStatusPessimistic(SlamMap.SlamTileStatus status1, SlamMap.SlamTileStatus status2)
         {
             if (status1 == SlamMap.SlamTileStatus.Solid || status2 == SlamMap.SlamTileStatus.Solid)
             {

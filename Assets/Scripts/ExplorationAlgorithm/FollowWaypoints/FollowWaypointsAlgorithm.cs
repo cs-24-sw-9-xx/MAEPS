@@ -1,3 +1,5 @@
+using System.Text;
+
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
@@ -12,7 +14,7 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
         private Robot2DController _controller = null!;
         // Set by SetController
         private CoarseGrainedMap _map = null!;
-        private readonly Waypoint[] _waypoints = {
+        private static readonly Waypoint[] Waypoints = {
             new(new Vector2Int(5,5)),
             new(new Vector2Int(10,10)),
             new(new Vector2Int(20,20)),
@@ -20,7 +22,7 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
         };
         private int _currentWaypointIndex;
 
-        private struct Waypoint
+        private readonly struct Waypoint
         {
             public readonly Vector2Int Destination;
 
@@ -32,7 +34,7 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
 
         public void UpdateLogic()
         {
-            if (_currentWaypointIndex >= _waypoints.Length)
+            if (_currentWaypointIndex >= Waypoints.Length)
             {
                 _controller.StopCurrentTask();
                 return;
@@ -41,13 +43,13 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
             if (IsDestinationReached())
             {
                 _currentWaypointIndex++;
-                if (_currentWaypointIndex >= _waypoints.Length)
+                if (_currentWaypointIndex >= Waypoints.Length)
                 {
                     _controller.StopCurrentTask();
                     return;
                 }
             }
-            _controller.PathAndMoveTo(_waypoints[_currentWaypointIndex].Destination);
+            _controller.PathAndMoveTo(Waypoints[_currentWaypointIndex].Destination);
         }
 
         public void SetController(Robot2DController controller)
@@ -58,17 +60,25 @@ namespace Maes.ExplorationAlgorithm.FollowWaypoints
 
         public string GetDebugInfo()
         {
-            return $"currentWaypointIndex: {_currentWaypointIndex}" +
-                   $"\nCoarse Map Position: {_map.GetApproximatePosition()}" +
-                   $"\nCurrent Tile: {_map.GetCurrentTile()}" +
-                   $"\nCurrent position: {_map.GetCurrentPosition()}" +
-                   $"\nDestination: {_waypoints[_currentWaypointIndex].Destination}" +
-                   $"\nStatus: {_controller.GetStatus()}";
+            return
+                new StringBuilder().Append("currentWaypointIndex: ")
+                    .Append(_currentWaypointIndex)
+                    .Append("\nCoarse Map Position: ")
+                    .Append(_map.GetApproximatePosition())
+                    .Append("\nCurrent Tile: ")
+                    .Append(_map.GetCurrentTile())
+                    .Append("\nCurrent position: ")
+                    .Append(_map.GetCurrentPosition())
+                    .Append("\nDestination: ")
+                    .Append(Waypoints[_currentWaypointIndex].Destination)
+                    .Append("\nStatus: ")
+                    .Append(_controller.GetStatus())
+                    .ToString();
         }
 
         private bool IsDestinationReached()
         {
-            return _map.GetTileCenterRelativePosition(_waypoints[_currentWaypointIndex].Destination).Distance < 0.5f;
+            return _map.GetTileCenterRelativePosition(Waypoints[_currentWaypointIndex].Destination).Distance < 0.5f;
         }
     }
 }

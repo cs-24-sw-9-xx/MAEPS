@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
 {
-    public class PatrollingMapRectangleGen
+    public static class PatrollingMapRectangleGen
     {
         public static PatrollingMap Generate(SimulationMap<Tile> simulationMap)
         {
@@ -28,53 +29,56 @@ namespace Maes.Map.MapPatrollingGen
                 }
             }
 
-            var verticies = CreateVerticiesFromRooms(new SplitRoom(roomTiles.ToArray(), "Start"));
+            var vertices = CreateVerticesFromRooms(new SplitRoom(roomTiles.ToArray(), "Start"));
 
-            return new PatrollingMap(verticies);
+            return new PatrollingMap(vertices);
         }
 
-        private static Vertex[] CreateVerticiesFromRooms(SplitRoom splitRoom)
+        private static Vertex[] CreateVerticesFromRooms(SplitRoom splitRoom)
         {
-            var roomVerticies = new Dictionary<SplitRoom, Vertex>();
+            var roomVertices = new Dictionary<SplitRoom, Vertex>();
             var splitRooms = SplitTheRoomToPieces(splitRoom);
 
             // Create a vertex for each room
-            foreach (var room in splitRooms)
+            for (var i = 0; i < splitRooms.Length; i++)
             {
+                var room = splitRooms[i];
                 var centerPoint = GetCenterPointOfRoom(room);
-                var vertex = new Vertex(1.0f, centerPoint);
-                roomVerticies.Add(room, vertex);
+                var vertex = new Vertex(i, 1.0f, centerPoint);
+                roomVertices.Add(room, vertex);
             }
 
+            var roomVerticesArray = roomVertices.ToArray();
+
             // Connect rooms with each other
-            foreach (var (room, vertex) in roomVerticies)
+            for (var i = 0; i < roomVerticesArray.Length; i++)
             {
-                foreach (var (otherRoom, otherVertex) in roomVerticies)
+                var (room, vertex) = roomVerticesArray[i];
+                for (var j = i + 1; j < roomVerticesArray.Length; j++)
                 {
-                    if (room == otherRoom)
-                    {
-                        continue;
-                    }
+                    var (otherRoom, otherVertex) = roomVerticesArray[j];
 
                     if (DoRoomsConnect(room, otherRoom))
                     {
                         vertex.AddNeighbor(otherVertex);
+                        otherVertex.AddNeighbor(vertex);
                     }
-
+#if DEBUG
                     if (DoRoomsOverlap(room, otherRoom))
                     {
                         Debug.LogError($"Room {room.FromWhichAlgo} overlaps with Room {otherRoom.FromWhichAlgo}");
                     }
+#endif
                 }
             }
 
             // Visualize all tiles
-            // return roomVerticies.Keys
+            // return roomVertices.Keys
             //     .Select(r => (Random.ColorHSV(0.2f, 1.0f), r))
             //     .SelectMany(p => p.r.Tiles.Select(t => new Vertex(1.0f, t, p.Item1)))
             //     .ToArray();
 
-            return roomVerticies.Values.ToArray();
+            return roomVertices.Values.ToArray();
         }
 
         private static Vector2Int GetCenterPointOfRoom(SplitRoom room)
@@ -112,7 +116,7 @@ namespace Maes.Map.MapPatrollingGen
                 }
 
                 SplitTheRoomRecursive(leftRoom);
-                SplitTheRoomRecursive(rightRoom);
+                SplitTheRoomRecursive(rightRoom.Value);
             }
         }
 
@@ -174,7 +178,7 @@ namespace Maes.Map.MapPatrollingGen
         /// Finds the left tile where a right vertical split should happen.
         /// Returns y axis.
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="splitRoom"></param>
         /// <returns></returns>
         private static int? RightVerticalSplit(SplitRoom splitRoom)
         {
@@ -183,7 +187,7 @@ namespace Maes.Map.MapPatrollingGen
             foreach (var tile in splitRoom.Tiles)
             {
                 // If no tiles are on the right side add it as potential split
-                if (!splitRoom.Tiles.Any(t => t == tile + Vector2Int.right))
+                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.right))
                 {
                     potentialSplits.Add(tile.x);
                 }
@@ -205,14 +209,14 @@ namespace Maes.Map.MapPatrollingGen
         /// Finds the left tile where a left vertical split should happen.
         /// Returns y axis.
         /// </summary>
-        /// <param name=""></param>
+        /// <param name="splitRoom"></param>
         /// <returns></returns>
         private static int? LeftVerticalSplit(SplitRoom splitRoom)
         {
             var potentialSplits = new HashSet<int>();
             foreach (var tile in splitRoom.Tiles)
             {
-                if (!splitRoom.Tiles.Any(t => t == tile + Vector2Int.left))
+                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.left))
                 {
                     potentialSplits.Add(tile.x);
                 }
@@ -238,7 +242,7 @@ namespace Maes.Map.MapPatrollingGen
 
             foreach (var tile in splitRoom.Tiles)
             {
-                if (!splitRoom.Tiles.Any(t => t == tile + Vector2Int.up))
+                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.up))
                 {
                     potentialSplits.Add(tile.y);
                 }
@@ -270,9 +274,9 @@ namespace Maes.Map.MapPatrollingGen
             return first.Tiles.Any(f => second.Tiles.Any(s => f == s));
         }
 
-        private class SplitRoom
+        private readonly struct SplitRoom : IEquatable<SplitRoom>
         {
-            public readonly IReadOnlyCollection<Vector2Int> Tiles;
+            public readonly Vector2Int[] Tiles;
 
             public readonly string FromWhichAlgo;
 
@@ -280,6 +284,31 @@ namespace Maes.Map.MapPatrollingGen
             {
                 Tiles = tiles;
                 FromWhichAlgo = algo;
+            }
+
+            public bool Equals(SplitRoom other)
+            {
+                return Tiles.Equals(other.Tiles) && FromWhichAlgo == other.FromWhichAlgo;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj is SplitRoom other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(Tiles, FromWhichAlgo);
+            }
+
+            public static bool operator ==(SplitRoom left, SplitRoom right)
+            {
+                return left.Equals(right);
+            }
+
+            public static bool operator !=(SplitRoom left, SplitRoom right)
+            {
+                return !left.Equals(right);
             }
         }
     }

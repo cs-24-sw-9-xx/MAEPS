@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 using Maes.Algorithms;
 using Maes.Robot;
@@ -46,21 +47,36 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             East,
             South,
             West,
-            End,
+            End
         }
 
 
         public string GetDebugInfo()
         {
             return
-                $"Status: {_controller.GetStatus()}\n" +
-                $"HasTurnedLeft: {_hasTurnedLeft}\n" +
-                $"Walls: {(_forwardWall ? 'F' : '_')}{(_leftWall ? 'L' : '_')}{(_behindWall ? 'B' : '_')}{(_rightWall ? 'R' : '_')}\n" +
-                $"Angle: {_angle} Target: {TargetAngle}\n" +
-                $"Collided: {_collided}\n" +
-                $"Pos: {_controller.GetSlamMap().GetCoarseMap().GetCurrentPosition()}\n" +
-                $"TPos: {_targetPosition} Dir: {_direction}"
-                ;
+                new StringBuilder().Append("Status: ")
+                    .Append(_controller.GetStatus())
+                    .Append("\nHasTurnedLeft: ")
+                    .Append(_hasTurnedLeft)
+                    .Append("\nWalls: ")
+                    .Append(_forwardWall ? 'F' : '_')
+                    .Append(_leftWall ? 'L' : '_')
+                    .Append(_behindWall ? 'B' : '_')
+                    .Append(_rightWall ? 'R' : '_')
+                    .Append("\nAngle: ")
+                    .Append(_angle)
+                    .Append(" Target: ")
+                    .Append(TargetAngle)
+                    .Append("\nCollided: ")
+                    .Append(_collided)
+                    .Append("\nPos: ")
+                    .Append(_controller.GetSlamMap().GetCoarseMap().GetCurrentPosition())
+                    .Append("\nTPos: ")
+                    .Append(_targetPosition)
+                    .Append(" Dir: ")
+                    .Append(_direction)
+                    .Append("\"")
+                    .ToString();
         }
 
         public void SetController(Robot2DController controller)
@@ -78,7 +94,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
                 _positionSet = true;
             }
 
-            if (_controller.IsCurrentlyColliding() && !_collided)
+            if (_controller.IsCurrentlyColliding && !_collided)
             {
                 _collided = true;
                 _targetPosition -= DirectionToPosition(_direction);
@@ -96,7 +112,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             _behindWall = IsWallBehind();
             _rightWall = IsWallRight();
 
-            var epsilon = 0.5;
+            const float epsilon = 0.5f;
 
             if (_targetPosition != _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition())
             {
@@ -181,7 +197,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             return _controller.GetGlobalAngle();
         }
 
-        private float DirectionToAngle(Direction direction)
+        private static float DirectionToAngle(Direction direction)
         {
             return direction switch
             {
@@ -189,11 +205,11 @@ namespace Maes.ExplorationAlgorithm.WallFollower
                 Direction.East => East,
                 Direction.South => South,
                 Direction.West => West,
-                _ => throw new InvalidOperationException($"INVALID DIRECTION: {direction}"),
+                _ => throw new InvalidOperationException($"INVALID DIRECTION: {direction}")
             };
         }
 
-        private Vector2Int DirectionToPosition(Direction direction)
+        private static Vector2Int DirectionToPosition(Direction direction)
         {
             return direction switch
             {
@@ -201,7 +217,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
                 Direction.East => Vector2Int.right,
                 Direction.South => Vector2Int.down,
                 Direction.West => Vector2Int.left,
-                _ => throw new InvalidOperationException($"INVALID DIRECTION: {direction}"),
+                _ => throw new InvalidOperationException($"INVALID DIRECTION: {direction}")
             };
         }
 
@@ -233,7 +249,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             {
                 return false;
             }
-            return wall.Value.distance <= GridSpacing;
+            return wall.Value.Distance <= GridSpacing;
         }
 
         private bool IsWallLeft()
@@ -243,7 +259,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             {
                 return false;
             }
-            return wall.Value.distance <= GridSpacing;
+            return wall.Value.Distance <= GridSpacing;
         }
 
         private bool IsWallRight()
@@ -253,7 +269,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             {
                 return false;
             }
-            return wall.Value.distance <= GridSpacing;
+            return wall.Value.Distance <= GridSpacing;
         }
 
         private bool IsWallBehind()
@@ -263,7 +279,7 @@ namespace Maes.ExplorationAlgorithm.WallFollower
             {
                 return false;
             }
-            return wall.Value.distance <= GridSpacing;
+            return wall.Value.Distance <= GridSpacing;
         }
 
         private static int Mod(int x, int m)

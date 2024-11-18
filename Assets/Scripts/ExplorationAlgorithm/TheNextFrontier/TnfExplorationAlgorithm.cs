@@ -167,7 +167,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         private float CoordinationFactor(Frontier frontier)
         {
             var lastSeenNeighbours = _robotController.SenseNearbyRobots();
-            if (lastSeenNeighbours.Count <= 0)
+            if (lastSeenNeighbours.Length <= 0)
             {
                 return 0;
             }
@@ -222,7 +222,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
                 _robotTnfStatus = TnfStatus.AwaitCollisionMitigation;
             }
 
-            if (_robotController.IsCurrentlyColliding())
+            if (_robotController.IsCurrentlyColliding)
             {
                 _ticksSpentColliding++;
             }
@@ -449,7 +449,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
             {
                 return;
             }
-            var relativePosition = _map.GetTileCenterRelativePosition(_nextTileInPath.End);
+            var relativePosition = _map.GetTileCenterRelativePosition(_nextTileInPath.Value.End);
             if (relativePosition.Distance < MinimumMoveDistance)
             {
                 _nextTileInPath = null;
@@ -547,8 +547,9 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         public string GetDebugInfo()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"TnfStatus: {_robotTnfStatus.ToString()}");
-            sb.AppendLine(_nextTileInPath != null ? $"Current movement target: {_nextTileInPath.End}" : "");
+            sb.AppendFormat("TnfStatus: {0}\n", _robotTnfStatus);
+            sb.Append("Current movement target: ");
+            sb.AppendLine(_nextTileInPath != null ? _nextTileInPath.Value.End.ToString() : string.Empty);
             return sb.ToString();
         }
 

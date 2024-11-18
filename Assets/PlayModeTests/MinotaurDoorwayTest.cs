@@ -130,7 +130,6 @@ namespace PlayModeTests
         {
             InitSimulator("blank", new List<Vector2Int> { new Vector2Int(0, 0) });
 
-            _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(0);
         }
@@ -140,7 +139,6 @@ namespace PlayModeTests
         {
             InitSimulator("doorway", new List<Vector2Int> { new Vector2Int(0, 0) });
 
-            _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }
@@ -150,7 +148,6 @@ namespace PlayModeTests
         {
             InitSimulator("doorway_corner", new List<Vector2Int> { new Vector2Int(0, 0) });
 
-            _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }
@@ -160,7 +157,6 @@ namespace PlayModeTests
         {
             InitSimulator("hallway", new List<Vector2Int> { new Vector2Int(0, -24) });
 
-            _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             return AssertDoorsWhenFinished(1);
         }

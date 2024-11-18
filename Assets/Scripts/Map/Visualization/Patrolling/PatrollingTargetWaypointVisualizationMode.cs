@@ -16,10 +16,6 @@ namespace Maes.Map.Visualization.Patrolling
         {
             var algorithm = (PatrollingAlgorithm)_robot.Algorithm;
             var targetWaypoint = algorithm.TargetVertex;
-            if (targetWaypoint == null)
-            {
-                return;
-            }
 
             visualizer.ShowTargetWaypoint(targetWaypoint);
         }

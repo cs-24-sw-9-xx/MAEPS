@@ -266,13 +266,13 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         private void UpdateExploredStatusOfTiles()
         {
             var currentPosition = _robotController.GetSlamMap().GetCoarseMap().GetApproximatePosition();
-            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
             var currentlyVisibleCoarseTiles = _robotController.GetSlamMap().GetCoarseMap()
-                .FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList());
+                .FromSlamMapCoordinates(visibleTilesList);
 
             foreach (var visibleTile in currentlyVisibleCoarseTiles)
             {
-                var distance = Geometry.DistanceBetween(currentPosition, visibleTile);
+                var distance = Vector2.Distance(currentPosition, visibleTile);
                 if (distance <= _markExploredRangeInCoarseTiles)
                 {
                     if (!IsExploredMap.ContainsKey(visibleTile))
@@ -312,7 +312,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
         private bool ShouldRecalculate()
         {
-            if (_robotController.IsCurrentlyColliding())
+            if (_robotController.IsCurrentlyColliding)
             {
                 _robotController.StopCurrentTask();
                 return true;
@@ -324,7 +324,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 return true;
             }
 
-            if (_robotController.SenseNearbyRobots().Count > 0)
+            if (_robotController.SenseNearbyRobots().Length > 0)
             {
                 switch (_currentSearchPhase)
                 {
@@ -352,7 +352,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 foreach (var visitedOccPo in _coarseOcclusionPointsVisitedThisSearchMode)
                 {
-                    if (Geometry.DistanceBetween(op, visitedOccPo.Item1) > DistanceBetweenSameOccPoint)
+                    if (Vector2.Distance(op, visitedOccPo.Item1) > DistanceBetweenSameOccPoint)
                     {
                         coarseOcclusionPointsNotVisitedThisSearchMode.Add(op);
                     }
@@ -367,8 +367,8 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                 var robotPosition = coarseMap.GetApproximatePosition();
                 coarseOcclusionPointsNotVisitedThisSearchMode.Sort((c1, c2) =>
                 {
-                    var c1Distance = Geometry.DistanceBetween(robotPosition, c1);
-                    var c2Distance = Geometry.DistanceBetween(robotPosition, c2);
+                    var c1Distance = Vector2.Distance(robotPosition, c1);
+                    var c2Distance = Vector2.Distance(robotPosition, c2);
                     return c1Distance.CompareTo(c2Distance);
                 });
                 _closestOcclusionPoint = coarseOcclusionPointsNotVisitedThisSearchMode[0];
@@ -457,23 +457,24 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             // Sort by closest to robot
             coarseEdgeTiles.Sort((c1, c2) =>
             {
-                var c1Distance = Geometry.DistanceBetween(robotPosition, c1);
-                var c2Distance = Geometry.DistanceBetween(robotPosition, c2);
+                var c1Distance = Vector2.Distance(robotPosition, c1);
+                var c2Distance = Vector2.Distance(robotPosition, c2);
                 return c1Distance.CompareTo(c2Distance);
             });
             //}
 
             // Find all tiles with a distance within delta and assume they are equally far away
-            var closestOrFurthestDistance = Geometry.DistanceBetween(robotPosition, coarseEdgeTiles[0]);
+            Vector2 p2 = coarseEdgeTiles[0];
+            var closestOrFurthestDistance = Vector2.Distance(robotPosition, p2);
             var candidates = coarseEdgeTiles.Where(e =>
-                Mathf.Abs(Geometry.DistanceBetween(e, robotPosition) - closestOrFurthestDistance) < VoronoiBoundaryEqualDistanceDelta).ToList();
+                Mathf.Abs(Vector2.Distance(e, robotPosition) - closestOrFurthestDistance) < VoronoiBoundaryEqualDistanceDelta).ToList();
 
             // Filter away anything close to the occlusion points visited this search mode
             var filteredCandidates = candidates.Where(e =>
             {
                 foreach (var occPo in _coarseOcclusionPointsVisitedThisSearchMode)
                 {
-                    if (Geometry.DistanceBetween(e, occPo.Item1) > DistanceBetweenSameOccPoint)
+                    if (Vector2.Distance(e, occPo.Item1) > DistanceBetweenSameOccPoint)
                     {
                         return false;
                     }
@@ -496,8 +497,8 @@ namespace Maes.ExplorationAlgorithm.Voronoi
         private List<Vector2Int> FindClosestOcclusionPoints()
         {
             var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
-            var visibleTilesMaps = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var visibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesMaps.Keys).ToList();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var visibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesList).ToList();
 
             var robotPosition = coarseMap.GetApproximatePosition();
 
@@ -511,7 +512,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             var furthestAwayTileDistance = 0f;
             foreach (var edge in nonSolidEdgeTiles)
             {
-                var range = Geometry.DistanceBetween(robotPosition, edge);
+                var range = Vector2.Distance(robotPosition, edge);
                 if (range > furthestAwayTileDistance)
                 {
                     furthestAwayTileDistance = range;
@@ -522,7 +523,7 @@ namespace Maes.ExplorationAlgorithm.Voronoi
 
             // Remove edges, that are as far away as our visibility range, since they cannot be occluded by anything.
             var possiblyOccludedEdges = nonSolidEdgeTiles
-                .Where(c => Geometry.DistanceBetween(robotPosition, c) < furthestAwayTileDistance - 2f)
+                .Where(c => Vector2.Distance(robotPosition, c) < furthestAwayTileDistance - 2f)
                 .ToList();
 
             if (possiblyOccludedEdges.Count == 0)
@@ -539,8 +540,8 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             {
                 edgeGroup.Sort((c1, c2) =>
                 {
-                    var c1Distance = Geometry.DistanceBetween(robotPosition, c1);
-                    var c2Distance = Geometry.DistanceBetween(robotPosition, c2);
+                    var c1Distance = Vector2.Distance(robotPosition, c1);
+                    var c2Distance = Vector2.Distance(robotPosition, c2);
                     return c1Distance.CompareTo(c2Distance);
                 });
                 occlusionPoints.Add(edgeGroup[0]);
@@ -685,13 +686,13 @@ namespace Maes.ExplorationAlgorithm.Voronoi
             //}
 
             // Find furthest away robot. Voronoi partition should include all robots within broadcast range
-            nearbyRobots.Sort((r1, r2) => r1.Distance.CompareTo(r2.Distance));
+            Array.Sort(nearbyRobots, (r1, r2) => r1.Distance.CompareTo(r2.Distance));
 
             var robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
 
             // Assign tiles to robots to create regions
-            var currentlyVisibleTiles = _robotController.GetSlamMap().GetCurrentlyVisibleTiles();
-            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(currentlyVisibleTiles.Keys.ToList()).ToHashSet();
+            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var currentlyVisibleCoarseTiles = coarseMap.FromSlamMapCoordinates(visibleTilesList).ToHashSet();
             for (var x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
             {
                 for (var y = myPosition.y - _voronoiRegionMaxDistance; y < myPosition.y + _voronoiRegionMaxDistance; y++)
@@ -700,16 +701,16 @@ namespace Maes.ExplorationAlgorithm.Voronoi
                     if (currentlyVisibleCoarseTiles.Contains(new Vector2Int(x, y)))
                     {
                         var tilePosition = new Vector2Int(x, y);
-                        var bestDistance = Geometry.DistanceBetween(myPosition, tilePosition);
+                        var bestDistance = Vector2.Distance(myPosition, tilePosition);
                         var bestRobotId = _robotController.GetRobotID();
                         foreach (var robot in nearbyRobots)
                         {
                             var otherPosition = robot.GetRelativePosition(myPosition, _robotController.GetSlamMap().GetRobotAngleDeg());
-                            var distance = Geometry.DistanceBetween(otherPosition, tilePosition);
+                            var distance = Vector2.Distance(otherPosition, tilePosition);
                             if (distance < bestDistance)
                             {
                                 bestDistance = distance;
-                                bestRobotId = robot.item;
+                                bestRobotId = robot.Item;
                             }
                         }
 

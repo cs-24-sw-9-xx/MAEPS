@@ -17,7 +17,7 @@ namespace Maes.Simulation.SimulationScenarios
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null)
             : base(seed,
-                robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, (robotSeed) => new RandomExplorationAlgorithm(robotSeed))),
+                robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, robotSeed => new RandomExplorationAlgorithm(robotSeed))),
                 hasFinishedSim,
                 mapSpawner,
                 robotConstraints,

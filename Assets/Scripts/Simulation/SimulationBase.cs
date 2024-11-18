@@ -19,8 +19,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System.Collections.Generic;
-
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
@@ -39,7 +37,7 @@ namespace Maes.Simulation
 {
     public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
     where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
-    where TVisualizerTile : ICell
+    where TVisualizerTile : Cell
     where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
     where TTracker : ITracker
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
@@ -55,9 +53,12 @@ namespace Maes.Simulation
 
         public TRobotSpawner RobotSpawner = null!;
 
-        public IReadOnlyList<MonaRobot> Robots => _robots;
-
-        private List<MonaRobot> _robots = new();
+        // Set by SetScenario
+        public MonaRobot[] Robots
+        {
+            get;
+            private set;
+        } = null!;
 
         public abstract TVisualizer Visualizer { get; }
 
@@ -76,26 +77,24 @@ namespace Maes.Simulation
 
 
         private MonaRobot? _selectedRobot;
+
         public bool HasSelectedRobot()
         {
             return _selectedRobot != null;
         }
 
         private VisibleTagInfoHandler? _selectedTag;
+
         public bool HasSelectedTag()
         {
             return _selectedTag != null;
         }
 
         // The debugging visualizer provides 
-        protected DebuggingVisualizer _debugVisualizer = new DebuggingVisualizer();
+        private readonly DebuggingVisualizer _debugVisualizer = new();
 
         // Set by SetInfoUIController
-        protected SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController
-        {
-            get;
-            private set;
-        } = null!;
+        private SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController = null!;
 
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
@@ -108,7 +107,7 @@ namespace Maes.Simulation
             RobotSpawner.CommunicationManager = CommunicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            _robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
+            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner).ToArray();
             CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
             {
@@ -116,7 +115,6 @@ namespace Maes.Simulation
             }
 
             CommunicationManager.SetRobotReferences(Robots);
-
         }
 
         public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)
@@ -215,7 +213,7 @@ namespace Maes.Simulation
 
         public void UpdateDebugInfo()
         {
-            if (_selectedRobot != null)
+            if (_selectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
                 {
@@ -229,7 +227,7 @@ namespace Maes.Simulation
                 }
 
             }
-            if (_selectedTag != null)
+            if (_selectedTag is not null)
             {
                 SimInfoUIController.UpdateTagDebugInfo(_selectedTag.GetDebugInfo());
             }
@@ -237,8 +235,13 @@ namespace Maes.Simulation
 
         public virtual void OnSimulationFinished()
         {
-            // Override me for functionality.
+            if (GlobalSettings.ShouldWriteCsvResults)
+            {
+                CreateStatisticsFile();
+            }
         }
+
+        protected virtual void CreateStatisticsFile() { }
 
         public void ShowAllTags()
         {

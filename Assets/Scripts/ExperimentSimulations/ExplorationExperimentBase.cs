@@ -51,6 +51,9 @@ namespace Maes.ExperimentSimulations
         /// <param name="algorithmName"></param>
         /// <param name="constraintName"></param>
         /// <param name="mapSize"></param>
+        /// <param name="mapIterations"></param>
+        /// <param name="desiredSeed"></param>
+        /// <param name="desiredRobots"></param>
         public void RunSimulation(string mapType, string algorithmName, string constraintName, string mapSize, int mapIterations, int? desiredSeed = null, int? desiredRobots = null)
         {
             var constraintsDict = new Dictionary<string, RobotConstraints>();

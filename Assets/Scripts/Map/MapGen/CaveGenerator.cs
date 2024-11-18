@@ -47,11 +47,11 @@ namespace Maes.Map.MapGen
         {
             _caveConfig = config;
             _wallHeight = wallHeight;
-            Tile.Rand = new Random(_caveConfig.RandomSeed);
+            var random = new Random(_caveConfig.RandomSeed);
             // Clear and destroy objects from previous map
             ClearMap();
 
-            var collisionMap = CreateCaveMapWithMesh(_caveConfig, _wallHeight);
+            var collisionMap = CreateCaveMapWithMesh(_caveConfig, random, _wallHeight);
 
             ResizePlaneToFitMap(_caveConfig.BitMapHeight, _caveConfig.BitMapWidth);
 
@@ -60,17 +60,17 @@ namespace Maes.Map.MapGen
             return collisionMap;
         }
 
-        private SimulationMap<Tile> CreateCaveMapWithMesh(CaveMapConfig caveConfig, float wallHeight = 2.0f)
+        private SimulationMap<Tile> CreateCaveMapWithMesh(CaveMapConfig caveConfig, Random random, float wallHeight = 2.0f)
         {
             // Fill map with random walls and empty tiles (Looks kinda like a QR code)
-            var randomlyFilledMap = CreateRandomFillMap(caveConfig);
+            var randomlyFilledMap = CreateRandomFillMap(caveConfig, random);
 
             // Use smoothing runs to make sense of the noise
             // f.x. walls can only stay walls, if they have at least N neighbouring walls
             var smoothedMap = randomlyFilledMap;
             for (var i = 0; i < caveConfig.SmoothingRuns; i++)
             {
-                smoothedMap = SmoothMap(smoothedMap, caveConfig);
+                smoothedMap = SmoothMap(smoothedMap, caveConfig, random);
             }
 
             var smoothedMapWithoutNarrowCorridors = WallOffNarrowCorridors(smoothedMap);
@@ -78,7 +78,7 @@ namespace Maes.Map.MapGen
             // Clean up regions smaller than threshold for both walls and rooms.
             var (survivingRooms, cleanedMap) = RemoveRoomsAndWallsBelowThreshold(caveConfig.WallThresholdSize,
                 caveConfig.RoomThresholdSize,
-                smoothedMapWithoutNarrowCorridors);
+                smoothedMapWithoutNarrowCorridors, random);
 
             // Connect all rooms to main (the biggest) room
             var connectedMap = ConnectAllRoomsToMainRoom(survivingRooms, cleanedMap, caveConfig);
@@ -87,10 +87,10 @@ namespace Maes.Map.MapGen
 
             // Ensure a border around the map
             var borderedMap = CreateBorderedMap(connectedMap, caveConfig.BitMapWidth, caveConfig.BitMapHeight,
-                caveConfig.BorderSize);
+                caveConfig.BorderSize, random);
 
             // Draw gizmo of map for debugging. Will draw the map in Scene upon selection.
-            MapToDraw = borderedMap;
+            _mapToDraw = borderedMap;
 
             // The rooms should now reflect their relative shifted positions after adding borders round map.
             survivingRooms.ForEach(r => r.OffsetCoordsBy(caveConfig.BorderSize, caveConfig.BorderSize));
@@ -100,7 +100,7 @@ namespace Maes.Map.MapGen
                 true, survivingRooms);
 
             // Rotate to fit 2D view
-            Plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
+            _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
 
             return collisionMap;
         }
@@ -117,11 +117,11 @@ namespace Maes.Map.MapGen
          */
         private Tile[,] WallOffNarrowCorridors(Tile[,] map)
         {
-            var newMap = map.Clone() as Tile[,];
+            var newMap = (Tile[,])map.Clone();
             var tilesToCheck = new Queue<(int, int)>();
 
             // Populate queue with all tiles
-            for (var x = 0; x < newMap!.GetLength(0); x++)
+            for (var x = 0; x < newMap.GetLength(0); x++)
             {
                 for (var y = 0; y < newMap.GetLength(1); y++)
                 {
@@ -375,12 +375,12 @@ namespace Maes.Map.MapGen
         }
 
         // Just used be drawing a line for debugging
-        private Vector3 CoordToWorldPoint(Vector2Int tile, int width, int height)
+        private static Vector3 CoordToWorldPoint(Vector2Int tile, int width, int height)
         {
             return new Vector3(-width / 2 + .5f + tile.x, -height / 2 + .5f + tile.y, 2);
         }
 
-        private static Tile[,] CreateRandomFillMap(CaveMapConfig config)
+        private static Tile[,] CreateRandomFillMap(CaveMapConfig config, Random random)
         {
             var randomFillMap = new Tile[config.BitMapWidth, config.BitMapHeight];
             var pseudoRandom = new Random(config.RandomSeed);
@@ -391,12 +391,12 @@ namespace Maes.Map.MapGen
                 {
                     if (x == 0 || x == config.BitMapWidth - 1 || y == 0 || y == config.BitMapHeight - 1)
                     {
-                        randomFillMap[x, y] = Tile.GetRandomWall();
+                        randomFillMap[x, y] = Tile.GetRandomWall(random);
                     }
                     else
                     {
                         randomFillMap[x, y] = pseudoRandom.Next(0, 100) < config.RandomFillPercent
-                            ? Tile.GetRandomWall()
+                            ? Tile.GetRandomWall(random)
                             : new Tile(TileType.Room);
                     }
                 }
@@ -405,14 +405,14 @@ namespace Maes.Map.MapGen
             return randomFillMap;
         }
 
-        private Tile[,] SmoothMap(Tile[,] map, CaveMapConfig config)
+        private Tile[,] SmoothMap(Tile[,] map, CaveMapConfig config, Random random)
         {
             var smoothedMap = (Tile[,])map.Clone();
             for (var x = 0; x < config.BitMapWidth; x++)
             {
                 for (var y = 0; y < config.BitMapHeight; y++)
                 {
-                    var (neighborWallTiles, neighborWallType) = GetSurroundingWallCount(x, y, map);
+                    var (neighborWallTiles, neighborWallType) = GetSurroundingWallCount(x, y, map, random);
 
                     if (neighborWallTiles >= config.NeighbourWallsNeededToStayWall)
                     {
@@ -428,7 +428,7 @@ namespace Maes.Map.MapGen
             return smoothedMap;
         }
 
-        private (int, TileType) GetSurroundingWallCount(int gridX, int gridY, Tile[,] map)
+        private (int, TileType) GetSurroundingWallCount(int gridX, int gridY, Tile[,] map, Random random)
         {
             var wallCount = 0;
             var wallTypes = new Dictionary<TileType, int>();
@@ -449,7 +449,7 @@ namespace Maes.Map.MapGen
                     else
                     {
                         wallCount++;
-                        var tile = Tile.GetRandomWall();
+                        var tile = Tile.GetRandomWall(random);
                         wallTypes[tile.Type] = wallTypes.GetValueOrDefault(tile.Type) + 1;
                     }
 
@@ -463,9 +463,9 @@ namespace Maes.Map.MapGen
 
         private void OnDrawGizmosSelected()
         {
-            if (MapToDraw != null)
+            if (_mapToDraw != null)
             {
-                DrawMap(MapToDraw);
+                DrawMap(_mapToDraw);
             }
         }
     }

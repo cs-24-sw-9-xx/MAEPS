@@ -19,42 +19,10 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System;
-using System.Collections.Generic;
-
 namespace Maes.Utilities
 {
-    public class Functional
+    public static class Functional
     {
         public delegate T Factory<T>();
-
-        public delegate bool XBetterThanY<T>(T x, T y);
-
-        public static T TakeBest<T>(Span<T> values, XBetterThanY<T> xBetterThanY)
-        {
-            var currentMin = values[0];
-            for (var i = 1; i < values.Length; i++)
-            {
-                if (xBetterThanY(values[i], currentMin))
-                {
-                    currentMin = values[i];
-                }
-            }
-            return currentMin;
-        }
-
-
-        public static T TakeBest<T>(List<T> values, XBetterThanY<T> xBetterThanY)
-        {
-            var currentMin = values[0];
-            for (var i = 1; i < values.Count; i++)
-            {
-                if (xBetterThanY(values[i], currentMin))
-                {
-                    currentMin = values[i];
-                }
-            }
-            return currentMin;
-        }
     }
 }

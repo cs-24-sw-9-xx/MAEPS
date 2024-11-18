@@ -22,18 +22,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using UnityEngine;
 
 namespace Maes.Utilities
 {
-    public class Line2D
+    public readonly struct Line2D : IEquatable<Line2D>
     {
         public readonly Vector2 Start, End, MidPoint;
         private readonly float _minY, _maxY;
         private readonly float _minX, _maxX;
 
-        public readonly bool IsVertical;
+        private readonly bool _isVertical;
         private readonly bool _isHorizontal;
 
         // Describe line by ax + b
@@ -57,10 +58,10 @@ namespace Maes.Utilities
             _minX = Mathf.Min(start.x, end.x);
             _maxX = Mathf.Max(start.x, end.x);
 
-            IsVertical = Mathf.Approximately(_minX, _maxX);
-            _isHorizontal = !IsVertical && Mathf.Approximately(_minY, _maxY);
+            _isVertical = Mathf.Approximately(_minX, _maxX);
+            _isHorizontal = !_isVertical && Mathf.Approximately(_minY, _maxY);
 
-            if (!IsVertical)
+            if (!_isVertical)
             {
                 _a = (end.y - start.y) / (_maxX - _minX);
                 _b = start.y - _a * start.x;
@@ -72,12 +73,13 @@ namespace Maes.Utilities
             }
         }
 
-        public List<Vector2> GetPoints()
+        public Vector2[] GetPoints()
         {
-            return new List<Vector2> { Start, End };
+            return new[] { Start, End };
         }
 
-        public float SlopeIntercept(float x)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private float SlopeIntercept(float x)
         {
             return _a * x + _b;
         }
@@ -86,20 +88,23 @@ namespace Maes.Utilities
         // Returns true if the y value of the line grows as x increases
         public bool IsGrowing()
         {
-            if (IsVertical || _isHorizontal)
+#if DEBUG
+            if (_isVertical || _isHorizontal)
             {
                 throw new Exception("Cannot call IsGrowing on Horizontal or Vertical lines");
             }
+#endif
 
             return _a > 0f;
         }
 
-        public bool SameOrientation(Line2D otherLine)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool SameOrientation(Line2D otherLine)
         {
-            return IsVertical && otherLine.IsVertical || _isHorizontal && otherLine._isHorizontal;
+            return _isVertical && otherLine._isVertical || _isHorizontal && otherLine._isHorizontal;
         }
 
-        public (Vector2 linePoint, Vector2 otherLinePoint) GetClosestPoints(Line2D otherLine)
+        private (Vector2 linePoint, Vector2 otherLinePoint) GetClosestPoints(Line2D otherLine)
         {
             var linePoints = Rasterize();
             var otherLinePoints = otherLine.Rasterize().ToArray();
@@ -120,44 +125,39 @@ namespace Maes.Utilities
             return result;
         }
 
-        public Vector2? GetIntersection(Line2D otherline, bool infinite = false)
+        public Vector2? GetIntersection(Line2D otherLine, bool infinite = false)
         {
-            if (Mathf.Approximately(_a, otherline._a))
+            if (Mathf.Approximately(_a, otherLine._a))
             {
-                if (SameOrientation(otherline))
+                if (SameOrientation(otherLine))
                 {
-                    if (Mathf.Approximately(_b, otherline._b))
+                    if (Mathf.Approximately(_b, otherLine._b))
                     {
-                        var closestPoints = GetClosestPoints(otherline);
+                        var closestPoints = GetClosestPoints(otherLine);
                         return (closestPoints.linePoint + closestPoints.otherLinePoint) / 2;
                     }
-                    else
-                    {
-                        return null;
-                    }
+
+                    return null;
                 }
-                else
-                {
-                    return IsVertical ? new(_b, otherline._b) : new(otherline._b, _b);
-                }
+
+                return _isVertical ? new(_b, otherLine._b) : new(otherLine._b, _b);
             }
-            else
+
+            if (otherLine._isVertical)
             {
-                if (otherline.IsVertical)
-                {
-                    return otherline.GetIntersection(_a, _b, infinite);
-                }
-                return GetIntersection(otherline._a, otherline._b, infinite);
+                return otherLine.GetIntersection(_a, _b, infinite);
             }
+
+            return GetIntersection(otherLine._a, otherLine._b, infinite);
         }
 
         // Checks for intersection with an infinite line described by a_1 x + b_2 
-        public Vector2? GetIntersection(float a_2, float b_2, bool infinite = false)
+        public Vector2? GetIntersection(float a2, float b2, bool infinite = false)
         {
-            if (IsVertical) // Special case
+            if (_isVertical) // Special case
             {
                 // This line is vertical. Simply plug x coordinate of this line into equation to find y intersection
-                var yIntersection = Start.x * a_2 + b_2;
+                var yIntersection = Start.x * a2 + b2;
 
                 // Return intersection if it is within bounds of this line
 
@@ -165,17 +165,16 @@ namespace Maes.Utilities
                 {
                     return new Vector2(Start.x, yIntersection);
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
-            else if (_isHorizontal) // Optimization
+
+            if (_isHorizontal) // Optimization
             {
                 // Parallel lines case
-                if (Mathf.Abs(a_2) < 0.0001f)
+                if (Mathf.Abs(a2 - _a) < 0.0001f)
                 {
-                    if (Mathf.Abs(b_2 - _b) < 0.0001f)
+                    if (Mathf.Abs(b2 - _b) < 0.0001f)
                     {
                         return MidPoint;
                     }
@@ -186,46 +185,40 @@ namespace Maes.Utilities
                 }
 
                 // y = ax + b, solved for x gives x = (y - b) / a (using the y of this horizontal line)
-                var xIntersection = (Start.y - b_2) / a_2;
+                var xIntersection = (Start.y - b2) / a2;
                 // Return intersection if it is within bounds of this line
                 if (infinite || xIntersection >= _minX && xIntersection <= _maxX)
                 {
                     return new Vector2(xIntersection, Start.y);
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
-            else
+
+            // Parallel lines case
+            if (Mathf.Abs(a2 - _a) <= 0.0001f)
             {
-                // Parallel lines case
-                if (Mathf.Abs(a_2 - _a) <= 0.0001f)
+                // If the two parallel lines intersect then return the midpoint of this line as intersection
+                if (Mathf.Abs(b2 - _b) < 0.0001f)
                 {
-                    // If the two parallel lines intersect then return the midpoint of this line as intersection
-                    if (Mathf.Abs(b_2 - _b) < 0.0001f)
-                    {
-                        return MidPoint;
-                    }
-                    else
-                    {
-                        return null;
-                    }
+                    return MidPoint;
                 }
 
-                // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
-                var intersectX = (b_2 - _b) / (_a - a_2);
-                // Check if intersection is outside line segment
-                if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
-                {
-                    return null;
-                }
-
-                var intersectY = _a * intersectX + _b;
-                // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
-                //           " at " + intersectX + ", " + intersectY);
-                return new Vector2(intersectX, intersectY);
+                return null;
             }
+
+            // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
+            var intersectX = (b2 - _b) / (_a - a2);
+            // Check if intersection is outside line segment
+            if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
+            {
+                return null;
+            }
+
+            var intersectY = _a * intersectX + _b;
+            // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
+            //           " at " + intersectX + ", " + intersectY);
+            return new Vector2(intersectX, intersectY);
         }
 
         /// <summary>
@@ -247,8 +240,8 @@ namespace Maes.Utilities
         /// <returns>List of points</returns>
         public IEnumerable<Vector2> Rasterize(float granularity = 1)
         {
-            var start = IsVertical ? Start.y : Start.x;
-            var end = IsVertical ? End.y : End.x;
+            var start = _isVertical ? Start.y : Start.x;
+            var end = _isVertical ? End.y : End.x;
             if (start > end)
             {
                 (end, start) = (start, end);
@@ -257,7 +250,7 @@ namespace Maes.Utilities
             var points = new List<Vector2>();
             for (var x = start; x <= end; x += granularity)
             {
-                points.Add(IsVertical ? new Vector2(SlopeIntercept(x), x) : new Vector2(x, SlopeIntercept(x)));
+                points.Add(_isVertical ? new Vector2(SlopeIntercept(x), x) : new Vector2(x, SlopeIntercept(x)));
             }
             return points.Distinct();
         }
@@ -268,21 +261,31 @@ namespace Maes.Utilities
 
         }
 
+        public static bool operator ==(Line2D left, Line2D right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Line2D left, Line2D right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(Line2D other)
+        {
+            return Mathf.Approximately(_a, other._a)
+                   && Mathf.Approximately(_b, other._b) &&
+                   _isVertical == other._isVertical;
+        }
+
         public override bool Equals(object? obj)
         {
-            if (obj is not Line2D otherLine)
-            {
-                return false;
-            }
-
-            return Mathf.Approximately(_a, otherLine._a) &&
-                   Mathf.Approximately(_b, otherLine._b) &&
-                   (IsVertical == otherLine.IsVertical);
+            return obj is Line2D other && Equals(other);
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(IsVertical, _a, _b);
+            return HashCode.Combine(_isVertical, _a, _b);
         }
     }
 }

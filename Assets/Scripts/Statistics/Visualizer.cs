@@ -9,7 +9,7 @@ using UnityEngine.Rendering;
 namespace Maes.Statistics
 {
     public abstract class Visualizer<TCell> : MonoBehaviour, IVisualizer<TCell>
-        where TCell : ICell
+        where TCell : Cell
     {
         public MeshRenderer meshRenderer = null!;
         public MeshFilter meshFilter = null!;
@@ -17,9 +17,9 @@ namespace Maes.Statistics
         // Set in SetSimulationMap
         protected Mesh _mesh = null!;
 
-        public static readonly Color32 SolidColor = new Color32(0, 0, 0, 255);
-        public static readonly Color32 StandardCellColor = new Color32(170, 170, 170, 255);
-        public static readonly Color32 VisibleColor = new Color32(32, 130, 57, 255);
+        public static readonly Color32 SolidColor = new(0, 0, 0, 255);
+        public static readonly Color32 StandardCellColor = new(170, 170, 170, 255);
+        public static readonly Color32 VisibleColor = new(32, 130, 57, 255);
 
         private int _widthInTiles, _heightInTiles;
         private Vector3 _offset;
@@ -65,7 +65,7 @@ namespace Maes.Statistics
         private void GenerateTriangleVertices()
         {
             _vertices.Clear();
-            var vertexDistance = 1f / ResolutionMultiplier;
+            const float vertexDistance = 1f / ResolutionMultiplier;
             for (var y = 0; y < _heightInTiles; y++)
             {
                 var translatedY = y + _offset.y;
@@ -138,7 +138,7 @@ namespace Maes.Statistics
         // Colors each triangle depending on its current state
         private void InitializeColors(SimulationMap<TCell> newMap)
         {
-            foreach ((var index, var cell) in newMap)
+            foreach (var (index, cell) in newMap)
             {
                 var vertexIndex = index * 3;
                 var color = InitializeCellColor(cell);

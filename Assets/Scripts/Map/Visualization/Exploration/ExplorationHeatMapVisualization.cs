@@ -39,12 +39,12 @@ namespace Maes.Map.Visualization.Exploration
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
         {
             /* No need for newly explored cells as the entire map is replaced every tick */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, IEnumerable<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
         {
             /* Ignore coverage data */
         }
@@ -52,7 +52,7 @@ namespace Maes.Map.Visualization.Exploration
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
         {
             // The entire map has to be replaced every tick since all colors are time dependent
-            visualizer.SetAllColors(_explorationMap, (cell) => ExplorationCellToColor(cell, currentTick));
+            visualizer.SetAllColors(_explorationMap, cell => ExplorationCellToColor(cell, currentTick));
         }
 
         private Color32 ExplorationCellToColor(ExplorationCell cell, int currentTick)

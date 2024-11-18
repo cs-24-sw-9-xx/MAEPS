@@ -31,11 +31,11 @@ namespace Maes.UI
         private RectTransform _backgroundTransform = null!;
         private RectTransform _parentTransform = null!;
 
-        private static Tooltip _instance = null!;
+        private static Tooltip s_instance = null!;
 
         private void Awake()
         {
-            _instance = this;
+            s_instance = this;
             _text = transform.Find("Text").GetComponent<Text>();
             _backgroundTransform = transform.Find("Background").GetComponent<RectTransform>();
             _parentTransform = transform.parent.GetComponent<RectTransform>();
@@ -46,8 +46,8 @@ namespace Maes.UI
         {
             gameObject.SetActive(true);
             _text.text = text;
-            var padding = 2f;
-            var bgSize = new Vector2(_text.preferredWidth + 2 * padding, _text.preferredHeight + 2 * padding);
+            const float padding = 2f;
+            var bgSize = new Vector2(_text.preferredWidth + 2f * padding, _text.preferredHeight + 2f * padding);
             _backgroundTransform.sizeDelta = bgSize;
         }
 
@@ -66,12 +66,12 @@ namespace Maes.UI
 
         public static void ShowTooltip_Static(string text)
         {
-            _instance.ShowTooltip(text);
+            s_instance.ShowTooltip(text);
         }
 
         public static void HideTooltip_Static()
         {
-            _instance.HideTooltip();
+            s_instance.HideTooltip();
         }
     }
 }

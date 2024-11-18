@@ -38,13 +38,13 @@ namespace Maes.Robot
     {
         public readonly float Distance;
         public readonly float Angle;
-        public readonly T item;
+        public readonly T Item;
 
         public SensedObject(float distance, float angle, T t)
         {
             Distance = distance;
             Angle = angle;
-            item = t;
+            Item = t;
         }
 
         public Vector2 GetRelativePosition(Vector2 myPosition, float globalAngle)
@@ -69,7 +69,7 @@ namespace Maes.Robot
         private readonly List<Message> _readableMessages = new();
 
         private readonly RayTracingMap<Tile> _rayTracingMap;
-        private IReadOnlyList<MonaRobot> _robots = Array.Empty<MonaRobot>();
+        private MonaRobot[] _robots = Array.Empty<MonaRobot>();
 
         // Map for storing and retrieving all tags deposited by robots
         private readonly EnvironmentTaggingMap _environmentTaggingMap;
@@ -286,10 +286,7 @@ namespace Maes.Robot
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
                 CommunicationTracker.AdjacencyMatrixRef = _adjacencyMatrix;
-                if (_communicationGroups == null)
-                {
-                    _communicationGroups = GetCommunicationGroups();
-                }
+                _communicationGroups ??= GetCommunicationGroups();
 
                 CommunicationTracker.CommunicationGroups = _communicationGroups;
                 CommunicationTracker.CreateSnapshot(_localTickCounter);
@@ -358,7 +355,7 @@ namespace Maes.Robot
             }
         }
 
-        public List<HashSet<int>> GetCommunicationGroups()
+        private List<HashSet<int>> GetCommunicationGroups()
         {
             PopulateAdjacencyMatrix();
 
@@ -378,23 +375,21 @@ namespace Maes.Robot
         {
             var keys = new Queue<int>();
             keys.Enqueue(robotId);
-            var resultSet = new HashSet<int>() { robotId };
+            var resultSet = new HashSet<int> { robotId };
 
             while (keys.Count > 0)
             {
                 var currentKey = keys.Dequeue();
 
-                var inRange = _adjacencyMatrix!
-                    .Where((kv) => kv.Key.Item1 == currentKey && kv.Value.TransmissionSuccessful)
-                    .Select((e) => e.Key.Item2);
-
-                foreach (var rInRange in inRange)
+                foreach (var (key, value) in _adjacencyMatrix!)
                 {
-                    if (!resultSet.Contains(rInRange))
+                    if (key.Item1 != currentKey || !value.TransmissionSuccessful || resultSet.Contains(key.Item2))
                     {
-                        keys.Enqueue(rInRange);
-                        resultSet.Add(rInRange);
+                        continue;
                     }
+
+                    keys.Enqueue(key.Item2);
+                    resultSet.Add(key.Item2);
                 }
             }
 
@@ -441,7 +436,7 @@ namespace Maes.Robot
             return sensedObjects;
         }
 
-        public void SetRobotReferences(IReadOnlyList<MonaRobot> robots)
+        public void SetRobotReferences(MonaRobot[] robots)
         {
             _robots = robots;
         }

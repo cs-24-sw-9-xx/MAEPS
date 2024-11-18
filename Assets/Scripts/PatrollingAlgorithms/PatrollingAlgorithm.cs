@@ -1,8 +1,11 @@
-using System.Collections.Generic;
+using System;
+using System.Text;
 
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
+
+using UnityEngine;
 
 namespace Maes.PatrollingAlgorithms
 {
@@ -10,13 +13,16 @@ namespace Maes.PatrollingAlgorithms
     {
         public abstract string AlgorithmName { get; }
 
-        public Vertex TargetVertex { get; protected set; } = null!; // HACK!
+        public Vertex TargetVertex => _targetVertex ?? throw new InvalidOperationException("TargetVertex is null");
+
+        private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        protected IReadOnlyList<Vertex> _vertices = null!;
+        private Vertex[] _vertices = null!;
 
         // Set by SetController
-        protected Robot2DController _controller = null!;
+        private Robot2DController _controller = null!;
+
         protected event OnReachVertex? OnReachVertexHandler;
 
         public void SetController(Robot2DController controller)
@@ -34,33 +40,56 @@ namespace Maes.PatrollingAlgorithms
             OnReachVertexHandler += onReachVertex;
         }
 
-        private void OnReachTargetVertex()
+        private void OnReachTargetVertex(Vertex vertex)
         {
             var atTick = _controller.GetRobot().Simulation.SimulatedLogicTicks;
-            OnReachVertexHandler?.Invoke(TargetVertex, atTick);
-            TargetVertex.VisitedAtTick(atTick);
+            OnReachVertexHandler?.Invoke(vertex.Id, atTick);
+            vertex.VisitedAtTick(atTick);
         }
 
         public virtual void UpdateLogic()
         {
-            Preliminaries();
+            _targetVertex ??= GetClosestVertex();
+
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
             if (currentPosition != TargetVertex.Position)
             {
                 _controller.PathAndMoveTo(TargetVertex.Position);
                 return;
             }
-            OnReachTargetVertex();
-            TargetVertex = NextVertex();
+
+            OnReachTargetVertex(TargetVertex);
+            _targetVertex = NextVertex();
         }
-        protected virtual void Preliminaries() { }
+
         protected abstract Vertex NextVertex();
 
         public virtual string GetDebugInfo()
         {
             return
-                AlgorithmName + "\n" +
-                $"Target vertex position: {TargetVertex.Position}\n";
+                new StringBuilder()
+                    .AppendLine(AlgorithmName)
+                    .Append("Target vertex position: ")
+                    .AppendLine(TargetVertex.Position.ToString())
+                    .ToString();
+        }
+
+        private Vertex GetClosestVertex()
+        {
+            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            var closestVertex = _vertices[0];
+            var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
+            foreach (var vertex in _vertices.AsSpan(1))
+            {
+                var distance = Vector2Int.Distance(position, vertex.Position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestVertex = vertex;
+                }
+            }
+
+            return closestVertex;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Maes.Statistics
 {
     // This class is responsible for calculating which tiles are covered by a robot
     public class CoverageCalculator<TCell>
-    where TCell : class, ICell
+    where TCell : Cell
     {
         public delegate void MiniTileConsumer(int index1, TCell cell1, int index2, TCell cell2);
 

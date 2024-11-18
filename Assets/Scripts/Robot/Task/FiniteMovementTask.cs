@@ -67,11 +67,9 @@ namespace Maes.Robot.Task
 
                 return new MovementDirective(forceFactor, forceFactor);
             }
-            else
-            {
-                _isCompleted = true;
-                return MovementDirective.NoMovement();
-            }
+
+            _isCompleted = true;
+            return MovementDirective.NoMovement();
         }
 
         // The applied force depends on how large a distance is remaining and how fast the robot is currently moving
@@ -83,20 +81,18 @@ namespace Maes.Robot.Task
             {
                 return _force;
             }
-            else
-            {
-                return 0f;
-            }
+
+            return 0f;
         }
 
         // Returns the time (in ticks from now) at which the velocity of the robot will be approximately 0 (<0.001) 
-        private int GetStopTime(float currentVelocity)
+        private static int GetStopTime(float currentVelocity)
         {
             return (int)(11f * (Mathf.Log(currentVelocity) + 3 * Mathf.Log(10)) / 2f);
         }
 
         // Returns the distance traveled in the given ticks when starting at the given velocity
-        private float GetDistanceTraveled(float currentVelocity, int ticks)
+        private static float GetDistanceTraveled(float currentVelocity, int ticks)
         {
             // Get offset by solving for C in:
             // 0 = (-11/2)*v0*e^(-t*2/11)+C

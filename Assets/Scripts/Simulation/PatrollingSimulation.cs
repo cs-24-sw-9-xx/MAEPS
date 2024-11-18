@@ -1,8 +1,14 @@
+using System;
+using System.Globalization;
+using System.IO;
+
 using Maes.Algorithms;
 using Maes.Map.MapPatrollingGen;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Patrolling;
+using Maes.Statistics.Writer;
 using Maes.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 
@@ -23,7 +29,7 @@ namespace Maes.Simulation
         {
             var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
 
-            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, this, scenario, patrollingMap);
+            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, scenario, patrollingMap);
 
             patrollingVisualizer.SetPatrollingMap(patrollingMap);
 
@@ -43,6 +49,22 @@ namespace Maes.Simulation
             }
 
             return PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= 0.025;
+        }
+
+        protected override void CreateStatisticsFile()
+        {
+            var folderPath =
+                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
+            Directory.CreateDirectory(folderPath);
+
+            var patrollingFilename = Path.Join(folderPath, "patrolling");
+            new PatrollingCsvDataWriter(this, patrollingFilename).CreateCsvFile();
+
+            foreach (var (point, snapShots) in PatrollingTracker.WaypointSnapShots)
+            {
+                var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
+                new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
+            }
         }
     }
 }

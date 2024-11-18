@@ -35,7 +35,7 @@ namespace Maes.UI
         private void UpdateVersionNumberText()
         {
             var versionNumberText = gameObject.GetComponent<Text>();
-            versionNumberText.text = "v." + Application.version;
+            versionNumberText.text = $"v.{Application.version}";
 
         }
     }

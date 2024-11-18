@@ -35,7 +35,7 @@ namespace Maes.UI
         private void SetExplorationProgress(float progress)
         {
             Mask.fillAmount = progress;
-            ProgressPercentageText.text = (progress * 100f).ToString("#.00") + "%";
+            ProgressPercentageText.text = $"{(progress * 100f):#.00}%";
         }
 
         // TODO: Why is this never called?

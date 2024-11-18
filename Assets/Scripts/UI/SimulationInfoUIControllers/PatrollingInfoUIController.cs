@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Map.Visualization.Patrolling;
@@ -35,14 +34,15 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button VisibleSelectedButton = null!;
         public Button ToogleIdleGraphButton = null!;
 
+        protected override Button[] MapVisualizationToggleGroup => new[] {
+            WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
+        };
+
         protected override void AfterStart()
         {
             InitIdleGraph();
 
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
-            _mapVisualizationToggleGroup = new List<Button>() {
-                WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
-            };
             SelectVisualizationButton(WaypointHeatMapButton);
 
             if (Simulation != null)
@@ -108,31 +108,26 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
         {
-            if (mode is WaypointHeatMapVisualizationMode)
+            switch (mode)
             {
-                SelectVisualizationButton(WaypointHeatMapButton);
+                case WaypointHeatMapVisualizationMode:
+                    SelectVisualizationButton(WaypointHeatMapButton);
+                    break;
+                case PatrollingCoverageHeatMapVisualizationMode:
+                    SelectVisualizationButton(CoverageHeatMapButton);
+                    break;
+                case PatrollingHeatMapVisualizationMode:
+                    SelectVisualizationButton(PatrollingHeatMapButton);
+                    break;
+                case PatrollingTargetWaypointVisualizationMode:
+                    SelectVisualizationButton(TargetWaypointSelectedButton);
+                    break;
+                case CurrentlyVisibleAreaVisualizationPatrollingMode:
+                    SelectVisualizationButton(VisibleSelectedButton);
+                    break;
+                default:
+                    throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
             }
-            else if (mode is PatrollingCoverageHeatMapVisualizationMode)
-            {
-                SelectVisualizationButton(CoverageHeatMapButton);
-            }
-            else if (mode is PatrollingHeatMapVisualizationMode)
-            {
-                SelectVisualizationButton(PatrollingHeatMapButton);
-            }
-            else if (mode is PatrollingTargetWaypointVisualizationMode)
-            {
-                SelectVisualizationButton(TargetWaypointSelectedButton);
-            }
-            else if (mode is CurrentlyVisibleAreaVisualizationPatrollingMode)
-            {
-                SelectVisualizationButton(VisibleSelectedButton);
-            }
-            else
-            {
-                throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
-            }
-
         }
 
         protected override void NotifyNewSimulation(PatrollingSimulation? newSimulation)
@@ -194,16 +189,26 @@ namespace Maes.UI.SimulationInfoUIControllers
             Chart.Init();
             var xAxis = Chart.EnsureChartComponent<XAxis>();
             xAxis.splitNumber = 10;
-            xAxis.boundaryGap = true;
-            xAxis.type = Axis.AxisType.Category;
+            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+            xAxis.type = Axis.AxisType.Value;
 
             var yAxis = Chart.EnsureChartComponent<YAxis>();
+            yAxis.splitNumber = 10;
             yAxis.type = Axis.AxisType.Value;
+            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
             Chart.RemoveData();
             var series = Chart.AddSerie<Scatter>("scatter");
             series.symbol.size = 4;
 
+            var zoom = Chart.EnsureChartComponent<DataZoom>();
+            zoom.enable = true;
+            zoom.filterMode = DataZoom.FilterMode.Filter;
+            zoom.start = 0;
+            zoom.end = 100;
+
             Simulation!.PatrollingTracker.Chart = Chart;
+            Simulation!.PatrollingTracker.Zoom = zoom;
+
         }
     }
 }

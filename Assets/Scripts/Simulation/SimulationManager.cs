@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 using Maes.Algorithms;
 using Maes.Simulation.SimulationScenarios;
@@ -106,7 +107,7 @@ namespace Maes.Simulation
             pauseButton.anchoredPosition = new Vector2(20, 0);
         }
 
-        public void CreateRosClockAndVisualiserObjects()
+        private void CreateRosClockAndVisualiserObjects()
         {
             Instantiate(RosClockPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             Instantiate(RosVisualizerPrefab, new Vector3(0, 0, 0), Quaternion.identity);
@@ -131,8 +132,6 @@ namespace Maes.Simulation
             return PlayState;
         }
 
-
-
         private void Update()
         {
             if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
@@ -154,6 +153,24 @@ namespace Maes.Simulation
                     AttemptSetPlayState(SimulationPlayState.Step);
                 }
             }
+
+            if (CurrentSimulation == null)
+            {
+                return;
+            }
+
+            UpdateStatisticsUI();
+
+            var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
+            var output = simulatedTimeSpan.ToString(@"hh\:mm\:ss");
+            SimulationStatusText.text =
+                new StringBuilder().Append("Phys. ticks: ")
+                    .Append(CurrentSimulation.SimulatedPhysicsTicks)
+                    .Append("\nLogic ticks: ")
+                    .Append(CurrentSimulation.SimulatedLogicTicks)
+                    .Append("\nSimulated: ")
+                    .Append(output)
+                    .ToString();
         }
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
@@ -203,10 +220,9 @@ namespace Maes.Simulation
 
                 // The delay before simulating the next update is dependant on the current simulation play speed
                 var updateDelayMillis = physicsTickDeltaMillis / (int)PlayState;
-                _nextUpdateTimeMillis = _nextUpdateTimeMillis + updateDelayMillis;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
-                _nextUpdateTimeMillis = Math.Max(_nextUpdateTimeMillis, TimeUtils.CurrentTimeMillis() - maxDelayMillis);
+                _nextUpdateTimeMillis = Math.Max(_nextUpdateTimeMillis + updateDelayMillis, TimeUtils.CurrentTimeMillis() - maxDelayMillis);
             }
         }
 
@@ -242,7 +258,6 @@ namespace Maes.Simulation
             {
                 CurrentSimulation.LogicUpdate();
                 _physicsTicksSinceUpdate = 0;
-                UpdateStatisticsUI();
 
 
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
@@ -251,12 +266,6 @@ namespace Maes.Simulation
                     shouldContinueSim = false;
                 }
             }
-
-            var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
-            var output = simulatedTimeSpan.ToString(@"hh\:mm\:ss");
-            SimulationStatusText.text = "Phys. ticks: " + CurrentSimulation.SimulatedPhysicsTicks +
-                                        "\nLogic ticks: " + CurrentSimulation.SimulatedLogicTicks +
-                                        "\nSimulated: " + output;
 
             return shouldContinueSim;
         }

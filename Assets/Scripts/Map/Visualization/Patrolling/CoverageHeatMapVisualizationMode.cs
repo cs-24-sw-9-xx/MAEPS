@@ -16,7 +16,7 @@ namespace Maes.Map.Visualization.Patrolling
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
-            visualizer.SetAllColors(_map, (cell) => CellToColor(cell, currentTick));
+            visualizer.SetAllColors(_map, cell => CellToColor(cell, currentTick));
         }
 
         private Color32 CellToColor(PatrollingCell cell, int currentTick)

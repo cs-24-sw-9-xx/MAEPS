@@ -136,7 +136,7 @@ namespace Maes.ExplorationAlgorithm.Greed
                 }
             }
 
-            if (_controller.IsCurrentlyColliding())
+            if (_controller.IsCurrentlyColliding)
             {
                 if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
                 {
