@@ -6,6 +6,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Statistics.Patrolling;
@@ -19,6 +20,10 @@ namespace Maes.Trackers
     // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
+        private PatrollingSimulation PatrollingSimulation { get; }
+        private PatrollingMap Map { get; }
+        private Dictionary<Vector2Int, VertexDetails> Vertices { get; }
+
         public int WorstGraphIdleness { get; private set; }
 
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
@@ -29,12 +34,14 @@ namespace Maes.Trackers
         public float AverageGraphIdleness => _graphIdlenessList.Count != 0 ? _graphIdlenessList.Average() : 0;
 
         public int CompletedCycles { get; private set; }
-
-        public float? AverageGraphDiffLastTwoCyclesProportion => _graphIdlenessList.Count >= 2 ? Mathf.Abs(_graphIdlenessList[^1] - _graphIdlenessList[^2]) / _graphIdlenessList[^2] : null;
+        
+        public float? AverageGraphDiffLastTwoCyclesProportion => GraphIdlenessList.Count >= 2 ? Mathf.Abs(GraphIdlenessList[^1] - GraphIdlenessList[^2]) / GraphIdlenessList[^2] : null;
 
         public ScatterChart Chart { get; set; } = null!;
 
+        public DataZoom Zoom { get; set; } = null!;
 
+        private List<float> GraphIdlenessList { get; } = new();
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
@@ -85,13 +92,19 @@ namespace Maes.Trackers
             WorstGraphIdleness = eachVertexIdleness.Max();
             CurrentGraphIdleness = eachVertexIdleness.Average(n => (float)n);
             _graphIdlenessList.Add(CurrentGraphIdleness);
-
-            // Example: How to plot the data
+            
             // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 250 == 0 && Chart.series.Count < 60000)
+            if (_currentTick % 100 == 0 && Chart.gameObject.activeSelf)
             {
-                Chart.AddXAxisData("" + _currentTick);
-                Chart.AddData(0, WorstGraphIdleness);
+                if(Chart.series[0].data.Count >= 250)
+                {
+                    Zoom.start = 55;
+                    Zoom.end = 95;
+                    Chart.RefreshDataZoom();
+                }
+                
+                Chart.AddData(0, _currentTick, WorstGraphIdleness);
+                Chart.RefreshDataZoom();
             }
         }
 
