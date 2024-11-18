@@ -32,10 +32,22 @@ namespace Maes.Trackers
 
         public float? AverageGraphDiffLastTwoCyclesProportion => null; // This was broken anyway.
 
-        public ScatterChart Chart { get; set; } = null!;
+        public BaseChart Chart { get; set; } = null!;
 
         public DataZoom Zoom { get; set; } = null!;
+        
+        public bool PlotTotalDistanceTraveled = false;
+        
+        public bool PlotAverageIdleness = false;
+        
+        public bool PlotCurrentIdleness = false;
+        
+        public bool PlotWorstIdleness = false;
+        
+        public int PlottingFrequency = 50;
 
+        private int _lastPlottedSnapshot = 0;
+        
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
@@ -77,6 +89,37 @@ namespace Maes.Trackers
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
                 _visualizer.ShowDefaultColor(vertexDetails.Vertex);
+            }
+        }
+
+        // Hack: Cursed way of updating ui using unitys update event.
+        public void UIUpdate()
+        {
+            // TODO: Fix graph data limit.
+            if (Chart.gameObject.activeSelf && SnapShots.Count > 0)
+            {
+                //Update zoom to only follow the most recent data.
+                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
+                {
+                    Zoom.start = 55;
+                    Zoom.end = 95;
+                }
+                
+                // TODO: Re-plot graph with relevant data when the graph settings change. 
+                for (var i = _lastPlottedSnapshot; i <= SnapShots.Count; i++)
+                {
+                    if (SnapShots[i].Tick % PlottingFrequency == 0)
+                    {
+                        PlotData(SnapShots[i]);
+                    }
+                }
+
+                _lastPlottedSnapshot = SnapShots.Count;
+                Chart.RefreshDataZoom();
+            }
+            else
+            {
+                _lastPlottedSnapshot = 0;
             }
         }
 
@@ -192,6 +235,29 @@ namespace Maes.Trackers
 
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+        }
+        
+        private void PlotData(PatrollingSnapShot snapShot)
+        {
+            if (PlotWorstIdleness)
+            {
+                Chart.AddData(0, snapShot.Tick, snapShot.WorstGraphIdleness);
+            }
+
+            if (PlotCurrentIdleness)
+            {
+                Chart.AddData(1, snapShot.Tick, snapShot.GraphIdleness);
+            }
+
+            if (PlotAverageIdleness)
+            {
+                Chart.AddData(2, snapShot.Tick, snapShot.GraphIdleness);
+            }
+
+            if (PlotTotalDistanceTraveled)
+            {
+                Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
+            }
         }
     }
 }
