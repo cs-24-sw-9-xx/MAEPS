@@ -478,9 +478,26 @@ namespace Maes.Robot
         public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
             // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
-
+            var distForMaxSpeed = 2.5f;
             var distance = EstimateDistanceToTarget(target);
-            return distance == null ? null : (int)Math.Ceiling(distance.Value / Constraints.RelativeMoveSpeed);
+            if (distance == null){
+                return null;
+            }
+            var dist = distance.Value;
+            var startDist = Math.Min(dist, 2.5f);
+            var startTime = (int)Math.Floor(Math.Pow(CorrectForRelativeMoveSpeed(startDist, Constraints.RelativeMoveSpeed), 0.85));
+            if (dist <= distForMaxSpeed){
+                return startTime;
+            }
+            else
+            {
+                dist -= distForMaxSpeed;
+                return (int)Math.Ceiling(CorrectForRelativeMoveSpeed(dist, Constraints.RelativeMoveSpeed)) + startTime;
+            }
+
+            static float CorrectForRelativeMoveSpeed(float distance, float relativeMoveSpeed){
+                return distance * 3.2f / (0.21f + (relativeMoveSpeed / 3.0f));
+            }
         }
 
         /// <summary>
