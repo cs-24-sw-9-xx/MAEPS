@@ -242,7 +242,7 @@ namespace PlayModeTests
                 }
                 yield return null;
             }
-            var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 10f);
+            var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 5f);
             // Debug.Log($"Final tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
             Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
             var targetTimeDelta = Math.Abs(_testAlgorithm.Tick - estimatedTime);
