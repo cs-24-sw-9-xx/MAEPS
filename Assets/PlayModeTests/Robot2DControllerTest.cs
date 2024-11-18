@@ -51,6 +51,8 @@ namespace PlayModeTests
         private MonaRobot _robot;
 
         private readonly float _relativeMoveSpeed;
+
+        private Vector2Int _currentCoarseTile => Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
         public Robot2DControllerTest(float relativeMoveSpeed)
         {
             _relativeMoveSpeed = relativeMoveSpeed;
@@ -197,6 +199,53 @@ namespace PlayModeTests
             Debug.Log($"Actual distance: {actualDistance}, estimated distance: {estimatedDistance}");
             var targetPositionDelta = Math.Abs(actualDistance - estimatedDistance.Value);
             Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
+            yield return null;
+        }
+
+        [UnityTest]
+        [TestCase(0.1f, ExpectedResult = null)]
+        [TestCase(1.0f, ExpectedResult = null)]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(2.1f, ExpectedResult = null)]
+        [TestCase(2.5f, ExpectedResult = null)]
+        [TestCase(2.6f, ExpectedResult = null)]
+        [TestCase(3.0f, ExpectedResult = null)]
+        [TestCase(4.0f, ExpectedResult = null)]
+        [TestCase(5.0f, ExpectedResult = null)]
+        [TestCase(7.5f, ExpectedResult = null)]
+        [TestCase(10.0f, ExpectedResult = null)]
+        [TestCase(15.0f, ExpectedResult = null)]
+        [TestCase(20.0f, ExpectedResult = null)]
+        public IEnumerator EstimateTimeToTarget_IsTimeCorrectTest(float actualDistance)
+        {
+            var debug = false;
+            var coarseMapStartingPosition = _currentCoarseTile;
+            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize());
+            var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
+            var estimatedTime = _robot.Controller.EstimateTimeToTarget(coarseMapTargetPosition).Value;
+
+            // Make the robot move to target.
+            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            {
+                controller.PathAndMoveTo(coarseMapTargetPosition);
+            };
+
+            //Debug.Log($"PathAndMoveTo coarseTile from: {coarseMapStartingPosition}, to: {coarseMapTargetPosition}");
+            _maes.PressPlayButton();
+            var prevTick = -1;
+            while (_testAlgorithm.Tick == 0 || _currentCoarseTile != coarseMapTargetPosition)
+            {
+                if (debug && prevTick != _testAlgorithm.Tick){
+                    prevTick = _testAlgorithm.Tick;
+                    //Debug.Log($"Tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
+                }
+                yield return null;
+            }
+            var maximumDeviation = 1 + (int)Math.Floor(actualDistance / 10f);
+            // Debug.Log($"Final tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
+            Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
+            var targetTimeDelta = Math.Abs(_testAlgorithm.Tick- estimatedTime);
+            Assert.LessOrEqual(targetTimeDelta, maximumDeviation);
             yield return null;
         }
     }
