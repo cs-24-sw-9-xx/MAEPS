@@ -14,8 +14,8 @@ namespace Maes.PatrollingAlgorithms
         private bool _isPatrolling = false;
         private List<Vertex> _currentPath = new List<Vertex>();
         private int _iterator = 0;
-        private Dictionary<int,Vertex> _unavailableVertices =  new Dictionary<int,Vertex>();
-        
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new Dictionary<int, Vertex>();
+
         public override string GetDebugInfo()
         {
             return
@@ -64,9 +64,9 @@ namespace Maes.PatrollingAlgorithms
             }
 
             _iterator = 0;
-            
+
             _currentPath = AStar(GetClosestVertex(), HighestIdle());
-            
+
             var ownHeartbeat = HighestIdle();
             _controller.Broadcast(ownHeartbeat);
         }
@@ -74,7 +74,7 @@ namespace Maes.PatrollingAlgorithms
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices.Except(_unavailableVertices.Values).ToList(); 
+            var availableVertices = _vertices.Except(_unavailableVertices.Values).ToList();
             return availableVertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 

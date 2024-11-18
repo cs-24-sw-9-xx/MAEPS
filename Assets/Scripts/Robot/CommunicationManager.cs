@@ -168,9 +168,9 @@ namespace Maes.Robot
 
             return messages;
         }
-        
+
         // Returns a list of messages and ids sent by other robots
-        public List<KeyValuePair<int,object>> ReadMessagesWithId(MonaRobot receiver)
+        public List<KeyValuePair<int, object>> ReadMessagesWithId(MonaRobot receiver)
         {
             PopulateAdjacencyMatrix();
             var messages = new List<KeyValuePair<int, object>>();
@@ -189,11 +189,11 @@ namespace Maes.Robot
                 {
                     continue;
                 }
-                
+
                 var kvp = new KeyValuePair<int, object>(message.Sender.id, message.Contents);
 
                 messages.Add(kvp);
-                
+
                 if (GlobalSettings.DrawCommunication)
                 {
                     _visualizer.AddCommunicationTrail(message.Sender, receiver);

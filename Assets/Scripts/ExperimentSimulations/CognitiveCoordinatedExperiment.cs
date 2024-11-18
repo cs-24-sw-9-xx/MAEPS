@@ -74,43 +74,43 @@ namespace Maes.ExperimentSimulations
 
             var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
             var size = 100;
-            
-                var robotCount = 3;
-                simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                    totalCycles: 4,
-                    stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
-                        buildingConfig,
-                        seed: 123,
-                        numberOfRobots: robotCount,
-                        suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2),
-                            random.Next(-size / 2, size / 2)),
-                        createAlgorithmDelegate: (seed) => algorithm),
-                    statisticsFileName:
-                    $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: rc));
 
-                var spawningPosList = new List<Vector2Int>();
-                for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-                {
-                    spawningPosList.Add(new Vector2Int(random.Next(0, size), random.Next(0, size)));
-                }
+            var robotCount = 3;
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                totalCycles: 4,
+                stopAfterDiff: false,
+                mapSpawner: generator => generator.GenerateMap(mapConfig),
+                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
+                    buildingConfig,
+                    seed: 123,
+                    numberOfRobots: robotCount,
+                    suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2),
+                        random.Next(-size / 2, size / 2)),
+                    createAlgorithmDelegate: (seed) => algorithm),
+                statisticsFileName:
+                $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                robotConstraints: rc));
 
-                simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                    totalCycles: 4,
-                    stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                        collisionMap: buildingConfig,
-                        seed: 123,
-                        numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: (seed) => algorithm),
-                    statisticsFileName:
-                    $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                    robotConstraints: rc));
-            
+            var spawningPosList = new List<Vector2Int>();
+            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
+            {
+                spawningPosList.Add(new Vector2Int(random.Next(0, size), random.Next(0, size)));
+            }
+
+            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                totalCycles: 4,
+                stopAfterDiff: false,
+                mapSpawner: generator => generator.GenerateMap(mapConfig),
+                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                    collisionMap: buildingConfig,
+                    seed: 123,
+                    numberOfRobots: robotCount,
+                    spawnPositions: spawningPosList,
+                    createAlgorithmDelegate: (seed) => algorithm),
+                statisticsFileName:
+                $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
+                robotConstraints: rc));
+
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);

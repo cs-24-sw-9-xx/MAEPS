@@ -323,8 +323,8 @@ namespace Maes.Robot
         {
             return CommunicationManager.ReadMessages(_robot);
         }
-        
-        public List<KeyValuePair<int,object>> ReceiveBroadcastWithId()
+
+        public List<KeyValuePair<int, object>> ReceiveBroadcastWithId()
         {
             return CommunicationManager.ReadMessagesWithId(_robot);
         }
