@@ -235,16 +235,17 @@ namespace PlayModeTests
             var prevTick = -1;
             while (_testAlgorithm.Tick == 0 || _currentCoarseTile != coarseMapTargetPosition)
             {
-                if (debug && prevTick != _testAlgorithm.Tick){
+                if (debug && prevTick != _testAlgorithm.Tick)
+                {
                     prevTick = _testAlgorithm.Tick;
                     //Debug.Log($"Tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
                 }
                 yield return null;
             }
-            var maximumDeviation = 3 + (int) Math.Floor(actualDistance / 10f);
+            var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 10f);
             // Debug.Log($"Final tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
             Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
-            var targetTimeDelta = Math.Abs(_testAlgorithm.Tick- estimatedTime);
+            var targetTimeDelta = Math.Abs(_testAlgorithm.Tick - estimatedTime);
             Assert.LessOrEqual(targetTimeDelta, maximumDeviation);
             yield return null;
         }
