@@ -42,7 +42,7 @@ namespace Maes.Trackers
         
         public bool PlotCurrentIdleness = false;
         
-        public bool PlotWorstIdleness = false;
+        public bool PlotWorstIdleness = true;
         
         public int PlottingFrequency = 50;
 
@@ -101,12 +101,11 @@ namespace Maes.Trackers
                 //Update zoom to only follow the most recent data.
                 if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
                 {
-                    Zoom.start = 55;
-                    Zoom.end = 95;
+                    Zoom.start = 50;
+                    Zoom.end = 100;
                 }
                 
-                // TODO: Re-plot graph with relevant data when the graph settings change. 
-                for (var i = _lastPlottedSnapshot; i <= SnapShots.Count; i++)
+                for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
                 {
                     if (SnapShots[i].Tick % PlottingFrequency == 0)
                     {
@@ -142,20 +141,6 @@ namespace Maes.Trackers
             CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
             _totalGraphIdleness += CurrentGraphIdleness;
             _ticks++;
-
-            // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 50 == 0 && Chart != null && Chart.gameObject.activeSelf)
-            {
-                //Update zoom to only follow the most recent data.
-                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
-                {
-                    Zoom.start = 55;
-                    Zoom.end = 95;
-                }
-
-                Chart.AddData(0, _currentTick, WorstGraphIdleness);
-                Chart.RefreshDataZoom();
-            }
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
@@ -177,7 +162,7 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness,CompletedCycles));
 
             foreach (var vertex in _vertices.Values)
             {
@@ -251,7 +236,7 @@ namespace Maes.Trackers
 
             if (PlotAverageIdleness)
             {
-                Chart.AddData(2, snapShot.Tick, snapShot.GraphIdleness);
+                Chart.AddData(2, snapShot.Tick, snapShot.AverageGraphIdleness);
             }
 
             if (PlotTotalDistanceTraveled)

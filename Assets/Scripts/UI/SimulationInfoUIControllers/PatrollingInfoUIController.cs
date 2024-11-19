@@ -251,6 +251,8 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void InitIdleGraph()
         {
             Chart.Init();
+            //Chart.gameObject.AddComponent<Mesh>();
+            //Chart.gameObject.GetComponent<Mesh>().indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             var xAxis = Chart.EnsureChartComponent<XAxis>();
             xAxis.splitNumber = 10;
             xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
@@ -263,16 +265,16 @@ namespace Maes.UI.SimulationInfoUIControllers
             Chart.RemoveData();
             
             var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
-            worstIdlenessSeries.symbol.size = 4;
+            worstIdlenessSeries.symbol.size = 2;
 
             var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
-            currentIdlenessSeries.symbol.size = 4;
+            currentIdlenessSeries.symbol.size = 2;
             
             var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
-            averageIdlenessSeries.symbol.size = 4;
+            averageIdlenessSeries.symbol.size = 2;
             
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
-            totalDistanceTraveledSeries.symbol.size = 4;
+            totalDistanceTraveledSeries.symbol.size = 2;
             
             var zoom = Chart.EnsureChartComponent<DataZoom>();
             zoom.enable = true;
