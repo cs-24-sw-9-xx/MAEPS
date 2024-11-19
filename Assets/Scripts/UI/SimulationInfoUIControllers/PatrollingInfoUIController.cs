@@ -60,14 +60,14 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             if (Simulation != null)
             {
-                StoppingCriteriaToggle.isOn = Simulation.PatrollingTracker.StopAfterDiff;
+                StoppingCriteriaToggle.isOn = Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria;
             }
 
             StoppingCriteriaToggle.onValueChanged.AddListener(toggleValue =>
             {
                 if (Simulation != null)
                 {
-                    Simulation.PatrollingTracker.StopAfterDiff = toggleValue;
+                    Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria = toggleValue;
                 }
             });
 
@@ -209,7 +209,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 return;
             }
 
-            SetProgress(simulation.PatrollingTracker.CompletedCycles, simulation.PatrollingTracker.TotalCycles);
+            SetProgress(simulation.PatrollingTracker.CurrentCycle, simulation.PatrollingTracker.TotalCycles);
             SetDistanceTravelled(simulation.PatrollingTracker.TotalDistanceTraveled);
             SetCurrentGraphIdleness(simulation.PatrollingTracker.CurrentGraphIdleness);
             SetWorstGraphIdleness(simulation.PatrollingTracker.WorstGraphIdleness);
