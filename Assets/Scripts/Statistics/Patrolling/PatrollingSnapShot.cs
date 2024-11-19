@@ -17,8 +17,8 @@ namespace Maes.Statistics.Patrolling
         [Index(5)]
         public float AverageGraphIdleness { get; }
 
-        public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled, 
-            float averagWorstGraphIdleness, int completedCycles, bool? agentsInterconnected = null, 
+        public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
+            float averagWorstGraphIdleness, int completedCycles, bool? agentsInterconnected = null,
             float? biggestClusterPercentage = null) : base(tick,
             agentsInterconnected, biggestClusterPercentage)
         {

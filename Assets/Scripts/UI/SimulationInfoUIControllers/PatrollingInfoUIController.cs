@@ -35,17 +35,17 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button TargetWaypointSelectedButton = null!;
         public Button VisibleSelectedButton = null!;
         public Button ToogleIdleGraphButton = null!;
-        
+
         public Toggle WorstIdlenessToggle = null!;
-        
+
         public Toggle CurrentIdlenessToggle = null!;
-        
+
         public Toggle AverageIdlenessToggle = null!;
-        
+
         public Toggle TotalDistanceTraveledToggle = null!;
-        
+
         public TMP_InputField PlottingFrequencyInputField = null!;
-        
+
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
             WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
@@ -117,7 +117,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                     }
                 });
             });
-            
+
             WorstIdlenessToggle.onValueChanged.AddListener(
                 toggleValue =>
                 {
@@ -263,25 +263,25 @@ namespace Maes.UI.SimulationInfoUIControllers
             yAxis.type = Axis.AxisType.Value;
             yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
             Chart.RemoveData();
-            
+
             var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
             worstIdlenessSeries.symbol.size = 2;
 
             var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
             currentIdlenessSeries.symbol.size = 2;
-            
+
             var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
             averageIdlenessSeries.symbol.size = 2;
-            
+
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
             totalDistanceTraveledSeries.symbol.size = 2;
-            
+
             var zoom = Chart.EnsureChartComponent<DataZoom>();
             zoom.enable = true;
             zoom.filterMode = DataZoom.FilterMode.Filter;
             zoom.start = 0;
             zoom.end = 100;
-            
+
             Chart.RefreshChart();
 
             Simulation!.PatrollingTracker.Chart = Chart;

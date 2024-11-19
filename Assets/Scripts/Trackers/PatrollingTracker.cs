@@ -35,19 +35,19 @@ namespace Maes.Trackers
         public BaseChart Chart { get; set; } = null!;
 
         public DataZoom Zoom { get; set; } = null!;
-        
+
         public bool PlotTotalDistanceTraveled = false;
-        
+
         public bool PlotAverageIdleness = false;
-        
+
         public bool PlotCurrentIdleness = false;
-        
+
         public bool PlotWorstIdleness = true;
-        
+
         public int PlottingFrequency = 50;
 
         private int _lastPlottedSnapshot = 0;
-        
+
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; set; }
@@ -104,7 +104,7 @@ namespace Maes.Trackers
                     Zoom.start = 50;
                     Zoom.end = 100;
                 }
-                
+
                 for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
                 {
                     if (SnapShots[i].Tick % PlottingFrequency == 0)
@@ -121,7 +121,7 @@ namespace Maes.Trackers
                 _lastPlottedSnapshot = 0;
             }
         }
-        
+
         protected override void OnLogicUpdate(MonaRobot[] robots)
         {
             var worstGraphIdleness = 0;
@@ -162,7 +162,7 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness,CompletedCycles));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CompletedCycles));
 
             foreach (var vertex in _vertices.Values)
             {
@@ -221,7 +221,7 @@ namespace Maes.Trackers
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
         }
-        
+
         private void PlotData(PatrollingSnapShot snapShot)
         {
             if (PlotWorstIdleness)
