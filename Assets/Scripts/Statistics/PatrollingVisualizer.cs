@@ -57,20 +57,6 @@ namespace Maes.Statistics
                     _visualizers.Add(edgeVisualizer);
                 }
             }
-
-            //TODO: Add a better way to debug point generation, its is currently outcommented
-            // if (_patrollingMap.DebugPoints != null)
-            // {
-            //     foreach (var corner in _patrollingMap.DebugPoints)
-            //     {
-            //         var vertexVisualizer = GameObject.Instantiate(VertexVisualizer, transform);
-            //         vertexVisualizer.transform.localPosition = ((Vector3)(Vector2)corner.Position) + new Vector3(0, 0, -3);
-            //         var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
-            //         meshRenderer.material.color = Color.cyan;
-            //         _visualizers.Add(vertexVisualizer);
-            //         _vertexVisualizers.Add(corner, vertexVisualizer);
-            //     }
-            // }
         }
 
         public void ResetWaypointsColor()

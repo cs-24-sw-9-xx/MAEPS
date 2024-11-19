@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Maes.Simulation.SimulationScenarios
 {
-    public delegate PatrollingMap PatrollingMapFactory(PatrollingMapSpawner generator, SimulationMap<Tile> map);
+    public delegate PatrollingMap PatrollingMapFactory(SimulationMap<Tile> map);
 
     public sealed class PatrollingSimulationScenario : SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>
     {
@@ -36,7 +36,7 @@ namespace Maes.Simulation.SimulationScenarios
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
-            PatrollingMapFactory = patrollingMapFactory ?? ((generator, map) => generator.GeneratePatrollingMapRectangleBased(map));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map));
         }
     }
 }

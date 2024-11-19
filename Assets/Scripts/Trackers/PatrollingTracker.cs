@@ -121,8 +121,8 @@ namespace Maes.Trackers
                 _lastPlottedSnapshot = 0;
             }
         }
-
-        protected override void OnLogicUpdate(IReadOnlyList<MonaRobot> robots)
+        
+        protected override void OnLogicUpdate(MonaRobot[] robots)
         {
             var worstGraphIdleness = 0;
             var graphIdlenessSum = 0;

@@ -182,23 +182,28 @@ namespace Maes.Map.MapPatrollingGen
         /// <returns></returns>
         private static int? RightVerticalSplit(SplitRoom splitRoom)
         {
-            var potentialSplits = new HashSet<int>();
-
             foreach (var tile in splitRoom.Tiles)
             {
                 // If no tiles are on the right side add it as potential split
-                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.right))
+                var all = true;
+                foreach (var t in splitRoom.Tiles)
                 {
-                    potentialSplits.Add(tile.x);
+                    if (t == tile + Vector2Int.right)
+                    {
+                        all = false;
+                        break;
+                    }
                 }
-            }
 
-            foreach (var potentialSplit in potentialSplits)
-            {
-                // If there are a tile to the right of the split
-                if (splitRoom.Tiles.Any(t => t.x > potentialSplit))
+                if (all)
                 {
-                    return potentialSplit;
+                    foreach (var t in splitRoom.Tiles)
+                    {
+                        if (t.x > tile.x)
+                        {
+                            return tile.x;
+                        }
+                    }
                 }
             }
 
@@ -213,21 +218,30 @@ namespace Maes.Map.MapPatrollingGen
         /// <returns></returns>
         private static int? LeftVerticalSplit(SplitRoom splitRoom)
         {
-            var potentialSplits = new HashSet<int>();
             foreach (var tile in splitRoom.Tiles)
             {
-                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.left))
+                var all = true;
+                foreach (var t in splitRoom.Tiles)
                 {
-                    potentialSplits.Add(tile.x);
+                    if (t == tile + Vector2Int.left)
+                    {
+                        all = false;
+                        break;
+                    }
+                }
+
+                if (all)
+                {
+                    foreach (var t in splitRoom.Tiles)
+                    {
+                        if (t.x < tile.x)
+                        {
+                            return tile.x;
+                        }
+                    }
                 }
             }
-            foreach (var potentialSplit in potentialSplits)
-            {
-                if (splitRoom.Tiles.Any(t => t.x < potentialSplit))
-                {
-                    return potentialSplit;
-                }
-            }
+
             return null;
         }
 
@@ -238,21 +252,27 @@ namespace Maes.Map.MapPatrollingGen
         /// <returns></returns>
         private static int? HorizontalSplit(SplitRoom splitRoom)
         {
-            var potentialSplits = new HashSet<int>();
-
             foreach (var tile in splitRoom.Tiles)
             {
-                if (splitRoom.Tiles.All(t => t != tile + Vector2Int.up))
+                var all = true;
+                foreach (var t in splitRoom.Tiles)
                 {
-                    potentialSplits.Add(tile.y);
+                    if (t == tile + Vector2Int.up)
+                    {
+                        all = false;
+                        break;
+                    }
                 }
-            }
 
-            foreach (var potentialSplit in potentialSplits)
-            {
-                if (splitRoom.Tiles.Any(t => t.y > potentialSplit))
+                if (all)
                 {
-                    return potentialSplit;
+                    foreach (var t in splitRoom.Tiles)
+                    {
+                        if (t.y > tile.y)
+                        {
+                            return tile.y;
+                        }
+                    }
                 }
             }
 
