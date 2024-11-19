@@ -30,7 +30,7 @@ namespace Maes.Trackers
 
         public int CurrentCycle { get; private set; }
 
-        public float? AverageGraphDiffLastTwoCyclesProportion {get; private set; }
+        public float? AverageGraphDiffLastTwoCyclesProportion { get; private set; }
 
         public BaseChart Chart { get; set; } = null!;
 
@@ -144,12 +144,14 @@ namespace Maes.Trackers
             CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
             _totalGraphIdleness += CurrentGraphIdleness;
 
-            if(_lastCycle != CurrentCycle){
+            if (_lastCycle != CurrentCycle)
+            {
                 var lastTick = _currentTick - _lastAmountOfTicksSinceLastCycle;
                 var totalGraphIdlenessCycle = _totalGraphIdleness - _lastCyclesTotalGraphIdleness;
                 var averageGraphIdlenessCycle = totalGraphIdlenessCycle / lastTick;
-                
-                if(CurrentCycle > 1){
+
+                if (CurrentCycle > 1)
+                {
                     var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) / _lastCycleAverageGraphIdleness;
                     Debug.Log($"Average Graph Diff Last Two Cycles Proportion: {cycleAvg}");
                     AverageGraphDiffLastTwoCyclesProportion = cycleAvg;
