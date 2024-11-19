@@ -30,7 +30,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 if (vertexMap.TryGetValue(position, out var vertex))
                 {
-                    var color = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+                    var color = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
                     vertex.Color = color;
                     foreach (var neighborPos in neighbors)
                     {
