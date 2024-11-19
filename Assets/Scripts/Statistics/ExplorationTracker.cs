@@ -52,6 +52,9 @@ namespace Maes.Statistics
 
         private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new();
 
+        private readonly int _traces;
+        private readonly float _traceIntervalDegrees;
+
         public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
             : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
@@ -60,6 +63,10 @@ namespace Maes.Statistics
 
             _currentVisualizationMode = new AllRobotsExplorationVisualization(_map);
             _totalExplorableTriangles = collisionMap.Count(x => !Tile.IsWall(x.Item2.Type));
+
+            const float tracesPerMeter = 2f;
+            _traces = _constraints.SlamRayTraceCount ?? (int)(Mathf.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
+            _traceIntervalDegrees = 360f / _traces;
         }
 
         protected override void CreateSnapShot()
@@ -127,19 +134,6 @@ namespace Maes.Statistics
             base.OnAfterFirstTick(robots);
         }
 
-        protected override void AfterRayTracingARobot(MonaRobot robot)
-        {
-            // Register newly explored cells of this robot for visualization
-            _currentVisualizationMode.RegisterNewlyExploredCells(robot, _newlyExploredTriangles);
-            _newlyExploredTriangles.Clear();
-        }
-
-        protected override void OnNewlyExploredTriangles(int index, ExplorationCell cell)
-        {
-            _newlyExploredTriangles.Add((index, cell));
-            ExploredTriangles++;
-        }
-
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
             _selectedRobot = robot;
@@ -193,6 +187,78 @@ namespace Maes.Statistics
             }
 
             SetVisualizationMode(new SelectedRobotSlamMapVisualization(_selectedRobot.Controller));
+        }
+
+        protected override void OnBeforeLogicUpdate(MonaRobot[] robots)
+        {
+            base.OnBeforeLogicUpdate(robots);
+
+            // The user can specify the tick interval at which the slam map is updated. 
+            var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam &&
+                                      _currentTick % _constraints.SlamUpdateIntervalInTicks == 0;
+
+            PerformRayTracing(robots, shouldUpdateSlamMap);
+        }
+
+        // Updates both exploration tracker and robot slam maps
+        private void PerformRayTracing(MonaRobot[] robots, bool shouldUpdateSlamMap)
+        {
+            var visibilityRange = _constraints.SlamRayTraceRange;
+
+            foreach (var robot in robots)
+            {
+                SlamMap? slamMap = null;
+
+                if (shouldUpdateSlamMap)
+                {
+                    slamMap = robot.Controller.SlamMap;
+                    slamMap.ResetRobotVisibility();
+                }
+
+                var position = (Vector2)robot.transform.position;
+
+                // Use amount of traces specified by user, or calculate circumference and use trace at interval of 4
+                for (var i = 0; i < _traces; i++)
+                {
+                    var angle = i * _traceIntervalDegrees;
+                    // Avoid ray casts that can be parallel to the lines of a triangle
+                    if (angle % 45 == 0)
+                    {
+                        angle += 0.5f;
+                    }
+
+                    _rayTracingMap.Raytrace(position, angle, visibilityRange, (index, cell) =>
+                    {
+                        if (cell.IsExplorable)
+                        {
+                            if (!cell.IsExplored)
+                            {
+                                cell.LastExplorationTimeInTicks = _currentTick;
+                                cell.ExplorationTimeInTicks += 1;
+
+                                _newlyExploredTriangles.Add((index, cell));
+                                ExploredTriangles++;
+                            }
+
+                            cell.RegisterExploration(_currentTick);
+                        }
+
+                        if (slamMap != null)
+                        {
+                            var localCoordinate = slamMap.TriangleIndexToCoordinate(index);
+                            // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
+                            slamMap.SetExploredByCoordinate(localCoordinate, isOpen: cell.IsExplorable);
+                            slamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, localCoordinate, isOpen: cell.IsExplorable);
+                        }
+
+                        return cell.IsExplorable;
+                    });
+                }
+
+                // Register newly explored cells of this robot for visualization
+                _currentVisualizationMode.RegisterNewlyExploredCells(robot, _newlyExploredTriangles);
+                _newlyExploredTriangles.Clear();
+            }
         }
     }
 }
