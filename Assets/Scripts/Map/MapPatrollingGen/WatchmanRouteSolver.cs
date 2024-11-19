@@ -1,6 +1,9 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
+
 using Maes.Map.MapGen;
+
 using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
@@ -84,6 +87,8 @@ namespace Maes.Map.MapPatrollingGen
             return map;
         }
 
+        // Solve the watchman route problem using a greedy algorithm.
+        // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
         {
             var guardPositions = new List<Vector2Int>();
@@ -246,26 +251,6 @@ namespace Maes.Map.MapPatrollingGen
             return reverseNearestNeighbors;
         }
 
-        // Depth-first search to find connected components
-        private static void DepthFirstSearch(Vertex vertex, HashSet<Vertex> visited, List<Vertex> component)
-        {
-            if (visited.Contains(vertex))
-            {
-                return;
-            }
-
-            visited.Add(vertex);
-            component.Add(vertex);
-
-            foreach (var neighbor in vertex.Neighbors)
-            {
-                if (!visited.Contains(neighbor))
-                {
-                    DepthFirstSearch(neighbor, visited, component);
-                }
-            }
-        }
-
         // Merge islands (isolated connected verticies) recursively until all islands are connected
         private static List<Vertex> MergeIslandsRecursively(
             List<Vertex> currentIsland,
@@ -277,9 +262,9 @@ namespace Maes.Map.MapPatrollingGen
                 return currentIsland; // Base case: no more islands to merge
             }
 
-            List<Vertex> closestIsland = null;
-            Vertex closestVertexInCurrent = null;
-            Vertex closestVertexInNew = null;
+            List<Vertex>? closestIsland = null;
+            Vertex? closestVertexInCurrent = null;
+            Vertex? closestVertexInNew = null;
             var minDistance = int.MaxValue;
 
             // Find the closest island and vertices to merge
@@ -289,23 +274,20 @@ namespace Maes.Map.MapPatrollingGen
                 {
                     foreach (var newVertex in island)
                     {
-                        if (distanceDict.TryGetValue((currentVertex.Position, newVertex.Position), out var distance) ||
-                            distanceDict.TryGetValue((newVertex.Position, currentVertex.Position), out distance))
+                        var distance = distanceDict[(currentVertex.Position, newVertex.Position)];
+                        if (distance < minDistance)
                         {
-                            if (distance < minDistance)
-                            {
-                                minDistance = distance;
-                                closestVertexInCurrent = currentVertex;
-                                closestVertexInNew = newVertex;
-                                closestIsland = island;
-                            }
+                            minDistance = distance;
+                            closestVertexInCurrent = currentVertex;
+                            closestVertexInNew = newVertex;
+                            closestIsland = island;
                         }
                     }
                 }
             }
 
             // Connect the closest vertices between the current island and the closest island
-            if (closestVertexInCurrent != null && closestVertexInNew != null)
+            if (closestIsland != null && closestVertexInCurrent != null && closestVertexInNew != null)
             {
                 closestVertexInCurrent.AddNeighbor(closestVertexInNew);
                 closestVertexInNew.AddNeighbor(closestVertexInCurrent);
@@ -326,29 +308,57 @@ namespace Maes.Map.MapPatrollingGen
             Dictionary<(Vector2Int, Vector2Int), int> distanceDict)
         {
             var visited = new HashSet<Vertex>();
-            var components = new List<List<Vertex>>();
 
-            // Identify all connected components using DFS
+            // Function to traverse a cluster and collect its vertices
+            List<Vertex> TraverseCluster(Vertex start)
+            {
+                var cluster = new List<Vertex>();
+                var stack = new Stack<Vertex>();
+                stack.Push(start);
+
+                while (stack.Count > 0)
+                {
+                    var current = stack.Pop();
+                    if (!visited.Contains(current))
+                    {
+                        visited.Add(current);
+                        cluster.Add(current);
+
+                        foreach (var neighbor in current.Neighbors)
+                        {
+                            if (!visited.Contains(neighbor))
+                            {
+                                stack.Push(neighbor);
+                            }
+                        }
+                    }
+                }
+
+                return cluster;
+            }
+
+            var clusters = new List<List<Vertex>>();
+
+            // Identify disconnected clusters dynamically
             foreach (var vertex in vertices)
             {
                 if (!visited.Contains(vertex))
                 {
-                    var component = new List<Vertex>();
-                    DepthFirstSearch(vertex, visited, component);
-                    components.Add(component);
+                    clusters.Add(TraverseCluster(vertex));
                 }
             }
 
-            if (components.Count > 1)
+            if (clusters.Count > 1)
             {
-                // Start with the first component as the initial island
-                var initialIsland = components[0];
-                components.RemoveAt(0);
+                // Start with the first cluster as the initial island
+                var initialIsland = clusters[0];
+                clusters.RemoveAt(0);
 
-                // Recursively merge all components into one island
-                MergeIslandsRecursively(initialIsland, components, distanceDict);
+                // Recursively merge all clusters into one
+                MergeIslandsRecursively(initialIsland, clusters, distanceDict);
             }
         }
+
 
         // Calculate the shortest path between all pairs of verticies
         private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
@@ -371,17 +381,17 @@ namespace Maes.Map.MapPatrollingGen
                    !map[pos.x, pos.y]; // true if the position is not a wall
         }
 
-        // BFS to find the shortest path from the start position to all other verticies
-        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, bool[,] map)
+        private static readonly Vector2Int[] Directions = new Vector2Int[]
         {
-            var directions = new Vector2Int[]
-            {
             new(0, 1),
             new(0, -1),
             new(1, 0),
             new(-1, 0)
-            };
+        };
 
+        // BFS to find the shortest path from the start position to all other verticies
+        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, bool[,] map)
+        {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();
             var distanceMap = new Dictionary<Vector2Int, int>();
@@ -395,7 +405,7 @@ namespace Maes.Map.MapPatrollingGen
                 var current = queue.Dequeue();
                 var currentDistance = distanceMap[current];
 
-                foreach (var direction in directions)
+                foreach (var direction in Directions)
                 {
                     var neighbor = current + direction;
 
