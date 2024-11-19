@@ -91,24 +91,8 @@ namespace Maes.Map.MapPatrollingGen
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
         {
             var guardPositions = new List<Vector2Int>();
-            var uncoveredTiles = new HashSet<Vector2Int>();
-            var precomputedVisibility = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
-
-            // Collect all floor tiles
-            for (var x = 0; x < map.GetLength(0); x++)
-            {
-                for (var y = 0; y < map.GetLength(1); y++)
-                {
-                    if (!map[x, y])
-                    {
-                        var tile = new Vector2Int(x, y);
-                        uncoveredTiles.Add(tile);
-
-                        // Precompute visibility for each tile
-                        precomputedVisibility[tile] = ComputeVisibility(tile, map);
-                    }
-                }
-            }
+            var precomputedVisibility = ComputeVisibility(map);
+            var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
 
             // Greedy algorithm to find the best guard positions
             while (uncoveredTiles.Count > 0)
@@ -138,6 +122,26 @@ namespace Maes.Map.MapPatrollingGen
                 }
             }
             return guardPositions;
+        }
+
+        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
+        {
+            var precomputedVisibility = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
+            // Compute the visibility for each floor tile
+            for (var x = 0; x < map.GetLength(0); x++)
+            {
+                for (var y = 0; y < map.GetLength(1); y++)
+                {
+                    if (!map[x, y])
+                    {
+                        var tile = new Vector2Int(x, y);
+
+                        // Precompute visibility for each tile
+                        precomputedVisibility[tile] = ComputeVisibility(tile, map);
+                    }
+                }
+            }
+            return precomputedVisibility;
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
