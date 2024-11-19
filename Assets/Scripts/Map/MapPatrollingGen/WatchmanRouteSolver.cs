@@ -90,8 +90,14 @@ namespace Maes.Map.MapPatrollingGen
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
         {
-            var guardPositions = new List<Vector2Int>();
             var precomputedVisibility = ComputeVisibility(map);
+            var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
+            return guardPositions;
+        }
+
+        private static List<Vector2Int> ComputeVertexCoordinates(Dictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
+        {
+            var guardPositions = new List<Vector2Int>();
             var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
 
             // Greedy algorithm to find the best guard positions
@@ -121,6 +127,7 @@ namespace Maes.Map.MapPatrollingGen
                     uncoveredTiles.Remove(coveredTile);
                 }
             }
+
             return guardPositions;
         }
 
