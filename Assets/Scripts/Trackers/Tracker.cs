@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Map.MapGen;
@@ -7,8 +6,6 @@ using Maes.Map.Visualization;
 using Maes.Robot;
 using Maes.Statistics;
 using Maes.Visualizers;
-
-using UnityEngine;
 
 namespace Maes.Trackers
 {
@@ -22,7 +19,7 @@ namespace Maes.Trackers
         protected readonly TVisualizer _visualizer;
 
         protected readonly SimulationMap<TCell> _map;
-        private readonly RayTracingMap<TCell> _rayTracingMap;
+        protected readonly RayTracingMap<TCell> _rayTracingMap;
         private readonly int _explorationMapWidth;
         private readonly int _explorationMapHeight;
 
@@ -39,9 +36,6 @@ namespace Maes.Trackers
         // Set by derived class constructor.
         protected TVisualizationMode _currentVisualizationMode = null!;
 
-        private readonly int _traces;
-        private readonly float _traceIntervalDegrees;
-
         private readonly CoverageCalculator<TCell>.MiniTileConsumer _preCoverageTileConsumerDelegate;
 
         protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, TCell> mapper)
@@ -49,10 +43,6 @@ namespace Maes.Trackers
             _visualizer = visualizer;
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
-
-            const float tracesPerMeter = 2f;
-            _traces = _constraints.SlamRayTraceCount ?? (int)(Mathf.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
-            _traceIntervalDegrees = 360f / _traces;
 
             _visualizer.SetSimulationMap(_map, collisionMap.ScaledOffset);
             _rayTracingMap = new RayTracingMap<TCell>(_map);
@@ -63,10 +53,7 @@ namespace Maes.Trackers
 
         public void LogicUpdate(MonaRobot[] robots)
         {
-            // The user can specify the tick interval at which the slam map is updated. 
-            var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam &&
-                                      _currentTick % _constraints.SlamUpdateIntervalInTicks == 0;
-            PerformRayTracing(robots, shouldUpdateSlamMap);
+            OnBeforeLogicUpdate(robots);
 
             // In the first tick, the robot does not have a position in the slam map.
             if (!_isFirstTick)
@@ -103,7 +90,8 @@ namespace Maes.Trackers
             _currentTick++;
         }
 
-        protected virtual void OnLogicUpdate(IReadOnlyList<MonaRobot> robots) { }
+        protected virtual void OnBeforeLogicUpdate(MonaRobot[] robots) { }
+        protected virtual void OnLogicUpdate(MonaRobot[] robots) { }
 
         public abstract void SetVisualizedRobot(MonaRobot? robot);
 
@@ -116,67 +104,6 @@ namespace Maes.Trackers
         }
 
         protected abstract void CreateSnapShot();
-
-        // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(MonaRobot[] robots, bool shouldUpdateSlamMap)
-        {
-            var visibilityRange = _constraints.SlamRayTraceRange;
-
-            foreach (var robot in robots)
-            {
-                SlamMap? slamMap = null;
-
-                if (shouldUpdateSlamMap)
-                {
-                    slamMap = robot.Controller.SlamMap;
-                    slamMap.ResetRobotVisibility();
-                }
-
-                var position = (Vector2)robot.transform.position;
-
-                // Use amount of traces specified by user, or calculate circumference and use trace at interval of 4
-                for (var i = 0; i < _traces; i++)
-                {
-                    var angle = i * _traceIntervalDegrees;
-                    // Avoid ray casts that can be parallel to the lines of a triangle
-                    if (angle % 45 == 0)
-                    {
-                        angle += 0.5f;
-                    }
-
-                    _rayTracingMap.Raytrace(position, angle, visibilityRange, (index, cell) =>
-                    {
-                        if (cell.IsExplorable)
-                        {
-                            if (!cell.IsExplored)
-                            {
-                                cell.LastExplorationTimeInTicks = _currentTick;
-                                cell.ExplorationTimeInTicks += 1;
-                                OnNewlyExploredTriangles(index, cell);
-                            }
-
-                            cell.RegisterExploration(_currentTick);
-                        }
-
-                        if (slamMap != null)
-                        {
-                            var localCoordinate = slamMap.TriangleIndexToCoordinate(index);
-                            // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
-                            slamMap.SetExploredByCoordinate(localCoordinate, isOpen: cell.IsExplorable);
-                            slamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, localCoordinate, isOpen: cell.IsExplorable);
-                        }
-
-                        return cell.IsExplorable;
-                    });
-                }
-
-                AfterRayTracingARobot(robot);
-            }
-        }
-
-        protected virtual void OnNewlyExploredTriangles(int index, TCell cell) { }
-
-        protected virtual void AfterRayTracingARobot(MonaRobot robot) { }
 
         protected virtual void SetVisualizationMode(TVisualizationMode newMode)
         {
