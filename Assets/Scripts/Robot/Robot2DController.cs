@@ -477,15 +477,16 @@ namespace Maes.Robot
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
         public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
-            // Is Constraints.RelativeMoveSpeed equal to the speed or is this multiplied by the movement force?
-            var distForMaxSpeed = 2.5f;
+            // An estimation for the distance it takes the robot to reach terminal speed.
+            const float distForMaxSpeed = 2.5f;
             var distance = EstimateDistanceToTarget(target);
             if (distance == null)
             {
                 return null;
             }
             var dist = distance.Value;
-            var startDist = Math.Min(dist, 2.5f);
+            var startDist = Math.Min(dist, distForMaxSpeed);
+            // If the distance is small, it's characterized by a quadratic function.
             var startTime = (int)Math.Floor(Math.Pow(CorrectForRelativeMoveSpeed(startDist, Constraints.RelativeMoveSpeed), 0.85));
             if (dist <= distForMaxSpeed)
             {
@@ -493,12 +494,14 @@ namespace Maes.Robot
             }
             else
             {
+                // If the distance is long, the robot reaches terminal speed, and is characterized as a liniar function.
                 dist -= distForMaxSpeed;
                 return (int)Math.Ceiling(CorrectForRelativeMoveSpeed(dist, Constraints.RelativeMoveSpeed)) + startTime;
             }
 
             static float CorrectForRelativeMoveSpeed(float distance, float relativeMoveSpeed)
             {
+                // These constants are fitted not calculated.
                 return distance * 3.2f / (0.21f + (relativeMoveSpeed / 3.0f));
             }
         }
@@ -512,7 +515,6 @@ namespace Maes.Robot
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
         public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
         {
-            var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
             if (SlamMap.CoarseMap.GetTileCenterRelativePosition(target).Distance < 0.5f)
             {
                 return 0f;
