@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
 {
-    public class PatrollingWaypointGenerator
+    public static class PatrollingWaypointGenerator
     {
         public static List<Vertex> GetPossibleWaypoints(SimulationMap<Tile> simulationMap)
         {
