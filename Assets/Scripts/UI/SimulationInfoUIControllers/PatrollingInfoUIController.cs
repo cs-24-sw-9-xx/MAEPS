@@ -251,8 +251,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void InitIdleGraph()
         {
             Chart.Init();
-            //Chart.gameObject.AddComponent<Mesh>();
-            //Chart.gameObject.GetComponent<Mesh>().indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             var xAxis = Chart.EnsureChartComponent<XAxis>();
             xAxis.splitNumber = 10;
             xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
