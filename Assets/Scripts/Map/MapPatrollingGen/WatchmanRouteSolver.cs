@@ -144,7 +144,7 @@ namespace Maes.Map.MapPatrollingGen
                         var tile = new Vector2Int(x, y);
 
                         // Precompute visibility for each tile
-                        precomputedVisibility[tile] = ComputeVisibility(tile, map);
+                        precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
                     }
                 }
             }
@@ -152,7 +152,7 @@ namespace Maes.Map.MapPatrollingGen
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
-        private static HashSet<Vector2Int> ComputeVisibility(Vector2Int start, bool[,] map)
+        private static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
             for (var x = 0; x < map.GetLength(0); x++)
