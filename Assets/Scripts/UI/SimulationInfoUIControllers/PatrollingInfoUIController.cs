@@ -83,7 +83,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             PatrollingHeatMapButton.onClick.AddListener(() =>
             {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowNone());
             });
 
             TargetWaypointSelectedButton.onClick.AddListener(() =>
@@ -179,7 +179,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case PatrollingCoverageHeatMapVisualizationMode:
                     SelectVisualizationButton(CoverageHeatMapButton);
                     break;
-                case PatrollingHeatMapVisualizationMode:
+                case NoneVisualizationMode:
                     SelectVisualizationButton(PatrollingHeatMapButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
