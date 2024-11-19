@@ -230,7 +230,6 @@ namespace PlayModeTests
                 controller.PathAndMoveTo(coarseMapTargetPosition);
             };
 
-            //Debug.Log($"PathAndMoveTo coarseTile from: {coarseMapStartingPosition}, to: {coarseMapTargetPosition}");
             _maes.PressPlayButton();
             var prevTick = -1;
             while (_testAlgorithm.Tick == 0 || _currentCoarseTile != coarseMapTargetPosition)
@@ -238,12 +237,10 @@ namespace PlayModeTests
                 if (debug && prevTick != _testAlgorithm.Tick)
                 {
                     prevTick = _testAlgorithm.Tick;
-                    //Debug.Log($"Tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
                 }
                 yield return null;
             }
             var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 5f);
-            // Debug.Log($"Final tick: {_testAlgorithm.Tick}, current position: {_currentCoarseTile}, current status: {_testAlgorithm.Controller.GetStatus()}");
             Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
             var targetTimeDelta = Math.Abs(_testAlgorithm.Tick - estimatedTime);
             Assert.LessOrEqual(targetTimeDelta, maximumDeviation);
