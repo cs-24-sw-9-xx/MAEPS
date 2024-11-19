@@ -235,7 +235,7 @@ namespace Maes.Map.PathFinding
         }
 
         // Converts the given A* path to PathSteps (containing a line and a list of all tiles intersected in this path)
-        public List<PathStep> PathToSteps(Vector2Int[] path, float robotRadius)
+        public List<PathStep> PathToSteps(Vector2Int[] path, float robotRadius = 0.4f)
         {
             if (path.Length == 1)
             {

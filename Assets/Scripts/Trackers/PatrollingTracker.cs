@@ -213,10 +213,10 @@ namespace Maes.Trackers
             SetVisualizationMode(new PatrollingCoverageHeatMapVisualizationMode(_map));
         }
 
-        public void ShowAllRobotPatrollingHeatMap()
+        public void ShowNone()
         {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new NoneVisualizationMode());
         }
 
         public void ShowTargetWaypointSelected()

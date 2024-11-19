@@ -393,7 +393,7 @@ namespace Maes.Map
 
             var path = _aStar.GetOptimisticPath(new Vector2Int((int)approxPosition.x, (int)approxPosition.y), target, this);
             _excludedTiles = new HashSet<Vector2Int>();
-            return path == null ? null : _aStar.PathToSteps(path, 0.4f);
+            return path == null ? null : _aStar.PathToSteps(path);
         }
 
         /// <summary>
