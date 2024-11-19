@@ -11,6 +11,12 @@ namespace Maes.Map.MapPatrollingGen
 {
     public class PatrollingWaypointGenerator
     {
+        /// <summary>
+        /// Generates a list of possible waypoints for the patrolling agents
+        /// It uses the nugetpackge DelaunatorSharp to generate the delaunator triangles: https://github.com/nol1fe/delaunator-sharp/tree/master
+        /// </summary>
+        /// <param name="simulationMap"></param>
+        /// <returns></returns>
         public static List<Vertex> GetPossibleWaypoints(SimulationMap<Tile> simulationMap)
         {
             // Get all wall tiles
