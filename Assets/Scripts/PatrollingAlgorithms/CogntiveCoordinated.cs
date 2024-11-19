@@ -1,4 +1,4 @@
-using System;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,20 +11,21 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private bool _isPatrolling = false;
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new Dictionary<int, Vertex>();
         private List<Vertex> _currentPath = new List<Vertex>();
         private int _iterator = 0;
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new Dictionary<int, Vertex>();
 
         public override string GetDebugInfo()
         {
             return
                 base.GetDebugInfo() +
-                $"Highest idle: {HighestIdle().Position}\n" +
-                $"Init done: {_isPatrolling}\n";
+                new StringBuilder()
+                    .Append("Highest idle:")
+                    .Append(HighestIdle().Position.ToString())
+                    .ToString();
         }
 
-        protected override void Preliminaries()
+        protected override Vertex NextVertex()
         {
             var receivedHeartbeat = _controller.ReceiveBroadcastWithId().OfType<KeyValuePair<int, Vertex>>();
 
@@ -36,19 +37,7 @@ namespace Maes.PatrollingAlgorithms
                     _unavailableVertices[message.Key] = message.Value;
                 }
             }
-
-            if (_isPatrolling)
-            {
-                return;
-            }
-
-            ConstructPath();
-            TargetVertex = _currentPath[_iterator];
-            _isPatrolling = true;
-        }
-
-        protected override Vertex NextVertex()
-        {
+            
             ConstructPath();
             var next = _currentPath[_iterator];
             _iterator++;
@@ -65,10 +54,9 @@ namespace Maes.PatrollingAlgorithms
 
             _iterator = 0;
 
-            _currentPath = AStar(GetClosestVertex(), HighestIdle());
+            _currentPath = AStar(TargetVertex, HighestIdle());
 
-            var ownHeartbeat = HighestIdle();
-            _controller.Broadcast(ownHeartbeat);
+            _controller.Broadcast(HighestIdle());
         }
 
         private Vertex HighestIdle()
@@ -76,25 +64,6 @@ namespace Maes.PatrollingAlgorithms
             // excluding the vertices other agents are pathing towards
             var availableVertices = _vertices.Except(_unavailableVertices.Values).ToList();
             return availableVertices.OrderBy((x) => x.LastTimeVisitedTick).First();
-        }
-
-        private Vertex GetClosestVertex()
-        {
-            Vertex? closestVertex = null;
-            var closestDistance = float.MaxValue;
-            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
-            foreach (var vertex in _vertices)
-            {
-                var distance = Vector2Int.Distance(position, vertex.Position);
-                if (!(distance < closestDistance))
-                {
-                    continue;
-                }
-
-                closestDistance = distance;
-                closestVertex = vertex;
-            }
-            return closestVertex ?? throw new InvalidOperationException("There are no vertices!");
         }
 
         private static List<Vertex> AStar(Vertex start, Vertex target)
