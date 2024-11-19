@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 
 using Maes.Algorithms;
-using Maes.Map.MapPatrollingGen;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
