@@ -27,14 +27,13 @@ namespace Maes.PatrollingAlgorithms
 
         protected override Vertex NextVertex()
         {
-            var receivedHeartbeat = _controller.ReceiveBroadcastWithId().OfType<KeyValuePair<int, Vertex>>();
+            var broadcasts = _controller.ReceiveBroadcastWithId().Where(broadcast => broadcast.Value is Vertex).ToList();
 
-            var enumerable = receivedHeartbeat.ToList();
-            if (enumerable.Count > 1)
+            if (broadcasts.Count > 1)
             {
-                foreach (var message in enumerable)
+                foreach (var message in broadcasts)
                 {
-                    _unavailableVertices[message.Key] = message.Value;
+                    _unavailableVertices[message.Key] = message.Value as Vertex;
                 }
             }
             
@@ -56,14 +55,29 @@ namespace Maes.PatrollingAlgorithms
 
             _currentPath = AStar(TargetVertex, HighestIdle());
 
-            _controller.Broadcast(HighestIdle());
+            _controller.Broadcast(_currentPath.Last());
         }
 
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices.Except(_unavailableVertices.Values).ToList();
-            return availableVertices.OrderBy((x) => x.LastTimeVisitedTick).First();
+            var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
+
+            var position = TargetVertex.Position;
+            var first = availableVertices.First();
+            var closestVertex = first;
+            
+            //maybe this extra computation shouldn't exist for CC.
+            foreach (var vertex in availableVertices.Where(vertex => vertex.LastTimeVisitedTick == first.LastTimeVisitedTick))
+            {
+                //would be better if it wasn't euclidean distance
+                if (Vector2Int.Distance(position, vertex.Position) < Vector2Int.Distance(position, first.Position))
+                {
+                   closestVertex = vertex; 
+                }
+            }
+            
+            return closestVertex;
         }
 
         private static List<Vertex> AStar(Vertex start, Vertex target)

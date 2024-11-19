@@ -72,11 +72,11 @@ namespace Maes.ExperimentSimulations
             const string algorithmName = "cognitive_coordinated";
             var algorithm = new CognitiveCoordinated();
 
-            var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
-            var size = 100;
+            var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 50, heightInTiles: 50);
+            var size = 50;
 
             var robotCount = 3;
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+            /*simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 totalCycles: 4,
                 stopAfterDiff: false,
                 mapSpawner: generator => generator.GenerateMap(mapConfig),
@@ -90,6 +90,7 @@ namespace Maes.ExperimentSimulations
                 statisticsFileName:
                 $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                 robotConstraints: rc));
+                */
 
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)

@@ -18,10 +18,10 @@ namespace Maes.PatrollingAlgorithms
         private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        private Vertex[] _vertices = null!;
+        protected Vertex[] _vertices = null!;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
 
         protected event OnReachVertex? OnReachVertexHandler;
 
