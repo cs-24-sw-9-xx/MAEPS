@@ -3,7 +3,6 @@ using System.Globalization;
 using System.IO;
 
 using Maes.Algorithms;
-using Maes.Map.MapPatrollingGen;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
@@ -25,7 +24,7 @@ namespace Maes.Simulation
 
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
-            var patrollingMap = scenario.PatrollingMapFactory(new PatrollingMapSpawner(), _collisionMap);
+            var patrollingMap = scenario.PatrollingMapFactory(_collisionMap);
 
             PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, scenario, patrollingMap);
 

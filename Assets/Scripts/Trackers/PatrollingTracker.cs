@@ -31,9 +31,21 @@ namespace Maes.Trackers
 
         public float? AverageGraphDiffLastTwoCyclesProportion => null; // This was broken anyway.
 
-        public ScatterChart Chart { get; set; } = null!;
+        public BaseChart Chart { get; set; } = null!;
 
         public DataZoom Zoom { get; set; } = null!;
+
+        public bool PlotTotalDistanceTraveled = false;
+
+        public bool PlotAverageIdleness = false;
+
+        public bool PlotCurrentIdleness = false;
+
+        public bool PlotWorstIdleness = true;
+
+        public int PlottingFrequency = 50;
+
+        private int _lastPlottedSnapshot = 0;
 
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
@@ -79,6 +91,36 @@ namespace Maes.Trackers
             }
         }
 
+        // Hack: Cursed way of updating ui using unitys update event.
+        public void UIUpdate()
+        {
+            // TODO: Fix graph data limit.
+            if (Chart.gameObject.activeSelf && SnapShots.Count > 0)
+            {
+                //Update zoom to only follow the most recent data.
+                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
+                {
+                    Zoom.start = 50;
+                    Zoom.end = 100;
+                }
+
+                for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
+                {
+                    if (SnapShots[i].Tick % PlottingFrequency == 0)
+                    {
+                        PlotData(SnapShots[i]);
+                    }
+                }
+
+                _lastPlottedSnapshot = SnapShots.Count;
+                Chart.RefreshDataZoom();
+            }
+            else
+            {
+                _lastPlottedSnapshot = 0;
+            }
+        }
+
         protected override void OnLogicUpdate(MonaRobot[] robots)
         {
             var worstGraphIdleness = 0;
@@ -98,20 +140,6 @@ namespace Maes.Trackers
             CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
             _totalGraphIdleness += CurrentGraphIdleness;
             _ticks++;
-
-            // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 50 == 0 && Chart != null && Chart.gameObject.activeSelf)
-            {
-                //Update zoom to only follow the most recent data.
-                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
-                {
-                    Zoom.start = 55;
-                    Zoom.end = 95;
-                }
-
-                Chart.AddData(0, _currentTick, WorstGraphIdleness);
-                Chart.RefreshDataZoom();
-            }
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
@@ -133,7 +161,7 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CompletedCycles));
 
             foreach (var vertex in _vertices.Values)
             {
@@ -191,6 +219,29 @@ namespace Maes.Trackers
 
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+        }
+
+        private void PlotData(PatrollingSnapShot snapShot)
+        {
+            if (PlotWorstIdleness)
+            {
+                Chart.AddData(0, snapShot.Tick, snapShot.WorstGraphIdleness);
+            }
+
+            if (PlotCurrentIdleness)
+            {
+                Chart.AddData(1, snapShot.Tick, snapShot.GraphIdleness);
+            }
+
+            if (PlotAverageIdleness)
+            {
+                Chart.AddData(2, snapShot.Tick, snapShot.AverageGraphIdleness);
+            }
+
+            if (PlotTotalDistanceTraveled)
+            {
+                Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
+            }
         }
     }
 }
