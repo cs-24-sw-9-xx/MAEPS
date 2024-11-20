@@ -30,7 +30,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         public Button WaypointHeatMapButton = null!;
         public Button CoverageHeatMapButton = null!;
-        public Button PatrollingHeatMapButton = null!;
+        public Button NoneButton = null!;
 
         public Button TargetWaypointSelectedButton = null!;
         public Button VisibleSelectedButton = null!;
@@ -48,7 +48,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
+            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton
         };
 
         protected override void AfterStart()
@@ -56,7 +56,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             InitIdleGraph();
 
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
-            SelectVisualizationButton(WaypointHeatMapButton);
+            SelectVisualizationButton(NoneButton);
 
             if (Simulation != null)
             {
@@ -81,7 +81,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotCoverageHeatMap());
             });
 
-            PatrollingHeatMapButton.onClick.AddListener(() =>
+            NoneButton.onClick.AddListener(() =>
             {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowNone());
             });
@@ -166,7 +166,10 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         public void Update()
         {
-            Simulation!.PatrollingTracker.UIUpdate();
+            if (Simulation is not null)
+            {
+                Simulation.PatrollingTracker.UIUpdate();
+            }
         }
 
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
@@ -180,7 +183,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                     SelectVisualizationButton(CoverageHeatMapButton);
                     break;
                 case NoneVisualizationMode:
-                    SelectVisualizationButton(PatrollingHeatMapButton);
+                    SelectVisualizationButton(NoneButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
                     SelectVisualizationButton(TargetWaypointSelectedButton);
