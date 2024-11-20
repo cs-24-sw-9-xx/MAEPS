@@ -240,6 +240,7 @@ namespace PlayModeTests
                 }
                 yield return null;
             }
+            Debug.Log($"IsBatchmode: {Application.isBatchMode}");
             var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 5f);
             Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
             var targetTimeDelta = Math.Abs(_testAlgorithm.Tick - estimatedTime);
