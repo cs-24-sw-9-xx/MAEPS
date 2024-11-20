@@ -142,11 +142,51 @@ namespace Maes.Map.MapPatrollingGen
                     }
                 }
             }
+            // To debug the ComputeVisibility method, use the following utility method to save as image
+            // SaveAsImage.SaveVisibileTiles();
+
             return precomputedVisibility;
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
-        private static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
+        public static HashSet<Vector2Int> ComputeVisibilityOfPointFastBreakColumn(Vector2Int start, bool[,] map)
+        {
+            var visibilitySet = new HashSet<Vector2Int>();
+
+            // Traverse columns in both directions
+            TraverseColumn(start, map, visibilitySet, 1);  // Right direction
+            TraverseColumn(start, map, visibilitySet, -1); // Left direction
+
+            return visibilitySet;
+        }
+
+        // Traverses the map column by column, pruning the search based on visibility
+        private static void TraverseColumn(Vector2Int start, bool[,] map, HashSet<Vector2Int> visibilitySet, int direction)
+        {
+            for (var x = start.x; x >= 0 && x < map.GetLength(0); x += direction)
+            {
+                var resultInCurrentColumn = false;
+                for (var y = 0; y < map.GetLength(1); y++)
+                {
+                    var target = new Vector2Int(x, y);
+
+                    if (!map[x, y] && IsInLineOfSight(start, target, map))
+                    {
+                        visibilitySet.Add(target);
+                        resultInCurrentColumn = true;
+                    }
+                }
+
+                // Stop if the current column has no visible tiles
+                if (!resultInCurrentColumn && x != start.x)
+                {
+                    break;
+                }
+            }
+        }
+
+        // Precompute visibility using an efficient line-drawing algorithm
+        public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
             for (var x = 0; x < map.GetLength(0); x++)
