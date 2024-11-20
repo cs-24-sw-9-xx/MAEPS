@@ -74,7 +74,7 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
         {
-            return GetPath(startCoordinate, targetCoordinate, pathFindingMap, true, acceptPartialPaths);
+            return GetPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: true, acceptPartialPaths: acceptPartialPaths);
         }
 
         public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
@@ -106,7 +106,8 @@ namespace Maes.Map.PathFinding
 
                 if (currentCoordinate == targetCoordinate)
                 {
-                    return currentTile.Path();
+                    var path = currentTile.Path();
+                    return path;
                 }
 
                 foreach (var dir in CardinalDirection.GetCardinalAndOrdinalDirections())
@@ -115,10 +116,7 @@ namespace Maes.Map.PathFinding
                     // Only consider non-solid tiles
                     if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
                     {
-                        if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate))
-                        {
                             continue;
-                        }
                     }
 
                     if (dir.IsDiagonal())
@@ -127,11 +125,7 @@ namespace Maes.Map.PathFinding
                         if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic)
                         || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
                         {
-                            if (pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Previous().Vector, currentCoordinate) ||
-                                pathFindingMap.IsUnseenSemiOpen(currentCoordinate + dir.Next().Vector, currentCoordinate))
-                            {
                                 continue;
-                            }
                         }
                     }
 

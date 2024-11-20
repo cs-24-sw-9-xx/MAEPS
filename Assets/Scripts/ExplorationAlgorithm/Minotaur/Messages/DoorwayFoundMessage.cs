@@ -53,7 +53,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             public IMinotaurMessage? Process(MinotaurAlgorithm minotaur)
             {
                 var doorwayTile = CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center);
-                var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, false);
+                var pathLengthToDoorway = minotaur._map.GetPath(doorwayTile, beOptimistic: true);
                 if (pathLengthToDoorway != null)
                 {
                     foreach (var knownDoorway in minotaur._doorways)

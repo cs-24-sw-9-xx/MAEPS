@@ -107,6 +107,8 @@ namespace Maes.PatrollingAlgorithms
 
         private void PathAndMoveToTarget()
         {
+            const float closeness = 0.25f;
+
             if (_controller.GetStatus() != RobotStatus.Idle)
             {
                 return;
@@ -115,7 +117,7 @@ namespace Maes.PatrollingAlgorithms
             _currentTarget ??= _currentPath.Dequeue();
 
             var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
-            if (relativePosition.Distance < 0.5f)
+            if (relativePosition.Distance < closeness)
             {
                 if (_currentPath.Count == 0)
                 {
@@ -126,11 +128,26 @@ namespace Maes.PatrollingAlgorithms
                 _currentTarget = _currentPath.Dequeue();
                 relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
             }
+            #region DrawPath
+#if DEBUG
+            Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(_controller.SlamMap.CoarseMap.GetApproximatePosition()), _controller.SlamMap.CoarseMap.TileToWorld(_currentTarget.Value), Color.cyan, 2);
+            for (var i = 0; i < _currentPath.Count - 1; i++)
+            {
+                var pathSteps = _currentPath.ToArray();
+                if (i == 0)
+                {
+                    Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(_currentTarget.Value), _controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i]), Color.cyan, 2);
+                }
+
+                Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i]), _controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i + 1]), Color.cyan, 2);
+            }
+#endif
+            #endregion
             if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
             {
                 _controller.Rotate(relativePosition.RelativeAngle);
             }
-            else if (relativePosition.Distance > 0.5f)
+            else if (relativePosition.Distance > closeness)
             {
                 _controller.Move(relativePosition.Distance);
             }
