@@ -9,11 +9,13 @@ namespace PlayModeTests
 {
     public class ComputeVisibilityTest
     {
-        public class TestCase {
+        public class TestCase
+        {
             public string Name;
             public bool[,] Map;
             public int Expected;
-            public TestCase(string name, bool[,] map, int expected) {
+            public TestCase(string name, bool[,] map, int expected)
+            {
                 Name = name;
                 Map = map;
                 Expected = expected;
@@ -51,7 +53,7 @@ namespace PlayModeTests
                 {false, false, false},
                 {true, true, true},
                 {false, false, false},
-            }, 3), 
+            }, 3),
             new TestCase("3x3 can see slightly around walls", new bool[,] {
                 {false, false, false},
                 {true, true, false},
@@ -84,19 +86,21 @@ namespace PlayModeTests
 
         [Theory]
         [TestCaseSource("ComputeVisibilityTestCases")]
-        public void ComputeVisibilityOfPointTests(TestCase testCase) {
+        public void ComputeVisibilityOfPointTests(TestCase testCase)
+        {
             var map = testCase.Map;
             var expected = testCase.Expected;
-            var result = WatchmanRouteSolver.ComputeVisibilityOfPoint(new Vector2Int(0,0), map);
+            var result = WatchmanRouteSolver.ComputeVisibilityOfPoint(new Vector2Int(0, 0), map);
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
-        
+
         [Theory]
         [TestCaseSource("ComputeVisibilityTestCases")]
-        public void ComputeVisibilityOfPointFastBreakColumnTests(TestCase testCase) {
+        public void ComputeVisibilityOfPointFastBreakColumnTests(TestCase testCase)
+        {
             var map = testCase.Map;
             var expected = testCase.Expected;
-            var result = WatchmanRouteSolver.ComputeVisibilityOfPointFastBreakColumn(new Vector2Int(0,0), map);
+            var result = WatchmanRouteSolver.ComputeVisibilityOfPointFastBreakColumn(new Vector2Int(0, 0), map);
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
     }
