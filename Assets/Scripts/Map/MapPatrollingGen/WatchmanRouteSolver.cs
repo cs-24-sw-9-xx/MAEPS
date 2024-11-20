@@ -12,7 +12,7 @@ namespace Maes.Map.MapPatrollingGen
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap)
         {
             var map = MapToBitMap(simulationMap);
-            var vertexPositions = SolveWatchmanRoute(map).Select(pos => MoveGuardsAwayFromWalls(simulationMap, pos)).ToList();
+            var vertexPositions = SolveWatchmanRoute(map);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
             var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix);
             return new PatrollingMap(connectedvertices, simulationMap);
@@ -48,28 +48,6 @@ namespace Maes.Map.MapPatrollingGen
             return vertices;
         }
 
-        private static Vector2Int MoveGuardsAwayFromWalls(SimulationMap<Tile> simulationMap, Vector2Int pos)
-        {
-            var newPos = Vector2Int.zero;
-            for (var x = -1; x <= 1; x++)
-            {
-                for (var y = -1; y <= 1; y++)
-                {
-                    var tile = simulationMap.GetTileByLocalCoordinate(pos.x + x, pos.y + y);
-                    var firstTri = tile.GetTriangles()[0];
-                    var isWall = Tile.IsWall(firstTri.Type);
-
-                    if (isWall)
-                    {
-                        newPos += new Vector2Int(-x, -y);
-                    }
-                }
-            }
-
-            newPos.Clamp(new Vector2Int(-1, -1), new Vector2Int(1, 1));
-            return pos + newPos;
-        }
-
         private static bool[,] MapToBitMap(SimulationMap<Tile> simulationMap)
         {
             var map = new bool[simulationMap.WidthInTiles, simulationMap.HeightInTiles];
@@ -86,6 +64,23 @@ namespace Maes.Map.MapPatrollingGen
             return map;
         }
 
+        // Check if a position is one tile to a wall in a 3x3 grid where diagonal tiles also count
+        private static bool IsCloseToWall(Vector2Int pos, bool[,] map)
+        {
+            for (var x = -1; x <= 1; x++)
+            {
+                for (var y = -1; y <= 1; y++)
+                {
+                    if (map[pos.x + x, pos.y + y])
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
@@ -99,7 +94,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 for (var y = 0; y < map.GetLength(1); y++)
                 {
-                    if (!map[x, y])
+                    if (!map[x, y] && !IsCloseToWall(new Vector2Int(x, y), map))
                     {
                         var tile = new Vector2Int(x, y);
                         uncoveredTiles.Add(tile);
