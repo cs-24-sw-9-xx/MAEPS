@@ -14,15 +14,19 @@ namespace Maes.Statistics.Patrolling
         public float TotalDistanceTraveled { get; }
         [Index(4)]
         public int CompletedCycles { get; }
+        [Index(5)]
+        public float AverageGraphIdleness { get; }
 
         public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
-            int completedCycles, bool? agentsInterconnected = null, float? biggestClusterPercentage = null) : base(tick,
+            float averagWorstGraphIdleness, int completedCycles, bool? agentsInterconnected = null,
+            float? biggestClusterPercentage = null) : base(tick,
             agentsInterconnected, biggestClusterPercentage)
         {
             GraphIdleness = graphIdleness;
             WorstGraphIdleness = worstGraphIdleness;
             TotalDistanceTraveled = totalDistanceTraveled;
             CompletedCycles = completedCycles;
+            AverageGraphIdleness = averagWorstGraphIdleness;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Maes.Map.MapPatrollingGen
 
             var vertices = CreateVerticesFromRooms(new SplitRoom(roomTiles.ToArray(), "Start"));
 
-            return new PatrollingMap(vertices);
+            return new PatrollingMap(vertices, simulationMap);
         }
 
         private static Vertex[] CreateVerticesFromRooms(SplitRoom splitRoom)

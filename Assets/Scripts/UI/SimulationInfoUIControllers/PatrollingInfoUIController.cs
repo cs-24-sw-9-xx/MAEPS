@@ -7,6 +7,7 @@ using Maes.Simulation.SimulationScenarios;
 
 using TMPro;
 
+using UnityEngine;
 using UnityEngine.UI;
 
 using XCharts.Runtime;
@@ -15,7 +16,8 @@ namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
-        public ScatterChart Chart = null!;
+        public BaseChart Chart = null!;
+        public GameObject GraphControlPanel;
         public Image ProgressBarMask = null!;
         public TextMeshProUGUI ProgressText = null!;
 
@@ -34,6 +36,17 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button VisibleSelectedButton = null!;
         public Button ToogleIdleGraphButton = null!;
 
+        public Toggle WorstIdlenessToggle = null!;
+
+        public Toggle CurrentIdlenessToggle = null!;
+
+        public Toggle AverageIdlenessToggle = null!;
+
+        public Toggle TotalDistanceTraveledToggle = null!;
+
+        public TMP_InputField PlottingFrequencyInputField = null!;
+
+
         protected override Button[] MapVisualizationToggleGroup => new[] {
             WaypointHeatMapButton, CoverageHeatMapButton, PatrollingHeatMapButton, TargetWaypointSelectedButton, VisibleSelectedButton
         };
@@ -47,14 +60,14 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             if (Simulation != null)
             {
-                StoppingCriteriaToggle.isOn = Simulation.PatrollingTracker.StopAfterDiff;
+                StoppingCriteriaToggle.isOn = Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria;
             }
 
             StoppingCriteriaToggle.onValueChanged.AddListener(toggleValue =>
             {
                 if (Simulation != null)
                 {
-                    Simulation.PatrollingTracker.StopAfterDiff = toggleValue;
+                    Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria = toggleValue;
                 }
             });
 
@@ -70,7 +83,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             PatrollingHeatMapButton.onClick.AddListener(() =>
             {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotPatrollingHeatMap());
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowNone());
             });
 
             TargetWaypointSelectedButton.onClick.AddListener(() =>
@@ -104,6 +117,56 @@ namespace Maes.UI.SimulationInfoUIControllers
                     }
                 });
             });
+
+            WorstIdlenessToggle.onValueChanged.AddListener(
+                toggleValue =>
+                {
+                    if (Simulation != null)
+                    {
+                        Simulation.PatrollingTracker.PlotWorstIdleness = toggleValue;
+                    }
+                });
+            CurrentIdlenessToggle.onValueChanged.AddListener(
+                toggleValue =>
+                {
+                    if (Simulation != null)
+                    {
+                        Simulation.PatrollingTracker.PlotCurrentIdleness = toggleValue;
+                    }
+                });
+            AverageIdlenessToggle.onValueChanged.AddListener(
+                toggleValue =>
+                {
+                    if (Simulation != null)
+                    {
+                        Simulation.PatrollingTracker.PlotAverageIdleness = toggleValue;
+                    }
+                });
+            TotalDistanceTraveledToggle.onValueChanged.AddListener(
+                toggleValue =>
+                {
+                    if (Simulation != null)
+                    {
+                        Simulation.PatrollingTracker.PlotTotalDistanceTraveled = toggleValue;
+                    }
+                });
+            PlottingFrequencyInputField.onValueChanged.AddListener(
+                changedValue =>
+                {
+                    var intValue = Convert.ToInt32(changedValue);
+                    if (intValue != 0)
+                    {
+                        if (Simulation != null)
+                        {
+                            Simulation.PatrollingTracker.PlottingFrequency = Convert.ToInt32(changedValue);
+                        }
+                    }
+                });
+        }
+
+        public void Update()
+        {
+            Simulation!.PatrollingTracker.UIUpdate();
         }
 
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
@@ -116,7 +179,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case PatrollingCoverageHeatMapVisualizationMode:
                     SelectVisualizationButton(CoverageHeatMapButton);
                     break;
-                case PatrollingHeatMapVisualizationMode:
+                case NoneVisualizationMode:
                     SelectVisualizationButton(PatrollingHeatMapButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
@@ -146,7 +209,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 return;
             }
 
-            SetProgress(simulation.PatrollingTracker.CompletedCycles, simulation.PatrollingTracker.TotalCycles);
+            SetProgress(simulation.PatrollingTracker.CurrentCycle, simulation.PatrollingTracker.TotalCycles);
             SetDistanceTravelled(simulation.PatrollingTracker.TotalDistanceTraveled);
             SetCurrentGraphIdleness(simulation.PatrollingTracker.CurrentGraphIdleness);
             SetWorstGraphIdleness(simulation.PatrollingTracker.WorstGraphIdleness);
@@ -182,6 +245,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void ToggleGraph()
         {
             Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
+            GraphControlPanel.SetActive(!GraphControlPanel.activeSelf);
         }
 
         private void InitIdleGraph()
@@ -197,14 +261,26 @@ namespace Maes.UI.SimulationInfoUIControllers
             yAxis.type = Axis.AxisType.Value;
             yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
             Chart.RemoveData();
-            var series = Chart.AddSerie<Scatter>("scatter");
-            series.symbol.size = 4;
+
+            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
+            worstIdlenessSeries.symbol.size = 2;
+
+            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
+            currentIdlenessSeries.symbol.size = 2;
+
+            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
+            averageIdlenessSeries.symbol.size = 2;
+
+            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
+            totalDistanceTraveledSeries.symbol.size = 2;
 
             var zoom = Chart.EnsureChartComponent<DataZoom>();
             zoom.enable = true;
             zoom.filterMode = DataZoom.FilterMode.Filter;
             zoom.start = 0;
             zoom.end = 100;
+
+            Chart.RefreshChart();
 
             Simulation!.PatrollingTracker.Chart = Chart;
             Simulation!.PatrollingTracker.Zoom = zoom;

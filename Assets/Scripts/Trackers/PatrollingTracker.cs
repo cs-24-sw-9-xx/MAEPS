@@ -26,19 +26,31 @@ namespace Maes.Trackers
 
         public float CurrentGraphIdleness { get; private set; }
 
-        public float AverageGraphIdleness => _totalGraphIdleness / _ticks;
+        public float AverageGraphIdleness => _totalGraphIdleness / _currentTick;
 
-        public int CompletedCycles { get; private set; }
+        public int CurrentCycle { get; private set; }
 
-        public float? AverageGraphDiffLastTwoCyclesProportion => null; // This was broken anyway.
+        public float? AverageGraphDiffLastTwoCyclesProportion { get; private set; }
 
-        public ScatterChart Chart { get; set; } = null!;
+        public BaseChart Chart { get; set; } = null!;
 
         public DataZoom Zoom { get; set; } = null!;
 
+        public bool PlotTotalDistanceTraveled = false;
+
+        public bool PlotAverageIdleness = false;
+
+        public bool PlotCurrentIdleness = false;
+
+        public bool PlotWorstIdleness = true;
+
+        public int PlottingFrequency = 50;
+
+        private int _lastPlottedSnapshot = 0;
+
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
-        public bool StopAfterDiff { get; set; }
+        public bool HaveToggledSecondStoppingCriteria { get; set; }
 
         public readonly List<PatrollingSnapShot> SnapShots = new();
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
@@ -46,14 +58,17 @@ namespace Maes.Trackers
         private readonly Dictionary<int, VertexDetails> _vertices;
 
         private float _totalGraphIdleness;
-        private int _ticks;
+        private float _lastCyclesTotalGraphIdleness = 0f;
+        private int _lastAmountOfTicksSinceLastCycle = 0;
+        private float _lastCycleAverageGraphIdleness = 0f;
+        private int _lastCycle = 0;
 
         public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
-            StopAfterDiff = scenario.StopAfterDiff;
+            HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
@@ -80,6 +95,36 @@ namespace Maes.Trackers
             }
         }
 
+        // Hack: Cursed way of updating ui using unitys update event.
+        public void UIUpdate()
+        {
+            // TODO: Fix graph data limit.
+            if (Chart.gameObject.activeSelf && SnapShots.Count > 0)
+            {
+                //Update zoom to only follow the most recent data.
+                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
+                {
+                    Zoom.start = 50;
+                    Zoom.end = 100;
+                }
+
+                for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
+                {
+                    if (SnapShots[i].Tick % PlottingFrequency == 0)
+                    {
+                        PlotData(SnapShots[i]);
+                    }
+                }
+
+                _lastPlottedSnapshot = SnapShots.Count;
+                Chart.RefreshDataZoom();
+            }
+            else
+            {
+                _lastPlottedSnapshot = 0;
+            }
+        }
+
         protected override void OnLogicUpdate(MonaRobot[] robots)
         {
             var worstGraphIdleness = 0;
@@ -98,20 +143,23 @@ namespace Maes.Trackers
             WorstGraphIdleness = worstGraphIdleness;
             CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
             _totalGraphIdleness += CurrentGraphIdleness;
-            _ticks++;
 
-            // TODO: Plot the correct data and fix data limit.
-            if (_currentTick % 50 == 0 && Chart != null && Chart.gameObject.activeSelf)
+            if (_lastCycle != CurrentCycle)
             {
-                //Update zoom to only follow the most recent data.
-                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
-                {
-                    Zoom.start = 55;
-                    Zoom.end = 95;
-                }
+                var lastTick = _currentTick - _lastAmountOfTicksSinceLastCycle;
+                var totalGraphIdlenessCycle = _totalGraphIdleness - _lastCyclesTotalGraphIdleness;
+                var averageGraphIdlenessCycle = totalGraphIdlenessCycle / lastTick;
 
-                Chart.AddData(0, _currentTick, WorstGraphIdleness);
-                Chart.RefreshDataZoom();
+                if (CurrentCycle > 1)
+                {
+                    var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) / _lastCycleAverageGraphIdleness;
+                    Debug.Log($"Average Graph Diff Last Two Cycles Proportion: {cycleAvg}");
+                    AverageGraphDiffLastTwoCyclesProportion = cycleAvg;
+                }
+                _lastCycle = CurrentCycle;
+                _lastCyclesTotalGraphIdleness = _totalGraphIdleness;
+                _lastAmountOfTicksSinceLastCycle = _currentTick;
+                _lastCycleAverageGraphIdleness = averageGraphIdlenessCycle;
             }
         }
 
@@ -134,7 +182,7 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, CompletedCycles));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle));
 
             foreach (var vertex in _vertices.Values)
             {
@@ -144,7 +192,7 @@ namespace Maes.Trackers
 
         private void SetCompletedCycles()
         {
-            CompletedCycles = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
+            CurrentCycle = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
@@ -165,10 +213,10 @@ namespace Maes.Trackers
             SetVisualizationMode(new PatrollingCoverageHeatMapVisualizationMode(_map));
         }
 
-        public void ShowAllRobotPatrollingHeatMap()
+        public void ShowNone()
         {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new PatrollingHeatMapVisualizationMode(_map));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new NoneVisualizationMode());
         }
 
         public void ShowTargetWaypointSelected()
@@ -192,6 +240,29 @@ namespace Maes.Trackers
 
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+        }
+
+        private void PlotData(PatrollingSnapShot snapShot)
+        {
+            if (PlotWorstIdleness)
+            {
+                Chart.AddData(0, snapShot.Tick, snapShot.WorstGraphIdleness);
+            }
+
+            if (PlotCurrentIdleness)
+            {
+                Chart.AddData(1, snapShot.Tick, snapShot.GraphIdleness);
+            }
+
+            if (PlotAverageIdleness)
+            {
+                Chart.AddData(2, snapShot.Tick, snapShot.AverageGraphIdleness);
+            }
+
+            if (PlotTotalDistanceTraveled)
+            {
+                Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
+            }
         }
     }
 }

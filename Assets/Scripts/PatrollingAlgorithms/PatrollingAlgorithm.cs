@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Robot.Task;
 
 using UnityEngine;
 
@@ -19,6 +21,13 @@ namespace Maes.PatrollingAlgorithms
 
         // Set by SetPatrollingMap
         private Vertex[] _vertices = null!;
+        private IReadOnlyDictionary<(int, int), Vector2Int[]> _paths = null!;
+
+        private Queue<Vector2Int> _currentPath = new();
+
+        private Vector2Int? _currentTarget;
+
+        private bool _goingToInitialVertex = true;
 
         // Set by SetController
         private Robot2DController _controller = null!;
@@ -33,6 +42,7 @@ namespace Maes.PatrollingAlgorithms
         public void SetPatrollingMap(PatrollingMap map)
         {
             _vertices = map.Vertices;
+            _paths = map.Paths;
         }
 
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
@@ -49,17 +59,38 @@ namespace Maes.PatrollingAlgorithms
 
         public virtual void UpdateLogic()
         {
-            _targetVertex ??= GetClosestVertex();
-
-            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
-            if (currentPosition != TargetVertex.Position)
+            if (_goingToInitialVertex)
             {
-                _controller.PathAndMoveTo(TargetVertex.Position);
+                _targetVertex ??= GetClosestVertex();
+                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
+                if (currentPosition != TargetVertex.Position)
+                {
+                    // Do normal astar pathing
+                    _controller.PathAndMoveTo(TargetVertex.Position);
+                }
+                else
+                {
+                    SetNextVertex();
+                    _goingToInitialVertex = false;
+                }
                 return;
             }
 
-            OnReachTargetVertex(TargetVertex);
+            if (_currentPath.Count != 0)
+            {
+                PathAndMoveToTarget();
+                return;
+            }
+
+            SetNextVertex();
+        }
+
+        private void SetNextVertex()
+        {
+            var currentVertex = TargetVertex;
+            OnReachTargetVertex(currentVertex);
             _targetVertex = NextVertex();
+            _currentPath = new Queue<Vector2Int>(_paths[(currentVertex.Id, _targetVertex.Id)]);
         }
 
         protected abstract Vertex NextVertex();
@@ -72,6 +103,37 @@ namespace Maes.PatrollingAlgorithms
                     .Append("Target vertex position: ")
                     .AppendLine(TargetVertex.Position.ToString())
                     .ToString();
+        }
+
+        private void PathAndMoveToTarget()
+        {
+            if (_controller.GetStatus() != RobotStatus.Idle)
+            {
+                return;
+            }
+
+            _currentTarget ??= _currentPath.Dequeue();
+
+            var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
+            if (relativePosition.Distance < 0.5f)
+            {
+                if (_currentPath.Count == 0)
+                {
+                    _currentTarget = null;
+                    return;
+                }
+
+                _currentTarget = _currentPath.Dequeue();
+                relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
+            }
+            if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
+            {
+                _controller.Rotate(relativePosition.RelativeAngle);
+            }
+            else if (relativePosition.Distance > 0.5f)
+            {
+                _controller.Move(relativePosition.Distance);
+            }
         }
 
         private Vertex GetClosestVertex()
