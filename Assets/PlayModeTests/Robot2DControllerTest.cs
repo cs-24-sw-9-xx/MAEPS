@@ -73,7 +73,7 @@ namespace PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = new MySimulator();
+            _maes = new MySimulator(false);
             _maes.EnqueueScenario(testingScenario);
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
