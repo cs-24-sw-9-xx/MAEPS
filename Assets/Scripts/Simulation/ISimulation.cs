@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
@@ -24,7 +26,7 @@ namespace Maes.Simulation
 
         ITracker Tracker { get; }
 
-        MonaRobot[] Robots { get; }
+        List<MonaRobot> Robots { get; }
 
         void SetSelectedRobot(MonaRobot? newSelectedRobot);
 

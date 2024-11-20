@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
@@ -53,13 +54,16 @@ namespace Maes.Simulation.SimulationScenarios
         public RobotConstraints RobotConstraints { get; }
         public string StatisticsFileName { get; }
 
+        public IFaultInjection? FaultInjection { get; }
+
         protected SimulationScenario(
             int seed,
             RobotFactory<TAlgorithm> robotSpawner,
             SimulationEndCriteriaDelegate<TSimulation>? hasFinishedSim = null,
             MapFactory? mapSpawner = null,
             RobotConstraints? robotConstraints = null,
-            string? statisticsFileName = null
+            string? statisticsFileName = null,
+            IFaultInjection? faultInjection = null
             )
         {
             HasFinishedSim = hasFinishedSim ?? (simulation => simulation.HasFinishedSim());
@@ -68,6 +72,7 @@ namespace Maes.Simulation.SimulationScenarios
             RobotSpawner = robotSpawner;
             RobotConstraints = robotConstraints ?? new RobotConstraints();
             StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/', '-')}_{DateTime.Now.ToLongTimeString().Replace(' ', '-').Replace(':', '-')}";
+            FaultInjection = faultInjection;
         }
     }
 }

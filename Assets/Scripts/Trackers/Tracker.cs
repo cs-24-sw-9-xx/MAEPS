@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Map.MapGen;
@@ -56,7 +57,7 @@ namespace Maes.Trackers
             _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
         }
 
-        public void LogicUpdate(MonaRobot[] robots)
+        public void LogicUpdate(List<MonaRobot> robots)
         {
             OnBeforeLogicUpdate(robots);
 
@@ -93,12 +94,12 @@ namespace Maes.Trackers
             _currentTick++;
         }
 
-        protected virtual void OnBeforeLogicUpdate(MonaRobot[] robots) { }
-        protected virtual void OnLogicUpdate(MonaRobot[] robots) { }
+        protected virtual void OnBeforeLogicUpdate(List<MonaRobot> robots) { }
+        protected virtual void OnLogicUpdate(List<MonaRobot> robots) { }
 
         public abstract void SetVisualizedRobot(MonaRobot? robot);
 
-        protected virtual void OnAfterFirstTick(MonaRobot[] robots)
+        protected virtual void OnAfterFirstTick(List<MonaRobot> robots)
         {
             foreach (var robot in robots)
             {

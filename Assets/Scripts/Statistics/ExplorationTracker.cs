@@ -75,15 +75,15 @@ namespace Maes.Statistics
             SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, _mostRecentDistance));
         }
 
-        private static float CalculateAverageDistance(MonaRobot[] robots)
+        private static float CalculateAverageDistance(List<MonaRobot> robots)
         {
             var sum = 0f;
             var count = 0;
-            for (var i = 0; i < robots.Length; i++)
+            for (var i = 0; i < robots.Count; i++)
             {
                 var robot = robots[i];
                 var robotPosition = robot.transform.position;
-                for (var j = i + 1; j < robots.Length; j++)
+                for (var j = i + 1; j < robots.Count; j++)
                 {
                     var otherRobot = robots[j];
                     var otherRobotPosition = otherRobot.transform.position;
@@ -129,7 +129,7 @@ namespace Maes.Statistics
             return new Vector2Int((int)robotPosition.x, (int)robotPosition.y);
         }
 
-        protected override void OnAfterFirstTick(MonaRobot[] robots)
+        protected override void OnAfterFirstTick(List<MonaRobot> robots)
         {
             _mostRecentDistance = CalculateAverageDistance(robots);
             base.OnAfterFirstTick(robots);
@@ -190,7 +190,7 @@ namespace Maes.Statistics
             SetVisualizationMode(new SelectedRobotSlamMapVisualization(_selectedRobot.Controller));
         }
 
-        protected override void OnBeforeLogicUpdate(MonaRobot[] robots)
+        protected override void OnBeforeLogicUpdate(List<MonaRobot> robots)
         {
             base.OnBeforeLogicUpdate(robots);
 
@@ -202,7 +202,7 @@ namespace Maes.Statistics
         }
 
         // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(MonaRobot[] robots, bool shouldUpdateSlamMap)
+        private void PerformRayTracing(List<MonaRobot> robots, bool shouldUpdateSlamMap)
         {
             var visibilityRange = _constraints.SlamRayTraceRange;
 

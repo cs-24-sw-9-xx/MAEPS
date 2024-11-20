@@ -1,4 +1,5 @@
 using Maes.Algorithms;
+using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
@@ -25,14 +26,15 @@ namespace Maes.Simulation.SimulationScenarios
             RobotFactory<IPatrollingAlgorithm>? robotSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
-            PatrollingMapFactory? patrollingMapFactory = null
-            )
+            PatrollingMapFactory? patrollingMapFactory = null,
+            IFaultInjection? faultInjection = null)
             : base(seed,
                 robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, _ => new ConscientiousReactiveAlgorithm())),
                 null,
                 mapSpawner,
                 robotConstraints,
-                statisticsFileName)
+                statisticsFileName,
+                faultInjection)
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;

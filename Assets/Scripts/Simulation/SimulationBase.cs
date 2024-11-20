@@ -19,7 +19,10 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+
 using Maes.Algorithms;
+using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
@@ -53,7 +56,7 @@ namespace Maes.Simulation
         public TRobotSpawner RobotSpawner = null!;
 
         // Set by SetScenario
-        public MonaRobot[] Robots
+        public List<MonaRobot> Robots
         {
             get;
             private set;
@@ -64,6 +67,9 @@ namespace Maes.Simulation
         public abstract TTracker Tracker { get; }
 
         ITracker ISimulation.Tracker => Tracker;
+
+        // Set by SetScenario
+        protected IFaultInjection? FaultInjection { get; private set; } = null!;
 
         // Set by SetScenario
         protected TScenario _scenario = null!;
@@ -111,7 +117,7 @@ namespace Maes.Simulation
             RobotSpawner.CommunicationManager = CommunicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 
-            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner).ToArray();
+            Robots = scenario.RobotSpawner(_collisionMap, RobotSpawner);
             CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
             {
@@ -119,6 +125,7 @@ namespace Maes.Simulation
             }
 
             CommunicationManager.SetRobotReferences(Robots);
+            FaultInjection = scenario.FaultInjection;
         }
 
         public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)
@@ -178,6 +185,7 @@ namespace Maes.Simulation
         public void LogicUpdate()
         {
             _debugVisualizer.LogicUpdate();
+            FaultInjection?.LogicUpdate(Robots, SimulatedLogicTicks);
             Tracker.LogicUpdate(Robots);
             foreach (var robot in Robots)
             {
