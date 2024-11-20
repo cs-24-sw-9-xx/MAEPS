@@ -14,7 +14,9 @@ public static class SaveAsImage
                 if (map[x, y])
                 {
                     texture.SetPixel(x, y, Color.blue);
-                } else {
+                }
+                else
+                {
 
                     texture.SetPixel(x, y, Color.white);
                 }
