@@ -134,10 +134,9 @@ namespace Maes.Map.MapPatrollingGen
             {
                 for (var y = 0; y < map.GetLength(1); y++)
                 {
-                    if (!map[x, y] && !IsCloseToWall(new Vector2Int(x, y), map))
+                    var tile = new Vector2Int(x, y);
+                    if (!map[x, y] && !IsCloseToWall(tile, map))
                     {
-                        var tile = new Vector2Int(x, y);
-
                         // Precompute visibility for each tile
                         precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
                     }
