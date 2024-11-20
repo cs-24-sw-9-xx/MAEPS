@@ -41,12 +41,13 @@ namespace Maes.Simulation
 
         private readonly GameObject _maesGameObject;
 
-        protected Simulator()
+        protected Simulator(bool autoMaxSpeedInBatchMode = true)
         {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
             SimulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
+            SimulationManager.AutoMaxSpeedInBatchMode = autoMaxSpeedInBatchMode;
         }
 
         protected abstract GameObject LoadSimulatorGameObject();

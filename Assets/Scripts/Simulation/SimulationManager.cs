@@ -71,6 +71,8 @@ namespace Maes.Simulation
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
         private long _nextUpdateTimeMillis;
 
+        public bool AutoMaxSpeedInBatchMode { get; set; }
+
         // Runs once when starting the program
         private void Start()
         {
@@ -187,7 +189,7 @@ namespace Maes.Simulation
                 return;
             }
 
-            if (Application.isBatchMode && PlayState != SimulationPlayState.FastAsPossible)
+            if (Application.isBatchMode && AutoMaxSpeedInBatchMode && PlayState != SimulationPlayState.FastAsPossible)
             {
                 AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }

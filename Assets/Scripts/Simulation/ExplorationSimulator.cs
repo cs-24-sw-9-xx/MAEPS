@@ -10,6 +10,7 @@ namespace Maes.Simulation
 {
     public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
+        public ExplorationSimulator(bool autoMaxSpeedInBatchMode = true) : base(autoMaxSpeedInBatchMode) { }
         protected override GameObject LoadSimulatorGameObject()
         {
             return Resources.Load<GameObject>("Exploration_MAEPS");
