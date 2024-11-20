@@ -15,6 +15,7 @@ namespace Maes.Simulation
 {
     public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
     {
+        private const float StoppingCriteriaDifference = 0.025f;
         public PatrollingVisualizer patrollingVisualizer = null!;
 
         // Set after AfterCollisionMapGenerated is called
@@ -37,17 +38,12 @@ namespace Maes.Simulation
 
         public override bool HasFinishedSim()
         {
-            if (_scenario.TotalCycles != PatrollingTracker.CompletedCycles)
+            if (_scenario.TotalCycles >= PatrollingTracker.CurrentCycle)
             {
-                return false;
+                return PatrollingTracker.HaveToggledSecondStoppingCriteria && (PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= StoppingCriteriaDifference);
             }
 
-            if (!PatrollingTracker.StopAfterDiff)
-            {
-                return true;
-            }
-
-            return PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= 0.025;
+            return true;
         }
 
         protected override void CreateStatisticsFile()

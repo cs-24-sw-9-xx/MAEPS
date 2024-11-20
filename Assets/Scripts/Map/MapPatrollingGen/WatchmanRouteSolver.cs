@@ -15,7 +15,7 @@ namespace Maes.Map.MapPatrollingGen
             var vertexPositions = SolveWatchmanRoute(map).Select(pos => MoveGuardsAwayFromWalls(simulationMap, pos)).ToList();
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
             var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix);
-            return new PatrollingMap(connectedvertices);
+            return new PatrollingMap(connectedvertices, simulationMap);
         }
 
         private static Vertex[] ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
