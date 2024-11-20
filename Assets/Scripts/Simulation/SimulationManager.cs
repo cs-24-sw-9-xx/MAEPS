@@ -21,7 +21,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 using Maes.Algorithms;
 using Maes.Simulation.SimulationScenarios;
@@ -161,18 +160,11 @@ namespace Maes.Simulation
                 return;
             }
 
-            UpdateStatisticsUI();
-
             var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
             var output = simulatedTimeSpan.ToString(@"hh\:mm\:ss");
-            SimulationStatusText.text =
-                new StringBuilder().Append("Phys. ticks: ")
-                    .Append(CurrentSimulation.SimulatedPhysicsTicks)
-                    .Append("\nLogic ticks: ")
-                    .Append(CurrentSimulation.SimulatedLogicTicks)
-                    .Append("\nSimulated: ")
-                    .Append(output)
-                    .ToString();
+            SimulationStatusText.text = "Phys. ticks: " + CurrentSimulation.SimulatedPhysicsTicks +
+                                        "\nLogic ticks: " + CurrentSimulation.SimulatedLogicTicks +
+                                        "\nSimulated: " + output;
         }
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
@@ -260,6 +252,7 @@ namespace Maes.Simulation
             {
                 CurrentSimulation.LogicUpdate();
                 _physicsTicksSinceUpdate = 0;
+                UpdateStatisticsUI();
 
 
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
