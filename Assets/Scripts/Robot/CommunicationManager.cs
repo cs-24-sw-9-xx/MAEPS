@@ -69,7 +69,7 @@ namespace Maes.Robot
         private readonly List<Message> _readableMessages = new();
 
         private readonly RayTracingMap<Tile> _rayTracingMap;
-        private MonaRobot[] _robots = Array.Empty<MonaRobot>();
+        private List<MonaRobot> _robots = new();
 
         // Map for storing and retrieving all tags deposited by robots
         private readonly EnvironmentTaggingMap _environmentTaggingMap;
@@ -403,7 +403,7 @@ namespace Maes.Robot
             return sensedObjects;
         }
 
-        public void SetRobotReferences(MonaRobot[] robots)
+        public void SetRobotReferences(List<MonaRobot> robots)
         {
             _robots = robots;
         }

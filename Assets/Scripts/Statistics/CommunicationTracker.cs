@@ -51,6 +51,11 @@ namespace Maes.Statistics
                 return;
             }
 
+            if (CommunicationGroups.Count == 0)
+            {
+                return;
+            }
+
             // if we have exactly one group, then every agent must be in it!
             if (CommunicationGroups.Count == 1)
             {

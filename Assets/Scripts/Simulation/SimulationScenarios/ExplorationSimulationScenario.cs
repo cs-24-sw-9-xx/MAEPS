@@ -1,5 +1,6 @@
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.RandomBallisticWalk;
+using Maes.FaultInjections;
 using Maes.Robot;
 
 using UnityEngine;
@@ -15,13 +16,15 @@ namespace Maes.Simulation.SimulationScenarios
             MapFactory? mapSpawner = null,
             RobotFactory<IExplorationAlgorithm>? robotSpawner = null,
             RobotConstraints? robotConstraints = null,
-            string? statisticsFileName = null)
+            string? statisticsFileName = null,
+            IFaultInjection? faultInjection = null)
             : base(seed,
                 robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, robotSeed => new RandomExplorationAlgorithm(robotSeed))),
                 hasFinishedSim,
                 mapSpawner,
                 robotConstraints,
-                statisticsFileName)
+                statisticsFileName,
+                faultInjection)
         {
         }
     }

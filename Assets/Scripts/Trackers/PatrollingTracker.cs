@@ -125,7 +125,7 @@ namespace Maes.Trackers
             }
         }
 
-        protected override void OnLogicUpdate(MonaRobot[] robots)
+        protected override void OnLogicUpdate(List<MonaRobot> robots)
         {
             var worstGraphIdleness = 0;
             var graphIdlenessSum = 0;
