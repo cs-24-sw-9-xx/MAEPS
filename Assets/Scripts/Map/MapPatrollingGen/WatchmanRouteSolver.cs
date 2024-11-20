@@ -30,7 +30,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 if (vertexMap.TryGetValue(position, out var vertex))
                 {
-                    var color = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+                    var color = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
                     vertex.Color = color;
                     foreach (var neighborPos in neighbors)
                     {
@@ -85,25 +85,15 @@ namespace Maes.Map.MapPatrollingGen
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
         {
+            var precomputedVisibility = ComputeVisibility(map);
+            var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
+            return guardPositions;
+        }
+
+        private static List<Vector2Int> ComputeVertexCoordinates(Dictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
+        {
             var guardPositions = new List<Vector2Int>();
-            var uncoveredTiles = new HashSet<Vector2Int>();
-            var precomputedVisibility = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
-
-            // Collect all floor tiles
-            for (var x = 0; x < map.GetLength(0); x++)
-            {
-                for (var y = 0; y < map.GetLength(1); y++)
-                {
-                    if (!map[x, y] && !IsCloseToWall(new Vector2Int(x, y), map))
-                    {
-                        var tile = new Vector2Int(x, y);
-                        uncoveredTiles.Add(tile);
-
-                        // Precompute visibility for each tile
-                        precomputedVisibility[tile] = ComputeVisibility(tile, map);
-                    }
-                }
-            }
+            var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
 
             // Greedy algorithm to find the best guard positions
             while (uncoveredTiles.Count > 0)
@@ -132,11 +122,31 @@ namespace Maes.Map.MapPatrollingGen
                     uncoveredTiles.Remove(coveredTile);
                 }
             }
+
             return guardPositions;
         }
 
+        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
+        {
+            var precomputedVisibility = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
+            // Compute the visibility for each floor tile
+            for (var x = 0; x < map.GetLength(0); x++)
+            {
+                for (var y = 0; y < map.GetLength(1); y++)
+                {
+                    var tile = new Vector2Int(x, y);
+                    if (!map[x, y] && !IsCloseToWall(tile, map))
+                    {
+                        // Precompute visibility for each tile
+                        precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
+                    }
+                }
+            }
+            return precomputedVisibility;
+        }
+
         // Precompute visibility using an efficient line-drawing algorithm
-        private static HashSet<Vector2Int> ComputeVisibility(Vector2Int start, bool[,] map)
+        private static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
             for (var x = 0; x < map.GetLength(0); x++)
