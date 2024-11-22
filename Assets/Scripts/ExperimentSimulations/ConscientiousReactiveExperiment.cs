@@ -116,7 +116,7 @@ namespace Maes.ExperimentSimulations
             {
                 spawningPosList.Add(new Vector2Int(random.Next(0, mapSize), random.Next(0, mapSize)));
             }
-            
+
             simulator.EnqueueScenario(
                 new MySimulationScenario(
                     seed: 123,
@@ -134,7 +134,7 @@ namespace Maes.ExperimentSimulations
                 )
             );
 
-            
+
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }

@@ -116,7 +116,7 @@ namespace Maes.Map.PathFinding
                     // Only consider non-solid tiles
                     if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
                     {
-                            continue;
+                        continue;
                     }
 
                     if (dir.IsDiagonal())
@@ -125,7 +125,7 @@ namespace Maes.Map.PathFinding
                         if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic)
                         || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
                         {
-                                continue;
+                            continue;
                         }
                     }
 
