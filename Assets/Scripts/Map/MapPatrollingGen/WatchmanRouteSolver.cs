@@ -75,7 +75,7 @@ namespace Maes.Map.MapPatrollingGen
             return guardPositions;
         }
 
-        private static List<Vector2Int> ComputeVertexCoordinates(Dictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
+        private static List<Vector2Int> ComputeVertexCoordinates(IDictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
         {
             var guardPositions = new List<Vector2Int>();
             var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
@@ -108,7 +108,7 @@ namespace Maes.Map.MapPatrollingGen
             return guardPositions;
         }
 
-        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
+        private static IDictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
         {
             var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
             var width = map.GetLength(0);
