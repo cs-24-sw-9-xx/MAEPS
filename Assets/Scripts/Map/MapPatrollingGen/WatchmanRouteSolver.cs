@@ -64,23 +64,6 @@ namespace Maes.Map.MapPatrollingGen
             return map;
         }
 
-        // Check if a position is one tile to a wall in a 3x3 grid where diagonal tiles also count
-        private static bool IsCloseToWall(Vector2Int pos, bool[,] map)
-        {
-            for (var x = -1; x <= 1; x++)
-            {
-                for (var y = -1; y <= 1; y++)
-                {
-                    if (map[pos.x + x, pos.y + y])
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
         private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
@@ -135,7 +118,7 @@ namespace Maes.Map.MapPatrollingGen
                 for (var y = 0; y < map.GetLength(1); y++)
                 {
                     var tile = new Vector2Int(x, y);
-                    if (!map[x, y] && !IsCloseToWall(tile, map))
+                    if (!map[x, y])
                     {
                         // Precompute visibility for each tile
                         precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
