@@ -36,6 +36,4 @@ namespace Maes.Map.Visualization.Patrolling
             return Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
         }
     }
-
-
 }

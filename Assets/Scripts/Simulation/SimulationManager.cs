@@ -281,6 +281,7 @@ namespace Maes.Simulation
         {
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             CurrentSimulation?.UpdateDebugInfo();
+            CurrentSimulation?.Tracker.UIUpdate();
         }
 
         public void RemoveCurrentSimulation()
