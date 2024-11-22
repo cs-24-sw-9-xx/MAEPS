@@ -31,7 +31,7 @@ namespace Maes.Simulation.SimulationScenarios
             bool showIslands = false
             )
             : base(seed,
-                robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, _ => new ConscientiousReactiveAlgorithm())),
+                robotSpawner,
                 null,
                 mapSpawner,
                 robotConstraints,

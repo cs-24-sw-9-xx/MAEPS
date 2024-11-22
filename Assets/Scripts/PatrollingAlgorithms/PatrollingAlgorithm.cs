@@ -21,7 +21,7 @@ namespace Maes.PatrollingAlgorithms
         private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        private Vertex[] _vertices = null!;
+        protected Vertex[] _vertices = null!;
         private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
 
         private Queue<PathStep> _currentPath = new();
