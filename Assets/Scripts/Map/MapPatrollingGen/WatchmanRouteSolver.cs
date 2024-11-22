@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Maes.Map.MapGen;
 
@@ -100,10 +102,7 @@ namespace Maes.Map.MapPatrollingGen
                 }
 
                 guardPositions.Add(bestGuardPosition);
-                foreach (var coveredTile in bestCoverage)
-                {
-                    uncoveredTiles.Remove(coveredTile);
-                }
+                uncoveredTiles.ExceptWith(bestCoverage);
             }
 
             return guardPositions;
@@ -111,24 +110,28 @@ namespace Maes.Map.MapPatrollingGen
 
         private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
         {
-            var precomputedVisibility = new Dictionary<Vector2Int, HashSet<Vector2Int>>();
-            // Compute the visibility for each floor tile
-            for (var x = 0; x < map.GetLength(0); x++)
+            var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
+            var width = map.GetLength(0);
+            var height = map.GetLength(1);
+
+            // Outermost loop parallelized to improve performance
+            Parallel.For(0, width, x =>
             {
-                for (var y = 0; y < map.GetLength(1); y++)
+                for (var y = 0; y < height; y++)
                 {
                     var tile = new Vector2Int(x, y);
                     if (!map[x, y])
                     {
                         // Precompute visibility for each tile
+                        // Optionally use ComputeVisibilityOfPointFastBreakColumn for improved performance
                         precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
                     }
                 }
-            }
+            });
             // To debug the ComputeVisibility method, use the following utility method to save as image
             // SaveAsImage.SaveVisibileTiles();
 
-            return precomputedVisibility;
+            return precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
