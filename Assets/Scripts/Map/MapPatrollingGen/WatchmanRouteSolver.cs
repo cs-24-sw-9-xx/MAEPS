@@ -87,8 +87,13 @@ namespace Maes.Map.MapPatrollingGen
                 var bestCoverage = new HashSet<Vector2Int>();
 
                 // Find the guard position that covers the most uncovered tiles
-                foreach (var candidate in uncoveredTiles)
+                var orderedCandidates = uncoveredTiles.OrderByDescending(t => precomputedVisibility[t].Count);
+                foreach (var candidate in orderedCandidates)
                 {
+                    if (precomputedVisibility[candidate].Count < bestCoverage.Count)
+                    {
+                        break;
+                    }
                     var coverage = new HashSet<Vector2Int>(precomputedVisibility[candidate]);
                     coverage.IntersectWith(uncoveredTiles);
 
