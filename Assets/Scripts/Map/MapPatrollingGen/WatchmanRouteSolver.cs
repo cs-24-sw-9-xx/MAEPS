@@ -131,7 +131,7 @@ namespace Maes.Map.MapPatrollingGen
             // To debug the ComputeVisibility method, use the following utility method to save as image
             // SaveAsImage.SaveVisibileTiles();
 
-            return precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            return precomputedVisibility;
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
