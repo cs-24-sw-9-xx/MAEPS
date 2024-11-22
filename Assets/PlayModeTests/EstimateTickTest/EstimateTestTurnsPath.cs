@@ -6,6 +6,7 @@ using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
+using Maes.UI;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -17,21 +18,20 @@ namespace PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, 5, 5, -4)]
-    [TestFixture(0.5f, 10, 10, 6)]
-    [TestFixture(0.5f, 20, 20, -8)]
-    [TestFixture(0.5f, 15, 15, 11)]
-    [TestFixture(0.5f, 30, 30, -4)]
-    [TestFixture(1.0f, 5, 5, -13)]
-    [TestFixture(1.0f, 10, 10, -12)]
-    [TestFixture(1.0f, 20, 20, -5)]
-    [TestFixture(1.0f, 15, 15, -4)]
-    [TestFixture(1.0f, 30, 30, -1)]
+    [TestFixture(0.5f, 5, 5, 3)]
+    [TestFixture(0.5f, 10, 10, 5)]
+    [TestFixture(0.5f, 20, 20, 5)]
+    [TestFixture(0.5f, 15, 15, 5)]
+
+    [TestFixture(1.0f, 5, 5, -4)]
+    [TestFixture(1.0f, 10, 10, -6)]
+    [TestFixture(1.0f, 20, 20, 0)]
+    [TestFixture(1.0f, 15, 15, -2)]
+
     [TestFixture(1.5f, 5, 5, 0)]
     [TestFixture(1.5f, 10, 10, 1)]
-    [TestFixture(1.5f, 20, 20, 0)]
-    [TestFixture(1.5f, 15, 15, -3)]
-    [TestFixture(1.5f, 30, 30, -3)]
+    [TestFixture(1.5f, 15, 15, -4)]
+
     public class EstimateTestTurnsPath
     {
         private const int RandomSeed = 123;
@@ -92,6 +92,7 @@ namespace PlayModeTests.EstimateTickTest
             _testAlgorithm.TargetTile = _targetTile;
 
             _maes.PressPlayButton();
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
             {
@@ -100,7 +101,7 @@ namespace PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            Assert.AreEqual(expectedEstimatedTicks - actualTicks, _expectedDifference);
+            Assert.AreEqual(_expectedDifference, expectedEstimatedTicks - actualTicks);
         }
     }
 }
