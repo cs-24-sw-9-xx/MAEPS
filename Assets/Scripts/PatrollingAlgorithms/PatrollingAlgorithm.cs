@@ -116,7 +116,7 @@ namespace Maes.PatrollingAlgorithms
 
             _currentTarget ??= _currentPath.Dequeue();
 
-            var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
+            var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
             if (relativePosition.Distance < closeness)
             {
                 if (_currentPath.Count == 0)
@@ -126,7 +126,7 @@ namespace Maes.PatrollingAlgorithms
                 }
 
                 _currentTarget = _currentPath.Dequeue();
-                relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value);
+                relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
             }
             #region DrawPath
 #if DEBUG

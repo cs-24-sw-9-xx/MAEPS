@@ -101,12 +101,13 @@ namespace Maes.Map
 
         /// <param name="tileCoord">The coarse-grained tile to get a relative position to</param>
         /// <returns>A <see cref="RelativePosition"/>, relative from the calling Robot to the target tileCoord.</returns>
-        public RelativePosition GetTileCenterRelativePosition(Vector2Int tileCoord)
+        public RelativePosition GetTileCenterRelativePosition(Vector2Int tileCoord, bool dependOnBrokenBehaviour = true)
         {
             // Convert to local coordinate
             var robotPosition = GetApproximatePosition();
-            var distance = Vector2.Distance(robotPosition, tileCoord);
-            var angle = Vector2.SignedAngle(Geometry.DirectionAsVector(_slamMap.GetRobotAngleDeg()), tileCoord - robotPosition);
+            var target = tileCoord + (dependOnBrokenBehaviour ? Vector2.one * 0.5f : Vector2.zero);
+            var distance = Vector2.Distance(robotPosition, target);
+            var angle = Vector2.SignedAngle(Geometry.DirectionAsVector(_slamMap.GetRobotAngleDeg()), target - robotPosition);
             return new RelativePosition(distance, angle);
         }
 
