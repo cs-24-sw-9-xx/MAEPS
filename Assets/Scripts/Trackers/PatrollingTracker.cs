@@ -99,7 +99,7 @@ namespace Maes.Trackers
         public void UIUpdate()
         {
             // TODO: Fix graph data limit.
-            if (Chart.gameObject.activeSelf && SnapShots.Count > 0)
+            if (Chart != null && Chart.gameObject.activeSelf && SnapShots.Count > 0)
             {
                 //Update zoom to only follow the most recent data.
                 if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
@@ -263,6 +263,56 @@ namespace Maes.Trackers
             {
                 Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
             }
+        }
+
+        public void SaveChart(string path){
+            if (Chart is null){
+                return;
+            }
+            if(!Chart.gameObject.activeSelf){
+                Chart.gameObject.SetActive(true);
+            }
+            Zoom.start = 0;
+            Zoom.end = 100;
+            Zoom.enable = false;
+            Chart.RefreshDataZoom();
+            Chart.SetAllDirty();
+            Chart.RefreshAllComponent();
+            Chart.RefreshChart();
+            Chart.SaveAsImage("png", path);
+        }
+
+        public void InitIdleGraph()
+        {
+            Chart.RemoveData();
+            var xAxis = Chart.EnsureChartComponent<XAxis>();
+            xAxis.splitNumber = 10;
+            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+            xAxis.type = Axis.AxisType.Value;
+
+            var yAxis = Chart.EnsureChartComponent<YAxis>();
+            yAxis.splitNumber = 10;
+            yAxis.type = Axis.AxisType.Value;
+            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+
+            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
+            worstIdlenessSeries.symbol.size = 2;
+
+            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
+            currentIdlenessSeries.symbol.size = 2;
+
+            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
+            averageIdlenessSeries.symbol.size = 2;
+
+            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
+            totalDistanceTraveledSeries.symbol.size = 2;
+            
+            Zoom.enable = true;
+            Zoom.filterMode = DataZoom.FilterMode.Filter;
+            Zoom.start = 0;
+            Zoom.end = 100;
+            
+            Chart.RefreshChart();
         }
     }
 }

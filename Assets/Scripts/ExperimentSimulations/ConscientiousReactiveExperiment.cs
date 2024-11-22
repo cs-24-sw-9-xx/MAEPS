@@ -108,6 +108,7 @@ namespace Maes.ExperimentSimulations
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
+            var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
@@ -129,6 +130,23 @@ namespace Maes.ExperimentSimulations
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    robotConstraints: robotConstraints
+                )
+            );
+
+            simulator.EnqueueScenario(
+                new MySimulationScenario(
+                    seed: 123,
+                    totalCycles: 4,
+                    stopAfterDiff: false,
+                    mapSpawner: generator => generator.GenerateMap(mapConfig2),
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                        collisionMap: buildingConfig,
+                        seed: 123,
+                        numberOfRobots: robotCount,
+                        spawnPositions: spawningPosList,
+                        createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
+                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                     robotConstraints: robotConstraints
                 )
             );
