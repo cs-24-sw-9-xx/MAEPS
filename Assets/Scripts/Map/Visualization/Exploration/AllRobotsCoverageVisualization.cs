@@ -30,6 +30,7 @@ namespace Maes.Map.Visualization.Exploration
 {
     internal class AllRobotsCoverageVisualization : IExplorationVisualizationMode
     {
+        private static readonly Visualizer<ExplorationCell>.CellToColor ExplorationCellToColorDelegate = ExplorationCellToColor;
 
         private readonly SimulationMap<ExplorationCell> _explorationMap;
         private readonly HashSet<(int, ExplorationCell)> _newlyCoveredCells = new();
@@ -57,13 +58,13 @@ namespace Maes.Map.Visualization.Exploration
         {
             if (_hasBeenInitialized)
             {
-                visualizer.UpdateColors(_newlyCoveredCells, ExplorationCellToColor);
+                visualizer.UpdateColors(_newlyCoveredCells, ExplorationCellToColorDelegate);
                 _newlyCoveredCells.Clear();
             }
             else
             {
                 // In the first iteration of this visualizer overwrite all colors of previous visualization mode
-                visualizer.SetAllColors(_explorationMap, ExplorationCellToColor);
+                visualizer.SetAllColors(_explorationMap, ExplorationCellToColorDelegate);
                 _hasBeenInitialized = true;
             }
         }

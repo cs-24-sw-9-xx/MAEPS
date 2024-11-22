@@ -30,6 +30,7 @@ namespace Maes.Map.Visualization.Exploration
 {
     internal class AllRobotsExplorationVisualization : IExplorationVisualizationMode
     {
+        private static readonly Visualizer<ExplorationCell>.CellToColor CellToColorDelegate = ExplorationCellToColor;
 
         private readonly SimulationMap<ExplorationCell> _explorationMap;
         private readonly HashSet<(int, ExplorationCell)> _newlyExploredCells = new();
@@ -67,8 +68,6 @@ namespace Maes.Map.Visualization.Exploration
                 _hasBeenInitialized = true;
             }
         }
-
-        private static readonly Visualizer<ExplorationCell>.CellToColor CellToColorDelegate = ExplorationCellToColor;
 
         private static Color32 ExplorationCellToColor(ExplorationCell cell)
         {

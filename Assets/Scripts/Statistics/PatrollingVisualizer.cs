@@ -17,7 +17,7 @@ namespace Maes.Statistics
 
         private readonly List<GameObject> _visualizers = new();
 
-        private readonly Dictionary<int, GameObject> _vertexVisualizers = new();
+        private readonly Dictionary<int, MeshRenderer> _vertexVisualizers = new();
 
         public override void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
@@ -44,7 +44,7 @@ namespace Maes.Statistics
                 var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
                 meshRenderer.material.color = vertex.Color;
                 _visualizers.Add(vertexVisualizer);
-                _vertexVisualizers.Add(vertex.Id, vertexVisualizer);
+                _vertexVisualizers.Add(vertex.Id, meshRenderer);
 
                 foreach (var otherVertex in vertex.Neighbors)
                 {
@@ -69,13 +69,12 @@ namespace Maes.Statistics
         {
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                _vertexVisualizers[vertex.Id].GetComponent<MeshRenderer>().material.color = vertex.Color;
+                _vertexVisualizers[vertex.Id].material.color = vertex.Color;
             }
         }
 
         public void ShowWaypointHeatMap(int currentTick)
         {
-
             foreach (var vertex in _patrollingMap.Vertices)
             {
                 if (vertex.NumberOfVisits == 0)
@@ -86,21 +85,21 @@ namespace Maes.Statistics
                 var ticksSinceLastExplored = currentTick - vertex.LastTimeVisitedTick;
                 var coldness = Mathf.Min((float)ticksSinceLastExplored / (float)GlobalSettings.TicksBeforeWaypointCoverageHeatMapCold, 1.0f);
                 var color = Color32.Lerp(ExplorationVisualizer.WarmColor, ExplorationVisualizer.ColdColor, coldness);
-                _vertexVisualizers[vertex.Id].GetComponent<MeshRenderer>().material.color = color;
+                _vertexVisualizers[vertex.Id].material.color = color;
             }
         }
 
         public void ShowTargetWaypoint(Vertex targetVertex)
         {
             var yellowColor = new Color(255, 255, 0, 255);
-            _vertexVisualizers[targetVertex.Id].GetComponent<MeshRenderer>().material.color = yellowColor;
+            _vertexVisualizers[targetVertex.Id].material.color = yellowColor;
         }
 
         public void ShowDefaultColor(Vertex vertex)
         {
             if (_vertexVisualizers.TryGetValue(vertex.Id, out var vertexObject))
             {
-                vertexObject.GetComponent<MeshRenderer>().material.color = vertex.Color;
+                vertexObject.material.color = vertex.Color;
             }
             else
             {

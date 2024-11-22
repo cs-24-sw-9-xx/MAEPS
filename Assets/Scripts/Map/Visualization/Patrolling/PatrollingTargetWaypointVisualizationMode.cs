@@ -6,16 +6,16 @@ namespace Maes.Map.Visualization.Patrolling
 {
     internal class PatrollingTargetWaypointVisualizationMode : IPatrollingVisualizationMode
     {
-        private readonly MonaRobot _robot;
+        private readonly PatrollingAlgorithm _algorithm;
 
         public PatrollingTargetWaypointVisualizationMode(MonaRobot robot)
         {
-            _robot = robot;
+            _algorithm = (PatrollingAlgorithm)robot.Algorithm;
         }
+
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
-            var algorithm = (PatrollingAlgorithm)_robot.Algorithm;
-            var targetWaypoint = algorithm.TargetVertex;
+            var targetWaypoint = _algorithm.TargetVertex;
 
             visualizer.ShowTargetWaypoint(targetWaypoint);
         }
