@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 using UnityEngine;
 
-namespace PlayModeTests
+namespace EditTests
 {
     public class ComputeVisibilityTest
     {
