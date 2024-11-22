@@ -454,7 +454,7 @@ namespace Maes.Map
 
         public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
-            var path = _pathFinder.GetPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
+            var path = _pathFinder.GetPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths: acceptPartialPaths);
 
             if (path == null)
             {
@@ -470,7 +470,7 @@ namespace Maes.Map
 
         public Vector2Int[]? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
-            var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
+            var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths: acceptPartialPaths);
 
             if (path == null)
             {

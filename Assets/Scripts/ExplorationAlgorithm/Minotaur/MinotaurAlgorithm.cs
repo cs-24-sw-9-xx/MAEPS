@@ -289,7 +289,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 _previousWaypoint = waypoint;
                 if (waypoint.UsePathing)
                 {
-                    if (_map.GetPath(waypoint.Destination, false) == null)
+                    if (_map.GetPath(waypoint.Destination, beOptimistic: true) == null)
                     {
                         MoveToNearestUnseen(OtherRobotDestinations.Union(new HashSet<Vector2Int> { waypoint.Destination }).ToHashSet());
                         waypoint = _waypoint.Value;
@@ -775,7 +775,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 return true;
             }
 
-            var path = _map.GetPath(tile.perpendicularTile, false, false);
+            var path = _map.GetPath(tile.perpendicularTile, beOptimistic: true, acceptPartialPaths: false);
             if (path == null)
             {
                 return false;
@@ -1044,7 +1044,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         /// <returns>The distance of the path</returns>
         private float PathDistanceToPoint(Vector2Int point)
         {
-            var path = _map.GetPath(CoarseGrainedMap.FromSlamMapCoordinate(point), false);
+            var path = _map.GetPath(CoarseGrainedMap.FromSlamMapCoordinate(point), beOptimistic: true);
             if (path == null)
             {
                 return Mathf.Infinity;

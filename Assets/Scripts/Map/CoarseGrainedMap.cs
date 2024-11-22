@@ -101,11 +101,11 @@ namespace Maes.Map
 
         /// <param name="tileCoord">The coarse-grained tile to get a relative position to</param>
         /// <returns>A <see cref="RelativePosition"/>, relative from the calling Robot to the target tileCoord.</returns>
-        public RelativePosition GetTileCenterRelativePosition(Vector2Int tileCoord)
+        public RelativePosition GetTileCenterRelativePosition(Vector2Int tileCoord, bool dependOnBrokenBehaviour = true)
         {
             // Convert to local coordinate
             var robotPosition = GetApproximatePosition();
-            var target = new Vector2(tileCoord.x + 0.5f, tileCoord.y + 0.5f);
+            var target = tileCoord + (dependOnBrokenBehaviour ? Vector2.one * 0.5f : Vector2.zero);
             var distance = Vector2.Distance(robotPosition, target);
             var angle = Vector2.SignedAngle(Geometry.DirectionAsVector(_slamMap.GetRobotAngleDeg()), target - robotPosition);
             return new RelativePosition(distance, angle);
@@ -339,12 +339,12 @@ namespace Maes.Map
         /// Calculates, and returns, the path from the robot's current position to the target.
         /// </summary>
         /// <param name="target">the target that the path should end at.</param>
-        /// <param name="acceptPartialPaths">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public Vector2Int[]? GetPath(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
+        public Vector2Int[]? GetPath(Vector2Int target, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
             var approxPosition = GetApproximatePosition();
-            return _aStar.GetPath(Vector2Int.FloorToInt(approxPosition), target, this, beOptimistic, acceptPartialPaths);
+            return _aStar.GetPath(Vector2Int.FloorToInt(approxPosition), target, this, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace Maes.Map
         /// </summary>
         public List<PathStep>? GetTnfPathAsPathSteps(Vector2Int target)
         {
-            var path = GetPath(target, beOptimistic: false, acceptPartialPaths: false);
+            var path = GetPath(target, beOptimistic: false);
             return path == null
                 ? null
                 : _aStar.PathToSteps(path, 0f);

@@ -38,7 +38,7 @@ namespace Maes.Simulation
 
         public override bool HasFinishedSim()
         {
-            if (_scenario.TotalCycles >= PatrollingTracker.CurrentCycle)
+            if (_scenario.TotalCycles > PatrollingTracker.CurrentCycle)
             {
                 return PatrollingTracker.HaveToggledSecondStoppingCriteria && (PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= StoppingCriteriaDifference);
             }

@@ -173,7 +173,7 @@ namespace Maes.ExplorationAlgorithm.Greed
             if (_waypoint.HasValue)
             {
                 var waypoint = _waypoint.Value;
-                if (_map.GetPath(waypoint.Destination, false) == null)
+                if (_map.GetPath(waypoint.Destination, beOptimistic: true) == null)
                 {
                     MoveToNearestUnseen(new() { waypoint.Destination });
                     waypoint = _waypoint.Value;

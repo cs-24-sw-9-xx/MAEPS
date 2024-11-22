@@ -418,7 +418,7 @@ namespace Maes.Robot
                     return;
                 }
 
-                var pathList = SlamMap.CoarseMap.GetPath(tile, false);
+                var pathList = SlamMap.CoarseMap.GetPath(tile, beOptimistic: true);
                 if (pathList == null)
                 {
                     return;
@@ -427,7 +427,7 @@ namespace Maes.Robot
                 _currentPath = new Queue<Vector2Int>(pathList);
                 _currentTarget = _currentPath.Dequeue();
             }
-            if (SlamMap.CoarseMap.GetTileStatus(_currentTarget) == SlamMap.SlamTileStatus.Solid)
+            if (SlamMap.CoarseMap.GetTileStatus(_currentTarget, optimistic: true) == SlamMap.SlamTileStatus.Solid)
             {
                 _currentTarget = _currentPath.Dequeue();
             }
@@ -445,7 +445,7 @@ namespace Maes.Robot
             }
             #region DrawPath
 #if DEBUG
-            Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition())), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
+            Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(SlamMap.CoarseMap.GetApproximatePosition()), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
             for (var i = 0; i < _currentPath.Count - 1; i++)
             {
                 var pathSteps = _currentPath.ToArray();
@@ -475,7 +475,7 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
+        public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
         {
             // An estimation for the distance it takes the robot to reach terminal speed.
             const float distForMaxSpeed = 2.5f;
@@ -513,7 +513,7 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = false)
+        public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
         {
             if (SlamMap.CoarseMap.GetTileCenterRelativePosition(target).Distance < 0.5f)
             {
