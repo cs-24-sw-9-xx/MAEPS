@@ -21,7 +21,7 @@ namespace Maes.PatrollingAlgorithms
         private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        private Vertex[] _vertices = null!;
+        protected Vertex[] _vertices = null!;
         private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
 
         private Queue<PathStep> _currentPath = new();
@@ -32,7 +32,7 @@ namespace Maes.PatrollingAlgorithms
         private bool _goingToInitialVertex = true;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
 
         protected event OnReachVertex? OnReachVertexHandler;
 

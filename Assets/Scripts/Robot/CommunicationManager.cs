@@ -169,6 +169,40 @@ namespace Maes.Robot
             return messages;
         }
 
+        // Returns a list of messages and ids sent by other robots
+        public List<KeyValuePair<int, object>> ReadMessagesWithId(MonaRobot receiver)
+        {
+            PopulateAdjacencyMatrix();
+            var messages = new List<KeyValuePair<int, object>>();
+            foreach (var message in _readableMessages)
+            {
+                // The robot will not receive its own messages
+                if (message.Sender.id == receiver.id)
+                {
+                    continue;
+                }
+
+                var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
+                // If the transmission probability is above the specified threshold then the message will be sent
+                // otherwise it is discarded
+                if (!communicationTrace.TransmissionSuccessful)
+                {
+                    continue;
+                }
+
+                var kvp = new KeyValuePair<int, object>(message.Sender.id, message.Contents);
+
+                messages.Add(kvp);
+
+                if (GlobalSettings.DrawCommunication)
+                {
+                    _visualizer.AddCommunicationTrail(message.Sender, receiver);
+                }
+            }
+
+            return messages;
+        }
+        
         private CommunicationInfo RayTraceCommunication(Vector2 pos1, Vector2 pos2)
         {
             var distance = Vector2.Distance(pos1, pos2);
