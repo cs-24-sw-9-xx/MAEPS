@@ -88,7 +88,7 @@ namespace Maes.Map
         public List<PathStep>? GetPathSteps(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _aStar.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
-            return path == null ? null : _aStar.PathToSteps(path, 0.4f);
+            return path == null ? null : _aStar.PathToSteps(path);
         }
 
         public bool IsOptimisticSolid(Vector2Int coordinate)

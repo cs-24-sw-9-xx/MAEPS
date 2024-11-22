@@ -109,7 +109,6 @@ namespace Maes.ExperimentSimulations
             var robotConstraints = constraintsDict[constraintName];
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
             var algoName = "conscientious_reactive";
-            var algorithm = new ConscientiousReactiveAlgorithm();
             const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)

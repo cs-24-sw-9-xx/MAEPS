@@ -229,7 +229,7 @@ namespace Maes.Map.PathFinding
         }
 
         // Converts the given A* path to PathSteps (containing a line and a list of all tiles intersected in this path)
-        public List<PathStep> PathToSteps(Vector2Int[] path, float robotRadius = 0.4f)
+        public List<PathStep> PathToSteps(Vector2Int[] path)
         {
             if (path.Length == 1)
             {
@@ -260,6 +260,36 @@ namespace Maes.Map.PathFinding
             }
 
             steps.Add(new PathStep(stepStart, currentTile, crossedTiles));
+            return steps;
+        }
+
+        public static List<PathStep> PathToStepsCheap(Vector2Int[] path)
+        {
+            if (path.Length == 1)
+            {
+                return new List<PathStep> { new(path[0], path[0], null!) }; // HACK: set to null to avoid allocations.
+            }
+
+            var steps = new List<PathStep>();
+
+            var stepStart = path[0];
+            var currentTile = path[1];
+            var currentDirection = CardinalDirection.FromVector(currentTile - stepStart);
+
+            foreach (var nextTile in path.AsSpan(2))
+            {
+                var newDirection = CardinalDirection.FromVector(nextTile - currentTile);
+                if (newDirection != currentDirection)
+                {
+                    // New path step reached
+                    steps.Add(new PathStep(stepStart, currentTile, null!)); // HACK: set to null to avoid allocations.
+                    stepStart = currentTile;
+                    currentDirection = newDirection;
+                }
+                currentTile = nextTile;
+            }
+
+            steps.Add(new PathStep(stepStart, currentTile, null!)); // HACK: set to null to avoid allocations.
             return steps;
         }
 

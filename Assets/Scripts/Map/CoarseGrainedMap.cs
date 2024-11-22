@@ -404,7 +404,7 @@ namespace Maes.Map
             var path = GetPath(target, beOptimistic: false);
             return path == null
                 ? null
-                : _aStar.PathToSteps(path, 0f);
+                : _aStar.PathToSteps(path);
         }
 
         /// <returns>whether or not a tile at a given position is solid.</returns>
