@@ -100,10 +100,7 @@ namespace Maes.Map.MapPatrollingGen
                 }
 
                 guardPositions.Add(bestGuardPosition);
-                foreach (var coveredTile in bestCoverage)
-                {
-                    uncoveredTiles.Remove(coveredTile);
-                }
+                uncoveredTiles.ExceptWith(bestCoverage);
             }
 
             return guardPositions;
