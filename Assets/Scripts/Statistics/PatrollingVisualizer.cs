@@ -50,8 +50,14 @@ namespace Maes.Statistics
                 {
                     var edgeVisualizer = Instantiate(EdgeVisualizer, transform);
                     var lineRenderer = edgeVisualizer.GetComponent<LineRenderer>();
-                    lineRenderer.SetPosition(0, ((Vector3)(Vector2)vertex.Position) + transform.position + Vector3.back);
-                    lineRenderer.SetPosition(1, ((Vector3)(Vector2)otherVertex.Position) + transform.position + Vector3.back);
+
+                    var paths = _patrollingMap.Paths[(vertex.Id, otherVertex.Id)];
+                    lineRenderer.positionCount = paths.Length + 1;
+                    lineRenderer.SetPosition(0, ((Vector3)(Vector2)paths[0].Start) + transform.position + Vector3.back);
+                    for (var i = 0; i < paths.Length; i++)
+                    {
+                        lineRenderer.SetPosition(i + 1, ((Vector3)(Vector2)paths[i].End) + transform.position + Vector3.back);
+                    }
                     lineRenderer.material.color = vertex.Color;
 
                     _visualizers.Add(edgeVisualizer);

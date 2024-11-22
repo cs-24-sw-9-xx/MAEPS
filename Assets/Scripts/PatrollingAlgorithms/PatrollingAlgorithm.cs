@@ -4,6 +4,7 @@ using System.Text;
 
 using Maes.Algorithms;
 using Maes.Map;
+using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Robot.Task;
 
@@ -21,10 +22,11 @@ namespace Maes.PatrollingAlgorithms
 
         // Set by SetPatrollingMap
         private Vertex[] _vertices = null!;
-        private IReadOnlyDictionary<(int, int), Vector2Int[]> _paths = null!;
+        private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
 
-        private Queue<Vector2Int> _currentPath = new();
+        private Queue<PathStep> _currentPath = new();
 
+        private PathStep? _initialPathStep;
         private Vector2Int? _currentTarget;
 
         private bool _goingToInitialVertex = true;
@@ -90,7 +92,7 @@ namespace Maes.PatrollingAlgorithms
             var currentVertex = TargetVertex;
             OnReachTargetVertex(currentVertex);
             _targetVertex = NextVertex();
-            _currentPath = new Queue<Vector2Int>(_paths[(currentVertex.Id, _targetVertex.Id)]);
+            _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, _targetVertex.Id)]);
         }
 
         protected abstract Vertex NextVertex();
@@ -114,7 +116,11 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            _currentTarget ??= _currentPath.Dequeue();
+            if (_currentTarget == null)
+            {
+                _initialPathStep = _currentPath.Dequeue();
+                _currentTarget = _initialPathStep.Value.Start;
+            }
 
             var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
             if (relativePosition.Distance < closeness)
@@ -125,24 +131,18 @@ namespace Maes.PatrollingAlgorithms
                     return;
                 }
 
-                _currentTarget = _currentPath.Dequeue();
+                if (_initialPathStep != null)
+                {
+                    _currentTarget = _initialPathStep.Value.End;
+                    _initialPathStep = null;
+                }
+                else
+                {
+                    _currentTarget = _currentPath.Dequeue().End;
+                }
                 relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
             }
-            #region DrawPath
-#if DEBUG
-            Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(_controller.SlamMap.CoarseMap.GetApproximatePosition()), _controller.SlamMap.CoarseMap.TileToWorld(_currentTarget.Value), Color.cyan, 2);
-            for (var i = 0; i < _currentPath.Count - 1; i++)
-            {
-                var pathSteps = _currentPath.ToArray();
-                if (i == 0)
-                {
-                    Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(_currentTarget.Value), _controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i]), Color.cyan, 2);
-                }
 
-                Debug.DrawLine(_controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i]), _controller.SlamMap.CoarseMap.TileToWorld(pathSteps[i + 1]), Color.cyan, 2);
-            }
-#endif
-            #endregion
             if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
             {
                 _controller.Rotate(relativePosition.RelativeAngle);

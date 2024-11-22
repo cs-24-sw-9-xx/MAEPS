@@ -34,7 +34,7 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false);
 
-        public List<PathStep> PathToSteps(Vector2Int[] path, float robotRadius);
+        public List<PathStep> PathToSteps(Vector2Int[] path);
 
         public Vector2Int? GetNearestTileFloodFill(IPathFindingMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null);
 
