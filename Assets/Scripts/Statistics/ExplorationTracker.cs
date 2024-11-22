@@ -27,6 +27,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Exploration;
 using Maes.Robot;
+using Maes.Statistics.Exploration;
 using Maes.Trackers;
 
 using UnityEngine;

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Utilities;
+
 namespace Maes.Map
 {
     public class PatrollingMap : ICloneable<PatrollingMap>

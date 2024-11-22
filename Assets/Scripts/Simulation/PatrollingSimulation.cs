@@ -6,6 +6,8 @@ using Maes.Algorithms;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Patrolling;
+using Maes.Statistics.Writer;
 using Maes.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 

@@ -4,6 +4,7 @@ using Maes.Algorithms;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Exploration;
 using Maes.UI.SimulationInfoUIControllers;
 
 namespace Maes.Simulation

@@ -8,6 +8,7 @@ using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
+using Maes.Statistics.Patrolling;
 
 using UnityEngine;
 

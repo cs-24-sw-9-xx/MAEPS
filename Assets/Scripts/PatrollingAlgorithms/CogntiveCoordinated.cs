@@ -54,14 +54,13 @@ namespace Maes.PatrollingAlgorithms
             _iterator = 0;
 
             _currentPath = AStar(TargetVertex, HighestIdle());
-
             _controller.Broadcast(_currentPath.Last());
         }
 
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
+           var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
 
             var position = TargetVertex.Position;
             var first = availableVertices.First();
@@ -78,6 +77,7 @@ namespace Maes.PatrollingAlgorithms
             }
             
             return closestVertex;
+           //return _vertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
         private static List<Vertex> AStar(Vertex start, Vertex target)

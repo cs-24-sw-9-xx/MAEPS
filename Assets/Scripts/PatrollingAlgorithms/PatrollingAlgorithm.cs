@@ -57,7 +57,7 @@ namespace Maes.PatrollingAlgorithms
                 _controller.PathAndMoveTo(TargetVertex.Position);
                 return;
             }
-
+            
             OnReachTargetVertex(TargetVertex);
             _targetVertex = NextVertex();
         }

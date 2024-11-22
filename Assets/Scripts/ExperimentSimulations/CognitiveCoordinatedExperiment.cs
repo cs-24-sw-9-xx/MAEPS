@@ -64,7 +64,7 @@ namespace Maes.ExperimentSimulations
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (distanceTravelled, distanceThroughWalls) => true);
+                calculateSignalTransmissionProbability: (_, _) => true);
 
             var simulator = new MySimulator();
             var random = new System.Random(12345);
@@ -72,25 +72,10 @@ namespace Maes.ExperimentSimulations
             const string algorithmName = "cognitive_coordinated";
             var algorithm = new CognitiveCoordinated();
 
-            var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 50, heightInTiles: 50);
-            var size = 50;
+            var mapConfig = new BuildingMapConfig(random.Next(0, 1000000), widthInTiles: 100, heightInTiles: 100);
+            var size = 100;
 
             var robotCount = 3;
-            /*simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                totalCycles: 4,
-                stopAfterDiff: false,
-                mapSpawner: generator => generator.GenerateMap(mapConfig),
-                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
-                    buildingConfig,
-                    seed: 123,
-                    numberOfRobots: robotCount,
-                    suggestedStartingPoint: new Vector2Int(random.Next(-size / 2, size / 2),
-                        random.Next(-size / 2, size / 2)),
-                    createAlgorithmDelegate: (seed) => algorithm),
-                statisticsFileName:
-                $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                robotConstraints: rc));
-                */
 
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
@@ -110,22 +95,6 @@ namespace Maes.ExperimentSimulations
                     createAlgorithmDelegate: (seed) => algorithm),
                 statisticsFileName:
                 $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                robotConstraints: rc));
-
-
-            //Just code to make sure we don't get too many maps of the last one in the experiment
-            var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
-                totalCycles: 4,
-                stopAfterDiff: false,
-                mapSpawner: generator => generator.GenerateMap(dumpMap),
-                robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
-                                                                 buildingConfig,
-                                                                 seed: 123,
-                                                                 numberOfRobots: 5,
-                                                                 suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: (seed) => algorithm),
-                statisticsFileName: $"delete-me",
                 robotConstraints: rc));
 
             simulator.PressPlayButton(); // Instantly enter play mode
