@@ -32,7 +32,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 if (vertexMap.TryGetValue(position, out var vertex))
                 {
-                    var color = colorIslands ? UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f): Color.green;
+                    var color = colorIslands ? UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
                     vertex.Color = color;
                     foreach (var neighborPos in neighbors)
                     {
