@@ -40,6 +40,32 @@ namespace Maes.PatrollingAlgorithms
                 }
             }
 
+            int r = 0;
+
+            foreach (var vertex in _unavailableVertices.Values)
+            {
+                r++;
+                Debug.Log(vertex.ToString());
+            }
+            /*
+            if (r > 0)
+            {
+                Debug.Log("there is something");
+            }
+            else
+            {
+                Debug.Log("no broadcast");
+            }*/
+
+            var broad = _controller.ReceiveBroadcast().ToList();
+            /*foreach(var vert in broad)
+            {
+                Debug.Log(vert.Key);
+                Debug.Log(vert.Value.ToString());
+            }
+            */
+            Debug.Log(broad.Count == 0 ? "no broad" : broad[0].ToString());
+
             ConstructPath();
             var next = _currentPath[_iterator];
             _iterator++;
@@ -49,8 +75,19 @@ namespace Maes.PatrollingAlgorithms
 
         private void ConstructPath()
         {
+            // calculates a new path if another agent is going towards same end vertex
+            if (_unavailableVertices.Values.Any(value => value == _currentPath.Last()))
+            {
+                _iterator = 0;
+                _currentPath = AStar(GetClosestVertex(), HighestIdle());
+                _controller.Broadcast(_currentPath.Last());
+                
+                return;
+            }
+            
             if (_iterator < _currentPath.Count)
             {
+                _controller.Broadcast(_iterator);
                 return;
             }
 

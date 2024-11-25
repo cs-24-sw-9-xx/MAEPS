@@ -169,7 +169,7 @@ namespace Maes.Robot
             return messages;
         }
 
-        // Returns a list of messages and ids sent by other robots
+        // Returns a list of messages and ids sent by other robots in a kvp
         public List<KeyValuePair<int, object>> ReadMessagesWithId(MonaRobot receiver)
         {
             PopulateAdjacencyMatrix();

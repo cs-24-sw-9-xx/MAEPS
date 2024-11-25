@@ -16,12 +16,6 @@
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
 // Contributors: 
-// Rasmus Borrisholt Schmidt, 
-// Andreas Sebastian Sørensen, 
-// Thor Beregaard, 
-// Malte Z. Andreasen, 
-// Philip I. Holler,
-// Magnus K. Jensen, 	
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Henrik van Peet,
@@ -95,7 +89,6 @@ namespace Maes.ExperimentSimulations
                     robotConstraints: robotConstraints
                 )
             );
-
 
             simulator.PressPlayButton(); // Instantly enter play mode
         }
