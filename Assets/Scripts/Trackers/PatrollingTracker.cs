@@ -289,12 +289,12 @@ namespace Maes.Trackers
 
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
             totalDistanceTraveledSeries.symbol.size = 2;
-            
+
             Zoom.enable = true;
             Zoom.filterMode = DataZoom.FilterMode.Filter;
             Zoom.start = 0;
             Zoom.end = 100;
-            
+
             Chart.RefreshChart();
         }
     }
