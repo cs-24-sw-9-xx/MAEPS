@@ -72,7 +72,8 @@ namespace PlayModeTests
 
         private IEnumerator RunSimulationUntilFinished()
         {
-            while(!_simulation.HasFinishedSim()){
+            while (!_simulation.HasFinishedSim())
+            {
                 yield return null;
             }
             Assert.True(_simulation.HasFinishedSim());
