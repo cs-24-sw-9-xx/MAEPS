@@ -330,6 +330,7 @@ namespace Maes.Robot
         public void StopCurrentTask()
         {
             _currentTask = null;
+            _currentPath.Clear();
         }
 
         public void Broadcast(object data)
@@ -416,7 +417,7 @@ namespace Maes.Robot
         /// If there is already a path, does not recompute
         /// </summary>
         /// <param name="tile">COARSEGRAINED tile as final target</param>
-        public void PathAndMoveTo(Vector2Int tile)
+        public void PathAndMoveTo(Vector2Int tile, bool dependOnBrokenBehaviour = true)
         {
             if (GetStatus() != RobotStatus.Idle)
             {
@@ -450,7 +451,7 @@ namespace Maes.Robot
                 _currentTarget = _currentPath.Dequeue();
             }
 
-            var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget);
+            var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
             if (relativePosition.Distance < 0.5f)
             {
                 if (_currentPath.Count == 0)
@@ -459,7 +460,7 @@ namespace Maes.Robot
                 }
 
                 _currentTarget = _currentPath.Dequeue();
-                relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget);
+                relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
             }
             #region DrawPath
 #if DEBUG
