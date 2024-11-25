@@ -265,23 +265,6 @@ namespace Maes.Trackers
             }
         }
 
-        public void SaveChart(string path){
-            if (Chart is null){
-                return;
-            }
-            if(!Chart.gameObject.activeSelf){
-                Chart.gameObject.SetActive(true);
-            }
-            Zoom.start = 0;
-            Zoom.end = 100;
-            Zoom.enable = false;
-            Chart.RefreshDataZoom();
-            Chart.SetAllDirty();
-            Chart.RefreshAllComponent();
-            Chart.RefreshChart();
-            Chart.SaveAsImage("png", path);
-        }
-
         public void InitIdleGraph()
         {
             Chart.RemoveData();

@@ -54,16 +54,8 @@ namespace Maes.Simulation
             if (GlobalSettings.ShouldWriteCsvResults && !_hasWrittenStats)
             {
                 CreateStatisticsFile();
-                SaveChart();
                 _hasWrittenStats = true;
             }
-        }
-
-        private void SaveChart(){
-            var folderPath =
-                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
-            var chartFilename = Path.Join(folderPath, "chart.png");
-            PatrollingTracker.SaveChart(chartFilename);
         }
 
         protected override void CreateStatisticsFile()
