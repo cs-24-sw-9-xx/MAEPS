@@ -11,16 +11,16 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WatchmanRouteSolver
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
         {
             var map = MapToBitMap(simulationMap);
             var vertexPositions = SolveWatchmanRoute(map);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
-            var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix);
+            var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix, colorIslands);
             return new PatrollingMap(connectedvertices, simulationMap);
         }
 
-        private static Vertex[] ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
+        private static Vertex[] ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
         {
             const int numberOfReverstNearestNeighbors = 1;
             var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverstNearestNeighbors);
@@ -32,7 +32,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 if (vertexMap.TryGetValue(position, out var vertex))
                 {
-                    var color = UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+                    var color = colorIslands ? UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f): Color.green;
                     vertex.Color = color;
                     foreach (var neighborPos in neighbors)
                     {

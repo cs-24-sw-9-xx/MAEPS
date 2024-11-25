@@ -108,6 +108,7 @@ namespace Maes.ExperimentSimulations
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
+            var caveMapConfig = new CaveMapConfig(123);
             var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
@@ -122,15 +123,16 @@ namespace Maes.ExperimentSimulations
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
+                    mapSpawner: generator => generator.GenerateMap(caveMapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints
+                    statisticsFileName: $"{algoName}-seed-{caveMapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    robotConstraints: robotConstraints,
+                    showIslands: false
                 )
             );
 
@@ -147,7 +149,8 @@ namespace Maes.ExperimentSimulations
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints
+                    robotConstraints: robotConstraints,
+                    showIslands: true
                 )
             );
 
