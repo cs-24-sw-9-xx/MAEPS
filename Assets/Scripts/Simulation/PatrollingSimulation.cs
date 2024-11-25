@@ -11,6 +11,8 @@ using Maes.Statistics.Writer;
 using Maes.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 
+using UnityEngine;
+
 namespace Maes.Simulation
 {
     public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
@@ -45,9 +47,20 @@ namespace Maes.Simulation
 
             return true;
         }
+        private bool _hasWrittenStats;
+
+        public override void OnSimulationFinished()
+        {
+            if (GlobalSettings.ShouldWriteCsvResults && !_hasWrittenStats)
+            {
+                CreateStatisticsFile();
+                _hasWrittenStats = true;
+            }
+        }
 
         protected override void CreateStatisticsFile()
         {
+            Debug.Log("Creating statistics file");
             var folderPath =
                 $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
             Directory.CreateDirectory(folderPath);

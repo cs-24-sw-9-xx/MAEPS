@@ -53,8 +53,6 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         protected override void AfterStart()
         {
-            InitIdleGraph();
-
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
             SelectVisualizationButton(NoneButton);
 
@@ -200,6 +198,9 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             if (newSimulation != null)
             {
+                newSimulation!.PatrollingTracker.Chart = Chart;
+                newSimulation!.PatrollingTracker.Zoom = Chart.EnsureChartComponent<DataZoom>();
+                newSimulation!.PatrollingTracker.InitIdleGraph();
                 newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }
@@ -249,45 +250,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
             GraphControlPanel.SetActive(!GraphControlPanel.activeSelf);
-        }
-
-        private void InitIdleGraph()
-        {
-            Chart.Init();
-            var xAxis = Chart.EnsureChartComponent<XAxis>();
-            xAxis.splitNumber = 10;
-            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-            xAxis.type = Axis.AxisType.Value;
-
-            var yAxis = Chart.EnsureChartComponent<YAxis>();
-            yAxis.splitNumber = 10;
-            yAxis.type = Axis.AxisType.Value;
-            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-            Chart.RemoveData();
-
-            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
-            worstIdlenessSeries.symbol.size = 2;
-
-            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
-            currentIdlenessSeries.symbol.size = 2;
-
-            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
-            averageIdlenessSeries.symbol.size = 2;
-
-            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
-            totalDistanceTraveledSeries.symbol.size = 2;
-
-            var zoom = Chart.EnsureChartComponent<DataZoom>();
-            zoom.enable = true;
-            zoom.filterMode = DataZoom.FilterMode.Filter;
-            zoom.start = 0;
-            zoom.end = 100;
-
-            Chart.RefreshChart();
-
-            Simulation!.PatrollingTracker.Chart = Chart;
-            Simulation!.PatrollingTracker.Zoom = zoom;
-
         }
     }
 }
