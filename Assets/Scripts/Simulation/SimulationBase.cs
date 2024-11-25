@@ -20,7 +20,6 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
@@ -199,21 +198,6 @@ namespace Maes.Simulation
             SimulatedPhysicsTicks++;
             _debugVisualizer.PhysicsUpdate();
             CommunicationManager.PhysicsUpdate();
-        }
-
-        // TODO: This function should not be here wtf is this?
-        /// <summary>
-        /// Tests specifically if The Next Frontier is no longer doing any work.
-        /// </summary>
-        public bool TnfBotsOutOfFrontiers()
-        {
-            var res = true;
-            foreach (var monaRobot in Robots)
-            {
-                res &= (monaRobot.Algorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true;
-            }
-
-            return res;
         }
 
         public void UpdateDebugInfo()
