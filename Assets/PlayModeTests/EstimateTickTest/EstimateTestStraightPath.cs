@@ -6,6 +6,7 @@ using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
+using Maes.UI;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -74,6 +75,7 @@ namespace PlayModeTests.EstimateTickTest
             _testAlgorithm.TargetTile = targetTile;
 
             _maes.PressPlayButton();
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
             {

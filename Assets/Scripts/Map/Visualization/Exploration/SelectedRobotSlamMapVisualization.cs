@@ -24,15 +24,19 @@ using System.Collections.Generic;
 using Maes.Robot;
 using Maes.Statistics;
 
+using UnityEngine;
+
 namespace Maes.Map.Visualization.Exploration
 {
     internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode
     {
         private readonly SlamMap _map;
+        private readonly Visualizer<ExplorationCell>.CellIndexToColor _explorationCellToColorDelegate;
 
         public SelectedRobotSlamMapVisualization(Robot2DController robot)
         {
             _map = robot.SlamMap;
+            _explorationCellToColorDelegate = ExplorationCellToColor;
         }
 
         public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
@@ -47,18 +51,20 @@ namespace Maes.Map.Visualization.Exploration
 
         public void UpdateVisualization(ExplorationVisualizer visualizer, int currentTick)
         {
-            visualizer.SetAllColors(index =>
-            {
-                var coordinate = _map.TriangleIndexToCoordinate(index);
-                var status = _map.GetTileStatus(coordinate);
+            visualizer.SetAllColors(_explorationCellToColorDelegate);
+        }
 
-                return status switch
-                {
-                    SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
-                    SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
-                    _ => ExplorationVisualizer.StandardCellColor
-                };
-            });
+        private Color32 ExplorationCellToColor(int index)
+        {
+            var coordinate = _map.TriangleIndexToCoordinate(index);
+            var status = _map.GetTileStatus(coordinate);
+
+            return status switch
+            {
+                SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
+                SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
+                _ => ExplorationVisualizer.StandardCellColor
+            };
         }
     }
 }

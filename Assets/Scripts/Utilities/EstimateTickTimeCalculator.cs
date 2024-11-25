@@ -102,7 +102,7 @@ namespace Maes.Utilities
 
         private bool IsDestinationReached(Vector2Int tile)
         {
-            return Controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(tile).Distance < 0.5f;
+            return Controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(tile).Distance < 0.25f;
         }
     }
 }

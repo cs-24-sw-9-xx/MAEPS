@@ -51,6 +51,11 @@ namespace Maes.Trackers
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
         }
 
+        public void UIUpdate()
+        {
+            _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
+        }
+
         public void LogicUpdate(MonaRobot[] robots)
         {
             OnBeforeLogicUpdate(robots);
@@ -78,8 +83,6 @@ namespace Maes.Trackers
             }
 
             OnLogicUpdate(robots);
-
-            _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
 
             if (GlobalSettings.ShouldWriteCsvResults
                 && _currentTick != 0
