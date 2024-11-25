@@ -232,13 +232,11 @@ namespace Maes.Simulation
             }
         }
 
-        private bool _hasWrittenStatistics;
         public virtual void OnSimulationFinished()
         {
-            if (GlobalSettings.ShouldWriteCsvResults && !_hasWrittenStatistics)
+            if (GlobalSettings.ShouldWriteCsvResults)
             {
                 CreateStatisticsFile();
-                _hasWrittenStatistics = true;
             }
         }
 
