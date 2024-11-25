@@ -6,6 +6,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Statistics.Patrolling;
@@ -16,9 +17,9 @@ using XCharts.Runtime;
 
 namespace Maes.Trackers
 {
-    // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
+        private PatrollingSimulation Simulation { get; }
         public int WorstGraphIdleness { get; private set; }
 
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
@@ -63,9 +64,10 @@ namespace Maes.Trackers
         private float _lastCycleAverageGraphIdleness = 0f;
         private int _lastCycle = 0;
 
-        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
+        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
+            Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
             HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
@@ -182,7 +184,8 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness,
+                TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
 
             foreach (var vertex in _vertices.Values)
             {

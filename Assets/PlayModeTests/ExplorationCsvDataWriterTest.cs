@@ -59,11 +59,11 @@ namespace PlayModeTests
         [Test]
         public void ExplorationSnapshotToCsvTest()
         {
-            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(1, 0.1f, 0.1f, 1f));
-            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(2, 0.2f, 0.2f, 5f));
-            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(3, 0.5f, 0.3f, 10f));
-            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(4, 0.7f, 0.4f, 10f));
-            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(5, 0.9f, 0.5f, 5f));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(1, 0.1f, 0.1f, 1f, 2));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(2, 0.2f, 0.2f, 5f, 2));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(3, 0.5f, 0.3f, 10f, 2));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(4, 0.7f, 0.4f, 10f, 2));
+            _explorationSimulation.ExplorationTracker.SnapShots.Add(new ExplorationSnapShot(5, 0.9f, 0.5f, 5f, 2));
 
             _explorationSimulation.CommunicationManager.CommunicationTracker.InterconnectionSnapShot.Add(1, true);
             _explorationSimulation.CommunicationManager.CommunicationTracker.InterconnectionSnapShot.Add(3, false);
@@ -75,16 +75,16 @@ namespace PlayModeTests
 
             var expectedExplorationSnapShots = new List<ExplorationSnapShot>
             {
-                new(1, 0.1f, 0.1f, 1f, true, 5f),
-                new(2, 0.2f, 0.2f, 5f, null, 10f),
-                new(3, 0.5f, 0.3f, 10f, false),
-                new(4, 0.7f, 0.4f, 10f, true),
-                new(5, 0.9f, 0.5f, 5f, null, 12f)
+                new(1, 0.1f, 0.1f, 1f, 2, true, 5f),
+                new(2, 0.2f, 0.2f, 5f, 2, null, 10f),
+                new(3, 0.5f, 0.3f, 10f, 2, false),
+                new(4, 0.7f, 0.4f, 10f, 2, true),
+                new(5, 0.9f, 0.5f, 5f, 2, null, 12f)
             };
 
             var filename = Path.Join(Directory, $"ExplorationSnapshotToCsvTest{DateTime.Now.Ticks}");
             var writer = new ExplorationCsvDataWriter(_explorationSimulation, filename);
-            writer.CreateCsvFile(Delimiter);
+            writer.CreateCsvFile();
 
             var lines = File.ReadAllLines($"{filename}.csv");
             Assert.AreEqual(expectedExplorationSnapShots.Count, lines.Length - 1); // -1 because of header
@@ -98,20 +98,21 @@ namespace PlayModeTests
                 Assert.AreEqual(expected.Explored.ToString(_culture), values[1]);
                 Assert.AreEqual(expected.Covered.ToString(_culture), values[2]);
                 Assert.AreEqual(expected.AverageAgentDistance.ToString(_culture), values[3]);
+                Assert.AreEqual(expected.NumberOfRobots.ToString(_culture), values[4]);
 
                 if (expected.AgentsInterconnected == null)
                 {
-                    Assert.AreEqual("", values[4]);
+                    Assert.AreEqual("", values[5]);
                 }
                 else
                 {
                     var expectedValue = expected.AgentsInterconnected.Value ? "1" : "0";
-                    Assert.AreEqual(expectedValue, values[4]);
+                    Assert.AreEqual(expectedValue, values[5]);
                 }
 
                 Assert.AreEqual(
                     expected.BiggestClusterPercentage == null ? "" : expected.BiggestClusterPercentage.ToString(),
-                    values[5]);
+                    values[6]);
             }
         }
     }

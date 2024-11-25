@@ -62,6 +62,8 @@ namespace Maes.Simulation
             private set;
         } = null!;
 
+        public int NumberOfActiveRobots => RobotSpawner.transform.childCount;
+
         public abstract TVisualizer Visualizer { get; }
 
         public abstract TTracker Tracker { get; }
