@@ -28,6 +28,8 @@ namespace Maes.Simulation
 
         List<MonaRobot> Robots { get; }
 
+        int NumberOfActiveRobots { get; }
+
         void SetSelectedRobot(MonaRobot? newSelectedRobot);
 
         // TODO: Remove this!

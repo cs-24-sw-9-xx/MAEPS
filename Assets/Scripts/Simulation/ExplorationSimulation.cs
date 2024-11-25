@@ -24,7 +24,7 @@ namespace Maes.Simulation
         {
             base.SetScenario(scenario);
 
-            ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
+            ExplorationTracker = new ExplorationTracker(this, _collisionMap, explorationVisualizer, scenario.RobotConstraints);
         }
 
         public override bool HasFinishedSim()

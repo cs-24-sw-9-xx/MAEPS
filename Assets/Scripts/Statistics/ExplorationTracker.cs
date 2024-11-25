@@ -27,6 +27,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Exploration;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Statistics.Exploration;
 using Maes.Trackers;
 
@@ -36,6 +37,8 @@ namespace Maes.Statistics
 {
     public class ExplorationTracker : Tracker<ExplorationCell, ExplorationVisualizer, IExplorationVisualizationMode>
     {
+        private ExplorationSimulation Simulation { get; }
+
         // The low-resolution collision map used to create the smoothed map that robots are navigating 
         private readonly SimulationMap<Tile> _collisionMap;
 
@@ -56,9 +59,10 @@ namespace Maes.Statistics
         private readonly int _traces;
         private readonly float _traceIntervalDegrees;
 
-        public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
+        public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
             : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
+            Simulation = simulation;
             _collisionMap = collisionMap;
             _constraints = constraints;
 
@@ -72,7 +76,8 @@ namespace Maes.Statistics
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, _mostRecentDistance));
+            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion,
+                _mostRecentDistance, Simulation.NumberOfActiveRobots));
         }
 
         private static float CalculateAverageDistance(List<MonaRobot> robots)
