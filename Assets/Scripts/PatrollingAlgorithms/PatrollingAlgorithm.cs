@@ -80,7 +80,15 @@ namespace Maes.PatrollingAlgorithms
 
             if (_currentPath.Count != 0)
             {
-                PathAndMoveToTarget();
+                if (_controller.IsCurrentlyColliding)
+                {
+                    _controller.PathAndMoveTo(TargetVertex.Position);
+
+                }
+                else
+                {
+                    PathAndMoveToTarget();
+                }
                 return;
             }
 
