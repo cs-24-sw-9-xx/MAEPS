@@ -67,11 +67,6 @@ namespace PlayModeTests
         {
             InitializeTestingSimulator();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            return RunSimulationUntilFinished();
-        }
-
-        private IEnumerator RunSimulationUntilFinished()
-        {
             while (!_simulation.HasFinishedSim())
             {
                 yield return null;
