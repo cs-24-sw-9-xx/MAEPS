@@ -41,7 +41,8 @@ namespace PlayModeTests
             return (generator => generator.GenerateMap(mapConfiguration));
         }
 
-        public static RobotConstraints GlobalRobotConstraints(){
+        public static RobotConstraints GlobalRobotConstraints()
+        {
             return new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
