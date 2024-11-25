@@ -155,7 +155,7 @@ namespace Maes.Map.MapGen
 
             Generate2DColliders();
 
-            return GenerateCollisionMap(_squareGrid2D,
+            return GenerateCollisionMap(_squareGrid2D, map,
                 new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms);
         }
 
@@ -183,11 +183,11 @@ namespace Maes.Map.MapGen
             WallRoof.mesh = wallRoofMesh;
         }
 
-        private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Vector3 offset,
+        private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Tile[,] tileMap, Vector3 offset,
             bool removeRoundedCorners, List<Room> rooms)
         {
-            var width = squareGrid.Squares.GetLength(0);
-            var height = squareGrid.Squares.GetLength(1);
+            var width = tileMap.GetLength(0);
+            var height = tileMap.GetLength(1);
             // Create a bool type SimulationMap with default value of false in all cells
             var collisionMap = new SimulationMap<Tile>(() => new Tile(TileType.Room), width, height, offset, rooms);
 
@@ -195,11 +195,12 @@ namespace Maes.Map.MapGen
             {
                 for (var y = 0; y < height; y++)
                 {
-                    var square = squareGrid.Squares[x, y];
-                    var collisionTile = collisionMap.GetTileByLocalCoordinate(x, y);
-                    // Create triangles from all the points in the squares
-                    // assigned to variables "vertices" and "triangles"
-                    AdaptCollisionMapTile(collisionTile, square, removeRoundedCorners);
+                    var tile = collisionMap.GetTileByLocalCoordinate(x, y);
+
+                    for (var i = 0; i < 8; i++)
+                    {
+                        tile.SetCellValue(i, tileMap[x, y]);
+                    }
                 }
             }
 
@@ -785,7 +786,7 @@ namespace Maes.Map.MapGen
             }
         }
 
-        private class SquareGrid
+        private sealed class SquareGrid
         {
             public readonly Square[,] Squares;
             public readonly float XOffset, YOffset;
@@ -802,8 +803,8 @@ namespace Maes.Map.MapGen
                 var controlNodes = new ControlNode[nodeCountX, nodeCountY];
 
                 // In Marching squares, squares are offset by 0.5 
-                XOffset = -mapWidth / 2 + 0.5f;
-                YOffset = -mapHeight / 2 + 0.5f;
+                XOffset = -mapWidth / 2f + 0.5f;
+                YOffset = -mapHeight / 2f + 0.5f;
 
                 for (var x = 0; x < nodeCountX; x++)
                 {
@@ -829,7 +830,7 @@ namespace Maes.Map.MapGen
             }
         }
 
-        internal class Square
+        private sealed class Square
         {
             // This class is used in the marching squares algorithm.
             // Control nodes can be either on or off
@@ -897,7 +898,7 @@ namespace Maes.Map.MapGen
             }
         }
 
-        internal class Node
+        private class Node
         {
             public Vector3 Position;
             public int VertexIndex = -1;
@@ -916,7 +917,7 @@ namespace Maes.Map.MapGen
             }
         }
 
-        internal class ControlNode : Node
+        private sealed class ControlNode : Node
         {
             public readonly bool IsWall;
             public readonly Node Above, Right;

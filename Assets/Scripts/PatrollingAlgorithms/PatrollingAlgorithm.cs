@@ -33,6 +33,8 @@ namespace Maes.PatrollingAlgorithms
 
         // Set by SetController
         private Robot2DController _controller = null!;
+        private bool _hasCollided;
+        private bool _firstCollision;
 
         protected event OnReachVertex? OnReachVertexHandler;
 
@@ -78,17 +80,40 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            if (_currentPath.Count != 0)
+            if (_controller.IsCurrentlyColliding)
             {
-                if (_controller.IsCurrentlyColliding)
-                {
-                    _controller.PathAndMoveTo(TargetVertex.Position);
+                _firstCollision = !_hasCollided;
+                _hasCollided = true;
+            }
 
+            if (_hasCollided)
+            {
+                // Do default AStar
+                _currentPath.Clear();
+                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
+                if (currentPosition != TargetVertex.Position)
+                {
+                    if (_firstCollision)
+                    {
+                        _controller.StopCurrentTask();
+                    }
+
+                    _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
                 }
                 else
                 {
-                    PathAndMoveToTarget();
+                    _hasCollided = false;
+                    SetNextVertex();
                 }
+
+                _firstCollision = false;
+
+                return;
+            }
+
+            if (_currentPath.Count != 0)
+            {
+                PathAndMoveToTarget();
                 return;
             }
 
@@ -112,6 +137,10 @@ namespace Maes.PatrollingAlgorithms
                     .AppendLine(AlgorithmName)
                     .Append("Target vertex position: ")
                     .AppendLine(TargetVertex.Position.ToString())
+                    .Append("Has Collided: ")
+                    .Append(_hasCollided)
+                    .Append(" First Collision: ")
+                    .AppendLine(_firstCollision.ToString())
                     .ToString();
         }
 

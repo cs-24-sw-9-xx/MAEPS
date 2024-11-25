@@ -292,9 +292,9 @@ namespace Maes.Map.MapGen
 
         private Tile[,] CloseOffHallwayEnds(Tile[,] oldMap)
         {
-            var map = oldMap.Clone() as Tile[,];
+            var map = (Tile[,])oldMap.Clone();
 
-            var mapWidth = map!.GetLength(0);
+            var mapWidth = map.GetLength(0);
             var mapHeight = map.GetLength(1);
             var tileType = _type ?? throw new InvalidOperationException("_type is null");
             for (var x = 0; x < mapWidth; x++)

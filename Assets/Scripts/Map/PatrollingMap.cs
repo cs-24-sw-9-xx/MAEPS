@@ -60,33 +60,14 @@ namespace Maes.Map
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    if (paths.ContainsKey((vertex.Id, neighbor.Id)))
-                    {
-                        continue;
-                    }
-
                     var path = aStar.GetOptimisticPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = AStar.PathToStepsCheap(path).ToArray();
 
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
-                    paths.Add((neighbor.Id, vertex.Id), ReversePathSteps(pathSteps));
                 }
             }
 
             return paths;
-        }
-
-        private static PathStep[] ReversePathSteps(PathStep[] pathSteps)
-        {
-            var reversedPathSteps = new PathStep[pathSteps.Length];
-            for (var i = 0; i < pathSteps.Length; i++)
-            {
-                var originalPathStep = pathSteps[i];
-                var reversedPathStep = new PathStep(originalPathStep.End, originalPathStep.Start, null!); // HACK: set to null to avoid allocations
-                reversedPathSteps[pathSteps.Length - i - 1] = reversedPathStep;
-            }
-
-            return reversedPathSteps;
         }
     }
 }
