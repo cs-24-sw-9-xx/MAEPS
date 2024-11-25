@@ -153,7 +153,7 @@ namespace Maes.PatrollingAlgorithms
             }
         }
 
-        private Vertex GetClosestVertex()
+        protected Vertex GetClosestVertex()
         {
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
             var closestVertex = _vertices[0];
