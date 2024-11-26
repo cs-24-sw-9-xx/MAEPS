@@ -66,6 +66,7 @@ namespace Maes.Map
                     }
 
                     var path = aStar.GetOptimisticPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    vertex.Weight = path.Length;
                     var pathSteps = AStar.PathToStepsCheap(path).ToArray();
 
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
