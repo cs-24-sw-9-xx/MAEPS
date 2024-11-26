@@ -73,6 +73,32 @@ namespace Maes.Simulation
                 var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
+            SaveChart(folderPath);
+        }
+
+        private void SaveChart(string folderPath)
+        {
+            if (Tracker.Chart is null)
+            {
+                return;
+            }
+
+            Debug.Log("Saving chart...");
+            var path = Path.Join(folderPath, "chart.png");
+
+            if (!Tracker.Chart.gameObject.activeSelf)
+            {
+                Tracker.Chart.gameObject.SetActive(true);
+            }
+
+            Tracker.Zoom.start = 0;
+            Tracker.Zoom.end = 100;
+            Tracker.Zoom.enable = false;
+            Tracker.Chart.RefreshDataZoom();
+            Tracker.Chart.SetAllDirty();
+            Tracker.Chart.RefreshAllComponent();
+            Tracker.Chart.RefreshChart();
+            Tracker.Chart.SaveAsImage("png", path);
         }
     }
 }
