@@ -39,6 +39,10 @@ namespace Maes.Robot
         public Transform LeftWheel { get; }
         public Transform RightWheel { get; }
 
+        public float TotalDistanceTraveled { get; private set; }
+
+        private Vector2 _previousPosition;
+
         private const int RotateForce = 5;
         private const int MoveForce = 15;
 
@@ -100,6 +104,7 @@ namespace Maes.Robot
             RightWheel = rightWheel;
             _robot = robot;
             _robotTransform = _robot.transform;
+            _previousPosition = _rigidbody.position;
         }
 
         public MonaRobot GetRobot()
@@ -116,6 +121,7 @@ namespace Maes.Robot
         {
             // Clear the collision flag
             _newCollisionSinceLastUpdate = false;
+            CalculateTravelDistance();
         }
 
         public bool HasCollidedSinceLastLogicTick()
@@ -207,6 +213,18 @@ namespace Maes.Robot
             {
                 ApplyWheelForce(directive.Value);
             }
+        }
+
+        private void CalculateTravelDistance()
+        {
+            var currentPosition = _rigidbody.position;
+            var distance = Vector2.Distance(_previousPosition, currentPosition);
+            if (distance < 0.1f)
+            {
+                return;
+            }
+            TotalDistanceTraveled += distance;
+            _previousPosition = currentPosition;
         }
 
         // The robot is rotated relative to Unity's coordinate system, so 'up' is actually forward for the robot
