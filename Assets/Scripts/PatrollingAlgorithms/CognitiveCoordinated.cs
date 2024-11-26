@@ -15,6 +15,8 @@ namespace Maes.PatrollingAlgorithms
         private List<Vertex> _currentPath = new List<Vertex>();
         private int _iterator = 0;
 
+        private List<KeyValuePair<int, Vertex>> _messages = new();
+
         public override string GetDebugInfo()
         {
             return
@@ -25,19 +27,22 @@ namespace Maes.PatrollingAlgorithms
                     .ToString();
         }
 
+        protected override void EveryTick()
+        {
+            _messages.AddRange(_controller.ReceiveBroadcastWithId().Select(m => new KeyValuePair<int, Vertex>(m.Key, (Vertex)m.Value)));
+        }
+
         protected override Vertex NextVertex()
         {
-            var broadcasts = _controller.ReceiveBroadcastWithId().Where(broadcast => broadcast.Value is Vertex).ToList();
-
-            if (broadcasts.Count > 1)
+            if (_messages.Count > 1)
             {
-                foreach (var message in broadcasts)
+                Debug.Log($"Got {_messages.Count} messages! yay :)");
+                foreach (var message in _messages)
                 {
-                    if (message.Value is Vertex value)
-                    {
-                        _unavailableVertices[message.Key] = value;    
-                    }
+                    _unavailableVertices[message.Key] = message.Value;    
                 }
+
+                _messages.Clear();
             }
 
             int r = 0;
@@ -57,15 +62,6 @@ namespace Maes.PatrollingAlgorithms
                 Debug.Log("no broadcast");
             }*/
 
-            var broad = _controller.ReceiveBroadcast().ToList();
-            /*foreach(var vert in broad)
-            {
-                Debug.Log(vert.Key);
-                Debug.Log(vert.Value.ToString());
-            }
-            */
-            Debug.Log(broad.Count == 0 ? "no broad" : broad[0].ToString());
-
             ConstructPath();
             var next = _currentPath[_iterator];
             _iterator++;
@@ -80,6 +76,7 @@ namespace Maes.PatrollingAlgorithms
             {
                 _iterator = 0;
                 _currentPath = AStar(GetClosestVertex(), HighestIdle());
+                _currentPath.Remove(_currentPath.First());
                 _controller.Broadcast(_currentPath.Last());
                 
                 return;
@@ -87,13 +84,14 @@ namespace Maes.PatrollingAlgorithms
             
             if (_iterator < _currentPath.Count)
             {
-                _controller.Broadcast(_iterator);
+                //_controller.Broadcast(_iterator);
                 return;
             }
 
             _iterator = 0;
 
             _currentPath = AStar(TargetVertex, HighestIdle());
+            _currentPath.Remove(_currentPath.First());
             _controller.Broadcast(_currentPath.Last());
         }
 

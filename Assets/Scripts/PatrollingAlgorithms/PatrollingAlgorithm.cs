@@ -81,6 +81,8 @@ namespace Maes.PatrollingAlgorithms
                 }
                 return;
             }
+            
+            EveryTick();
 
             if (_controller.IsCurrentlyColliding)
             {
@@ -121,6 +123,8 @@ namespace Maes.PatrollingAlgorithms
 
             SetNextVertex();
         }
+        
+        protected virtual void EveryTick() {}
 
         private void SetNextVertex()
         {
