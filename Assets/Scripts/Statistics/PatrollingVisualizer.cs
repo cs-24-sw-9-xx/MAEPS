@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using Maes.Map;
+using Maes.Robot;
 using Maes.Trackers;
 
 using UnityEngine;
@@ -90,6 +91,18 @@ namespace Maes.Statistics
             }
         }
 
+        public void ResetRobotHighlighting(IEnumerable<MonaRobot> robots, MonaRobot? selectedRobot)
+        {
+            foreach (var robot in robots)
+            {
+                robot.outLine.enabled = false;
+            }
+            if (selectedRobot != null)
+            {
+                selectedRobot.outLine.enabled = true;
+            }
+        }
+
         public void ShowWaypointHeatMap(int currentTick)
         {
             foreach (var vertex in _patrollingMap.Vertices)
@@ -110,6 +123,14 @@ namespace Maes.Statistics
         {
             var yellowColor = new Color(255, 255, 0, 255);
             _vertexVisualizers[targetVertex.Id].material.color = yellowColor;
+        }
+
+        public void ShowRobotsHighlighting(IEnumerable<MonaRobot> robots)
+        {
+            foreach (var robot in robots)
+            {
+                robot.outLine.enabled = true;
+            }
         }
 
         public void ShowDefaultColor(Vertex vertex)

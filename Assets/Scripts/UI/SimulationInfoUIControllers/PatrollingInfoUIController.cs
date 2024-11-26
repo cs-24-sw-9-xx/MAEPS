@@ -31,6 +31,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button WaypointHeatMapButton = null!;
         public Button CoverageHeatMapButton = null!;
         public Button NoneButton = null!;
+        public Button ToggleAllRobotsHighlightingButton = null!;
 
         public Button TargetWaypointSelectedButton = null!;
         public Button VisibleSelectedButton = null!;
@@ -48,7 +49,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton
+            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton, ToggleAllRobotsHighlightingButton
         };
 
         protected override void AfterStart()
@@ -82,6 +83,11 @@ namespace Maes.UI.SimulationInfoUIControllers
             NoneButton.onClick.AddListener(() =>
             {
                 ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowNone());
+            });
+
+            ToggleAllRobotsHighlightingButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotsHighlighting());
             });
 
             TargetWaypointSelectedButton.onClick.AddListener(() =>
@@ -182,6 +188,9 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case NoneVisualizationMode:
                     SelectVisualizationButton(NoneButton);
+                    break;
+                case AllRobotsHighlightingVisualizationMode:
+                    SelectVisualizationButton(ToggleAllRobotsHighlightingButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
                     SelectVisualizationButton(TargetWaypointSelectedButton);
