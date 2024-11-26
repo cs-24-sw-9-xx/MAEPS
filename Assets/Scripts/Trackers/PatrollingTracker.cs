@@ -207,6 +207,7 @@ namespace Maes.Trackers
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
         {
             _visualizer.ResetWaypointsColor();
+            _visualizer.ResetRobotHighlighting(Simulation.Robots);
             base.SetVisualizationMode(newMode);
         }
 
@@ -226,6 +227,12 @@ namespace Maes.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new NoneVisualizationMode());
+        }
+
+        public void ShowAllRobotsHighlighting()
+        {
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
         }
 
         public void ShowTargetWaypointSelected()
