@@ -74,11 +74,15 @@ namespace Maes.Statistics
             }
         }
 
-        public void ResetRobotHighlighting(IEnumerable<MonaRobot> robots)
+        public void ResetRobotHighlighting(IEnumerable<MonaRobot> robots, MonaRobot? selectedRobot)
         {
             foreach (var robot in robots)
             {
                 robot.outLine.enabled = false;
+            }
+            if (selectedRobot != null)
+            {
+                selectedRobot.outLine.enabled = true;
             }
         }
 
