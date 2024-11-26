@@ -69,6 +69,7 @@ namespace Maes.Trackers
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
+            _visualizer.CreateVisualizers(_vertices, map);
             TotalCycles = scenario.TotalCycles;
             HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
