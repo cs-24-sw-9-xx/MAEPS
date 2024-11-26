@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new Dictionary<int, Vertex>();
-        private List<Vertex> _currentPath = new List<Vertex>();
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new ();
+        private List<Vertex> _currentPath = new ();
         private int _iterator = 0;
 
         private List<KeyValuePair<int, Vertex>> _messages = new();
@@ -36,7 +37,6 @@ namespace Maes.PatrollingAlgorithms
         {
             if (_messages.Count > 1)
             {
-                Debug.Log($"Got {_messages.Count} messages! yay :)");
                 foreach (var message in _messages)
                 {
                     _unavailableVertices[message.Key] = message.Value;    
@@ -44,23 +44,6 @@ namespace Maes.PatrollingAlgorithms
 
                 _messages.Clear();
             }
-
-            int r = 0;
-
-            foreach (var vertex in _unavailableVertices.Values)
-            {
-                r++;
-                Debug.Log(vertex.ToString());
-            }
-            /*
-            if (r > 0)
-            {
-                Debug.Log("there is something");
-            }
-            else
-            {
-                Debug.Log("no broadcast");
-            }*/
 
             ConstructPath();
             var next = _currentPath[_iterator];
@@ -76,35 +59,40 @@ namespace Maes.PatrollingAlgorithms
             {
                 _iterator = 0;
                 _currentPath = AStar(GetClosestVertex(), HighestIdle());
-                _currentPath.Remove(_currentPath.First());
                 _controller.Broadcast(_currentPath.Last());
+                Debug.Log(_currentPath.Last().Position);
                 
                 return;
             }
             
             if (_iterator < _currentPath.Count)
             {
-                //_controller.Broadcast(_iterator);
                 return;
             }
 
             _iterator = 0;
 
             _currentPath = AStar(TargetVertex, HighestIdle());
-            _currentPath.Remove(_currentPath.First());
             _controller.Broadcast(_currentPath.Last());
+            Debug.Log(_currentPath.Last().Position);
         }
 
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-           var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
+            var availableVertices = _vertices.ToList();
 
+            foreach (var vertex in _unavailableVertices.Values.SelectMany(vertex1 => availableVertices.Where(vertex2 => vertex1.Id == vertex2.Id).ToList()))
+            {
+                availableVertices.Remove(vertex);
+            }
+            
+            availableVertices = availableVertices.OrderBy((x) => x.LastTimeVisitedTick).ToList();
+            
             var position = TargetVertex.Position;
             var first = availableVertices.First();
             var closestVertex = first;
 
-            //maybe this extra computation shouldn't exist for CC.
             foreach (var vertex in availableVertices.Where(vertex => vertex.LastTimeVisitedTick == first.LastTimeVisitedTick))
             {
                 //would be better if it wasn't euclidean distance
@@ -115,7 +103,6 @@ namespace Maes.PatrollingAlgorithms
             }
 
             return closestVertex;
-           //return _vertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
         private static List<Vertex> AStar(Vertex start, Vertex target)
@@ -176,6 +163,10 @@ namespace Maes.PatrollingAlgorithms
                 path.Add(current);
             }
             path.Reverse();
+            
+            // remove first element, because so we don't path to same vertex
+            path.Remove(path.First());
+            
             return path;
         }
 
