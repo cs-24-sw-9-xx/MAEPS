@@ -33,8 +33,6 @@ namespace Maes.Simulation
 
             PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap);
 
-            patrollingVisualizer.SetPatrollingMap(patrollingMap);
-
             RobotSpawner.SetPatrolling(patrollingMap, PatrollingTracker);
         }
 
