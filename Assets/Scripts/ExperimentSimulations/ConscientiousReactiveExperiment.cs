@@ -130,7 +130,8 @@ namespace Maes.ExperimentSimulations
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints
+                    robotConstraints: robotConstraints,
+                    showIslands: false
                 )
             );
 
@@ -147,7 +148,8 @@ namespace Maes.ExperimentSimulations
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints
+                    robotConstraints: robotConstraints,
+                    showIslands: true
                 )
             );
 

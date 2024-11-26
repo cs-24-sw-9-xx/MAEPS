@@ -27,7 +27,9 @@ namespace Maes.Simulation.SimulationScenarios
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
             PatrollingMapFactory? patrollingMapFactory = null,
-            IFaultInjection? faultInjection = null)
+            IFaultInjection? faultInjection = null,
+            bool showIslands = false
+            )
             : base(seed,
                 robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, _ => new ConscientiousReactiveAlgorithm())),
                 null,
@@ -38,7 +40,7 @@ namespace Maes.Simulation.SimulationScenarios
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map, showIslands));
         }
     }
 }
