@@ -74,7 +74,7 @@ namespace Maes.Trackers
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
-            _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
+            _currentVisualizationMode = new NoneVisualizationMode();
         }
 
         public void OnReachedVertex(int vertexId, int atTick)
