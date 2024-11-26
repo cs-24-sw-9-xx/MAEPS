@@ -78,17 +78,19 @@ namespace Maes.Simulation
 
         private void SaveChart(string folderPath)
         {
-            if (Tracker.Chart is null){
+            if (Tracker.Chart is null)
+            {
                 return;
             }
-            
+
             Debug.Log("Saving chart...");
             var path = Path.Join(folderPath, "chart.png");
-            
-            if(!Tracker.Chart.gameObject.activeSelf){
+
+            if (!Tracker.Chart.gameObject.activeSelf)
+            {
                 Tracker.Chart.gameObject.SetActive(true);
             }
-            
+
             Tracker.Zoom.start = 0;
             Tracker.Zoom.end = 100;
             Tracker.Zoom.enable = false;
