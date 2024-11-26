@@ -77,6 +77,8 @@ namespace Maes.PatrollingAlgorithms
                 }
                 return;
             }
+            
+            EveryTick();
 
             if (_currentPath.Count != 0)
             {
@@ -86,6 +88,8 @@ namespace Maes.PatrollingAlgorithms
 
             SetNextVertex();
         }
+        
+        protected virtual void EveryTick() {}
 
         private void SetNextVertex()
         {
