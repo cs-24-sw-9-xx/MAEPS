@@ -129,7 +129,7 @@ namespace Maes.Statistics
         {
             foreach (var robot in robots)
             {
-               robot.outLine.enabled = true; 
+                robot.outLine.enabled = true;
             }
         }
 
