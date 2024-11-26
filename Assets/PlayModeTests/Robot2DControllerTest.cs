@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 
 using Maes.Robot;
 using Maes.Robot.Task;
@@ -131,6 +132,89 @@ namespace PlayModeTests
             var targetPositionDelta = (expectedEndingPosition - endingPosition).magnitude;
             Debug.Log($"Actual: {endingPosition}  vs  expected: {expectedEndingPosition}");
             Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
+        }
+
+        [UnityTest]
+        [TestCase(1.0f, ExpectedResult = null)]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(5.0f, ExpectedResult = null)]
+        [TestCase(10.0f, ExpectedResult = null)]
+        [TestCase(20.0f, ExpectedResult = null)]
+        public IEnumerator CheckTotalTraveledDistanceIsCorrect(float movementDistance)
+        {
+            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            {
+                if (tick == 0)
+                {
+                    controller.Move(movementDistance);
+                }
+            };
+
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+
+            // Wait until the robot has started and completed the movement task
+            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            {
+                yield return null;
+            }
+
+            //  Wait 1 second (10 ticks) for the robot to stand completely still
+            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
+            const int ticksToWait = 10;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait)
+            {
+                yield return null;
+            }
+
+            // Assert that the actual traveled distance approximately matches the expected traveled distance
+            const float maximumDeviation = 0.7f;
+            var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
+            Debug.Log($"Actual traveled distance: {actualTraveledDistance}  vs  expected traveled distance: {movementDistance}");
+            Assert.LessOrEqual(Math.Abs(movementDistance - actualTraveledDistance), maximumDeviation);
+        }
+
+        [UnityTest]
+        [TestCase(1.0f, ExpectedResult = null)]
+        [TestCase(2.0f, ExpectedResult = null)]
+        [TestCase(5.0f, ExpectedResult = null)]
+        [TestCase(10.0f, ExpectedResult = null)]
+        public IEnumerator CheckWithRotationTotalTraveledDistanceIsCorrect(float movementDistance)
+        {
+            var queue = new Queue<Action>();
+            queue.Enqueue(() => _robot.Controller.Move(movementDistance));
+            queue.Enqueue(() => _robot.Controller.Rotate(90));
+            queue.Enqueue(() => _robot.Controller.Move(movementDistance));
+
+            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            {
+                if (_testAlgorithm.Controller.GetStatus() == RobotStatus.Idle)
+                {
+                    if (queue.TryDequeue(out var action))
+                    {
+                        action();
+                    }
+                }
+            };
+
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+
+            while (queue.Count > 0)
+            {
+                yield return null;
+            }
+
+            var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
+            const int ticksToWait = 30;
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            {
+                yield return null;
+            }
+
+            // Assert that the actual traveled distance approximately matches the expected traveled distance
+            const float maximumDeviation = 0.7f;
+            var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
+            Debug.Log($"Actual traveled distance: {actualTraveledDistance}  vs  expected traveled distance: {movementDistance * 2}");
+            Assert.LessOrEqual(Math.Abs((movementDistance * 2) - actualTraveledDistance), maximumDeviation);
         }
 
         [UnityTest]

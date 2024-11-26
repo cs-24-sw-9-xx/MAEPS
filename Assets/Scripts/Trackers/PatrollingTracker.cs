@@ -129,6 +129,7 @@ namespace Maes.Trackers
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)
         {
+            SetTotalDistanceTraveled(robots);
             var worstGraphIdleness = 0;
             var graphIdlenessSum = 0;
             foreach (var vertex in _vertices)
@@ -163,6 +164,11 @@ namespace Maes.Trackers
                 _lastAmountOfTicksSinceLastCycle = _currentTick;
                 _lastCycleAverageGraphIdleness = averageGraphIdlenessCycle;
             }
+        }
+
+        private void SetTotalDistanceTraveled(List<MonaRobot> robots)
+        {
+            TotalDistanceTraveled = robots.Sum(robot => robot.Controller.TotalDistanceTraveled);
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)
