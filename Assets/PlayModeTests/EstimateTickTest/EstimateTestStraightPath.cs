@@ -1,13 +1,10 @@
 using System;
 using System.Collections;
 
-using Maes.Map;
-using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
-using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -18,16 +15,16 @@ namespace PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, -1)]
-    [TestFixture(1.0f, 2)]
-    [TestFixture(1.5f, -2)]
+    [TestFixture(0.5f, -9)]
+    [TestFixture(1.0f, -5)]
+    [TestFixture(1.5f, -8)]
     public class EstimateTestStraightPath
     {
         private const int RandomSeed = 123;
         private MySimulator _maes;
         private MoveToTargetTileAlgorithm _testAlgorithm;
         private ExplorationSimulation _simulationBase;
-        private SimulationMap<Tile> _map;
+        private MonaRobot _robot;
         private readonly RobotConstraints _robotConstraints;
         private readonly int _expectedDifference;
 
@@ -47,7 +44,7 @@ namespace PlayModeTests.EstimateTickTest
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new TestToTargetTileAlgorithm();
+                        var algorithm = new MoveToTargetTileAlgorithm();
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
@@ -55,7 +52,7 @@ namespace PlayModeTests.EstimateTickTest
             _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
-            _map = _simulationBase.GetCollisionMap();
+            _robot = _simulationBase.Robots[0];
         }
 
         [TearDown]
@@ -70,7 +67,11 @@ namespace PlayModeTests.EstimateTickTest
         {
             var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
             var targetTile = robotCurrentPosition + new Vector2Int(10, 0);
-            var expectedEstimatedTicks = _simulationBase.gameObject.AddComponent<EstimateTickTimeCalculator>().EstimateTick(90, robotCurrentPosition, targetTile, _map, _robotConstraints, RandomSeed);
+            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(targetTile);
+            if (expectedEstimatedTicks == null)
+            {
+                Assert.Fail("Not able to make a route to the target tile");
+            }
 
             _testAlgorithm.TargetTile = targetTile;
 
@@ -84,7 +85,7 @@ namespace PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            Assert.AreEqual(expectedEstimatedTicks - actualTicks, _expectedDifference);
+            Assert.AreEqual(_expectedDifference, expectedEstimatedTicks.Value - actualTicks);
         }
     }
 }

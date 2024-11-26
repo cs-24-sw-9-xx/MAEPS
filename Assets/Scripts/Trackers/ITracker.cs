@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Maes.Robot;
 
 namespace Maes.Trackers
@@ -6,7 +8,7 @@ namespace Maes.Trackers
     {
         void UIUpdate();
 
-        void LogicUpdate(MonaRobot[] robots);
+        void LogicUpdate(List<MonaRobot> robots);
 
         void SetVisualizedRobot(MonaRobot? robot);
     }

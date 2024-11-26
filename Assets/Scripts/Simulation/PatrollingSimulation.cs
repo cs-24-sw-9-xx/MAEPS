@@ -11,6 +11,8 @@ using Maes.Statistics.Writer;
 using Maes.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 
+using UnityEngine;
+
 namespace Maes.Simulation
 {
     public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
@@ -29,7 +31,7 @@ namespace Maes.Simulation
         {
             var patrollingMap = scenario.PatrollingMapFactory(_collisionMap);
 
-            PatrollingTracker = new PatrollingTracker(_collisionMap, patrollingVisualizer, scenario, patrollingMap);
+            PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap);
 
             patrollingVisualizer.SetPatrollingMap(patrollingMap);
 
@@ -45,9 +47,20 @@ namespace Maes.Simulation
 
             return true;
         }
+        private bool _hasWrittenStats;
+
+        public override void OnSimulationFinished()
+        {
+            if (GlobalSettings.ShouldWriteCsvResults && !_hasWrittenStats)
+            {
+                CreateStatisticsFile();
+                _hasWrittenStats = true;
+            }
+        }
 
         protected override void CreateStatisticsFile()
         {
+            Debug.Log("Creating statistics file");
             var folderPath =
                 $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
             Directory.CreateDirectory(folderPath);
@@ -60,6 +73,32 @@ namespace Maes.Simulation
                 var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
+            SaveChart(folderPath);
+        }
+
+        private void SaveChart(string folderPath)
+        {
+            if (Tracker.Chart is null)
+            {
+                return;
+            }
+
+            Debug.Log("Saving chart...");
+            var path = Path.Join(folderPath, "chart.png");
+
+            if (!Tracker.Chart.gameObject.activeSelf)
+            {
+                Tracker.Chart.gameObject.SetActive(true);
+            }
+
+            Tracker.Zoom.start = 0;
+            Tracker.Zoom.end = 100;
+            Tracker.Zoom.enable = false;
+            Tracker.Chart.RefreshDataZoom();
+            Tracker.Chart.SetAllDirty();
+            Tracker.Chart.RefreshAllComponent();
+            Tracker.Chart.RefreshChart();
+            Tracker.Chart.SaveAsImage("png", path);
         }
     }
 }

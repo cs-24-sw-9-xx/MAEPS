@@ -1,6 +1,7 @@
 using System.Linq;
 
 using Maes.Algorithms;
+using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
@@ -23,7 +24,7 @@ namespace Maes.Simulation
         {
             base.SetScenario(scenario);
 
-            ExplorationTracker = new ExplorationTracker(_collisionMap, explorationVisualizer, scenario.RobotConstraints);
+            ExplorationTracker = new ExplorationTracker(this, _collisionMap, explorationVisualizer, scenario.RobotConstraints);
         }
 
         public override bool HasFinishedSim()
@@ -41,6 +42,20 @@ namespace Maes.Simulation
 
             var path = $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}_{resultForFileName}";
             new ExplorationCsvDataWriter(this, path).CreateCsvFile();
+        }
+
+        /// <summary>
+        /// Tests specifically if The Next Frontier is no longer doing any work.
+        /// </summary>
+        public bool TnfBotsOutOfFrontiers()
+        {
+            var res = true;
+            foreach (var monaRobot in Robots)
+            {
+                res &= (monaRobot.Algorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true;
+            }
+
+            return res;
         }
     }
 }

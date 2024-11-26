@@ -6,6 +6,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Patrolling;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Statistics.Patrolling;
@@ -16,9 +17,9 @@ using XCharts.Runtime;
 
 namespace Maes.Trackers
 {
-    // TODO: Change Tile to another type, Implemented in the next PR
     public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
     {
+        private PatrollingSimulation Simulation { get; }
         public int WorstGraphIdleness { get; private set; }
 
         // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
@@ -63,9 +64,10 @@ namespace Maes.Trackers
         private float _lastCycleAverageGraphIdleness = 0f;
         private int _lastCycle = 0;
 
-        public PatrollingTracker(SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
+        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
+            Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             TotalCycles = scenario.TotalCycles;
             HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
@@ -99,7 +101,7 @@ namespace Maes.Trackers
         public void UIUpdate()
         {
             // TODO: Fix graph data limit.
-            if (Chart.gameObject.activeSelf && SnapShots.Count > 0)
+            if (Chart != null && Chart.gameObject.activeSelf && SnapShots.Count > 0)
             {
                 //Update zoom to only follow the most recent data.
                 if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
@@ -125,8 +127,9 @@ namespace Maes.Trackers
             }
         }
 
-        protected override void OnLogicUpdate(MonaRobot[] robots)
+        protected override void OnLogicUpdate(List<MonaRobot> robots)
         {
+            SetTotalDistanceTraveled(robots);
             var worstGraphIdleness = 0;
             var graphIdlenessSum = 0;
             foreach (var vertex in _vertices)
@@ -163,6 +166,11 @@ namespace Maes.Trackers
             }
         }
 
+        private void SetTotalDistanceTraveled(List<MonaRobot> robots)
+        {
+            TotalDistanceTraveled = robots.Sum(robot => robot.Controller.TotalDistanceTraveled);
+        }
+
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
             _selectedRobot = robot;
@@ -182,7 +190,8 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle));
+            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness,
+                TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
 
             foreach (var vertex in _vertices.Values)
             {
@@ -198,6 +207,7 @@ namespace Maes.Trackers
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
         {
             _visualizer.ResetWaypointsColor();
+            _visualizer.ResetRobotHighlighting(Simulation.Robots, _selectedRobot);
             base.SetVisualizationMode(newMode);
         }
 
@@ -217,6 +227,13 @@ namespace Maes.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new NoneVisualizationMode());
+        }
+
+        public void ShowAllRobotsHighlighting()
+        {
+            _selectedRobot = null;
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
         }
 
         public void ShowTargetWaypointSelected()
@@ -263,6 +280,39 @@ namespace Maes.Trackers
             {
                 Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
             }
+        }
+
+        public void InitIdleGraph()
+        {
+            Chart.RemoveData();
+            var xAxis = Chart.EnsureChartComponent<XAxis>();
+            xAxis.splitNumber = 10;
+            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+            xAxis.type = Axis.AxisType.Value;
+
+            var yAxis = Chart.EnsureChartComponent<YAxis>();
+            yAxis.splitNumber = 10;
+            yAxis.type = Axis.AxisType.Value;
+            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
+
+            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
+            worstIdlenessSeries.symbol.size = 2;
+
+            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
+            currentIdlenessSeries.symbol.size = 2;
+
+            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
+            averageIdlenessSeries.symbol.size = 2;
+
+            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
+            totalDistanceTraveledSeries.symbol.size = 2;
+
+            Zoom.enable = true;
+            Zoom.filterMode = DataZoom.FilterMode.Filter;
+            Zoom.start = 0;
+            Zoom.end = 100;
+
+            Chart.RefreshChart();
         }
     }
 }

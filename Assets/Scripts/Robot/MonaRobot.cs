@@ -129,5 +129,10 @@ namespace Maes.Robot
                 Gizmos.DrawWireSphere(point, radius);
             }
         }
+
+        public void DestroyRobot()
+        {
+            Destroy(gameObject);
+        }
     }
 }

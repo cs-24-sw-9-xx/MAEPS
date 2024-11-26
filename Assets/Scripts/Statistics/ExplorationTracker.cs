@@ -27,6 +27,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.Visualization.Exploration;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Statistics.Exploration;
 using Maes.Trackers;
 
@@ -36,6 +37,8 @@ namespace Maes.Statistics
 {
     public class ExplorationTracker : Tracker<ExplorationCell, ExplorationVisualizer, IExplorationVisualizationMode>
     {
+        private ExplorationSimulation Simulation { get; }
+
         // The low-resolution collision map used to create the smoothed map that robots are navigating 
         private readonly SimulationMap<Tile> _collisionMap;
 
@@ -56,9 +59,10 @@ namespace Maes.Statistics
         private readonly int _traces;
         private readonly float _traceIntervalDegrees;
 
-        public ExplorationTracker(SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
+        public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
             : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type)))
         {
+            Simulation = simulation;
             _collisionMap = collisionMap;
             _constraints = constraints;
 
@@ -72,18 +76,19 @@ namespace Maes.Statistics
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion, _mostRecentDistance));
+            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion,
+                _mostRecentDistance, Simulation.NumberOfActiveRobots));
         }
 
-        private static float CalculateAverageDistance(MonaRobot[] robots)
+        private static float CalculateAverageDistance(List<MonaRobot> robots)
         {
             var sum = 0f;
             var count = 0;
-            for (var i = 0; i < robots.Length; i++)
+            for (var i = 0; i < robots.Count; i++)
             {
                 var robot = robots[i];
                 var robotPosition = robot.transform.position;
-                for (var j = i + 1; j < robots.Length; j++)
+                for (var j = i + 1; j < robots.Count; j++)
                 {
                     var otherRobot = robots[j];
                     var otherRobotPosition = otherRobot.transform.position;
@@ -129,7 +134,7 @@ namespace Maes.Statistics
             return new Vector2Int((int)robotPosition.x, (int)robotPosition.y);
         }
 
-        protected override void OnAfterFirstTick(MonaRobot[] robots)
+        protected override void OnAfterFirstTick(List<MonaRobot> robots)
         {
             _mostRecentDistance = CalculateAverageDistance(robots);
             base.OnAfterFirstTick(robots);
@@ -190,7 +195,7 @@ namespace Maes.Statistics
             SetVisualizationMode(new SelectedRobotSlamMapVisualization(_selectedRobot.Controller));
         }
 
-        protected override void OnBeforeLogicUpdate(MonaRobot[] robots)
+        protected override void OnBeforeLogicUpdate(List<MonaRobot> robots)
         {
             base.OnBeforeLogicUpdate(robots);
 
@@ -202,7 +207,7 @@ namespace Maes.Statistics
         }
 
         // Updates both exploration tracker and robot slam maps
-        private void PerformRayTracing(MonaRobot[] robots, bool shouldUpdateSlamMap)
+        private void PerformRayTracing(List<MonaRobot> robots, bool shouldUpdateSlamMap)
         {
             var visibilityRange = _constraints.SlamRayTraceRange;
 

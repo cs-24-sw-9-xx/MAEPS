@@ -16,10 +16,12 @@ namespace Maes.Statistics.Patrolling
         public int CompletedCycles { get; }
         [Index(5)]
         public float AverageGraphIdleness { get; }
+        [Index(6)]
+        public int NumberOfRobots { get; }
 
         public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
-            float averagWorstGraphIdleness, int completedCycles, bool? agentsInterconnected = null,
-            float? biggestClusterPercentage = null) : base(tick,
+            float averagWorstGraphIdleness, int completedCycles, int numberOfRobots,
+            bool? agentsInterconnected = null, float? biggestClusterPercentage = null) : base(tick,
             agentsInterconnected, biggestClusterPercentage)
         {
             GraphIdleness = graphIdleness;
@@ -27,6 +29,7 @@ namespace Maes.Statistics.Patrolling
             TotalDistanceTraveled = totalDistanceTraveled;
             CompletedCycles = completedCycles;
             AverageGraphIdleness = averagWorstGraphIdleness;
+            NumberOfRobots = numberOfRobots;
         }
     }
 }

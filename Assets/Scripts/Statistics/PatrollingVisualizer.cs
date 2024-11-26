@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 
 using Maes.Map;
+using Maes.Robot;
+using Maes.Trackers;
 
 using UnityEngine;
 
@@ -40,9 +42,25 @@ namespace Maes.Statistics
             foreach (var vertex in _patrollingMap.Vertices)
             {
                 var vertexVisualizer = Instantiate(VertexVisualizer, transform);
+                // Add the vertex visualizer to the UI layer
+                vertexVisualizer.layer = LayerMask.NameToLayer("UI");
                 vertexVisualizer.transform.localPosition = (Vector2)vertex.Position;
                 var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
                 meshRenderer.material.color = vertex.Color;
+
+                // Link the MonoVertex component for mouse interaction
+                var monoVertex = vertexVisualizer.AddComponent<MonoVertex>();
+                var collider = vertexVisualizer.AddComponent<BoxCollider2D>();
+
+                if (monoVertex == null)
+                {
+                    Debug.LogError("MonoVertex component missing on VertexVisualizer prefab");
+                }
+                else
+                {
+                    monoVertex.VertexDetails = new VertexDetails(vertex);
+                }
+
                 _visualizers.Add(vertexVisualizer);
                 _vertexVisualizers.Add(vertex.Id, meshRenderer);
 
@@ -73,6 +91,18 @@ namespace Maes.Statistics
             }
         }
 
+        public void ResetRobotHighlighting(IEnumerable<MonaRobot> robots, MonaRobot? selectedRobot)
+        {
+            foreach (var robot in robots)
+            {
+                robot.outLine.enabled = false;
+            }
+            if (selectedRobot != null)
+            {
+                selectedRobot.outLine.enabled = true;
+            }
+        }
+
         public void ShowWaypointHeatMap(int currentTick)
         {
             foreach (var vertex in _patrollingMap.Vertices)
@@ -93,6 +123,14 @@ namespace Maes.Statistics
         {
             var yellowColor = new Color(255, 255, 0, 255);
             _vertexVisualizers[targetVertex.Id].material.color = yellowColor;
+        }
+
+        public void ShowRobotsHighlighting(IEnumerable<MonaRobot> robots)
+        {
+            foreach (var robot in robots)
+            {
+                robot.outLine.enabled = true;
+            }
         }
 
         public void ShowDefaultColor(Vertex vertex)

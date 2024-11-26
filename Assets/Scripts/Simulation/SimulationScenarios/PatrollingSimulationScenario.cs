@@ -1,4 +1,5 @@
 using Maes.Algorithms;
+using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
@@ -25,18 +26,21 @@ namespace Maes.Simulation.SimulationScenarios
             RobotFactory<IPatrollingAlgorithm>? robotSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
-            PatrollingMapFactory? patrollingMapFactory = null
+            PatrollingMapFactory? patrollingMapFactory = null,
+            IFaultInjection? faultInjection = null,
+            bool showIslands = false
             )
             : base(seed,
                 robotSpawner,
                 null,
                 mapSpawner,
                 robotConstraints,
-                statisticsFileName)
+                statisticsFileName,
+                faultInjection)
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map, showIslands));
         }
     }
 }

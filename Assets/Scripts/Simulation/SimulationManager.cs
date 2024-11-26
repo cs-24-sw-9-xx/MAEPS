@@ -226,11 +226,7 @@ namespace Maes.Simulation
             if (CurrentScenario != null && CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation))
             {
                 CurrentSimulation.OnSimulationFinished();
-
-                if (Scenarios.Count != 0)
-                { //If last simulation, let us keep looking around in it
-                    RemoveCurrentSimulation();
-                }
+                RemoveCurrentSimulation();
             }
 
             if (CurrentScenario == null || CurrentSimulation == null)
@@ -238,6 +234,7 @@ namespace Maes.Simulation
                 if (Scenarios.Count == 0)
                 {
                     // Indicate that no further updates are needed
+                    Debug.Log("No more simulations to run, pausing");
                     return false;
                 }
 

@@ -78,6 +78,7 @@ UserSettings/
 CodeCoverage/
 InitTestScene*
 *.csv
+/data
 /MinotaurExperiment
 /TnfExperiment
 /maes-csv-reader/env
