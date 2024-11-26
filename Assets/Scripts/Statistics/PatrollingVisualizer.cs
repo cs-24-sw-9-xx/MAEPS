@@ -46,7 +46,7 @@ namespace Maes.Statistics
                 vertexVisualizer.transform.localPosition = (Vector2)vertex.Position;
                 var meshRenderer = vertexVisualizer.GetComponent<MeshRenderer>();
                 meshRenderer.material.color = vertex.Color;
-                
+
                 // Link the MonoVertex component for mouse interaction
                 var monoVertex = vertexVisualizer.AddComponent<MonoVertex>();
                 var collider = vertexVisualizer.AddComponent<BoxCollider2D>();
