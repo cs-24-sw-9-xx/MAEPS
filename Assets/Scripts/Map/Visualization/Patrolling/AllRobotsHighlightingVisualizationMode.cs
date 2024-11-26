@@ -14,7 +14,7 @@ namespace Maes.Map.Visualization.Patrolling
         }
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
-            visualizer.ShowAllRobotsHighlighting(Robots);
+            visualizer.ShowRobotsHighlighting(Robots);
         }
     }
 }

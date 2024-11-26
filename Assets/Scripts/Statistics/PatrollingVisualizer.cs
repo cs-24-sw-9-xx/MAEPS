@@ -104,7 +104,7 @@ namespace Maes.Statistics
             _vertexVisualizers[targetVertex.Id].material.color = yellowColor;
         }
 
-        public void ShowAllRobotsHighlighting(IEnumerable<MonaRobot> robots)
+        public void ShowRobotsHighlighting(IEnumerable<MonaRobot> robots)
         {
             foreach (var robot in robots)
             {
