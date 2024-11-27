@@ -117,6 +117,10 @@ namespace Maes.UI
                 // Notify current simulation that no robot is selected
                 _simulationManager.CurrentSimulation?.SetSelectedRobot(null);
                 _simulationManager.CurrentSimulation?.SetSelectedTag(null);
+                if (_simulationManager.CurrentSimulation is PatrollingSimulation patrollingSimulation)
+                {
+                    patrollingSimulation.SetSelectedVertex(null);
+                }
                 _simulationManager.CurrentSimulation?.ClearVisualTags();
             }
         }

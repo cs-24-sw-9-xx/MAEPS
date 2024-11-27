@@ -10,6 +10,7 @@ using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Statistics.Patrolling;
+using Maes.UI.Patrolling;
 
 using UnityEngine;
 
@@ -57,6 +58,7 @@ namespace Maes.Trackers
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
 
         private readonly Dictionary<int, VertexDetails> _vertices;
+        private VertexVisualizer? _selectedVertex;
 
         private float _totalGraphIdleness;
         private float _lastCyclesTotalGraphIdleness = 0f;
@@ -70,6 +72,7 @@ namespace Maes.Trackers
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
+            _visualizer.SetLineOfSightVertices(collisionMap, map);
             TotalCycles = scenario.TotalCycles;
             HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
@@ -260,6 +263,24 @@ namespace Maes.Trackers
             SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
         }
 
+        public void ShowAllVerticesLineOfSight()
+        {
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new LineOfSightAllVerticesVisualizationMode(_visualizer));
+        }
+
+        private void ShowSelectedLineOfSight()
+        {
+            _visualizer.meshRenderer.enabled = true;
+
+            if (_selectedVertex == null)
+            {
+                throw new Exception("Cannot show line of side when no vertex is selected");
+            }
+
+            SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+        }
+
         private void PlotData(PatrollingSnapShot snapShot)
         {
             if (PlotWorstIdleness)
@@ -314,6 +335,20 @@ namespace Maes.Trackers
             Zoom.end = 100;
 
             Chart.RefreshChart();
+        }
+
+        public void SetVisualizedVertex(VertexVisualizer? newSelectedVertex)
+        {
+            _selectedVertex = newSelectedVertex;
+            if (_selectedVertex != null)
+            {
+                ShowSelectedLineOfSight();
+            }
+            else
+            {
+                // Revert to none visualization when vetex is deselected
+                ShowNone();
+            }
         }
     }
 }
