@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using Maes.Map;
+using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Trackers;
 using Maes.UI.Patrolling;
@@ -11,12 +12,22 @@ namespace Maes.Statistics
 {
     public class PatrollingVisualizer : Visualizer<PatrollingCell>
     {
+        public static readonly Color32 PatrollingAreaColor = new(255, 120, 0, 255);
+
         public GameObject VertexVisualizer = null!;
         public GameObject EdgeVisualizer = null!;
 
         private readonly List<GameObject> _visualizerObjects = new();
 
-        private readonly Dictionary<int, VertexVisualizer> _vertexVisualizers = new();
+        public Dictionary<int, VertexVisualizer> VertexVisualizers { get; } = new();
+
+        public LineOfSightVertices LineOfSightVertices { get; private set; } = null!;
+
+        public void SetLineOfSightVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap)
+        {
+            LineOfSightVertices = new LineOfSightVertices(simulationMap, patrollingMap);
+            LineOfSightVertices.CreateLineOfSightVertices();
+        }
 
         public override void SetSimulationMap(SimulationMap<PatrollingCell> simulationMap, Vector3 offset)
         {
@@ -41,7 +52,7 @@ namespace Maes.Statistics
                 vertexVisualizer.SetVertexDetails(vertexDetail);
 
                 _visualizerObjects.Add(vertexVisualizerObject);
-                _vertexVisualizers.Add(vertex.Id, vertexVisualizer);
+                VertexVisualizers.Add(vertex.Id, vertexVisualizer);
 
                 foreach (var otherVertex in vertex.Neighbors)
                 {
@@ -64,7 +75,7 @@ namespace Maes.Statistics
 
         public void ResetWaypointsColor()
         {
-            foreach (var (_, vertex) in _vertexVisualizers)
+            foreach (var (_, vertex) in VertexVisualizers)
             {
                 vertex.ShowDefaultWaypointColor();
             }
@@ -84,7 +95,7 @@ namespace Maes.Statistics
 
         public void ShowWaypointHeatMap(int currentTick)
         {
-            foreach (var (_, vertexVisualizer) in _vertexVisualizers)
+            foreach (var (_, vertexVisualizer) in VertexVisualizers)
             {
                 var vertex = vertexVisualizer.VertexDetails.Vertex;
 
@@ -103,7 +114,7 @@ namespace Maes.Statistics
         public void ShowTargetWaypoint(Vertex targetVertex)
         {
             var yellowColor = new Color(255, 255, 0, 255);
-            _vertexVisualizers[targetVertex.Id].SetWaypointColor(yellowColor);
+            VertexVisualizers[targetVertex.Id].SetWaypointColor(yellowColor);
         }
 
         public void ShowRobotsHighlighting(IEnumerable<MonaRobot> robots)
@@ -116,7 +127,7 @@ namespace Maes.Statistics
 
         public void ShowDefaultColor(Vertex vertex)
         {
-            if (_vertexVisualizers.TryGetValue(vertex.Id, out var vertexObject))
+            if (VertexVisualizers.TryGetValue(vertex.Id, out var vertexObject))
             {
                 vertexObject.ShowDefaultWaypointColor();
             }

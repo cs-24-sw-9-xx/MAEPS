@@ -32,6 +32,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button CoverageHeatMapButton = null!;
         public Button NoneButton = null!;
         public Button ToggleAllRobotsHighlightingButton = null!;
+        public Button AllVerticesLineOfSightButton = null!;
 
         public Button TargetWaypointSelectedButton = null!;
         public Button VisibleSelectedButton = null!;
@@ -49,7 +50,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton, ToggleAllRobotsHighlightingButton
+            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
         };
 
         protected override void AfterStart()
@@ -121,6 +122,14 @@ namespace Maes.UI.SimulationInfoUIControllers
                     }
                 });
             });
+
+            AllVerticesLineOfSightButton.onClick.AddListener(() =>
+            {
+                ExecuteAndRememberMapVisualizationModification(sim =>
+                {
+                    sim?.PatrollingTracker.ShowAllVerticesLineOfSight();
+                });
+            }); ;
 
             WorstIdlenessToggle.onValueChanged.AddListener(
                 toggleValue =>
@@ -197,6 +206,12 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case CurrentlyVisibleAreaVisualizationPatrollingMode:
                     SelectVisualizationButton(VisibleSelectedButton);
+                    break;
+                case LineOfSightAllVerticesVisualizationMode:
+                    SelectVisualizationButton(AllVerticesLineOfSightButton);
+                    break;
+                case LineOfSightVertexVisualizationMode:
+                    UnHighlightVisualizationButtons();
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");

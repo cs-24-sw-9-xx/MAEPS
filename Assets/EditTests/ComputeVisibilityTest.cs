@@ -1,5 +1,4 @@
-
-using Maes.Map.MapPatrollingGen;
+using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -90,7 +89,7 @@ namespace EditTests
         {
             var map = testCase.Map;
             var expected = testCase.Expected;
-            var result = WatchmanRouteSolver.ComputeVisibilityOfPoint(new Vector2Int(0, 0), map);
+            var result = LineOfSightUtilities.ComputeVisibilityOfPoint(new Vector2Int(0, 0), map);
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
 
@@ -100,7 +99,7 @@ namespace EditTests
         {
             var map = testCase.Map;
             var expected = testCase.Expected;
-            var result = WatchmanRouteSolver.ComputeVisibilityOfPointFastBreakColumn(new Vector2Int(0, 0), map);
+            var result = LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn(new Vector2Int(0, 0), map);
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
     }

@@ -9,6 +9,7 @@ using Maes.Statistics;
 using Maes.Statistics.Patrolling;
 using Maes.Statistics.Writer;
 using Maes.Trackers;
+using Maes.UI.Patrolling;
 using Maes.UI.SimulationInfoUIControllers;
 
 using UnityEngine;
@@ -27,11 +28,18 @@ namespace Maes.Simulation
 
         public override PatrollingTracker Tracker => PatrollingTracker;
 
+        public VertexVisualizer? SelectedVertex { get; private set; }
+
         protected override void AfterCollisionMapGenerated(PatrollingSimulationScenario scenario)
         {
             var patrollingMap = scenario.PatrollingMapFactory(_collisionMap);
 
             PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap);
+
+            foreach (var (_, vertexVisualizer) in patrollingVisualizer.VertexVisualizers)
+            {
+                vertexVisualizer.OnVertexSelected = SetSelectedVertex;
+            }
 
             RobotSpawner.SetPatrolling(patrollingMap, PatrollingTracker);
         }
@@ -97,6 +105,12 @@ namespace Maes.Simulation
             Tracker.Chart.RefreshAllComponent();
             Tracker.Chart.RefreshChart();
             Tracker.Chart.SaveAsImage("png", path);
+        }
+
+        public void SetSelectedVertex(VertexVisualizer? newSelectedVertex)
+        {
+            SelectedVertex = newSelectedVertex;
+            Tracker.SetVisualizedVertex(newSelectedVertex);
         }
     }
 }

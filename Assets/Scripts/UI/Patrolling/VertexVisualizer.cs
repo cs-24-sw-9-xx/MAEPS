@@ -9,6 +9,10 @@ namespace Maes.UI.Patrolling
         public MeshRenderer meshRenderer = null!;
         public VertexDetails VertexDetails { get; private set; } = null!;
 
+        public delegate void OnVertexSelectedDelegate(VertexVisualizer vertex);
+
+        public OnVertexSelectedDelegate OnVertexSelected = _ => { };
+
         public void SetVertexDetails(VertexDetails vertexDetails)
         {
             VertexDetails = vertexDetails;
@@ -23,6 +27,11 @@ namespace Maes.UI.Patrolling
         public void ShowDefaultWaypointColor()
         {
             meshRenderer.material.color = VertexDetails.Vertex.Color;
+        }
+
+        public void OnMouseDown()
+        {
+            OnVertexSelected(this);
         }
 
         public void OnMouseEnter()
