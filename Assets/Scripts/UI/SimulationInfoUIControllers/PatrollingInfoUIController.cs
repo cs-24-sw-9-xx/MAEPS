@@ -35,22 +35,15 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button AllVerticesLineOfSightButton = null!;
 
         public Button TargetWaypointSelectedButton = null!;
-        public Button VisibleSelectedButton = null!;
         public Button ToogleIdleGraphButton = null!;
 
-        public Toggle WorstIdlenessToggle = null!;
-
-        public Toggle CurrentIdlenessToggle = null!;
-
-        public Toggle AverageIdlenessToggle = null!;
-
-        public Toggle TotalDistanceTraveledToggle = null!;
+        public Slider RobotHighlightingSlider = null!;
 
         public TMP_InputField PlottingFrequencyInputField = null!;
 
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
+            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
         };
 
         protected override void AfterStart()
@@ -107,22 +100,6 @@ namespace Maes.UI.SimulationInfoUIControllers
                 });
             });
 
-            VisibleSelectedButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim =>
-                {
-                    if (sim != null)
-                    {
-                        if (!sim.HasSelectedRobot())
-                        {
-                            sim.SelectFirstRobot();
-                        }
-
-                        sim.PatrollingTracker.ShowVisibleSelected();
-                    }
-                });
-            });
-
             AllVerticesLineOfSightButton.onClick.AddListener(() =>
             {
                 ExecuteAndRememberMapVisualizationModification(sim =>
@@ -131,38 +108,6 @@ namespace Maes.UI.SimulationInfoUIControllers
                 });
             }); ;
 
-            WorstIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotWorstIdleness = toggleValue;
-                    }
-                });
-            CurrentIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotCurrentIdleness = toggleValue;
-                    }
-                });
-            AverageIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotAverageIdleness = toggleValue;
-                    }
-                });
-            TotalDistanceTraveledToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotTotalDistanceTraveled = toggleValue;
-                    }
-                });
             PlottingFrequencyInputField.onValueChanged.AddListener(
                 changedValue =>
                 {
@@ -203,9 +148,6 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
                     SelectVisualizationButton(TargetWaypointSelectedButton);
-                    break;
-                case CurrentlyVisibleAreaVisualizationPatrollingMode:
-                    SelectVisualizationButton(VisibleSelectedButton);
                     break;
                 case LineOfSightAllVerticesVisualizationMode:
                     SelectVisualizationButton(AllVerticesLineOfSightButton);

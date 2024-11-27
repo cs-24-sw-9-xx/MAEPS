@@ -38,14 +38,6 @@ namespace Maes.Trackers
 
         public DataZoom Zoom { get; set; } = null!;
 
-        public bool PlotTotalDistanceTraveled = false;
-
-        public bool PlotAverageIdleness = false;
-
-        public bool PlotCurrentIdleness = false;
-
-        public bool PlotWorstIdleness = true;
-
         public int PlottingFrequency = 50;
 
         private int _lastPlottedSnapshot = 0;
@@ -118,7 +110,10 @@ namespace Maes.Trackers
                 {
                     if (SnapShots[i].Tick % PlottingFrequency == 0)
                     {
-                        PlotData(SnapShots[i]);
+                        Chart.AddData(0, SnapShots[i].Tick, SnapShots[i].WorstGraphIdleness);
+                        Chart.AddData(1, SnapShots[i].Tick, SnapShots[i].GraphIdleness);
+                        Chart.AddData(2, SnapShots[i].Tick, SnapShots[i].AverageGraphIdleness);
+                        Chart.AddData(3, SnapShots[i].Tick, SnapShots[i].TotalDistanceTraveled);
                     }
                 }
 
@@ -281,29 +276,6 @@ namespace Maes.Trackers
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
-        private void PlotData(PatrollingSnapShot snapShot)
-        {
-            if (PlotWorstIdleness)
-            {
-                Chart.AddData(0, snapShot.Tick, snapShot.WorstGraphIdleness);
-            }
-
-            if (PlotCurrentIdleness)
-            {
-                Chart.AddData(1, snapShot.Tick, snapShot.GraphIdleness);
-            }
-
-            if (PlotAverageIdleness)
-            {
-                Chart.AddData(2, snapShot.Tick, snapShot.AverageGraphIdleness);
-            }
-
-            if (PlotTotalDistanceTraveled)
-            {
-                Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
-            }
-        }
-
         public void InitIdleGraph()
         {
             Chart.RemoveData();
@@ -328,6 +300,8 @@ namespace Maes.Trackers
 
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
             totalDistanceTraveledSeries.symbol.size = 2;
+
+            var legend = Chart.EnsureChartComponent<Legend>();
 
             Zoom.enable = true;
             Zoom.filterMode = DataZoom.FilterMode.Filter;
