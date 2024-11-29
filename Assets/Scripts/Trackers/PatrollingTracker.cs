@@ -173,8 +173,6 @@ namespace Maes.Trackers
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
             _selectedRobot = robot;
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
         }
 
         protected override void CreateSnapShot()
