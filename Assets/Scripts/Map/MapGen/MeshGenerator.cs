@@ -100,7 +100,7 @@ namespace Maes.Map.MapGen
         }
 
         internal SimulationMap<Tile> GenerateMesh(Tile[,] map, float wallHeight,
-            bool disableCornerRounding, List<Room> rooms)
+            bool disableCornerRounding, List<Room> rooms, bool brokenCollisionMap)
         {
             InnerWallsRenderer2D.materials = Materials.ToArray();
             InnerWallsRenderer3D.materials = Materials.ToArray();
@@ -156,7 +156,7 @@ namespace Maes.Map.MapGen
             Generate2DColliders();
 
             return GenerateCollisionMap(_squareGrid2D, map,
-                new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms);
+                new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
         }
 
         private void CreateRoofMesh()
@@ -184,22 +184,33 @@ namespace Maes.Map.MapGen
         }
 
         private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Tile[,] tileMap, Vector3 offset,
-            bool removeRoundedCorners, List<Room> rooms)
+            bool removeRoundedCorners, List<Room> rooms, bool brokenCollisionMap)
         {
-            var width = tileMap.GetLength(0);
-            var height = tileMap.GetLength(1);
+            var width = brokenCollisionMap ? squareGrid.Squares.GetLength(0) : tileMap.GetLength(0);
+            var height = brokenCollisionMap ? squareGrid.Squares.GetLength(1) : tileMap.GetLength(1);
             // Create a bool type SimulationMap with default value of false in all cells
-            var collisionMap = new SimulationMap<Tile>(() => new Tile(TileType.Room), width, height, offset, rooms);
+            var collisionMap = new SimulationMap<Tile>(() => new Tile(TileType.Room), width, height, offset, rooms, brokenCollisionMap: brokenCollisionMap);
 
             for (var x = 0; x < width; x++)
             {
                 for (var y = 0; y < height; y++)
                 {
-                    var tile = collisionMap.GetTileByLocalCoordinate(x, y);
-
-                    for (var i = 0; i < 8; i++)
+                    if (brokenCollisionMap)
                     {
-                        tile.SetCellValue(i, tileMap[x, y]);
+                        var square = squareGrid.Squares[x, y];
+                        var collisionTile = collisionMap.GetTileByLocalCoordinate(x, y);
+                        // Create triangles from all the points in the squares
+                        // assigned to variables "vertices" and "triangles"
+                        AdaptCollisionMapTile(collisionTile, square, removeRoundedCorners);
+                    }
+                    else
+                    {
+                        var tile = collisionMap.GetTileByLocalCoordinate(x, y);
+
+                        for (var i = 0; i < 8; i++)
+                        {
+                            tile.SetCellValue(i, tileMap[x, y]);
+                        }
                     }
                 }
             }

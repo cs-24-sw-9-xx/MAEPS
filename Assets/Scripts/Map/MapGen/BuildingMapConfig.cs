@@ -49,6 +49,8 @@ namespace Maes.Map.MapGen
         public int BorderSize { get; }
         public int WallThickness { get; }
 
+        public bool BrokenCollisionMap { get; }
+
         internal BuildingMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
             randomSeed: seed, wallThickness: config.Map!.BuildingConfig!.WallThickness, widthInTiles: config.Map.WidthInTiles,
             heightInTiles: config.Map.HeightInTiles,
@@ -71,7 +73,8 @@ namespace Maes.Map.MapGen
             uint doorWidth = 2,
             int doorPadding = 2,
             uint roomSplitChancePercent = 85,
-            int borderSize = 1)
+            int borderSize = 1,
+            bool brokenCollisionMap = true)
         {
             if ((2 * doorPadding + doorWidth) > minRoomSideLength)
             {
@@ -98,6 +101,7 @@ namespace Maes.Map.MapGen
             DoorPadding = doorPadding;
             RoomSplitChancePercent = roomSplitChancePercent;
             BorderSize = borderSize;
+            BrokenCollisionMap = brokenCollisionMap;
         }
 
         public bool Equals(BuildingMapConfig other)

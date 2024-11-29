@@ -76,7 +76,7 @@ namespace Maes.Map.MapGen
             rooms.ForEach(r => r.OffsetCoordsBy(_config.BorderSize, _config.BorderSize));
             var meshGen = GetComponent<MeshGenerator>();
             var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), _wallHeight, true,
-                rooms);
+                rooms, _config.BrokenCollisionMap);
 
             // Rotate to fit 2D view
             _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);

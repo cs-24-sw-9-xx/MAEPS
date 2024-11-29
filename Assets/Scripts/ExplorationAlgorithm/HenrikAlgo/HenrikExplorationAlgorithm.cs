@@ -26,6 +26,8 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
         private Vector2Int? _targetTile;
         private uint _ticksSinceHeartbeat;
 
+        private int _logicTicks;
+
         public void SetController(Robot2DController controller)
         {
             _robotController = controller;
@@ -33,6 +35,7 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
 
         public void UpdateLogic()
         {
+            _logicTicks++;
             ShareSlamMap();
             if (_robotController.GetStatus() == RobotStatus.Idle)
             {
@@ -65,7 +68,7 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
                 var combinedMessage = receivedHeartbeats[0];
                 foreach (var message in receivedHeartbeats[1..])
                 {
-                    combinedMessage = combinedMessage.Combine(message);
+                    combinedMessage = combinedMessage.Combine(message, _logicTicks);
                 }
             }
             _ticksSinceHeartbeat++;
@@ -91,10 +94,10 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
             _map = map;
         }
 
-        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
+        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage, int tick)
         {
             List<SlamMap> maps = new() { heartbeatMessage._map, _map };
-            SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+            SlamMap.Synchronize(maps, tick); //layers of pass by reference, map in controller is updated with the info from message
             return this;
         }
 
