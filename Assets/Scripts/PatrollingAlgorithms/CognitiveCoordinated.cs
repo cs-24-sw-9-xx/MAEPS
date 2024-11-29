@@ -1,7 +1,6 @@
-using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using Maes.Map;
 
@@ -12,12 +11,12 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new ();
-        private List<Vertex> _currentPath = new ();
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new();
+        private List<Vertex> _currentPath = new();
         private int _iterator = 0;
 
-        private List<KeyValuePair<int, Vertex>> _messagesLockVertex = new();
-        private List<Vertex> _messagesUpdateVertices = new();
+        private readonly List<KeyValuePair<int, Vertex>> _messagesLockVertex = new();
+        private readonly List<Vertex> _messagesUpdateVertices = new();
 
         public override string GetDebugInfo()
         {
@@ -41,7 +40,7 @@ namespace Maes.PatrollingAlgorithms
             {
                 foreach (var message in _messagesLockVertex)
                 {
-                    _unavailableVertices[message.Key] = message.Value;    
+                    _unavailableVertices[message.Key] = message.Value;
                 }
 
                 _messagesLockVertex.Clear();
@@ -56,14 +55,10 @@ namespace Maes.PatrollingAlgorithms
                         vertex.VisitedAtTick(message.LastTimeVisitedTick);
                     }
                 }
-                
+
                 _messagesUpdateVertices.Clear();
             }
 
-            /*if (_iterator >= _currentPath.Count || (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value.Id == _currentPath.Last().Id)))
-            {
-                PathConstructor();
-            }*/
             ConstructPath();
             var next = _currentPath[_iterator];
             _controller.Broadcast(next);
@@ -81,7 +76,7 @@ namespace Maes.PatrollingAlgorithms
 
                 return;
             }
-            
+
             if (_iterator < _currentPath.Count)
             {
                 return;
@@ -106,9 +101,9 @@ namespace Maes.PatrollingAlgorithms
             {
                 availableVertices.Remove(vertex);
             }
-            
+
             availableVertices = availableVertices.OrderBy((x) => x.LastTimeVisitedTick).ToList();
-            
+
             var position = TargetVertex.Position;
             var first = availableVertices.First();
             var closestVertex = first;
@@ -118,7 +113,7 @@ namespace Maes.PatrollingAlgorithms
                 //would be better if it wasn't euclidean distance
                 if (Vector2Int.Distance(position, vertex.Position) < Vector2Int.Distance(position, closestVertex.Position))
                 {
-                   closestVertex = vertex; 
+                    closestVertex = vertex;
                 }
             }
 
@@ -183,10 +178,10 @@ namespace Maes.PatrollingAlgorithms
                 path.Add(current);
             }
             path.Reverse();
-            
+
             // remove first element, because so we don't path to same vertex
             path.Remove(path.First());
-            
+
             return path;
         }
 
