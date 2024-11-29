@@ -54,14 +54,15 @@ namespace Maes.Map
             // HACK: Creating a slam map with robot constraints seems a bit hacky tbh :(
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;
-            var aStar = new AStar();
+            var aStar = new MyAStar();
             var paths = new Dictionary<(int, int), PathStep[]>();
             foreach (var vertex in vertices)
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    var path = aStar.GetOptimisticPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
-                    var pathSteps = AStar.PathToStepsCheap(path).ToArray();
+                    //var path = aStar.GetOptimisticPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    var path = aStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    var pathSteps = MyAStar.PathToStepsCheap(path).ToArray();
 
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
                 }

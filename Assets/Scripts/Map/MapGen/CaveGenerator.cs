@@ -97,7 +97,7 @@ namespace Maes.Map.MapGen
 
             var meshGen = GetComponent<MeshGenerator>();
             var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), wallHeight,
-                true, survivingRooms);
+                true, survivingRooms, _caveConfig.BrokenCollisionMap);
 
             // Rotate to fit 2D view
             _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);

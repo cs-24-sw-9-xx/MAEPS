@@ -38,10 +38,10 @@ namespace Maes.Map.MapGen
             return buildingGenerator.GenerateBuildingMap(buildingConfig, wallHeight);
         }
 
-        public SimulationMap<Tile> GenerateMap(Tile[,] bitmap, int seed, float wallHeight = 2.0f, int borderSize = 1)
+        public SimulationMap<Tile> GenerateMap(Tile[,] bitmap, int seed, float wallHeight = 2.0f, int borderSize = 1, bool brokenCollisionMap = true)
         {
             var bitMapGenerator = gameObject.AddComponent<BitMapGenerator>();
-            return bitMapGenerator.CreateMapFromBitMap(bitmap, seed, wallHeight, borderSize);
+            return bitMapGenerator.CreateMapFromBitMap(bitmap, seed, wallHeight, borderSize, brokenCollisionMap: brokenCollisionMap);
         }
     }
 }

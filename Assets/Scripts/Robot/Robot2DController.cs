@@ -419,6 +419,8 @@ namespace Maes.Robot
         /// <param name="tile">COARSEGRAINED tile as final target</param>
         public void PathAndMoveTo(Vector2Int tile, bool dependOnBrokenBehaviour = true)
         {
+            var closeness = dependOnBrokenBehaviour ? 0.5f : 0.25f;
+
             if (GetStatus() != RobotStatus.Idle)
             {
                 return;
@@ -431,13 +433,14 @@ namespace Maes.Robot
 
             if (_currentPath.Count == 0)
             {
-                var robotCurrentPosition = Vector2Int.FloorToInt(SlamMap.CoarseMap.GetApproximatePosition());
+                var approximatePosition = SlamMap.CoarseMap.GetApproximatePosition();
+                var robotCurrentPosition = dependOnBrokenBehaviour ? Vector2Int.FloorToInt(approximatePosition) : Vector2Int.RoundToInt(approximatePosition);
                 if (robotCurrentPosition == tile)
                 {
                     return;
                 }
 
-                var pathList = SlamMap.CoarseMap.GetPath(tile, beOptimistic: true);
+                var pathList = SlamMap.CoarseMap.GetPath(tile, beOptimistic: true, dependOnBrokenBehavior: dependOnBrokenBehaviour);
                 if (pathList == null)
                 {
                     return;
@@ -452,7 +455,7 @@ namespace Maes.Robot
             }
 
             var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
-            if (relativePosition.Distance < 0.5f)
+            if (relativePosition.Distance < closeness)
             {
                 if (_currentPath.Count == 0)
                 {
@@ -481,7 +484,7 @@ namespace Maes.Robot
             {
                 Rotate(relativePosition.RelativeAngle);
             }
-            else if (relativePosition.Distance > 0.5f)
+            else if (relativePosition.Distance > closeness)
             {
                 Move(relativePosition.Distance);
             }
