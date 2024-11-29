@@ -37,7 +37,7 @@ namespace Maes.Map.MapGen
         /// <summary>
         /// Method for creating a map from a 2D array of Tiles.
         /// </summary>
-        public SimulationMap<Tile> CreateMapFromBitMap(Tile[,] bitmap, int seed, float wallHeight = 2.0f, int borderSize = 1)
+        public SimulationMap<Tile> CreateMapFromBitMap(Tile[,] bitmap, int seed, float wallHeight = 2.0f, int borderSize = 1, bool brokenCollisionMap = true)
         {
             _bitmap = bitmap;
             _wallHeight = wallHeight;
@@ -64,7 +64,7 @@ namespace Maes.Map.MapGen
             // Create mesh
             var meshGen = GetComponent<MeshGenerator>();
             var collisionMap = meshGen.GenerateMesh((Tile[,])cleanedMap.Clone(), _wallHeight,
-                true, survivingRooms);
+                true, survivingRooms, brokenCollisionMap: brokenCollisionMap);
 
             // Rotate to fit 2D view
             _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);

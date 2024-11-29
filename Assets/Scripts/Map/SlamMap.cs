@@ -38,7 +38,14 @@ namespace Maes.Map
 {
     public class SlamMap : ISlamAlgorithm, IPathFindingMap
     {
-        private readonly int _widthInTiles, _heightInTiles;
+        public bool BrokenCollisionMap => _collisionMap.BrokenCollisionMap;
+        public int LastUpdateTick { get; private set; }
+        public int Width { get; }
+
+        public int Height { get; }
+
+        // Size of a tile in world space
+        private readonly float _tileSize;
 
         private SlamTileStatus[,] _tiles;
         private readonly VisibleTile[,] _currentlyVisibleTiles;
@@ -70,15 +77,15 @@ namespace Maes.Map
         {
             _collisionMap = collisionMap;
             _robotConstraints = robotConstraints;
-            _widthInTiles = collisionMap.WidthInTiles * 2;
-            _heightInTiles = collisionMap.HeightInTiles * 2;
+            Width = collisionMap.WidthInTiles * 2;
+            Height = collisionMap.HeightInTiles * 2;
             _offset = collisionMap.ScaledOffset;
 
             _random = new Random(randomSeed);
-            _pathFinder = new AStar();
+            _pathFinder = new MyAStar();
 
             _tiles = robotConstraints.MapKnown ? SetTilesAsKnownMap(collisionMap) : EmptyMap();
-            _currentlyVisibleTiles = new VisibleTile[_widthInTiles, _heightInTiles];
+            _currentlyVisibleTiles = new VisibleTile[Width, Height];
             CoarseMap = new CoarseGrainedMap(this, collisionMap.WidthInTiles, collisionMap.HeightInTiles, _offset, robotConstraints.MapKnown);
             _visibleTilesCoarseMap = new VisibleTilesCoarseMap(this, collisionMap.WidthInTiles,
                 collisionMap.HeightInTiles, _offset);
@@ -86,10 +93,10 @@ namespace Maes.Map
 
         private SlamTileStatus[,] SetTilesAsKnownMap(SimulationMap<Tile> collisionMap)
         {
-            var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
-            for (var x = 0; x < _widthInTiles; x++)
+            var tiles = new SlamTileStatus[Width, Height];
+            for (var x = 0; x < Width; x++)
             {
-                for (var y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     var tile = collisionMap.GetTileByLocalCoordinate(x / 2, y / 2);
                     var triangles = tile.GetTriangles();
@@ -107,10 +114,10 @@ namespace Maes.Map
 
         private SlamTileStatus[,] EmptyMap()
         {
-            var tiles = new SlamTileStatus[_widthInTiles, _heightInTiles];
-            for (var x = 0; x < _widthInTiles; x++)
+            var tiles = new SlamTileStatus[Width, Height];
+            for (var x = 0; x < Width; x++)
             {
-                for (var y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     tiles[x, y] = SlamTileStatus.Unseen;
                 }
@@ -137,18 +144,26 @@ namespace Maes.Map
             return localCoordinate / 2;
         }
 
-        public void SetExploredByCoordinate(Vector2Int localCoordinate, bool isOpen)
+        public void SetExploredByCoordinate(Vector2Int localCoordinate, bool isOpen, int tick)
         {
             var x = localCoordinate.x;
             var y = localCoordinate.y;
 
-            if (_tiles[x, y] != SlamTileStatus.Solid)
+
+            var status = _tiles[x, y];
+
+            if (status != SlamTileStatus.Solid)
             {
-                _tiles[x, y] = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
+                var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
+                if (status != newStatus)
+                {
+                    _tiles[x, y] = newStatus;
+                    LastUpdateTick = tick;
+                }
             }
         }
 
-        public Vector2Int GetCurrentPosition()
+        public Vector2Int GetCurrentPosition(bool dependOnBrokenPosition = true)
         {
             var currentPosition = GetApproxPosition();
             // Since the resolution of the slam map is double, we round to nearest half
@@ -184,9 +199,9 @@ namespace Maes.Map
         public List<Vector2Int> GetVisibleTiles()
         {
             var visibleTilesList = new List<Vector2Int>();
-            for (var x = 0; x < _widthInTiles; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (var y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     var tile = _currentlyVisibleTiles[x, y];
                     if (tile.Generation == _visibleTilesGeneration && tile.TileStatus != SlamTileStatus.Unseen)
@@ -265,15 +280,15 @@ namespace Maes.Map
         }
 
         // Synchronizes the given slam maps to create a new one
-        public static void Synchronize(List<SlamMap> maps)
+        public static void Synchronize(List<SlamMap> maps, int tick)
         {
-            var globalMap = new SlamTileStatus[maps[0]._widthInTiles, maps[0]._heightInTiles];
+            var globalMap = new SlamTileStatus[maps[0].Width, maps[0].Height];
 
             foreach (var map in maps)
             {
-                for (var x = 0; x < map._widthInTiles; x++)
+                for (var x = 0; x < map.Width; x++)
                 {
-                    for (var y = 0; y < map._heightInTiles; y++)
+                    for (var y = 0; y < map.Height; y++)
                     {
                         if (map._tiles[x, y] != SlamTileStatus.Unseen && globalMap[x, y] != SlamTileStatus.Solid)
                         {
@@ -286,6 +301,7 @@ namespace Maes.Map
             foreach (var map in maps)
             {
                 map._tiles = (SlamTileStatus[,])globalMap.Clone();
+                map.LastUpdateTick = tick;
             }
 
             // Synchronize coarse maps
@@ -297,15 +313,15 @@ namespace Maes.Map
         /// Synchronizes one map with a list of other <see cref="SlamMap"/>s.
         /// </summary>s
         /// 
-        public static void Combine(SlamMap target, List<SlamMap> others)
+        public static void Combine(SlamMap target, List<SlamMap> others, int tick)
         {
-            var globalMap = new SlamTileStatus[target._widthInTiles, target._heightInTiles];
+            var globalMap = new SlamTileStatus[target.Width, target.Height];
 
             foreach (var other in others)
             {
-                for (var x = 0; x < target._widthInTiles; x++)
+                for (var x = 0; x < target.Width; x++)
                 {
-                    for (var y = 0; y < target._heightInTiles; y++)
+                    for (var y = 0; y < target.Height; y++)
                     {
                         if (other._tiles[x, y] != SlamTileStatus.Unseen)
                         {
@@ -316,6 +332,7 @@ namespace Maes.Map
             }
 
             target._tiles = (SlamTileStatus[,])globalMap.Clone();
+            target.LastUpdateTick = tick;
             CoarseGrainedMap.Combine(target.CoarseMap, others.Select(o => o.GetCoarseMap()).ToList(), globalMap);
         }
 
@@ -328,9 +345,9 @@ namespace Maes.Map
         {
             var res = new Dictionary<Vector2Int, SlamTileStatus>();
 
-            for (var x = 0; x < _widthInTiles; x++)
+            for (var x = 0; x < Width; x++)
             {
-                for (var y = 0; y < _heightInTiles; y++)
+                for (var y = 0; y < Height; y++)
                 {
                     if (_tiles[x, y] != SlamTileStatus.Unseen)
                     {
@@ -365,8 +382,8 @@ namespace Maes.Map
 
         public bool IsWithinBounds(Vector2Int slamCoordinate)
         {
-            return slamCoordinate.x > 0 && slamCoordinate.x < _widthInTiles &&
-                   slamCoordinate.y > 0 && slamCoordinate.y < _heightInTiles;
+            return slamCoordinate.x > 0 && slamCoordinate.x < Width &&
+                   slamCoordinate.y > 0 && slamCoordinate.y < Height;
         }
 
         public bool IsCoordWithinBounds(Vector2Int coordinate)

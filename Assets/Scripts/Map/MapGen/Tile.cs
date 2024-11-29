@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Maes.Map.MapGen
 {
@@ -34,6 +35,7 @@ namespace Maes.Map.MapGen
         Brick
     }
 
+    [DebuggerDisplay("{Type}")]
     public readonly struct Tile
     {
         public readonly TileType Type;

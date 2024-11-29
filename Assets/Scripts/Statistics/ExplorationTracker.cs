@@ -253,7 +253,7 @@ namespace Maes.Statistics
                         {
                             var localCoordinate = slamMap.TriangleIndexToCoordinate(index);
                             // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
-                            slamMap.SetExploredByCoordinate(localCoordinate, isOpen: cell.IsExplorable);
+                            slamMap.SetExploredByCoordinate(localCoordinate, isOpen: cell.IsExplorable, tick: _currentTick);
                             slamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, localCoordinate, isOpen: cell.IsExplorable);
                         }
 

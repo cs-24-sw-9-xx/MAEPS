@@ -48,7 +48,7 @@ namespace Maes.Robot
         public SlamMap.SlamTileStatus GetVisibleTileStatus(int x, int y);
 
         /// <returns> The current position of the robot as a slam tile coordinate (rounded down) </returns>
-        public Vector2Int GetCurrentPosition();
+        public Vector2Int GetCurrentPosition(bool dependOnBrokenBehaviour = true);
 
         /// <summary>
         /// Returns the perceived status of the given tile as a <see cref="SlamMap.SlamTileStatus"/>.

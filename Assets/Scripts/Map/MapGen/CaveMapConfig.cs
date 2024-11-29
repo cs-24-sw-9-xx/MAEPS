@@ -54,6 +54,8 @@ namespace Maes.Map.MapGen
 
         public int NeighbourWallsNeededToStayWall { get; }
 
+        public bool BrokenCollisionMap { get; }
+
 
         internal CaveMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
             randomSeed: seed,
@@ -77,7 +79,8 @@ namespace Maes.Map.MapGen
             int wallThresholdSize = 1,
             int roomThresholdSize = 20,
             int borderSize = 2,
-            int neighbourWallsNeededToStayWall = 3)
+            int neighbourWallsNeededToStayWall = 3,
+            bool brokenCollisionMap = true)
         {
             // Only fill percent between and including 0 to 100 are allowed
             if (0 > randomFillPercent || randomFillPercent >= 100)
@@ -105,6 +108,7 @@ namespace Maes.Map.MapGen
             BorderSize = borderSize;
 
             NeighbourWallsNeededToStayWall = neighbourWallsNeededToStayWall;
+            BrokenCollisionMap = brokenCollisionMap;
         }
     }
 }

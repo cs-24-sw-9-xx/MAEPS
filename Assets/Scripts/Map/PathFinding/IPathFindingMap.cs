@@ -29,6 +29,12 @@ namespace Maes.Map.PathFinding
 {
     public interface IPathFindingMap
     {
+        public bool BrokenCollisionMap { get; }
+
+        public int LastUpdateTick { get; }
+
+        public int Width { get; }
+        public int Height { get; }
 
         public bool IsSolid(Vector2Int coordinate);
 
@@ -44,7 +50,7 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null);
 
-        public Vector2Int GetCurrentPosition();
+        public Vector2Int GetCurrentPosition(bool dependOnBrokenBehavior = false);
 
         /// <summary>
         /// This is for debugging purposes only to be able to easily convert coordinates to world units for drawing.

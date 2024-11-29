@@ -79,7 +79,7 @@ namespace Maes.Robot
         /// Must be called continuously untill the final target is reached
         /// </summary>
         /// <param name="tile">COARSEGRAINED tile as final target</param>
-        void PathAndMoveTo(Vector2Int tile);
+        void PathAndMoveTo(Vector2Int tile, bool dependOnBrokenBehaviour = true);
 
         /// <summary>
         /// Estimates the time of arrival for the robot to reach the specified destination.

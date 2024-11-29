@@ -247,7 +247,7 @@ namespace Maes.Robot
                 && _robotConstraints.DistributeSlam // Are we distributing slam?
                 && _localTickCounter % _robotConstraints.SlamSynchronizeIntervalInTicks == 0)
             {
-                SynchronizeSlamMaps();
+                SynchronizeSlamMaps(_localTickCounter);
             }
 
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
@@ -263,7 +263,7 @@ namespace Maes.Robot
             _communicationGroups = null;
         }
 
-        private void SynchronizeSlamMaps()
+        private void SynchronizeSlamMaps(int tick)
         {
             _communicationGroups = GetCommunicationGroups();
 
@@ -274,7 +274,7 @@ namespace Maes.Robot
                     .Select(r => r.Controller.SlamMap)
                     .ToList();
 
-                SlamMap.Synchronize(slamMaps);
+                SlamMap.Synchronize(slamMaps, tick);
             }
         }
 

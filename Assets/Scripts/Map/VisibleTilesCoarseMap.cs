@@ -30,19 +30,17 @@ namespace Maes.Map
     public class VisibleTilesCoarseMap : IPathFindingMap
     {
         private readonly SlamMap _slamMap;
-        private readonly int _width;
-        private readonly int _height;
         private readonly Vector2 _offset;
-        private readonly AStar _aStar;
+        private readonly MyAStar _aStar;
 
 
         public VisibleTilesCoarseMap(SlamMap slamMap, int width, int height, Vector2 offset)
         {
             _slamMap = slamMap;
-            _width = width;
-            _height = height;
+            Width = width;
+            Height = height;
             _offset = offset;
-            _aStar = new AStar();
+            _aStar = new MyAStar();
         }
 
         public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
@@ -60,6 +58,12 @@ namespace Maes.Map
 
             return path;
         }
+
+        public bool BrokenCollisionMap => _slamMap.BrokenCollisionMap;
+        public int LastUpdateTick => _slamMap.LastUpdateTick;
+        public int Width { get; }
+
+        public int Height { get; }
 
         public bool IsSolid(Vector2Int coordinate)
         {
@@ -134,7 +138,7 @@ namespace Maes.Map
 
         public bool IsWithinBounds(Vector2Int coordinate)
         {
-            return coordinate.x >= 0 && coordinate.x < _width && coordinate.y >= 0 && coordinate.y < _height;
+            return coordinate.x >= 0 && coordinate.x < Width && coordinate.y >= 0 && coordinate.y < Height;
         }
 
         // Returns the status of the given tile (Solid, Open or Unseen)
@@ -199,9 +203,10 @@ namespace Maes.Map
             return SlamMap.SlamTileStatus.Open;
         }
 
-        public Vector2Int GetCurrentPosition()
+        public Vector2Int GetCurrentPosition(bool dependOnBrokenBehaviour = true)
         {
-            return Vector2Int.FloorToInt(_slamMap.ApproximatePosition - _offset);
+            var approximatePosition = _slamMap.ApproximatePosition - _offset;
+            return dependOnBrokenBehaviour ? Vector2Int.FloorToInt(approximatePosition) : Vector2Int.RoundToInt(approximatePosition);
         }
 
         public Vector3 TileToWorld(Vector2 tile)

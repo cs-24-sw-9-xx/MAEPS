@@ -48,12 +48,12 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 this.previousIntersections = previousIntersections;
             }
 
-            public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage, MinotaurAlgorithm minotaur)
+            public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage, MinotaurAlgorithm minotaur, int tick)
             {
                 minotaur._otherRobotPositions[heartbeatMessage.ID] = (heartbeatMessage.location, minotaur._waypoint.HasValue ? minotaur._waypoint.Value.Destination : null);
                 minotaur._previousIntersections.UnionWith(heartbeatMessage.previousIntersections);
                 List<SlamMap> maps = new() { heartbeatMessage.map, map };
-                SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+                SlamMap.Synchronize(maps, tick); //layers of pass by reference, map in controller is updated with the info from message
 
                 var amount = heartbeatMessage.doorways.Count;
                 for (var i = 0; i < amount; i++)
