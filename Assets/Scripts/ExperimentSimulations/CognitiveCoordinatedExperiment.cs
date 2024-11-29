@@ -64,7 +64,7 @@ namespace Maes.ExperimentSimulations
             var random = new System.Random(12345);
             var mapSize = 100;
 
-            var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
+            var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "cognitive_coordinated";
             const int robotCount = 3;
             var spawningPosList = new List<Vector2Int>();
