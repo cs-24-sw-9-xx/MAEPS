@@ -16,6 +16,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
+        private static readonly float MaxRobotHighlightingSize = 25.0f;
         public BaseChart Chart = null!;
         public GameObject GraphControlPanel;
         public Image ProgressBarMask = null!;
@@ -32,24 +33,18 @@ namespace Maes.UI.SimulationInfoUIControllers
         public Button CoverageHeatMapButton = null!;
         public Button NoneButton = null!;
         public Button ToggleAllRobotsHighlightingButton = null!;
+        public Button AllVerticesLineOfSightButton = null!;
 
         public Button TargetWaypointSelectedButton = null!;
-        public Button VisibleSelectedButton = null!;
         public Button ToogleIdleGraphButton = null!;
 
-        public Toggle WorstIdlenessToggle = null!;
-
-        public Toggle CurrentIdlenessToggle = null!;
-
-        public Toggle AverageIdlenessToggle = null!;
-
-        public Toggle TotalDistanceTraveledToggle = null!;
+        public Slider RobotHighlightingSlider = null!;
 
         public TMP_InputField PlottingFrequencyInputField = null!;
 
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, VisibleSelectedButton, ToggleAllRobotsHighlightingButton
+            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
         };
 
         protected override void AfterStart()
@@ -106,54 +101,14 @@ namespace Maes.UI.SimulationInfoUIControllers
                 });
             });
 
-            VisibleSelectedButton.onClick.AddListener(() =>
+            AllVerticesLineOfSightButton.onClick.AddListener(() =>
             {
                 ExecuteAndRememberMapVisualizationModification(sim =>
                 {
-                    if (sim != null)
-                    {
-                        if (!sim.HasSelectedRobot())
-                        {
-                            sim.SelectFirstRobot();
-                        }
+                    sim?.PatrollingTracker.ShowAllVerticesLineOfSight();
+                });
+            }); ;
 
-                        sim.PatrollingTracker.ShowVisibleSelected();
-                    }
-                });
-            });
-
-            WorstIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotWorstIdleness = toggleValue;
-                    }
-                });
-            CurrentIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotCurrentIdleness = toggleValue;
-                    }
-                });
-            AverageIdlenessToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotAverageIdleness = toggleValue;
-                    }
-                });
-            TotalDistanceTraveledToggle.onValueChanged.AddListener(
-                toggleValue =>
-                {
-                    if (Simulation != null)
-                    {
-                        Simulation.PatrollingTracker.PlotTotalDistanceTraveled = toggleValue;
-                    }
-                });
             PlottingFrequencyInputField.onValueChanged.AddListener(
                 changedValue =>
                 {
@@ -165,6 +120,11 @@ namespace Maes.UI.SimulationInfoUIControllers
                             Simulation.PatrollingTracker.PlottingFrequency = Convert.ToInt32(changedValue);
                         }
                     }
+                });
+            RobotHighlightingSlider.onValueChanged.AddListener(
+                changedValue =>
+                {
+                    Simulation?.PatrollingTracker.SetRobotHighlightingSize(changedValue * MaxRobotHighlightingSize);
                 });
         }
 
@@ -195,8 +155,11 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case PatrollingTargetWaypointVisualizationMode:
                     SelectVisualizationButton(TargetWaypointSelectedButton);
                     break;
-                case CurrentlyVisibleAreaVisualizationPatrollingMode:
-                    SelectVisualizationButton(VisibleSelectedButton);
+                case LineOfSightAllVerticesVisualizationMode:
+                    SelectVisualizationButton(AllVerticesLineOfSightButton);
+                    break;
+                case LineOfSightVertexVisualizationMode:
+                    UnHighlightVisualizationButtons();
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");

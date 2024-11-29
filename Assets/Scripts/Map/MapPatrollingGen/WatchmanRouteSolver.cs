@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Maes.Map.MapGen;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace Maes.Map.MapPatrollingGen
     {
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
         {
-            var map = MapToBitMap(simulationMap);
+            var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = SolveWatchmanRoute(map);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
             var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix, colorIslands);
@@ -50,21 +51,7 @@ namespace Maes.Map.MapPatrollingGen
             return vertices;
         }
 
-        private static bool[,] MapToBitMap(SimulationMap<Tile> simulationMap)
-        {
-            var map = new bool[simulationMap.WidthInTiles, simulationMap.HeightInTiles];
-            for (var x = 0; x < simulationMap.WidthInTiles; x++)
-            {
-                for (var y = 0; y < simulationMap.HeightInTiles; y++)
-                {
-                    var tile = simulationMap.GetTileByLocalCoordinate(x, y);
-                    var firstTri = tile.GetTriangles()[0];
-                    map[x, y] = Tile.IsWall(firstTri.Type);
-                }
-            }
 
-            return map;
-        }
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
@@ -129,7 +116,7 @@ namespace Maes.Map.MapPatrollingGen
                     {
                         // Precompute visibility for each tile
                         // Optionally use ComputeVisibilityOfPointFastBreakColumn for improved performance
-                        precomputedVisibility[tile] = ComputeVisibilityOfPoint(tile, map);
+                        precomputedVisibility[tile] = LineOfSightUtilities.ComputeVisibilityOfPoint(tile, map);
                     }
                 }
             });
@@ -137,61 +124,6 @@ namespace Maes.Map.MapPatrollingGen
             // SaveAsImage.SaveVisibileTiles();
 
             return precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
-
-        // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPointFastBreakColumn(Vector2Int start, bool[,] map)
-        {
-            var visibilitySet = new HashSet<Vector2Int>();
-
-            // Traverse columns in both directions
-            TraverseColumn(start, map, visibilitySet, 1);  // Right direction
-            TraverseColumn(start, map, visibilitySet, -1); // Left direction
-
-            return visibilitySet;
-        }
-
-        // Traverses the map column by column, pruning the search based on visibility
-        private static void TraverseColumn(Vector2Int start, bool[,] map, HashSet<Vector2Int> visibilitySet, int direction)
-        {
-            for (var x = start.x; x >= 0 && x < map.GetLength(0); x += direction)
-            {
-                var resultInCurrentColumn = false;
-                for (var y = 0; y < map.GetLength(1); y++)
-                {
-                    var target = new Vector2Int(x, y);
-
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
-                    {
-                        visibilitySet.Add(target);
-                        resultInCurrentColumn = true;
-                    }
-                }
-
-                // Stop if the current column has no visible tiles
-                if (!resultInCurrentColumn && x != start.x)
-                {
-                    break;
-                }
-            }
-        }
-
-        // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
-        {
-            var visibilitySet = new HashSet<Vector2Int>();
-            for (var x = 0; x < map.GetLength(0); x++)
-            {
-                for (var y = 0; y < map.GetLength(1); y++)
-                {
-                    var target = new Vector2Int(x, y);
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
-                    {
-                        visibilitySet.Add(target);
-                    }
-                }
-            }
-            return visibilitySet;
         }
 
         // Helper method to calculate the average Euclidean distance of a guard position to a list of other guard positions
@@ -204,43 +136,6 @@ namespace Maes.Map.MapPatrollingGen
             }
 
             return sum / currentGuardPositions.Count;
-        }
-
-        // Method to check visibility using a line-of-sight algorithm
-        private static bool IsInLineOfSight(Vector2Int start, Vector2Int end, bool[,] map)
-        {
-            // Implement Bresenham's line algorithm for visibility check
-            // Return true if there is a clear line-of-sight, otherwise false
-            var dx = Mathf.Abs(end.x - start.x);
-            var dy = Mathf.Abs(end.y - start.y);
-            var sx = start.x < end.x ? 1 : -1;
-            var sy = start.y < end.y ? 1 : -1;
-            var err = dx - dy;
-
-            var x = start.x;
-            var y = start.y;
-
-            while (x != end.x || y != end.y)
-            {
-                if (map[x, y])
-                {
-                    return false; // Hit a wall
-                }
-
-                var e2 = 2 * err;
-                if (e2 > -dy)
-                {
-                    err -= dy;
-                    x += sx;
-                }
-                if (e2 < dx)
-                {
-                    err += dx;
-                    y += sy;
-                }
-            }
-
-            return true;
         }
 
         // Find the k nearest neighbors for each point and return the reverse mapping

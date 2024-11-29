@@ -132,5 +132,13 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             selectedButton.image.color = _mapVisualizationSelectedColor;
         }
+
+        protected void UnHighlightVisualizationButtons()
+        {
+            foreach (var button in MapVisualizationToggleGroup)
+            {
+                button.image.color = _mapVisualizationColor;
+            }
+        }
     }
 }

@@ -10,6 +10,7 @@ using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
 using Maes.Statistics.Patrolling;
+using Maes.UI.Patrolling;
 
 using UnityEngine;
 
@@ -37,14 +38,6 @@ namespace Maes.Trackers
 
         public DataZoom Zoom { get; set; } = null!;
 
-        public bool PlotTotalDistanceTraveled = false;
-
-        public bool PlotAverageIdleness = false;
-
-        public bool PlotCurrentIdleness = false;
-
-        public bool PlotWorstIdleness = true;
-
         public int PlottingFrequency = 50;
 
         private int _lastPlottedSnapshot = 0;
@@ -57,6 +50,7 @@ namespace Maes.Trackers
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
 
         private readonly Dictionary<int, VertexDetails> _vertices;
+        private VertexVisualizer? _selectedVertex;
 
         private float _totalGraphIdleness;
         private float _lastCyclesTotalGraphIdleness = 0f;
@@ -69,12 +63,14 @@ namespace Maes.Trackers
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
+            _visualizer.CreateVisualizers(_vertices, map);
+            _visualizer.SetLineOfSightVertices(collisionMap, map);
             TotalCycles = scenario.TotalCycles;
             HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
-            _currentVisualizationMode = new WaypointHeatMapVisualizationMode();
+            _currentVisualizationMode = new NoneVisualizationMode();
         }
 
         public void OnReachedVertex(int vertexId, int atTick)
@@ -114,7 +110,10 @@ namespace Maes.Trackers
                 {
                     if (SnapShots[i].Tick % PlottingFrequency == 0)
                     {
-                        PlotData(SnapShots[i]);
+                        Chart.AddData(0, SnapShots[i].Tick, SnapShots[i].WorstGraphIdleness);
+                        Chart.AddData(1, SnapShots[i].Tick, SnapShots[i].GraphIdleness);
+                        Chart.AddData(2, SnapShots[i].Tick, SnapShots[i].AverageGraphIdleness);
+                        Chart.AddData(3, SnapShots[i].Tick, SnapShots[i].TotalDistanceTraveled);
                     }
                 }
 
@@ -174,18 +173,6 @@ namespace Maes.Trackers
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
             _selectedRobot = robot;
-            if (_selectedRobot != null)
-            {
-                _visualizer.meshRenderer.enabled = true;
-                SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
-            }
-            else
-            {
-                _visualizer.meshRenderer.enabled = true;
-                // Revert to waypoint heatmap visualization when current robot is deselected
-                // while visualization mode is based on the selected robot
-                SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-            }
         }
 
         protected override void CreateSnapShot()
@@ -236,6 +223,14 @@ namespace Maes.Trackers
             SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
         }
 
+        public void SetRobotHighlightingSize(float highlightingSize)
+        {
+            foreach (var robot in Simulation.Robots)
+            {
+                robot.outLine.OutlineWidth = highlightingSize;
+            }
+        }
+
         public void ShowTargetWaypointSelected()
         {
             _visualizer.meshRenderer.enabled = false;
@@ -247,39 +242,22 @@ namespace Maes.Trackers
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
-        public void ShowVisibleSelected()
+        public void ShowAllVerticesLineOfSight()
         {
-            _visualizer.meshRenderer.enabled = false;
-            if (_selectedRobot == null)
-            {
-                throw new Exception("Cannot change to 'ShowVisibleSelected' Visualization mode when no robot is selected");
-            }
-
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
+            SetVisualizationMode(new LineOfSightAllVerticesVisualizationMode(_visualizer));
         }
 
-        private void PlotData(PatrollingSnapShot snapShot)
+        private void ShowSelectedLineOfSight()
         {
-            if (PlotWorstIdleness)
+            _visualizer.meshRenderer.enabled = true;
+
+            if (_selectedVertex == null)
             {
-                Chart.AddData(0, snapShot.Tick, snapShot.WorstGraphIdleness);
+                throw new Exception("Cannot show line of side when no vertex is selected");
             }
 
-            if (PlotCurrentIdleness)
-            {
-                Chart.AddData(1, snapShot.Tick, snapShot.GraphIdleness);
-            }
-
-            if (PlotAverageIdleness)
-            {
-                Chart.AddData(2, snapShot.Tick, snapShot.AverageGraphIdleness);
-            }
-
-            if (PlotTotalDistanceTraveled)
-            {
-                Chart.AddData(3, snapShot.Tick, snapShot.TotalDistanceTraveled);
-            }
+            SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void InitIdleGraph()
@@ -307,12 +285,28 @@ namespace Maes.Trackers
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
             totalDistanceTraveledSeries.symbol.size = 2;
 
+            var legend = Chart.EnsureChartComponent<Legend>();
+
             Zoom.enable = true;
             Zoom.filterMode = DataZoom.FilterMode.Filter;
             Zoom.start = 0;
             Zoom.end = 100;
 
             Chart.RefreshChart();
+        }
+
+        public void SetVisualizedVertex(VertexVisualizer? newSelectedVertex)
+        {
+            _selectedVertex = newSelectedVertex;
+            if (_selectedVertex != null)
+            {
+                ShowSelectedLineOfSight();
+            }
+            else
+            {
+                // Revert to none visualization when vetex is deselected
+                ShowNone();
+            }
         }
     }
 }
