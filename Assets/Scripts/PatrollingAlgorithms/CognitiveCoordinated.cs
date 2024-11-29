@@ -16,7 +16,8 @@ namespace Maes.PatrollingAlgorithms
         private List<Vertex> _currentPath = new ();
         private int _iterator = 0;
 
-        private List<KeyValuePair<int, Vertex>> _messages = new();
+        private List<KeyValuePair<int, Vertex>> _messagesLockVertex = new();
+        private List<Vertex> _messagesUpdateVertices = new();
 
         public override string GetDebugInfo()
         {
@@ -30,23 +31,42 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void EveryTick()
         {
-            _messages.AddRange(_controller.ReceiveBroadcastWithId().Select(m => new KeyValuePair<int, Vertex>(m.Key, (Vertex)m.Value)));
+            _messagesUpdateVertices.AddRange(_controller.ReceiveBroadcast().OfType<Vertex>());
+            _messagesLockVertex.AddRange(_controller.ReceiveBroadcast().OfType<KeyValuePair<int, Vertex>>());
         }
 
         protected override Vertex NextVertex()
         {
-            if (_messages.Count > 1)
+            if (_messagesLockVertex.Count > 1)
             {
-                foreach (var message in _messages)
+                foreach (var message in _messagesLockVertex)
                 {
                     _unavailableVertices[message.Key] = message.Value;    
                 }
 
-                _messages.Clear();
+                _messagesLockVertex.Clear();
             }
 
+            if (_messagesUpdateVertices.Count > 1)
+            {
+                foreach (var vertex in _vertices)
+                {
+                    foreach (var message in _messagesUpdateVertices.Where(message => message.Id == vertex.Id && message.LastTimeVisitedTick > vertex.LastTimeVisitedTick))
+                    {
+                        vertex.VisitedAtTick(message.LastTimeVisitedTick);
+                    }
+                }
+                
+                _messagesUpdateVertices.Clear();
+            }
+
+            /*if (_iterator >= _currentPath.Count || (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value.Id == _currentPath.Last().Id)))
+            {
+                PathConstructor();
+            }*/
             ConstructPath();
             var next = _currentPath[_iterator];
+            _controller.Broadcast(next);
             _iterator++;
 
             return next;
@@ -55,13 +75,10 @@ namespace Maes.PatrollingAlgorithms
         private void ConstructPath()
         {
             // calculates a new path if another agent is going towards same end vertex
-            if (_unavailableVertices.Values.Any(value => value == _currentPath.Last()))
+            if (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value.Id == _currentPath.Last().Id))
             {
-                _iterator = 0;
-                _currentPath = AStar(GetClosestVertex(), HighestIdle());
-                _controller.Broadcast(_currentPath.Last());
-                Debug.Log(_currentPath.Last().Position);
-                
+                PathConstructor();
+
                 return;
             }
             
@@ -70,11 +87,14 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            _iterator = 0;
+            PathConstructor();
+        }
 
-            _currentPath = AStar(TargetVertex, HighestIdle());
-            _controller.Broadcast(_currentPath.Last());
-            Debug.Log(_currentPath.Last().Position);
+        private void PathConstructor()
+        {
+            _iterator = 0;
+            _currentPath = AStar(GetClosestVertex(), HighestIdle());
+            _controller.Broadcast(new KeyValuePair<int, Vertex>(_controller.GetRobotID(), _currentPath.Last()));
         }
 
         private Vertex HighestIdle()
