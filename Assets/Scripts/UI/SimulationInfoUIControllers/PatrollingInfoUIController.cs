@@ -16,6 +16,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
+        private static readonly float MaxRobotHighlightingSize = 25.0f;
         public BaseChart Chart = null!;
         public GameObject GraphControlPanel;
         public Image ProgressBarMask = null!;
@@ -119,6 +120,11 @@ namespace Maes.UI.SimulationInfoUIControllers
                             Simulation.PatrollingTracker.PlottingFrequency = Convert.ToInt32(changedValue);
                         }
                     }
+                });
+            RobotHighlightingSlider.onValueChanged.AddListener(
+                changedValue =>
+                {
+                    Simulation?.PatrollingTracker.SetRobotHighlightingSize(changedValue * MaxRobotHighlightingSize);
                 });
         }
 

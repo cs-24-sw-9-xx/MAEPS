@@ -235,6 +235,14 @@ namespace Maes.Trackers
             SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
         }
 
+        public void SetRobotHighlightingSize(float highlightingSize)
+        {
+            foreach (var robot in Simulation.Robots)
+            {
+                robot.outLine.OutlineWidth = highlightingSize;
+            }
+        }
+
         public void ShowTargetWaypointSelected()
         {
             _visualizer.meshRenderer.enabled = false;
