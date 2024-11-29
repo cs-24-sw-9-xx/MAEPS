@@ -173,18 +173,8 @@ namespace Maes.Trackers
         public override void SetVisualizedRobot(MonaRobot? robot)
         {
             _selectedRobot = robot;
-            if (_selectedRobot != null)
-            {
-                _visualizer.meshRenderer.enabled = true;
-                SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
-            }
-            else
-            {
-                _visualizer.meshRenderer.enabled = true;
-                // Revert to waypoint heatmap visualization when current robot is deselected
-                // while visualization mode is based on the selected robot
-                SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-            }
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new WaypointHeatMapVisualizationMode());
         }
 
         protected override void CreateSnapShot()
@@ -252,18 +242,6 @@ namespace Maes.Trackers
             }
 
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
-        }
-
-        public void ShowVisibleSelected()
-        {
-            _visualizer.meshRenderer.enabled = false;
-            if (_selectedRobot == null)
-            {
-                throw new Exception("Cannot change to 'ShowVisibleSelected' Visualization mode when no robot is selected");
-            }
-
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new CurrentlyVisibleAreaVisualizationPatrollingMode(_map, _selectedRobot.Controller));
         }
 
         public void ShowAllVerticesLineOfSight()
