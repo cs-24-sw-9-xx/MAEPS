@@ -38,8 +38,6 @@ namespace Maes.Map
 {
     public class SlamMap : ISlamAlgorithm, IPathFindingMap
     {
-        // Size of a tile in world space
-        private readonly float _tileSize;
         private readonly int _widthInTiles, _heightInTiles;
 
         private SlamTileStatus[,] _tiles;

@@ -652,6 +652,8 @@ MonoBehaviour:
   WaypointHeatMapButton: {fileID: 7901643872413281518}
   CoverageHeatMapButton: {fileID: 3225546006083535557}
   NoneButton: {fileID: 4898610000537443651}
+  ToggleAllRobotsHighlightingButton: {fileID: 0}
+  AllVerticesLineOfSightButton: {fileID: 4359780831185811033}
   TargetWaypointSelectedButton: {fileID: 2584764380436687810}
   VisibleSelectedButton: {fileID: 3888298785742252835}
   ToogleIdleGraphButton: {fileID: 8417434095945751056}
@@ -1760,6 +1762,38 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5477860124643532900, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5477860124643532900, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5477860124643532900, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5477860124643532900, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6481618503500122776, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6481618503500122776, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6481618503500122776, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6481618503500122776, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6902811959508436439, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
       propertyPath: m_Name
       value: VisualiztionOptions
@@ -1793,6 +1827,22 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7484651219029772475, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7649621474460914540, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7649621474460914540, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7649621474460914540, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7649621474460914540, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
@@ -1869,6 +1919,17 @@ MonoBehaviour:
 --- !u!114 &3919118459495888553 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5624802150002521576, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
+  m_PrefabInstance: {fileID: 8677537873721639745}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &4359780831185811033 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4966840546620241176, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
   m_PrefabInstance: {fileID: 8677537873721639745}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}

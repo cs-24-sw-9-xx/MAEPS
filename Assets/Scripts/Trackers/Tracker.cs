@@ -21,9 +21,6 @@ namespace Maes.Trackers
 
         protected readonly SimulationMap<TCell> _map;
         protected readonly RayTracingMap<TCell> _rayTracingMap;
-        private readonly int _explorationMapWidth;
-        private readonly int _explorationMapHeight;
-
         public delegate void VisualizationModeConsumer(TVisualizationMode mode);
         public event VisualizationModeConsumer? OnVisualizationModeChanged;
 
