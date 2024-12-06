@@ -76,7 +76,7 @@ namespace Maes.Map.MapGen
             rooms.ForEach(r => r.OffsetCoordsBy(_config.BorderSize, _config.BorderSize));
             var meshGen = GetComponent<MeshGenerator>();
             var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), _wallHeight, true,
-                rooms);
+                rooms, _config.BrokenCollisionMap);
 
             // Rotate to fit 2D view
             _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
@@ -292,9 +292,9 @@ namespace Maes.Map.MapGen
 
         private Tile[,] CloseOffHallwayEnds(Tile[,] oldMap)
         {
-            var map = oldMap.Clone() as Tile[,];
+            var map = (Tile[,])oldMap.Clone();
 
-            var mapWidth = map!.GetLength(0);
+            var mapWidth = map.GetLength(0);
             var mapHeight = map.GetLength(1);
             var tileType = _type ?? throw new InvalidOperationException("_type is null");
             for (var x = 0; x < mapWidth; x++)

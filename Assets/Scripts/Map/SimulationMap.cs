@@ -45,16 +45,19 @@ namespace Maes.Map
         // They are used for robot spawning
         public readonly List<Room> Rooms = new();
 
+        public readonly bool BrokenCollisionMap;
+
         // The tiles of the map (each tile containing 8 triangle cells) 
         private readonly SimulationMapTile<TCell>[,] _tiles;
 
         public SimulationMap(Functional.Factory<TCell> cellFactory, int widthInTiles, int heightInTiles,
-            Vector2 scaledOffset, List<Room> rooms)
+            Vector2 scaledOffset, List<Room> rooms, bool brokenCollisionMap)
         {
             Rooms = rooms;
             ScaledOffset = scaledOffset;
             WidthInTiles = widthInTiles;
             HeightInTiles = heightInTiles;
+            BrokenCollisionMap = brokenCollisionMap;
             _tiles = new SimulationMapTile<TCell>[widthInTiles, heightInTiles];
             for (var x = 0; x < widthInTiles; x++)
             {

@@ -195,9 +195,9 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             if (receivedHeartbeat.Length > 1)
             {
                 var combinedMessage = receivedHeartbeat[0];
-                foreach (var message in receivedHeartbeat[1..])
+                foreach (var message in receivedHeartbeat.AsSpan(1))
                 {
-                    combinedMessage = combinedMessage.Combine(message, this);
+                    combinedMessage = combinedMessage.Combine(message, this, _logicTicks);
                 }
             }
 
@@ -641,7 +641,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             var previousDirection = (startPoint.corrected - sortedTiles[1].corrected).GetAngleRelativeToX();
 
             var result = new List<Line2D>();
-            for (var i = 0; i < sortedTiles.Count() - 1; i++)
+            for (var i = 0; i < sortedTiles.Length - 1; i++)
             {
                 var direction = (sortedTiles[i].corrected - sortedTiles[i + 1].corrected).GetAngleRelativeToX();
                 if (previousDirection != direction || map.GetTileStatus(sortedTiles[i].original + CardinalDirection.AngleToDirection(direction).OppositeDirection().Vector) != SlamTileStatus.Solid)

@@ -27,13 +27,19 @@ using System.Runtime.CompilerServices;
 using Maes.Utilities;
 using Maes.Utilities.Priority_Queue;
 
+using Roy_T.AStar.Paths;
+using Roy_T.AStar.Primitives;
+
 using UnityEngine;
 
 using static Maes.Map.SlamMap;
 
+using Grid = Roy_T.AStar.Grids.Grid;
+using Size = Roy_T.AStar.Primitives.Size;
+
 namespace Maes.Map.PathFinding
 {
-    public class AStar : IPathFinder
+    public class MyAStar : IPathFinder
     {
         private class AStarTile
         {
@@ -72,6 +78,79 @@ namespace Maes.Map.PathFinding
             }
         }
 
+        private Grid? _cachedGrid = null;
+        private Grid? _cachedOptimisticGrid = null;
+        private int _lastUpdateTick = 0;
+        private readonly PathFinder _pathFinder = new();
+
+        public Vector2Int[]? GetNonBrokenPath(Vector2Int startCoordinate, Vector2Int targetCoordinate,
+            IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+        {
+            if (_lastUpdateTick != pathFindingMap.LastUpdateTick)
+            {
+                _cachedGrid = null;
+                _cachedOptimisticGrid = null;
+            }
+
+            if (beOptimistic ? _cachedOptimisticGrid == null : _cachedGrid == null)
+            {
+                _lastUpdateTick = pathFindingMap.LastUpdateTick;
+                var width = pathFindingMap.Width;
+                var height = pathFindingMap.Height;
+
+                var gridSize = new GridSize(width, height);
+                var cellSize = new Size(Distance.FromMeters(1), Distance.FromMeters(1));
+                var traversalVelocity = Velocity.FromMetersPerSecond(1);
+
+                var grid = Grid.CreateGridWithLateralAndDiagonalConnections(gridSize, cellSize, traversalVelocity);
+                for (var x = 0; x < width; x++)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        if (beOptimistic ? pathFindingMap.IsOptimisticSolid(new Vector2Int(x, y)) : pathFindingMap.IsSolid(new Vector2Int(x, y)))
+                        {
+                            var gridPosition = new GridPosition(x, y);
+                            grid.DisconnectNode(gridPosition);
+                            grid.RemoveDiagonalConnectionsIntersectingWithNode(gridPosition);
+                        }
+                    }
+                }
+
+                if (beOptimistic)
+                {
+                    _cachedOptimisticGrid = grid;
+                }
+                else
+                {
+                    _cachedGrid = grid;
+                }
+            }
+
+            var paths = _pathFinder.FindPath(new GridPosition(startCoordinate.x, startCoordinate.y),
+                new GridPosition(targetCoordinate.x, targetCoordinate.y), beOptimistic ? _cachedOptimisticGrid : _cachedGrid);
+
+            var tilePath = new Vector2Int[paths.Edges.Count + 1];
+
+            for (var i = 0; i < paths.Edges.Count; i++)
+            {
+                if (i == 0)
+                {
+                    var pos = paths.Edges[0].Start.Position;
+                    tilePath[0] = new Vector2Int((int)pos.X, (int)pos.Y);
+                }
+
+                var position = paths.Edges[i].End.Position;
+                tilePath[i + 1] = new Vector2Int((int)position.X, (int)position.Y);
+            }
+
+            if (paths.Edges.Count == 0 || (paths.Type == PathType.ClosestApproach && !acceptPartialPaths))
+            {
+                return null;
+            }
+
+            return tilePath;
+        }
+
         public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
         {
             return GetPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: true, acceptPartialPaths: acceptPartialPaths);
@@ -79,6 +158,12 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
+            if (!pathFindingMap.BrokenCollisionMap)
+            {
+                return GetNonBrokenPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: beOptimistic,
+                    acceptPartialPaths: acceptPartialPaths);
+            }
+
             var candidates = new SimplePriorityQueue<AStarTile, float>();
             var bestCandidateOnTile = new Dictionary<Vector2Int, AStarTile>();
             var startTileHeuristic = OctileHeuristic(startCoordinate, targetCoordinate);
@@ -106,8 +191,7 @@ namespace Maes.Map.PathFinding
 
                 if (currentCoordinate == targetCoordinate)
                 {
-                    var path = currentTile.Path();
-                    return path;
+                    return currentTile.Path();
                 }
 
                 foreach (var dir in CardinalDirection.GetCardinalAndOrdinalDirections())
@@ -207,13 +291,6 @@ namespace Maes.Map.PathFinding
             return optimistic
                 ? map.IsOptimisticSolid(coord)
                 : map.IsSolid(coord);
-        }
-        private bool IsAnyNeighborOpen(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool optimistic)
-        {
-            return !IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.left, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.up, pathFindingMap, optimistic) ||
-                   !IsSolid(targetCoordinate + Vector2Int.left, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.up + Vector2Int.right, pathFindingMap, optimistic) ||
-                   !IsSolid(targetCoordinate + Vector2Int.right, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.left, pathFindingMap, optimistic) ||
-                   !IsSolid(targetCoordinate + Vector2Int.down, pathFindingMap, optimistic) || !IsSolid(targetCoordinate + Vector2Int.down + Vector2Int.right, pathFindingMap, optimistic);
         }
 
         private static float OctileHeuristic(Vector2Int from, Vector2Int to)

@@ -85,6 +85,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
         private const float AngleDelta = .5f;
         private const float MinimumMoveDistance = .3f;
 
+        private int _logicTicks;
         private int _logicTicksSinceLastCommunication;
         private bool _bonked;
         private readonly System.Random _random;
@@ -207,6 +208,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
 
         public void UpdateLogic()
         {
+            _logicTicks++;
             _robotPos = _map.GetApproximatePosition();
             _robotPosInt = Vector2Int.RoundToInt(_robotPos);
 
@@ -358,7 +360,7 @@ namespace Maes.ExplorationAlgorithm.TheNextFrontier
             // Largest Robot ID synchronizes to save on Simulator CPU time
             if (!received.Cast<(ISlamAlgorithm, int, Vector2)>().Any(p => p.Item2 > _robotId))
             {
-                SlamMap.Synchronize(newMaps);
+                SlamMap.Synchronize(newMaps, _logicTicks);
             }
             if (_robotTnfStatus == TnfStatus.OutOfFrontiers)
             {

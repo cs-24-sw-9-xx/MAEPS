@@ -132,7 +132,7 @@ namespace Maes.ExplorationAlgorithm.Greed
                 var combinedMessage = receivedHeartbeat.Dequeue();
                 foreach (var message in receivedHeartbeat)
                 {
-                    combinedMessage = combinedMessage.Combine(message);
+                    combinedMessage = combinedMessage.Combine(message, _logicTicks);
                 }
             }
 
@@ -275,10 +275,10 @@ namespace Maes.ExplorationAlgorithm.Greed
             _map = map;
         }
 
-        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage)
+        public HeartbeatMessage Combine(HeartbeatMessage heartbeatMessage, int tick)
         {
             List<SlamMap> maps = new() { heartbeatMessage._map, _map };
-            SlamMap.Synchronize(maps); //layers of pass by reference, map in controller is updated with the info from message
+            SlamMap.Synchronize(maps, tick); //layers of pass by reference, map in controller is updated with the info from message
             return this;
         }
 

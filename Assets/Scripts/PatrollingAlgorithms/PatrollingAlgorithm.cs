@@ -33,6 +33,10 @@ namespace Maes.PatrollingAlgorithms
 
         // Set by SetController
         private Robot2DController _controller = null!;
+        private bool _hasCollided;
+        private bool _firstCollision;
+
+        private readonly StringBuilder _stringBuilder = new();
 
         protected event OnReachVertex? OnReachVertexHandler;
 
@@ -64,11 +68,11 @@ namespace Maes.PatrollingAlgorithms
             if (_goingToInitialVertex)
             {
                 _targetVertex ??= GetClosestVertex();
-                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
+                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
                 if (currentPosition != TargetVertex.Position)
                 {
                     // Do normal astar pathing
-                    _controller.PathAndMoveTo(TargetVertex.Position);
+                    _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
                 }
                 else
                 {
@@ -78,17 +82,40 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
-            if (_currentPath.Count != 0)
+            if (_controller.IsCurrentlyColliding)
             {
-                if (_controller.IsCurrentlyColliding)
-                {
-                    _controller.PathAndMoveTo(TargetVertex.Position);
+                _firstCollision = !_hasCollided;
+                _hasCollided = true;
+            }
 
+            if (_hasCollided)
+            {
+                // Do default AStar
+                _currentPath.Clear();
+                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
+                if (currentPosition != TargetVertex.Position)
+                {
+                    if (_firstCollision)
+                    {
+                        _controller.StopCurrentTask();
+                    }
+
+                    _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
                 }
                 else
                 {
-                    PathAndMoveToTarget();
+                    _hasCollided = false;
+                    SetNextVertex();
                 }
+
+                _firstCollision = false;
+
+                return;
+            }
+
+            if (_currentPath.Count != 0)
+            {
+                PathAndMoveToTarget();
                 return;
             }
 
@@ -101,17 +128,23 @@ namespace Maes.PatrollingAlgorithms
             OnReachTargetVertex(currentVertex);
             _targetVertex = NextVertex();
             _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, _targetVertex.Id)]);
+            _currentTarget = null;
         }
 
         protected abstract Vertex NextVertex();
 
         public virtual string GetDebugInfo()
         {
+            _stringBuilder.Clear();
             return
-                new StringBuilder()
+                _stringBuilder
                     .AppendLine(AlgorithmName)
                     .Append("Target vertex position: ")
                     .AppendLine(TargetVertex.Position.ToString())
+                    .Append("Has Collided: ")
+                    .Append(_hasCollided)
+                    .Append(" First Collision: ")
+                    .AppendLine(_firstCollision.ToString())
                     .ToString();
         }
 
@@ -163,7 +196,7 @@ namespace Maes.PatrollingAlgorithms
 
         private Vertex GetClosestVertex()
         {
-            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
             var closestVertex = _vertices[0];
             var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
             foreach (var vertex in _vertices.AsSpan(1))
