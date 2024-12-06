@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using Maes.Map.MapGen;
+using Maes.Robot;
 using Maes.Simulation.SimulationScenarios;
 
 namespace PlayModeTests
@@ -38,6 +39,24 @@ namespace PlayModeTests
                 roomThresholdSize: 10,
                 borderSize: 1);
             return (generator => generator.GenerateMap(mapConfiguration));
+        }
+
+        public static RobotConstraints GlobalRobotConstraints()
+        {
+            return new RobotConstraints(
+                senseNearbyAgentsRange: 5f,
+                senseNearbyAgentsBlockedByWalls: true,
+                automaticallyUpdateSlam: true,
+                slamUpdateIntervalInTicks: 1,
+                slamSynchronizeIntervalInTicks: 10,
+                slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
+                distributeSlam: false,
+                environmentTagReadRange: 100f,
+                slamRayTraceRange: 7f,
+                relativeMoveSpeed: 1f,
+                agentRelativeSize: 0.6f,
+                calculateSignalTransmissionProbability: (_, _) => true);
         }
 
     }
