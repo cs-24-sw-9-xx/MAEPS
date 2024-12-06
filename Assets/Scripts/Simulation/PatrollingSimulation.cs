@@ -79,7 +79,9 @@ namespace Maes.Simulation
                 var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
-            SaveChart(folderPath);
+            // Todo: Save Graph
+            // The Saving doesnt work due to the simulation finishing before enough frames have passed to allow the graph to update and save.
+            // SaveChart(folderPath);
         }
 
         private void SaveChart(string folderPath)
@@ -90,7 +92,6 @@ namespace Maes.Simulation
             }
 
             Debug.Log("Saving chart...");
-            var path = Path.Join(folderPath, "chart.png");
 
             if (!Tracker.Chart.gameObject.activeSelf)
             {
@@ -104,7 +105,33 @@ namespace Maes.Simulation
             Tracker.Chart.SetAllDirty();
             Tracker.Chart.RefreshAllComponent();
             Tracker.Chart.RefreshChart();
-            Tracker.Chart.SaveAsImage("png", path);
+
+            var path = Path.Join(folderPath, "chart-all-idleness.png");
+            SaveSeries(path, true, true, true, false);
+
+            path = Path.Join(folderPath, "worst-idleness.png");
+            SaveSeries(path, true, false, false, false);
+
+            path = Path.Join(folderPath, "average-idleness.png");
+            SaveSeries(path, false, true, false, false);
+
+            path = Path.Join(folderPath, "current-idleness.png");
+            SaveSeries(path, false, false, true, false);
+
+            path = Path.Join(folderPath, "total-distance-idleness.png");
+            SaveSeries(path, false, false, false, true);
+
+            void SaveSeries(string path, bool saveWorstIdleness, bool saveAverageIdleness, bool saveCurrentIdleness, bool saveTotalDistance)
+            {
+                var copiedChart = Instantiate(PatrollingTracker.Chart);
+                copiedChart.series[0].show = saveWorstIdleness;
+                copiedChart.series[1].show = saveAverageIdleness;
+                copiedChart.series[2].show = saveCurrentIdleness;
+                copiedChart.series[3].show = saveTotalDistance;
+                copiedChart.RefreshGraph();
+
+                copiedChart.SaveAsImage("png", path);
+            }
         }
 
         public void SetSelectedVertex(VertexVisualizer? newSelectedVertex)
