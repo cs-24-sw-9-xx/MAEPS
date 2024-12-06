@@ -17,7 +17,6 @@ namespace Maes.UI.SimulationInfoUIControllers
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         public BaseChart Chart = null!;
-        public GameObject GraphControlPanel;
         public Image ProgressBarMask = null!;
         public TextMeshProUGUI ProgressText = null!;
 
@@ -215,7 +214,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void ToggleGraph()
         {
             Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
-            GraphControlPanel.SetActive(!GraphControlPanel.activeSelf);
+            ToogleIdleGraphButton.image.color = Chart.gameObject.activeSelf ? new Color(150 / 255f, 200 / 255f, 150 / 255f) : Color.white;
         }
     }
 }

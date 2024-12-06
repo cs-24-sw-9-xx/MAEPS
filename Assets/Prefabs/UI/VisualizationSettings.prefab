@@ -1091,7 +1091,7 @@ GameObject:
   - component: {fileID: 6565508993320586232}
   - component: {fileID: 5786503876836124102}
   m_Layer: 5
-  m_Name: ToggleIdleGraph
+  m_Name: ToggleIdleGraphButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
