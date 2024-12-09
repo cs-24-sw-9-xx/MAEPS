@@ -3,10 +3,7 @@ using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-using Maes.PatrollingAlgorithms;
 using Maes.Robot;
-
-using UnityEngine;
 
 namespace Maes.Simulation.SimulationScenarios
 {
@@ -31,7 +28,7 @@ namespace Maes.Simulation.SimulationScenarios
             bool showIslands = false
             )
             : base(seed,
-                robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, _ => new ConscientiousReactiveAlgorithm())),
+                robotSpawner,
                 null,
                 mapSpawner,
                 robotConstraints,
