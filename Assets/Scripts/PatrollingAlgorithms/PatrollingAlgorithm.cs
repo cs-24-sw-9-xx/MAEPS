@@ -83,7 +83,7 @@ namespace Maes.PatrollingAlgorithms
             }
 
             EveryTick();
-            
+
             if (_controller.IsCurrentlyColliding)
             {
                 _firstCollision = !_hasCollided;
