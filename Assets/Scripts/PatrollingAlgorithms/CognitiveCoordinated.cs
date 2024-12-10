@@ -88,7 +88,8 @@ namespace Maes.PatrollingAlgorithms
         private void PathConstructor()
         {
             _iterator = 0;
-            _currentPath = AStar(GetClosestVertex(), HighestIdle());
+                var firstElement = (_currentPath.Any()) ? _currentPath.Last() : GetClosestVertex();
+            _currentPath = AStar(firstElement, HighestIdle());
             _controller.Broadcast(new KeyValuePair<int, Vertex>(_controller.GetRobotID(), _currentPath.Last()));
         }
 
