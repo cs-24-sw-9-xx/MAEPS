@@ -1,0 +1,197 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Maes.Map;
+
+using UnityEngine;
+
+namespace Maes.PatrollingAlgorithms
+{
+    public class CognitiveCoordinated : PatrollingAlgorithm
+    {
+        public override string AlgorithmName => "Cognitive Coordinated Algorithm";
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new();
+        private List<Vertex> _currentPath = new();
+        private int _iterator = 0;
+
+        private readonly List<KeyValuePair<int, Vertex>> _messagesLockVertex = new();
+        private readonly List<Vertex> _messagesUpdateVertices = new();
+
+        public override string GetDebugInfo()
+        {
+            return
+                base.GetDebugInfo() +
+                new StringBuilder()
+                    .Append("Highest idle:")
+                    .Append(HighestIdle().Position.ToString())
+                    .ToString();
+        }
+
+        protected override void EveryTick()
+        {
+            _messagesUpdateVertices.AddRange(_controller.ReceiveBroadcast().OfType<Vertex>());
+            _messagesLockVertex.AddRange(_controller.ReceiveBroadcast().OfType<KeyValuePair<int, Vertex>>());
+        }
+
+        protected override Vertex NextVertex()
+        {
+            if (_messagesLockVertex.Count > 1)
+            {
+                foreach (var message in _messagesLockVertex)
+                {
+                    _unavailableVertices[message.Key] = message.Value;
+                }
+
+                _messagesLockVertex.Clear();
+            }
+
+            if (_messagesUpdateVertices.Count > 1)
+            {
+                foreach (var vertex in _vertices)
+                {
+                    foreach (var message in _messagesUpdateVertices.Where(message => message.Id == vertex.Id && message.LastTimeVisitedTick > vertex.LastTimeVisitedTick))
+                    {
+                        vertex.VisitedAtTick(message.LastTimeVisitedTick);
+                    }
+                }
+
+                _messagesUpdateVertices.Clear();
+            }
+
+            ConstructPath();
+            var next = _currentPath[_iterator];
+            _controller.Broadcast(next);
+            _iterator++;
+
+            return next;
+        }
+
+        private void ConstructPath()
+        {
+            // calculates a new path if another agent is going towards same end vertex
+            if (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value.Id == _currentPath.Last().Id))
+            {
+                PathConstructor();
+
+                return;
+            }
+
+            if (_iterator < _currentPath.Count)
+            {
+                return;
+            }
+
+            PathConstructor();
+        }
+
+        private void PathConstructor()
+        {
+            _iterator = 0;
+
+            var firstElement = (_currentPath.Any()) ? _currentPath.Last() : GetClosestVertex();
+            _currentPath = AStar(firstElement, HighestIdle());
+
+            _controller.Broadcast(new KeyValuePair<int, Vertex>(_controller.GetRobotID(), _currentPath.Last()));
+        }
+
+        private Vertex HighestIdle()
+        {
+            // excluding the vertices other agents are pathing towards
+            var availableVertices = _vertices.ToList();
+
+            foreach (var vertex in _unavailableVertices.Values.SelectMany(vertex1 => availableVertices.Where(vertex2 => vertex1.Id == vertex2.Id).ToList()))
+            {
+                availableVertices.Remove(vertex);
+            }
+
+            availableVertices = availableVertices.OrderBy((x) => x.LastTimeVisitedTick).ToList();
+
+            var position = TargetVertex.Position;
+            var first = availableVertices.First();
+            var closestVertex = first;
+
+            foreach (var vertex in availableVertices.Where(vertex => vertex.LastTimeVisitedTick == first.LastTimeVisitedTick))
+            {
+                //would be better if it wasn't euclidean distance
+                if (Vector2Int.Distance(position, vertex.Position) < Vector2Int.Distance(position, closestVertex.Position))
+                {
+                    closestVertex = vertex;
+                }
+            }
+
+            return closestVertex;
+        }
+
+        private static List<Vertex> AStar(Vertex start, Vertex target)
+        {
+            // Dictionary to store the cost of the path from the start to each vertex (g-cost)
+            var gCost = new Dictionary<Vertex, float> { [start] = 0 };
+
+            // Dictionary to store estimated total cost from start to target (f-cost)
+            var fCost = new Dictionary<Vertex, float> { [start] = Heuristic(start, target) };
+
+            // Dictionary to store the path (i.e., the vertex that leads to each vertex)
+            var cameFrom = new Dictionary<Vertex, Vertex>();
+
+            // Open set initialized with the starting vertex
+            var openSet = new HashSet<Vertex> { start };
+
+            while (openSet.Count > 0)
+            {
+                // Select vertex in openSet with lowest f-cost
+                var current = openSet.OrderBy(v => fCost.ContainsKey(v) ? fCost[v] : float.MaxValue).First();
+
+                // If reached target, reconstruct path
+                if (current.Position == target.Position)
+                {
+                    return ReconstructPath(cameFrom, current);
+                }
+
+                openSet.Remove(current);
+
+                // Explore neighbors
+                foreach (var neighbor in current.Neighbors)
+                {
+                    var tentativeGCost = gCost[current] + Vector2Int.Distance(current.Position, neighbor.Position);
+
+                    // If a cheaper path to neighbor is found
+                    if (!gCost.ContainsKey(neighbor) || tentativeGCost < gCost[neighbor])
+                    {
+                        // Record the best path to neighbor and its costs
+                        cameFrom[neighbor] = current;
+                        gCost[neighbor] = tentativeGCost;
+                        fCost[neighbor] = tentativeGCost + Heuristic(neighbor, target);
+
+                        // Add neighbor to open set if not present
+                        openSet.Add(neighbor);
+                    }
+                }
+            }
+            // Return empty path if target is unreachable
+            return new List<Vertex>();
+        }
+
+        private static List<Vertex> ReconstructPath(Dictionary<Vertex, Vertex> cameFrom, Vertex current)
+        {
+            var path = new List<Vertex> { current };
+            while (cameFrom.ContainsKey(current))
+            {
+                current = cameFrom[current];
+                path.Add(current);
+            }
+            path.Reverse();
+
+            // remove first element, because so we don't path to same vertex
+            path.Remove(path.First());
+
+            return path;
+        }
+
+        private static float Heuristic(Vertex a, Vertex b)
+        {
+            // Use Manhattan distance as the heuristic for grid-based graphs
+            return Vector2Int.Distance(a.Position, b.Position);
+        }
+    }
+}
