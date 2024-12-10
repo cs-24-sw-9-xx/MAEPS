@@ -10,7 +10,7 @@ namespace Maes.Map
     {
         private readonly HashSet<Vertex> _neighbors;
         public int Id { get; }
-        public float Weight { get; set; }
+        public float Weight { get; }
         public int LastTimeVisitedTick { get; private set; }
         public Vector2Int Position { get; }
         public Color Color { get; set; }
