@@ -446,3 +446,6 @@ Mads Beyer Mogensen -[mail@madsmogensen.dk](mailto:mail@madsmogensen.dk?subject=
 
 Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvikaransanthirasegaram@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
+# CI
+The CI is documented in the [CI.md](CI.md) file.
+
