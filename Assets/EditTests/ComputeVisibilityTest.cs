@@ -12,8 +12,7 @@ namespace EditTests
     /// the SaveAsImage.SaveVisibileTiles() debug method in the following method in WatchmanRouteSolver.cs: 
     /// private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
     /// In short, the ComputeVisibilityOfPointFastBreakColumn, will break the loop when it finds a column without any visible tiles.
-    /// However, visibility is calculated based on the centers of the tiles, 
-    /// so it is possible that there is a column with visible tiles after a column with no visible tiles.
+    /// However, due to the way visibility is calculated, it is possible that there is a column with visible tiles after a column with no visible tiles.
     /// </summary>
     public class ComputeVisibilityTest
     {
