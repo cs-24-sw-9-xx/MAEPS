@@ -331,7 +331,7 @@ namespace Maes.ExperimentSimulations
 
             simulator.PressPlayButton(); // Instantly enter play mode
 
-            //simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }
     }
 }

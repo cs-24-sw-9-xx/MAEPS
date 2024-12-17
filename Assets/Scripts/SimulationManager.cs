@@ -25,6 +25,7 @@ using Maes.Statistics;
 using Maes.UI;
 using Maes.Utilities;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 
 namespace Maes {
@@ -53,6 +54,8 @@ namespace Maes {
         internal SimulationPlayState PlayState { get; } = SimulationPlayState.Paused;
         private int _logicTicksCurrentSim = 0;
 
+        private float _startTime;
+
         // Runs once when starting the program
         private void Start() {
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
@@ -67,6 +70,8 @@ namespace Maes {
                 UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
+
+            _startTime = Time.realtimeSinceStartup;
         }
 
         public void RemoveFastForwardButtonsFromControlPanel() {
@@ -135,6 +140,7 @@ namespace Maes {
 
         // Timing variables for controlling the simulation in a manner that is decoupled from Unity's update system
         private long _nextUpdateTimeMillis = 0;
+        private int _simulations;
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
         // real time (or whatever speed setting is chosen)
@@ -183,8 +189,10 @@ namespace Maes {
         }
 
         private void CreateStatisticsFile() {
+            /*
             var csvWriter = new StatisticsCSVWriter(CurrentSimulation,$"{_currentScenario.StatisticsFileName}");
             csvWriter.CreateCSVFile(",");
+            */
         }
 
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
@@ -192,14 +200,13 @@ namespace Maes {
             if (_currentScenario != null && _currentScenario.HasFinishedSim(CurrentSimulation)) {
                 if (GlobalSettings.ShouldWriteCSVResults && _currentScenario.HasFinishedSim(CurrentSimulation))
                     CreateStatisticsFile();
-                if (_scenarios.Count != 0) { //If last simulation, let us keep looking around in it
-                    RemoveCurrentSimulation();
-                }
+                RemoveCurrentSimulation();
             }
 
             if (_currentScenario == null) {
                 if (_scenarios.Count == 0) {
                     // Indicate that no further updates are needed
+                    Debug.Log($"Finished in {Time.realtimeSinceStartup - _startTime} seconds.");
                     return false;
                 }
 
@@ -235,7 +242,9 @@ namespace Maes {
             return shouldContinueSim;
         }
 
-        public void CreateSimulation(SimulationScenario scenario) {
+        public void CreateSimulation(SimulationScenario scenario)
+        {
+            Debug.Log($"Creating Simulation nr {_simulations++} rest: {_scenarios.Count}");
             _currentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<Simulation>();
