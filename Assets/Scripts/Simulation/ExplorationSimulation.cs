@@ -1,11 +1,8 @@
-using System.Linq;
-
 using Maes.Algorithms;
 using Maes.ExplorationAlgorithm.TheNextFrontier;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;
-using Maes.Statistics.Exploration;
 using Maes.UI.SimulationInfoUIControllers;
 
 namespace Maes.Simulation
@@ -34,6 +31,7 @@ namespace Maes.Simulation
 
         protected override void CreateStatisticsFile()
         {
+            /*
             var resultForFileName = "e??-c??";
             if (ExplorationTracker.SnapShots.Any())
             {
@@ -42,6 +40,7 @@ namespace Maes.Simulation
 
             var path = $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}_{resultForFileName}";
             new ExplorationCsvDataWriter(this, path).CreateCsvFile();
+            */
         }
 
         /// <summary>

@@ -34,6 +34,7 @@ using Maes.Map.RobotSpawners;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
+using Maes.UI;
 
 using UnityEngine;
 
@@ -317,7 +318,7 @@ namespace Maes.ExperimentSimulations
 
             simulator.PressPlayButton(); // Instantly enter play mode
 
-            //simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }
     }
 }
