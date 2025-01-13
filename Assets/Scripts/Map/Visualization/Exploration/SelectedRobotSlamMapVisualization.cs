@@ -31,7 +31,7 @@ namespace Maes.Map.Visualization.Exploration
     internal class SelectedRobotSlamMapVisualization : IExplorationVisualizationMode
     {
         private readonly SlamMap _map;
-        private readonly Visualizer<ExplorationCell>.CellIndexToColor _explorationCellToColorDelegate;
+        private readonly Visualizer.CellIndexToColor _explorationCellToColorDelegate;
 
         public SelectedRobotSlamMapVisualization(Robot2DController robot)
         {
@@ -39,12 +39,12 @@ namespace Maes.Map.Visualization.Exploration
             _explorationCellToColorDelegate = ExplorationCellToColor;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, Cell)> exploredCells)
         {
             // Ignore since entire map is replaced every tick
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, Cell)> coveredCells)
         {
             // Ignore since entire map is replaced every tick
         }

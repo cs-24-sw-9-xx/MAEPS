@@ -36,9 +36,9 @@ namespace EditTests
     public class CoverageCalculatorTest
     {
 
-        private CoverageCalculator<ExplorationCell> _coverageCalculator;
+        private CoverageCalculator _coverageCalculator;
         private SimulationMap<Tile> _collisionMap;
-        private SimulationMap<ExplorationCell> _explorationMap;
+        private SimulationMap<Cell> _explorationMap;
         private const int RandomSeed = 123;
         private const int Width = 50, Height = 50;
 
@@ -46,8 +46,8 @@ namespace EditTests
         public void InitializeCalculatorAndMaps()
         {
             _collisionMap = GenerateCollisionMap();
-            _explorationMap = _collisionMap.FMap(tile => new ExplorationCell(!Tile.IsWall(tile.Type)));
-            _coverageCalculator = new CoverageCalculator<ExplorationCell>(_explorationMap, _collisionMap);
+            _explorationMap = _collisionMap.FMap(tile => new Cell(!Tile.IsWall(tile.Type)));
+            _coverageCalculator = new CoverageCalculator(_explorationMap, _collisionMap);
         }
 
         // Generates a collision map where only the edge tiles are solid
@@ -114,7 +114,7 @@ namespace EditTests
             var robotWorldPos = new Vector2(robotX, robotY);
 
             // Find all cells that are immediate neighbours of tile currently occupied by the robot
-            var cells = new List<ExplorationCell>();
+            var cells = new List<Cell>();
             for (var x = -1; x < 1; x++)
             {
                 for (var y = -1; y < 1; y++)
@@ -177,7 +177,7 @@ namespace EditTests
         public void TilesAreMarkedCoverableCorrectly()
         {
             // Copy the existing exploration map and to get a new map where all CanBeCovered flags are true
-            var freshExplorationMap = _explorationMap.FMap((cell) => new ExplorationCell(cell.IsExplorable));
+            var freshExplorationMap = _explorationMap.FMap((cell) => new Cell(cell.IsExplorable));
             for (var x = 0; x < Width; x++)
             {
                 for (var y = 0; y < Height; y++)
@@ -186,7 +186,7 @@ namespace EditTests
                 }
             }
 
-            new CoverageCalculator<ExplorationCell>(freshExplorationMap, _collisionMap);
+            new CoverageCalculator(freshExplorationMap, _collisionMap);
             // Pass the new exploration map to the coverage calculator which should cause the solid tiles to be
             // marked as non-coverable
             for (var x = 0; x < Width; x++)

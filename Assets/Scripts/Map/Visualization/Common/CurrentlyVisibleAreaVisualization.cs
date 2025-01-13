@@ -5,15 +5,14 @@ using UnityEngine;
 
 namespace Maes.Map.Visualization.Common
 {
-    internal abstract class CurrentlyVisibleAreaVisualization<TCell, TVisualizer> : IVisualizationMode<TCell, TVisualizer>
-        where TCell : Cell
-        where TVisualizer : Visualizer<TCell>
+    internal abstract class CurrentlyVisibleAreaVisualization<TVisualizer> : IVisualizationMode<TVisualizer>
+        where TVisualizer : Visualizer
     {
-        private readonly SimulationMap<TCell> _map;
+        private readonly SimulationMap<Cell> _map;
         private readonly Robot2DController _selectedRobot;
-        private readonly Visualizer<TCell>.CellIndexToColor _explorationCellToColorDelegate;
+        private readonly Visualizer.CellIndexToColor _explorationCellToColorDelegate;
 
-        protected CurrentlyVisibleAreaVisualization(SimulationMap<TCell> map, Robot2DController selectedRobot)
+        protected CurrentlyVisibleAreaVisualization(SimulationMap<Cell> map, Robot2DController selectedRobot)
         {
             _selectedRobot = selectedRobot;
             _map = map;
@@ -28,7 +27,7 @@ namespace Maes.Map.Visualization.Common
         private Color32 ExplorationCellToColor(int index)
         {
             return _selectedRobot.SlamMap.CurrentlyVisibleTriangles.Contains(index) ?
-                Visualizer<TCell>.VisibleColor : Visualizer<TCell>.StandardCellColor;
+                Visualizer.VisibleColor : Visualizer.StandardCellColor;
         }
     }
 }

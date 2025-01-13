@@ -17,18 +17,18 @@ namespace PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, 5, 5, -42)]
-    [TestFixture(0.5f, 10, 10, -39)]
+    [TestFixture(0.5f, 5, 5, -41)]
+    [TestFixture(0.5f, 10, 10, -42)]
     [TestFixture(0.5f, 20, 20, -31)]
     [TestFixture(0.5f, 15, 15, -31)]
 
     [TestFixture(1.0f, 5, 5, -17)]
-    [TestFixture(1.0f, 10, 10, -27)]
+    [TestFixture(1.0f, 10, 10, -33)]
     [TestFixture(1.0f, 20, 20, -29)]
     [TestFixture(1.0f, 15, 15, -23)]
 
-    [TestFixture(1.5f, 5, 5, -36)]
-    [TestFixture(1.5f, 10, 10, -43)]
+    [TestFixture(1.5f, 5, 5, -46)]
+    [TestFixture(1.5f, 10, 10, -53)]
     [TestFixture(1.5f, 15, 15, -39)]
 
     public class EstimateTestTurnsPath

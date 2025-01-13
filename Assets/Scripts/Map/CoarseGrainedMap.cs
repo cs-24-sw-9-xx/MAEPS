@@ -40,7 +40,7 @@ namespace Maes.Map
         private readonly SlamMap _slamMap;
         private bool[,] _tilesCoveredStatus;
         private SlamMap.SlamTileStatus[,] _optimisticTileStatuses;
-        private HashSet<Vector2Int> _excludedTiles = new(); // This is pretty bad
+        private HashSet<Vector2Int>? _excludedTiles;
         private readonly Vector2 _offset;
         private readonly MyAStar _aStar = new();
 
@@ -204,18 +204,21 @@ namespace Maes.Map
         {
             var slamCoord = ToSlamMapCoordinate(localCoordinate);
 
-            var status = _slamMap.GetTileStatus(slamCoord);
+            var x = slamCoord.x;
+            var y = slamCoord.y;
+
+            var status = _slamMap.GetTileStatus(x, y);
             if (optimistic)
             {
-                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.right));
-                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.up));
-                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.right + Vector2Int.up));
+                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(x + 1, y)); // Right
+                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(x, y + 1)); // Up
+                status = AggregateStatusOptimistic(status, _slamMap.GetTileStatus(x + 1, y + 1)); // Right + Up
             }
             else
             {
-                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.right));
-                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.up));
-                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(slamCoord + Vector2Int.right + Vector2Int.up));
+                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(x + 1, y)); // Right
+                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(x, y + 1)); // Up
+                status = AggregateStatusPessimistic(status, _slamMap.GetTileStatus(x + 1, y + 1)); // Right + Up
             }
 
             return status;
@@ -289,12 +292,15 @@ namespace Maes.Map
             return new Vector2Int(slamCoord.x >> 1, slamCoord.y >> 1);
         }
 
+        private static readonly Func<Vector2Int, Vector2Int> FromSlamMapCoordinateDelegate = FromSlamMapCoordinate;
+
         /// <summary>
         /// Converts a list of <see cref="SlamMap"/> coordinates to a list of local coordinates.
         /// </summary>
-        public HashSet<Vector2Int> FromSlamMapCoordinates(IEnumerable<Vector2Int> slamCoords)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static HashSet<Vector2Int> FromSlamMapCoordinates(IEnumerable<Vector2Int> slamCoords)
         {
-            return new HashSet<Vector2Int>(slamCoords.Select(FromSlamMapCoordinate));
+            return new HashSet<Vector2Int>(slamCoords.Select(FromSlamMapCoordinateDelegate));
         }
 
         /// <summary>
@@ -341,6 +347,7 @@ namespace Maes.Map
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetPath(Vector2Int target, bool beOptimistic = false, bool acceptPartialPaths = false, bool dependOnBrokenBehavior = true)
         {
             var approxPosition = GetApproximatePosition();
@@ -368,7 +375,7 @@ namespace Maes.Map
             }
 
             var path = _aStar.GetOptimisticPath(new Vector2Int((int)approxPosition.x, (int)approxPosition.y), target, this);
-            _excludedTiles = new HashSet<Vector2Int>();
+            _excludedTiles = null;
             return path;
         }
 
@@ -379,7 +386,7 @@ namespace Maes.Map
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="excludedTiles">the tiles that should be avoided during traversal.</param>
         /// <returns></returns>
-        public List<PathStep>? GetPathSteps(Vector2Int target, HashSet<Vector2Int>? excludedTiles = null)
+        public PathStep[]? GetPathSteps(Vector2Int target, HashSet<Vector2Int>? excludedTiles = null)
         {
             if (excludedTiles != null && excludedTiles.Contains(target))
             {
@@ -393,14 +400,14 @@ namespace Maes.Map
             }
 
             var path = _aStar.GetOptimisticPath(new Vector2Int((int)approxPosition.x, (int)approxPosition.y), target, this);
-            _excludedTiles = new HashSet<Vector2Int>();
+            _excludedTiles = null;
             return path == null ? null : _aStar.PathToSteps(path);
         }
 
         /// <summary>
         /// Calculates, and returns, a path from the robots current position to the target. Will reduce the path to a list of <see cref="PathStep"/>s.
         /// </summary>
-        public List<PathStep>? GetTnfPathAsPathSteps(Vector2Int target)
+        public PathStep[]? GetTnfPathAsPathSteps(Vector2Int target)
         {
             var path = GetPath(target, beOptimistic: false);
             return path == null
@@ -417,7 +424,7 @@ namespace Maes.Map
         /// <returns>whether or not a tile at a given position is solid.</returns>
         public bool IsSolid(Vector2Int coordinate)
         {
-            if (_excludedTiles.Contains(coordinate))
+            if (_excludedTiles?.Contains(coordinate) ?? false)
             {
                 return true;
             }
@@ -429,7 +436,7 @@ namespace Maes.Map
         /// <returns>whether or not a tile at a given position is solid. Is more optimistic than <see cref="IsSolid"/>.</returns>
         public bool IsOptimisticSolid(Vector2Int coordinate)
         {
-            if (_excludedTiles.Contains(coordinate))
+            if (_excludedTiles?.Contains(coordinate) ?? false)
             {
                 return true;
             }
@@ -535,6 +542,7 @@ namespace Maes.Map
             map._optimisticTileStatuses = (SlamMap.SlamTileStatus[,])globalMap.Clone();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsWithinBounds(Vector2Int coordinate)
         {
             return coordinate.x >= 0 && coordinate.x < Width && coordinate.y >= 0 && coordinate.y < Height;
@@ -614,11 +622,18 @@ namespace Maes.Map
             var x = courseCoord.x;
             var y = courseCoord.y;
 
+            UpdateTile(x, y, observedStatus);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void UpdateTile(int coarseX, int coarseY, SlamMap.SlamTileStatus observedStatus)
+        {
+            ref var tileStatus = ref _optimisticTileStatuses[coarseX, coarseY];
             // If some sub-tile of the coarse tile is known to be solid, then new status does not matter
             // Otherwise assign the new status (either open or solid)
-            if (_optimisticTileStatuses[x, y] != SlamMap.SlamTileStatus.Solid)
+            if (tileStatus != SlamMap.SlamTileStatus.Solid)
             {
-                _optimisticTileStatuses[x, y] = observedStatus;
+                tileStatus = observedStatus;
             }
         }
 

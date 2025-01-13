@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
+using System.Runtime.CompilerServices;
 
 using UnityEngine;
 
@@ -40,7 +41,7 @@ namespace Maes.Utilities
             North = new(6),
             NorthEast = new(7);
 
-        private static readonly CardinalDirection[] CardinalDirections = { East, South, West, North };
+        public static readonly CardinalDirection[] CardinalDirections = { East, South, West, North };
 
         public enum RelativeDirection
         {
@@ -53,7 +54,7 @@ namespace Maes.Utilities
             Rear = 4
         }
 
-        private static readonly CardinalDirection[] Directions =
+        public static readonly CardinalDirection[] CardinalAndOrdinalDirections =
             {East, SouthEast, South, SouthWest, West, NorthWest, North, NorthEast};
 
         private readonly int _index;
@@ -92,24 +93,26 @@ namespace Maes.Utilities
 #endif
 
             var offset = (int)(((degrees + 22.5f) % 360) / 45f);
-            return Directions[(8 - offset) % 8];
+            return CardinalAndOrdinalDirections[(8 - offset) % 8];
         }
 
-        public static CardinalDirection GetDirection(int index)
+        private static CardinalDirection GetDirection(int index)
         {
             while (index < 0)
             {
                 index += 8;
             }
 
-            return Directions[index % 8];
+            return CardinalAndOrdinalDirections[index % 8];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CardinalDirection Next()
         {
             return GetDirection(_index + 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CardinalDirection Previous()
         {
             return GetDirection(_index - 1);
@@ -146,19 +149,9 @@ namespace Maes.Utilities
             return GetDirection(_index + (int)dir);
         }
 
-        public static CardinalDirection[] GetCardinalAndOrdinalDirections()
-        {
-            return Directions;
-        }
-
-        public static CardinalDirection[] GetCardinalDirections()
-        {
-            return CardinalDirections;
-        }
-
         public static CardinalDirection FromVector(Vector2Int vector)
         {
-            foreach (var direction in GetCardinalAndOrdinalDirections())
+            foreach (var direction in CardinalAndOrdinalDirections)
             {
                 if (direction.Vector == vector)
                 {

@@ -89,7 +89,7 @@ namespace Maes.Map
             return true;
         }
 
-        public List<PathStep>? GetPathSteps(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
+        public PathStep[]? GetPathSteps(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _aStar.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths);
             return path == null ? null : _aStar.PathToSteps(path);

@@ -35,7 +35,7 @@ using UnityEngine;
 
 namespace Maes.Statistics
 {
-    public class ExplorationTracker : Tracker<ExplorationCell, ExplorationVisualizer, IExplorationVisualizationMode>
+    public class ExplorationTracker : Tracker<ExplorationVisualizer, IExplorationVisualizationMode>
     {
         private ExplorationSimulation Simulation { get; }
 
@@ -54,13 +54,15 @@ namespace Maes.Statistics
         public readonly List<ExplorationSnapShot> SnapShots = new();
         private float _mostRecentDistance;
 
-        private readonly List<(int, ExplorationCell)> _newlyExploredTriangles = new();
+        private readonly List<(int, Cell)> _newlyExploredTriangles = new();
 
         private readonly int _traces;
         private readonly float _traceIntervalDegrees;
 
+        private readonly RayTracingMap<Cell>.CellFunction _shouldContinueFromCellDelegate;
+
         public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
-            : base(collisionMap, explorationVisualizer, constraints, tile => new ExplorationCell(isExplorable: !Tile.IsWall(tile.Type)))
+            : base(collisionMap, explorationVisualizer, constraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
             _collisionMap = collisionMap;
@@ -72,6 +74,8 @@ namespace Maes.Statistics
             const float tracesPerMeter = 2f;
             _traces = _constraints.SlamRayTraceCount ?? (int)(Mathf.PI * 2f * _constraints.SlamRayTraceRange * tracesPerMeter);
             _traceIntervalDegrees = 360f / _traces;
+
+            _shouldContinueFromCellDelegate = ShouldContinueFromCell;
         }
 
         protected override void CreateSnapShot()
@@ -103,7 +107,8 @@ namespace Maes.Statistics
             return sum / count;
         }
 
-        private readonly List<(int, ExplorationCell)> _newlyCoveredCells = new();
+        private readonly List<(int, Cell)> _newlyCoveredCells = new();
+        private SlamMap? _robotSlamMap;
 
         protected override void UpdateCoverageStatus(MonaRobot robot)
         {
@@ -111,7 +116,7 @@ namespace Maes.Statistics
             base.UpdateCoverageStatus(robot);
         }
 
-        protected override void PreCoverageTileConsumer(int index1, ExplorationCell triangle1, int index2, ExplorationCell triangle2)
+        protected override void PreCoverageTileConsumer(int index1, Cell triangle1, int index2, Cell triangle2)
         {
             if (triangle1.IsCovered)
             {
@@ -213,12 +218,10 @@ namespace Maes.Statistics
 
             foreach (var robot in robots)
             {
-                SlamMap? slamMap = null;
-
                 if (shouldUpdateSlamMap)
                 {
-                    slamMap = robot.Controller.SlamMap;
-                    slamMap.ResetRobotVisibility();
+                    _robotSlamMap = robot.Controller.SlamMap;
+                    _robotSlamMap.ResetRobotVisibility();
                 }
 
                 var position = (Vector2)robot.transform.position;
@@ -233,38 +236,42 @@ namespace Maes.Statistics
                         angle += 0.5f;
                     }
 
-                    _rayTracingMap.Raytrace(position, angle, visibilityRange, (index, cell) =>
-                    {
-                        if (cell.IsExplorable)
-                        {
-                            if (!cell.IsExplored)
-                            {
-                                cell.LastExplorationTimeInTicks = _currentTick;
-                                cell.ExplorationTimeInTicks += 1;
-
-                                _newlyExploredTriangles.Add((index, cell));
-                                ExploredTriangles++;
-                            }
-
-                            cell.RegisterExploration(_currentTick);
-                        }
-
-                        if (slamMap != null)
-                        {
-                            var localCoordinate = slamMap.TriangleIndexToCoordinate(index);
-                            // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
-                            slamMap.SetExploredByCoordinate(localCoordinate, isOpen: cell.IsExplorable, tick: _currentTick);
-                            slamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, localCoordinate, isOpen: cell.IsExplorable);
-                        }
-
-                        return cell.IsExplorable;
-                    });
+                    _rayTracingMap.Raytrace(position, angle, visibilityRange, _shouldContinueFromCellDelegate);
                 }
 
                 // Register newly explored cells of this robot for visualization
                 _currentVisualizationMode.RegisterNewlyExploredCells(robot, _newlyExploredTriangles);
                 _newlyExploredTriangles.Clear();
             }
+        }
+
+        private bool ShouldContinueFromCell(int index, Cell cell)
+        {
+            if (cell.IsExplorable)
+            {
+                if (!cell.IsExplored)
+                {
+                    cell.LastExplorationTimeInTicks = _currentTick;
+                    cell.ExplorationTimeInTicks += 1;
+
+                    _newlyExploredTriangles.Add((index, cell));
+                    ExploredTriangles++;
+                }
+
+                cell.RegisterExploration(_currentTick);
+            }
+
+            if (_robotSlamMap != null)
+            {
+                var localCoordinate = _robotSlamMap.TriangleIndexToCoordinate(index);
+                var x = localCoordinate.x;
+                var y = localCoordinate.y;
+                // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
+                _robotSlamMap.SetExploredByCoordinate(x, y, isOpen: cell.IsExplorable, tick: _currentTick);
+                _robotSlamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, x, y, isOpen: cell.IsExplorable);
+            }
+
+            return cell.IsExplorable;
         }
     }
 }

@@ -30,23 +30,23 @@ namespace Maes.Map.Visualization.Exploration
 {
     internal class AllRobotsCoverageVisualization : IExplorationVisualizationMode
     {
-        private static readonly Visualizer<ExplorationCell>.CellToColor ExplorationCellToColorDelegate = ExplorationCellToColor;
+        private static readonly Visualizer.CellToColor ExplorationCellToColorDelegate = ExplorationCellToColor;
 
-        private readonly SimulationMap<ExplorationCell> _explorationMap;
-        private readonly HashSet<(int, ExplorationCell)> _newlyCoveredCells = new();
+        private readonly SimulationMap<Cell> _explorationMap;
+        private readonly HashSet<(int, Cell)> _newlyCoveredCells = new();
         private bool _hasBeenInitialized;
 
-        public AllRobotsCoverageVisualization(SimulationMap<ExplorationCell> explorationMap)
+        public AllRobotsCoverageVisualization(SimulationMap<Cell> explorationMap)
         {
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, Cell)> exploredCells)
         {
             /* Ignore exploration */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, Cell)> coveredCells)
         {
             foreach (var cellWithIndex in coveredCells)
             {
@@ -69,7 +69,7 @@ namespace Maes.Map.Visualization.Exploration
             }
         }
 
-        private static Color32 ExplorationCellToColor(ExplorationCell cell)
+        private static Color32 ExplorationCellToColor(Cell cell)
         {
             if (!cell.CanBeCovered)
             {

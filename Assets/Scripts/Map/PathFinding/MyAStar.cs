@@ -25,12 +25,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Maes.Utilities;
-using Maes.Utilities.Priority_Queue;
 
 using Roy_T.AStar.Paths;
 using Roy_T.AStar.Primitives;
 
 using UnityEngine;
+
+using Utils;
 
 using static Maes.Map.SlamMap;
 
@@ -41,7 +42,7 @@ namespace Maes.Map.PathFinding
 {
     public class MyAStar : IPathFinder
     {
-        private class AStarTile
+        private sealed class AStarTile
         {
             public readonly int X, Y;
             public readonly float Heuristic;
@@ -77,6 +78,8 @@ namespace Maes.Map.PathFinding
                 return path;
             }
         }
+
+        private static readonly float Sqrt2 = Mathf.Sqrt(2);
 
         private Grid? _cachedGrid = null;
         private Grid? _cachedOptimisticGrid = null;
@@ -151,115 +154,122 @@ namespace Maes.Map.PathFinding
             return tilePath;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
         {
             return GetPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: true, acceptPartialPaths: acceptPartialPaths);
         }
 
+        private readonly PriorityQueue<AStarTile, float> _getPathCandidates = new();
+        private readonly Dictionary<Vector2Int, AStarTile> _getPathBestCandidateOnTile = new();
+
         public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
             if (!pathFindingMap.BrokenCollisionMap)
             {
-                return GetNonBrokenPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: beOptimistic,
-                    acceptPartialPaths: acceptPartialPaths);
+                return GetNonBrokenPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
             }
 
-            var candidates = new SimplePriorityQueue<AStarTile, float>();
-            var bestCandidateOnTile = new Dictionary<Vector2Int, AStarTile>();
-            var startTileHeuristic = OctileHeuristic(startCoordinate, targetCoordinate);
-            var startingTile = new AStarTile(startCoordinate.x, startCoordinate.y, null, startTileHeuristic, 0);
-            candidates.Enqueue(startingTile, startingTile.TotalCost);
-            bestCandidateOnTile[startCoordinate] = startingTile;
-
-            if (!IsAnyNeighborStatus(targetCoordinate, pathFindingMap, SlamTileStatus.Open).HasValue)
+            while (true)
             {
-                var nearestTile = GetNearestTileFloodFill(pathFindingMap, targetCoordinate, SlamTileStatus.Open);
-                targetCoordinate = nearestTile ?? targetCoordinate;
-            }
+                _getPathCandidates.Clear();
+                _getPathBestCandidateOnTile.Clear();
+                var startTileHeuristic = OctileHeuristic(startCoordinate, targetCoordinate);
+                var startingTile = new AStarTile(startCoordinate.x, startCoordinate.y, null, startTileHeuristic, 0);
+                _getPathCandidates.Enqueue(startingTile, startingTile.TotalCost);
+                _getPathBestCandidateOnTile[startCoordinate] = startingTile;
 
-            var loopCount = 0;
-            while (candidates.Count > 0)
-            {
-                var currentTile = candidates.Dequeue();
-                var currentCoordinate = new Vector2Int(currentTile.X, currentTile.Y);
-
-                // Skip if a better candidate has been added to the queue since this was added
-                if (bestCandidateOnTile.TryGetValue(currentCoordinate, out var betterCandidate) && betterCandidate != currentTile)
+                if (!IsAnyNeighborStatus(targetCoordinate, pathFindingMap, SlamTileStatus.Open).HasValue)
                 {
-                    continue;
+                    var nearestTile = GetNearestTileFloodFill(pathFindingMap, targetCoordinate, SlamTileStatus.Open);
+                    targetCoordinate = nearestTile ?? targetCoordinate;
                 }
 
-                if (currentCoordinate == targetCoordinate)
+                var loopCount = 0;
+                while (_getPathCandidates.Count > 0)
                 {
-                    return currentTile.Path();
-                }
+                    var currentTile = _getPathCandidates.Dequeue();
+                    var currentCoordinate = new Vector2Int(currentTile.X, currentTile.Y);
 
-                foreach (var dir in CardinalDirection.GetCardinalAndOrdinalDirections())
-                {
-                    var candidateCoord = currentCoordinate + dir.Vector;
-                    // Only consider non-solid tiles
-                    if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
+                    // Skip if a better candidate has been added to the queue since this was added
+                    if (_getPathBestCandidateOnTile.TryGetValue(currentCoordinate, out var betterCandidate) && betterCandidate != currentTile)
                     {
                         continue;
                     }
 
-                    if (dir.IsDiagonal())
+                    if (currentCoordinate == targetCoordinate)
                     {
-                        // To travel diagonally, the two neighbouring tiles must also be free
-                        if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic)
-                        || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
-                        {
-                            continue;
-                        }
+                        return currentTile.Path();
                     }
 
-                    var cost = currentTile.Cost + Vector2Int.Distance(currentCoordinate, candidateCoord);
-                    var heuristic = OctileHeuristic(candidateCoord, targetCoordinate);
-                    var candidateCost = cost + heuristic;
-                    // Check if this path is 'cheaper' than any previous path to this candidate tile 
-                    if (!bestCandidateOnTile.TryGetValue(candidateCoord, out var bestCandidate) || bestCandidate.TotalCost > candidateCost)
+                    foreach (var dir in CardinalDirection.CardinalAndOrdinalDirections)
                     {
-                        var newTile = new AStarTile(candidateCoord.x, candidateCoord.y, currentTile, heuristic, cost);
-                        // Save this as the new best candidate for this tile
-                        bestCandidateOnTile[candidateCoord] = newTile;
-                        candidates.Enqueue(newTile, newTile.TotalCost);
-                    }
-                }
-
-                if (loopCount > 100000)
-                {
-                    Debug.Log($"A star loop count exceeded 100000, stopping pathfinding prematurely. [{startCoordinate} -> {targetCoordinate}]");
-                    return null;
-                }
-
-
-                loopCount++;
-            }
-
-            if (acceptPartialPaths)
-            {
-                // Find lowest heuristic tile, as it is closest to the target
-                Vector2Int? lowestHeuristicKey = null;
-                var lowestHeuristic = float.MaxValue;
-                foreach (var kv in bestCandidateOnTile)
-                {
-                    if (kv.Value.Heuristic < lowestHeuristic)
-                    {
-                        if (kv.Key == startCoordinate)
+                        var candidateCoord = currentCoordinate + dir.Vector;
+                        // Only consider non-solid tiles
+                        if (IsSolid(candidateCoord, pathFindingMap, beOptimistic) && candidateCoord != targetCoordinate)
                         {
                             continue;
                         }
 
-                        lowestHeuristic = kv.Value.Heuristic;
-                        lowestHeuristicKey = kv.Key;
+                        if (dir.IsDiagonal())
+                        {
+                            // To travel diagonally, the two neighbouring tiles must also be free
+                            if (IsSolid(currentCoordinate + dir.Previous().Vector, pathFindingMap, beOptimistic) || IsSolid(currentCoordinate + dir.Next().Vector, pathFindingMap, beOptimistic))
+                            {
+                                continue;
+                            }
+                        }
+
+                        var cost = currentTile.Cost + Vector2Int.Distance(currentCoordinate, candidateCoord);
+                        var heuristic = OctileHeuristic(candidateCoord, targetCoordinate);
+                        var candidateCost = cost + heuristic;
+                        // Check if this path is 'cheaper' than any previous path to this candidate tile 
+                        if (!_getPathBestCandidateOnTile.TryGetValue(candidateCoord, out var bestCandidate) || bestCandidate.TotalCost > candidateCost)
+                        {
+                            var newTile = new AStarTile(candidateCoord.x, candidateCoord.y, currentTile, heuristic, cost);
+                            // Save this as the new best candidate for this tile
+                            _getPathBestCandidateOnTile[candidateCoord] = newTile;
+                            _getPathCandidates.Enqueue(newTile, newTile.TotalCost);
+                        }
                     }
+
+                    if (loopCount > 100000)
+                    {
+                        Debug.Log($"A star loop count exceeded 100000, stopping pathfinding prematurely. [{startCoordinate} -> {targetCoordinate}]");
+                        return null;
+                    }
+
+
+                    loopCount++;
                 }
 
-                var closestTile = bestCandidateOnTile[lowestHeuristicKey!.Value];
-                return GetPath(startCoordinate, new Vector2Int(closestTile.X, closestTile.Y),
-                    pathFindingMap, beOptimistic);
+                if (acceptPartialPaths)
+                {
+                    // Find lowest heuristic tile, as it is closest to the target
+                    Vector2Int? lowestHeuristicKey = null;
+                    var lowestHeuristic = float.MaxValue;
+                    foreach (var kv in _getPathBestCandidateOnTile)
+                    {
+                        if (kv.Value.Heuristic < lowestHeuristic)
+                        {
+                            if (kv.Key == startCoordinate)
+                            {
+                                continue;
+                            }
+
+                            lowestHeuristic = kv.Value.Heuristic;
+                            lowestHeuristicKey = kv.Key;
+                        }
+                    }
+
+                    var closestTile = _getPathBestCandidateOnTile[lowestHeuristicKey!.Value];
+                    targetCoordinate = new Vector2Int(closestTile.X, closestTile.Y);
+                    acceptPartialPaths = false;
+                    continue;
+                }
+
+                return null;
             }
-            return null;
         }
 
         private AStarTile DequeueBestCandidate(List<AStarTile> candidates)
@@ -301,19 +311,18 @@ namespace Maes.Map.PathFinding
             var minDif = Math.Min(xDif, yDif);
             var maxDif = Math.Max(xDif, yDif);
 
-            var heuristic = maxDif - minDif + minDif * Mathf.Sqrt(2f);
-            return heuristic;
+            return maxDif - minDif + minDif * Sqrt2;
         }
 
         // Converts the given A* path to PathSteps (containing a line and a list of all tiles intersected in this path)
-        public List<PathStep> PathToSteps(Vector2Int[] path)
+        public PathStep[] PathToSteps(Vector2Int[] path)
         {
             if (path.Length == 1)
             {
-                return new List<PathStep> { new(path[0], path[0], new HashSet<Vector2Int> { path[0] }) };
+                return new[] { new PathStep(path[0], path[0], new HashSet<Vector2Int> { path[0] }) };
             }
 
-            var steps = new List<PathStep>();
+            var steps = new PathStep[path.Length - 1];
 
             var stepStart = path[0];
             var currentTile = path[1];
@@ -321,22 +330,25 @@ namespace Maes.Map.PathFinding
             var currentDirection = CardinalDirection.FromVector(currentTile - stepStart);
             AddIntersectingTiles(stepStart, currentDirection, crossedTiles);
 
-            foreach (var nextTile in path.AsSpan(2))
+            var span = path.AsSpan(2);
+            for (var i = 0; i < span.Length; i++)
             {
+                var nextTile = span[i];
                 var newDirection = CardinalDirection.FromVector(nextTile - currentTile);
                 if (newDirection != currentDirection)
                 {
                     // New path step reached
-                    steps.Add(new PathStep(stepStart, currentTile, crossedTiles));
+                    steps[i] = new PathStep(stepStart, currentTile, crossedTiles);
                     crossedTiles = new HashSet<Vector2Int>();
                     stepStart = currentTile;
                     currentDirection = newDirection;
                 }
+
                 AddIntersectingTiles(currentTile, currentDirection, crossedTiles);
                 currentTile = nextTile;
             }
 
-            steps.Add(new PathStep(stepStart, currentTile, crossedTiles));
+            steps[^1] = new PathStep(stepStart, currentTile, crossedTiles);
             return steps;
         }
 
@@ -370,7 +382,7 @@ namespace Maes.Map.PathFinding
             return steps;
         }
 
-        public static void AddIntersectingTiles(Vector2Int from, CardinalDirection direction, HashSet<Vector2Int> tiles)
+        private static void AddIntersectingTiles(Vector2Int from, CardinalDirection direction, HashSet<Vector2Int> tiles)
         {
             tiles.Add(from);
             tiles.Add(from + direction.Vector);
@@ -397,8 +409,7 @@ namespace Maes.Map.PathFinding
                     return neighborHit.Value;
                 }
 
-                var directions = CardinalDirection.GetCardinalDirections();
-                foreach (var dir in directions)
+                foreach (var dir in CardinalDirection.CardinalDirections)
                 {
                     if (!pathFindingMap.IsWithinBounds(target + dir.Vector)
                         || (excludedTiles != null && excludedTiles.Contains(target + dir.Vector))
@@ -427,8 +438,7 @@ namespace Maes.Map.PathFinding
 
         public Vector2Int? IsAnyNeighborStatus(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, SlamTileStatus status, bool optimistic = false)
         {
-            var directions = CardinalDirection.GetCardinalDirections();
-            foreach (var dir in directions)
+            foreach (var dir in CardinalDirection.CardinalDirections)
             {
                 if (!pathFindingMap.IsWithinBounds(targetCoordinate + dir.Vector))
                 {

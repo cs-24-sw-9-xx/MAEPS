@@ -26,9 +26,9 @@ using Maes.Statistics;
 
 namespace Maes.Map.Visualization.Exploration
 {
-    public interface IExplorationVisualizationMode : IVisualizationMode<ExplorationCell, ExplorationVisualizer>
+    public interface IExplorationVisualizationMode : IVisualizationMode<ExplorationVisualizer>
     {
-        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells);
-        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells);
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, Cell)> exploredCells);
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, Cell)> coveredCells);
     }
 }

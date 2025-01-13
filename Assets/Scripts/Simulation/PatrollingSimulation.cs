@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingCell, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
+    public sealed class PatrollingSimulation : SimulationBase<PatrollingSimulation, PatrollingVisualizer, PatrollingTracker, PatrollingInfoUIController, IPatrollingAlgorithm, PatrollingSimulationScenario, PatrollingRobotSpawner>
     {
         private const float StoppingCriteriaDifference = 0.025f;
         public PatrollingVisualizer patrollingVisualizer = null!;

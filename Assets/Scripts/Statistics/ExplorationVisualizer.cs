@@ -27,7 +27,7 @@ using UnityEngine;
 
 namespace Maes.Statistics
 {
-    public class ExplorationVisualizer : Visualizer<ExplorationCell>
+    public class ExplorationVisualizer : Visualizer
     {
         public LayerMask _foglayer;
 
@@ -42,7 +42,7 @@ namespace Maes.Statistics
         public static readonly Color32 WarmColor = new(200, 60, 60, 255);
         public static readonly Color32 ColdColor = new(50, 120, 180, 255);
 
-        public override void SetSimulationMap(SimulationMap<ExplorationCell> newMap, Vector3 offset)
+        public override void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
         {
             base.SetSimulationMap(newMap, offset);
 
@@ -65,7 +65,7 @@ namespace Maes.Statistics
             }
         }
 
-        protected override Color32 InitializeCellColor(ExplorationCell cell)
+        protected override Color32 InitializeCellColor(Cell cell)
         {
             var color = SolidColor;
             if (cell.IsExplorable)
@@ -79,7 +79,7 @@ namespace Maes.Statistics
         /// <summary>
         /// Updates the colors of the triangles corresponding to the given list of exploration cells.
         /// </summary>
-        public void UpdateColors(HashSet<(int, ExplorationCell)> cellsWithIndices, CellToColor cellToColor)
+        public void UpdateColors(HashSet<(int, Cell)> cellsWithIndices, CellToColor cellToColor)
         {
             foreach (var (index, cell) in cellsWithIndices)
             {

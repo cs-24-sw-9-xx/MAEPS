@@ -29,20 +29,19 @@ using UnityEngine;
 namespace Maes.Statistics
 {
     // This class is responsible for calculating which tiles are covered by a robot
-    public class CoverageCalculator<TCell>
-    where TCell : Cell
+    public class CoverageCalculator
     {
-        public delegate void MiniTileConsumer(int index1, TCell cell1, int index2, TCell cell2);
+        public delegate void MiniTileConsumer(int index1, Cell cell1, int index2, Cell cell2);
 
         public int CoveredMiniTiles;
 
         private int _coverableTiles;
 
-        private readonly SimulationMap<TCell> _explorationMap;
+        private readonly SimulationMap<Cell> _explorationMap;
 
         public float CoverageProportion => CoveredMiniTiles / (float)_coverableTiles;
 
-        public CoverageCalculator(SimulationMap<TCell> explorationMap, SimulationMap<Tile> collisionMap)
+        public CoverageCalculator(SimulationMap<Cell> explorationMap, SimulationMap<Tile> collisionMap)
         {
             _explorationMap = explorationMap;
             FindCoverableTiles(collisionMap);

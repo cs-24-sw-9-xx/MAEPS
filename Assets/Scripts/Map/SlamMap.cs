@@ -44,9 +44,6 @@ namespace Maes.Map
 
         public int Height { get; }
 
-        // Size of a tile in world space
-        private readonly float _tileSize;
-
         private SlamTileStatus[,] _tiles;
         private readonly VisibleTile[,] _currentlyVisibleTiles;
 
@@ -139,25 +136,30 @@ namespace Maes.Map
             return new Vector2Int((collisionX * 2) + xOffset, (collisionY * 2) + yOffset);
         }
 
-        public Vector2Int LocalCoordinateToPathFindingCoordinate(Vector2Int localCoordinate)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Vector2Int LocalCoordinateToPathFindingCoordinate(Vector2Int localCoordinate)
         {
             return localCoordinate / 2;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetExploredByCoordinate(Vector2Int localCoordinate, bool isOpen, int tick)
         {
             var x = localCoordinate.x;
             var y = localCoordinate.y;
+            SetExploredByCoordinate(x, y, isOpen, tick);
+        }
 
-
-            var status = _tiles[x, y];
+        public void SetExploredByCoordinate(int localX, int localY, bool isOpen, int tick)
+        {
+            ref var status = ref _tiles[localX, localY];
 
             if (status != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
                 if (status != newStatus)
                 {
-                    _tiles[x, y] = newStatus;
+                    status = newStatus;
                     LastUpdateTick = tick;
                 }
             }
@@ -178,6 +180,7 @@ namespace Maes.Map
             return new Vector2Int(slamX, slamY);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetRobotVisibility()
         {
             _visibleTilesGeneration++;
@@ -214,19 +217,27 @@ namespace Maes.Map
             return visibleTilesList;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, Vector2Int localCoordinate, bool isOpen)
         {
             var x = localCoordinate.x;
             var y = localCoordinate.y;
 
+            SetCurrentlyVisibleByTriangle(triangleIndex, x, y, isOpen);
+        }
+
+        public void SetCurrentlyVisibleByTriangle(int triangleIndex, int localX, int localY, bool isOpen)
+        {
             _currentlyVisibleTriangles?.Add(triangleIndex);
 
-            var visibleTile = _currentlyVisibleTiles[x, y];
+            ref var visibleTile = ref _currentlyVisibleTiles[localX, localY];
             if (visibleTile.Generation != _visibleTilesGeneration || visibleTile.TileStatus != SlamTileStatus.Solid)
             {
                 var newStatus = isOpen ? SlamTileStatus.Open : SlamTileStatus.Solid;
-                _currentlyVisibleTiles[x, y] = new VisibleTile(_visibleTilesGeneration, newStatus);
-                CoarseMap.UpdateTile(CoarseGrainedMap.FromSlamMapCoordinate(localCoordinate), newStatus);
+                visibleTile = new VisibleTile(_visibleTilesGeneration, newStatus);
+                var coarseX = localX >> 1;
+                var coarseY = localY >> 1;
+                CoarseMap.UpdateTile(coarseX, coarseY, newStatus);
             }
         }
 
@@ -365,51 +376,67 @@ namespace Maes.Map
             return _tiles[tile.x, tile.y];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SlamTileStatus GetTileStatus(int x, int y)
+        {
+            return _tiles[x, y];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int? GetNearestTileFloodFill(Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
         {
             return _pathFinder.GetNearestTileFloodFill(this, targetCoordinate, lookupStatus, excludedTiles);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public float GetRobotAngleDeg()
         {
             return _robotAngle;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetApproxRobotAngle(float robotAngle)
         {
             _robotAngle = robotAngle;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsWithinBounds(Vector2Int slamCoordinate)
         {
-            return slamCoordinate.x > 0 && slamCoordinate.x < Width &&
-                   slamCoordinate.y > 0 && slamCoordinate.y < Height;
+            var x = slamCoordinate.x;
+            var y = slamCoordinate.y;
+
+            return IsWithinBounds(x, y);
         }
 
-        public bool IsCoordWithinBounds(Vector2Int coordinate)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsWithinBounds(int x, int y)
         {
-            return false;
+            return x > 0 && x < Width &&
+                   y > 0 && y < Height;
         }
 
         public bool IsOptimisticSolid(Vector2Int coordinate)
         {
-            var slamCoordinate = coordinate * 2;
-            slamCoordinate = new Vector2Int(slamCoordinate.x, slamCoordinate.y);
-
-            if (IsWithinBounds(slamCoordinate))
-            {
-                var status = AggregateStatusOptimistic(_tiles[slamCoordinate.x, slamCoordinate.y], _tiles[slamCoordinate.x + 1, slamCoordinate.y]);
-                status = AggregateStatusOptimistic(status, _tiles[slamCoordinate.x, slamCoordinate.y + 1]);
-                status = AggregateStatusOptimistic(status, _tiles[slamCoordinate.x + 1, slamCoordinate.y + 1]);
-                return status == SlamTileStatus.Solid || status == SlamTileStatus.Unseen;
-            }
+            var x = coordinate.x * 2;
+            var y = coordinate.y * 2;
 
             // Tiles outside map bounds are considered solid
-            return true;
+            if (!IsWithinBounds(x, y))
+            {
+                return true;
+            }
+
+            var status = AggregateStatusOptimistic(_tiles[x, y], _tiles[x + 1, y]);
+            status = AggregateStatusOptimistic(status, _tiles[x, y + 1]);
+            status = AggregateStatusOptimistic(status, _tiles[x + 1, y + 1]);
+            return status == SlamTileStatus.Solid || status == SlamTileStatus.Unseen;
+
         }
 
         // Combines two SlamTileStatus in a 'optimistic' fashion.
         // If any status is solid both are consider solid. Otherwise if any status is open both are considered open 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static SlamTileStatus AggregateStatusOptimistic(SlamTileStatus status1, SlamTileStatus status2)
         {
             if (status1 == SlamTileStatus.Solid || status2 == SlamTileStatus.Solid)
@@ -432,19 +459,20 @@ namespace Maes.Map
         /// <returns></returns>
         public bool IsSolid(Vector2Int coordinate)
         {
-            var slamCoordinate = coordinate * 2;
-
-            if (IsWithinBounds(slamCoordinate))
-            {
-                var isTraversable = _tiles[slamCoordinate.x, slamCoordinate.y] == SlamTileStatus.Open;
-                isTraversable &= _tiles[slamCoordinate.x + 1, slamCoordinate.y] == SlamTileStatus.Open;
-                isTraversable &= _tiles[slamCoordinate.x, slamCoordinate.y + 1] == SlamTileStatus.Open;
-                isTraversable &= _tiles[slamCoordinate.x + 1, slamCoordinate.y + 1] == SlamTileStatus.Open;
-                return !isTraversable;
-            }
+            var x = coordinate.x * 2;
+            var y = coordinate.y * 2;
 
             // Tiles outside map bounds are considered solid
-            return true;
+            if (!IsWithinBounds(x, y))
+            {
+                return true;
+            }
+
+            var isTraversable = _tiles[x, y] == SlamTileStatus.Open
+            && _tiles[x + 1, y] == SlamTileStatus.Open
+            && _tiles[x, y + 1] == SlamTileStatus.Open
+            && _tiles[x + 1, y + 1] == SlamTileStatus.Open;
+            return !isTraversable;
         }
 
         public bool IsUnseenSemiOpen(Vector2Int nextCoordinate, Vector2Int currentCoordinate)
@@ -467,6 +495,7 @@ namespace Maes.Map
             return 1f;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _pathFinder.GetPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths: acceptPartialPaths);
@@ -483,6 +512,7 @@ namespace Maes.Map
             return path;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
         {
             var path = _pathFinder.GetOptimisticPath(coarseTileFrom, coarseTileTo, this, acceptPartialPaths: acceptPartialPaths);
@@ -499,20 +529,24 @@ namespace Maes.Map
             return path;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CoarseGrainedMap GetCoarseMap()
         {
             return CoarseMap;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SlamTileStatus[,] GetTileStatuses()
         {
             return _tiles;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public VisibleTilesCoarseMap GetVisibleTilesCoarseMap()
         {
             return _visibleTilesCoarseMap;
         }
+
         public Vector2 SlamToWorldCoordinate(Vector2Int slamCoordinate)
         {
             var slamToWorld = new Vector2Int(slamCoordinate.x / 2, slamCoordinate.y / 2);
@@ -527,6 +561,7 @@ namespace Maes.Map
             return worldCoordinate;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 TileToWorld(Vector2 tile)
         {
             var worldTile = tile / 2;

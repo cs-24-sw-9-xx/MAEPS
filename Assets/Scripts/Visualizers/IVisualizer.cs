@@ -5,9 +5,8 @@ using UnityEngine;
 
 namespace Maes.Visualizers
 {
-    public interface IVisualizer<TVisualizerTile>
-    where TVisualizerTile : Cell
+    public interface IVisualizer
     {
-        void SetSimulationMap(SimulationMap<TVisualizerTile> newMap, Vector3 offset);
+        void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset);
     }
 }

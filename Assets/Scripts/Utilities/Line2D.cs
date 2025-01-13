@@ -127,11 +127,11 @@ namespace Maes.Utilities
 
         public Vector2? GetIntersection(Line2D otherLine, bool infinite = false)
         {
-            if (Mathf.Approximately(_a, otherLine._a))
+            if (_a - otherLine._a is < 0.0001f and > -0.0001f)
             {
                 if (SameOrientation(otherLine))
                 {
-                    if (Mathf.Approximately(_b, otherLine._b))
+                    if (_b - otherLine._b is < 0.0001f and > -0.0001f)
                     {
                         var closestPoints = GetClosestPoints(otherLine);
                         return (closestPoints.linePoint + closestPoints.otherLinePoint) / 2;
@@ -172,9 +172,9 @@ namespace Maes.Utilities
             if (_isHorizontal) // Optimization
             {
                 // Parallel lines case
-                if (Mathf.Abs(a2 - _a) < 0.0001f)
+                if (a2 - _a is < 0.0001f and > -0.0001f)
                 {
-                    if (Mathf.Abs(b2 - _b) < 0.0001f)
+                    if (b2 - _b is < 0.0001f and > -0.0001f)
                     {
                         return MidPoint;
                     }
@@ -196,10 +196,10 @@ namespace Maes.Utilities
             }
 
             // Parallel lines case
-            if (Mathf.Abs(a2 - _a) <= 0.0001f)
+            if (a2 - _a is < 0.0001f and > -0.0001f)
             {
                 // If the two parallel lines intersect then return the midpoint of this line as intersection
-                if (Mathf.Abs(b2 - _b) < 0.0001f)
+                if (b2 - _b is < 0.0001f and > -0.0001f)
                 {
                     return MidPoint;
                 }

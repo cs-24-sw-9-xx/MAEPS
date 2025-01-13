@@ -31,20 +31,20 @@ namespace Maes.Map.Visualization.Exploration
     internal class CoverageHeatMapVisualization : IExplorationVisualizationMode
     {
 
-        private readonly SimulationMap<ExplorationCell> _explorationMap;
+        private readonly SimulationMap<Cell> _explorationMap;
         private readonly int _logicTicksBeforeCold = GlobalSettings.TicksBeforeCoverageHeatMapCold;
 
-        public CoverageHeatMapVisualization(SimulationMap<ExplorationCell> explorationMap)
+        public CoverageHeatMapVisualization(SimulationMap<Cell> explorationMap)
         {
             _explorationMap = explorationMap;
         }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, Cell)> exploredCells)
         {
             /* Ignore exploration data */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, Cell)> coveredCells)
         {
             /* No need for newly covered cells as the entire map is replaced every tick */
         }
@@ -55,7 +55,7 @@ namespace Maes.Map.Visualization.Exploration
             visualizer.SetAllColors(_explorationMap, cell => ExplorationCellToColor(cell, currentTick));
         }
 
-        private Color32 ExplorationCellToColor(ExplorationCell cell, int currentTick)
+        private Color32 ExplorationCellToColor(Cell cell, int currentTick)
         {
             if (!cell.CanBeCovered)
             {

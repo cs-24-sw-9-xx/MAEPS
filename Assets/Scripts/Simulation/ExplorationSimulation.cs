@@ -10,7 +10,7 @@ using Maes.UI.SimulationInfoUIControllers;
 
 namespace Maes.Simulation
 {
-    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationCell, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm, ExplorationSimulationScenario, ExplorationRobotSpawner>
+    public sealed class ExplorationSimulation : SimulationBase<ExplorationSimulation, ExplorationVisualizer, ExplorationTracker, ExplorationInfoUIController, IExplorationAlgorithm, ExplorationSimulationScenario, ExplorationRobotSpawner>
     {
         // Set by SetScenario
         public ExplorationTracker ExplorationTracker { get; private set; } = null!;
@@ -49,13 +49,15 @@ namespace Maes.Simulation
         /// </summary>
         public bool TnfBotsOutOfFrontiers()
         {
-            var res = true;
             foreach (var monaRobot in Robots)
             {
-                res &= (monaRobot.Algorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true;
+                if (!(monaRobot.Algorithm as TnfExplorationAlgorithm)?.IsOutOfFrontiers() ?? true)
+                {
+                    return false;
+                }
             }
 
-            return res;
+            return true;
         }
     }
 }

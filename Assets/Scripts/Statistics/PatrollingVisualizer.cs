@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Maes.Statistics
 {
-    public class PatrollingVisualizer : Visualizer<PatrollingCell>
+    public class PatrollingVisualizer : Visualizer
     {
         public static readonly Color32 PatrollingAreaColor = new(255, 120, 0, 255);
 
@@ -29,7 +29,7 @@ namespace Maes.Statistics
             LineOfSightVertices.CreateLineOfSightVertices();
         }
 
-        public override void SetSimulationMap(SimulationMap<PatrollingCell> newMap, Vector3 offset)
+        public override void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
         {
             base.SetSimulationMap(newMap, Vector3.zero);
 
