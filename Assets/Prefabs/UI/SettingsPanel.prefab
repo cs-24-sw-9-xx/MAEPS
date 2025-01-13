@@ -36,9 +36,9 @@ RectTransform:
   m_Father: {fileID: 6976177609129585426}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 1120}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3512552213214518290
 CanvasRenderer:
@@ -185,7 +185,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -10, y: -20}
+  m_SizeDelta: {x: -10, y: 240}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &3865252542286116174
 MonoBehaviour:
@@ -423,8 +423,8 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 6544762525634067147}
   m_HandleRect: {fileID: 4235558402231020222}
   m_Direction: 2
-  m_Value: 0
-  m_Size: 1
+  m_Value: 1.0000002
+  m_Size: 0.76530707
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -516,7 +516,6 @@ GameObject:
   - component: {fileID: 5680638478653156617}
   - component: {fileID: 3334429955553456483}
   - component: {fileID: 3743747206149084879}
-  - component: {fileID: 2778835334713938809}
   - component: {fileID: 6154700680056609340}
   m_Layer: 5
   m_Name: SettingsPanel
@@ -596,32 +595,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraController: {fileID: 0}
---- !u!114 &2778835334713938809
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8573416178439379618}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 15
-    m_Right: 15
-    m_Top: 15
-    m_Bottom: 0
-  m_ChildAlignment: 0
-  m_Spacing: 1.25
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 1
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 1
-  m_ChildScaleHeight: 1
-  m_ReverseArrangement: 0
 --- !u!114 &6154700680056609340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -641,7 +614,6 @@ MonoBehaviour:
   StickyCameraButton: {fileID: 3919118459495888553}
   simulationManager: {fileID: 0}
   Chart: {fileID: 0}
-  GraphControlPanel: {fileID: 0}
   ProgressBarMask: {fileID: 9152509157744575387}
   ProgressText: {fileID: 653958221529042625}
   StoppingCriteriaToggle: {fileID: 3694751455596107991}
@@ -655,12 +627,8 @@ MonoBehaviour:
   ToggleAllRobotsHighlightingButton: {fileID: 0}
   AllVerticesLineOfSightButton: {fileID: 4359780831185811033}
   TargetWaypointSelectedButton: {fileID: 2584764380436687810}
-  VisibleSelectedButton: {fileID: 3888298785742252835}
-  ToogleIdleGraphButton: {fileID: 8417434095945751056}
-  WorstIdlenessToggle: {fileID: 0}
-  CurrentIdlenessToggle: {fileID: 0}
-  AverageIdlenessToggle: {fileID: 0}
-  TotalDistanceTraveledToggle: {fileID: 0}
+  ToogleIdleGraphButton: {fileID: 0}
+  RobotHighlightingSlider: {fileID: 0}
   PlottingFrequencyInputField: {fileID: 0}
 --- !u!1 &8935937818606289415
 GameObject:
@@ -1905,17 +1873,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &3888298785742252835 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5592007963550328930, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
-  m_PrefabInstance: {fileID: 8677537873721639745}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &3919118459495888553 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5624802150002521576, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
@@ -1957,17 +1914,6 @@ RectTransform:
 --- !u!114 &7901643872413281518 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1568529773565095855, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
-  m_PrefabInstance: {fileID: 8677537873721639745}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8417434095945751056 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 917737127087102289, guid: 6fb9726c49fb0af3195e9c70f18f4645, type: 3}
   m_PrefabInstance: {fileID: 8677537873721639745}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
