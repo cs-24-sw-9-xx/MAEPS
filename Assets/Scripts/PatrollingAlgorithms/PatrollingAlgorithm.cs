@@ -21,7 +21,7 @@ namespace Maes.PatrollingAlgorithms
         private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        private Vertex[] _vertices = null!;
+        protected Vertex[] _vertices = null!;
         private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
 
         private Queue<PathStep> _currentPath = new();
@@ -32,7 +32,7 @@ namespace Maes.PatrollingAlgorithms
         private bool _goingToInitialVertex = true;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
         private bool _hasCollided;
         private bool _firstCollision;
 
@@ -82,6 +82,8 @@ namespace Maes.PatrollingAlgorithms
                 return;
             }
 
+            EveryTick();
+
             if (_controller.IsCurrentlyColliding)
             {
                 _firstCollision = !_hasCollided;
@@ -121,6 +123,8 @@ namespace Maes.PatrollingAlgorithms
 
             SetNextVertex();
         }
+
+        protected virtual void EveryTick() { }
 
         private void SetNextVertex()
         {
@@ -194,7 +198,7 @@ namespace Maes.PatrollingAlgorithms
             }
         }
 
-        private Vertex GetClosestVertex()
+        protected Vertex GetClosestVertex()
         {
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
             var closestVertex = _vertices[0];
