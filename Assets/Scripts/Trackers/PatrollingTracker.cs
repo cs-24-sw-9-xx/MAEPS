@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Map;
 using Maes.Map.MapGen;
@@ -18,7 +19,7 @@ using XCharts.Runtime;
 
 namespace Maes.Trackers
 {
-    public class PatrollingTracker : Tracker<PatrollingCell, PatrollingVisualizer, IPatrollingVisualizationMode>
+    public class PatrollingTracker : Tracker<PatrollingVisualizer, IPatrollingVisualizationMode>
     {
         private PatrollingSimulation Simulation { get; }
         public int WorstGraphIdleness { get; private set; }
@@ -59,7 +60,7 @@ namespace Maes.Trackers
         private int _lastCycle = 0;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new PatrollingCell(isExplorable: !Tile.IsWall(tile.Type)))
+            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
@@ -165,9 +166,16 @@ namespace Maes.Trackers
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetTotalDistanceTraveled(List<MonaRobot> robots)
         {
-            TotalDistanceTraveled = robots.Sum(robot => robot.Controller.TotalDistanceTraveled);
+            float sum = 0;
+            foreach (var robot in robots)
+            {
+                sum += robot.Controller.TotalDistanceTraveled;
+            }
+
+            TotalDistanceTraveled = sum;
         }
 
         public override void SetVisualizedRobot(MonaRobot? robot)

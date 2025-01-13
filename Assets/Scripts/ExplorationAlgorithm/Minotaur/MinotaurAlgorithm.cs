@@ -36,6 +36,8 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 {
     public partial class MinotaurAlgorithm
     {
+        private static readonly SlamTileStatus[] SolidUnseenLimiters = { SlamTileStatus.Solid, SlamTileStatus.Unseen };
+        private static readonly SlamTileStatus[] SolidLimiters = { SlamTileStatus.Solid };
         private int VisionRadius => (int)_robotConstraints.SlamRayTraceRange;
         private readonly int _doorWidth;
 
@@ -266,7 +268,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
                 if (waypoint.Type == Waypoint.WaypointType.Greed)
                 {
-                    var tilesAtDestination = _edgeDetector.GetTilesAroundPoint(VisionRadius, new List<SlamTileStatus> { SlamTileStatus.Solid, SlamTileStatus.Unseen }, waypoint.Destination, slamPrecision: false);
+                    var tilesAtDestination = _edgeDetector.GetTilesAroundPoint(VisionRadius, SolidUnseenLimiters, waypoint.Destination, slamPrecision: false);
                     if (tilesAtDestination.All(tile => _map.GetTileStatus(tile) != SlamTileStatus.Unseen))
                     {
                         if (MoveToNearestUnseenWithinRoom())
@@ -298,7 +300,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 }
                 else
                 {
-                    var solidTile = _edgeDetector.GetFurthestTileAroundPoint((waypoint.Destination - Position).GetAngleRelativeToX(), VisionRadius - 2, new List<SlamTileStatus> { SlamTileStatus.Solid }, slamPrecision: false);
+                    var solidTile = _edgeDetector.GetFurthestTileAroundPoint((waypoint.Destination - Position).GetAngleRelativeToX(), VisionRadius - 2, SolidLimiters, slamPrecision: false);
                     if (_map.GetTileStatus(solidTile) == SlamTileStatus.Solid)
                     {
                         _waypoint = null;
@@ -329,7 +331,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                     else if (waypoint.Type == Waypoint.WaypointType.NearestDoor)
                     {
                         var possibleFirstDoorway = _doorways.FirstOrDefault(doorway => CoarseGrainedMap.FromSlamMapCoordinate(doorway.Center + doorway.ExitDirection.Vector * 4) == waypoint.Destination);
-                        if (possibleFirstDoorway != default)
+                        if (possibleFirstDoorway != null)
                         {
                             possibleFirstDoorway.Explored = true;
                         }
@@ -401,7 +403,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                         if (receivedBids.Any())
                         {
                             var combinedMessage = receivedBids[0];
-                            foreach (var message in receivedBids[1..])
+                            foreach (var message in receivedBids.AsSpan(1))
                             {
                                 combinedMessage = combinedMessage.Combine(message, this);
                             }
@@ -448,7 +450,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             }
             var slamMap = _controller.GetSlamMap();
             var slamPosition = slamMap.GetCurrentPosition();
-            var slamTiles = _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, new List<SlamTileStatus> { SlamTileStatus.Solid, SlamTileStatus.Unseen }, slamPrecision: true)
+            var slamTiles = _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, SolidUnseenLimiters, slamPrecision: true)
                                      .Where(tile => slamMap.GetTileStatus(tile) == SlamTileStatus.Solid)
                                      .ToList();
             if (slamTiles.Count() < 2)
@@ -456,7 +458,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 return false;
             }
 
-            var coarseTileAhead = _edgeDetector.GetFurthestTileAroundPoint(_controller.GetGlobalAngle(), VisionRadius, new List<SlamTileStatus> { SlamTileStatus.Solid, SlamTileStatus.Unseen }, snapToGrid: true);
+            var coarseTileAhead = _edgeDetector.GetFurthestTileAroundPoint(_controller.GetGlobalAngle(), VisionRadius, SolidUnseenLimiters, snapToGrid: true);
             var localLeft = (_controller.GetGlobalAngle() + (_map.GetTileStatus(coarseTileAhead) == SlamTileStatus.Solid ? 90 : 0)) % 360;
             (CardinalDirection.AngleToDirection(localLeft).Vector + Position).DrawDebugLineFromRobot(_map, Color.blue);
             var slamWalls = GetWalls(slamTiles);
@@ -493,7 +495,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             (Vector2Int perp, Vector2Int point)? openPoint = null;
             foreach (var point in points)
             {
-                var tile = _edgeDetector.GetFurthestTileAroundPoint((point.perp - slamPosition).GetAngleRelativeToX(), (VisionRadius + 2) * 2, new List<SlamTileStatus> { SlamTileStatus.Solid }, slamPrecision: true);
+                var tile = _edgeDetector.GetFurthestTileAroundPoint((point.perp - slamPosition).GetAngleRelativeToX(), (VisionRadius + 2) * 2, SolidLimiters, slamPrecision: true);
                 if ((point.perp - slamPosition).magnitude > (tile - slamPosition).magnitude)
                 {
                     continue;
@@ -671,23 +673,31 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             return result;
         }
 
-        private static List<(Vector2Int intersection, List<Line2D> walls)> GetIntersectionPoints(IPathFindingMap map, IEnumerable<Line2D> walls)
+        private static List<(Vector2Int intersection, List<Line2D> walls)> GetIntersectionPoints(IPathFindingMap map, List<Line2D> walls)
         {
             List<(Vector2Int intersection, List<Line2D> walls)> intersectionPoints = new();
             foreach (var line in walls)
             {
-                var otherlines = walls.Where(tempLine => tempLine != line);
-                foreach (var otherline in otherlines)
+                foreach (var otherLine in walls)
                 {
-                    var intersectionPoint = line.GetIntersection(otherline, true);
+                    if (line == otherLine)
+                    {
+                        continue;
+                    }
+
+                    var intersectionPoint = line.GetIntersection(otherLine, true);
                     if (intersectionPoint.HasValue)
                     {
-                        intersectionPoints.Add((Vector2Int.FloorToInt(intersectionPoint.Value), new List<Line2D> { line, otherline }));
+                        var intersectionPointValue = Vector2Int.FloorToInt(intersectionPoint.Value);
+
+                        if (map.IsWithinBounds(intersectionPointValue))
+                        {
+                            intersectionPoints.Add((intersectionPointValue, new List<Line2D> { line, otherLine }));
+                        }
                     }
                 }
             }
-            return intersectionPoints.Where(point => map.IsWithinBounds(point.intersection))
-                                     .GroupBy(point => point.intersection)
+            return intersectionPoints.GroupBy(point => point.intersection)
                                      .Select(groupPoints => groupPoints.First())
                                      .ToList();
         }
@@ -699,7 +709,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 return false;
             }
 
-            var tiles = _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, new List<SlamTileStatus> { SlamTileStatus.Unseen, SlamTileStatus.Solid }, startAngle: 360 - 30);
+            var tiles = _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, SolidUnseenLimiters, startAngle: 360 - 30);
             foreach (var tile in tiles)
             {
                 tile.DrawDebugLineFromRobot(_map, Color.green);
@@ -732,27 +742,24 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                                              && IfSolidIsPathable(tile)
                                              && !IsPerpendicularThroughDoorway(tile.perpendicularTile, doorways))
                               .Select(tile => tile.perpendicularTile);
-            if (tiles.Any())
+            var localRight = _controller.GetGlobalAngle() + 180 % 360;
+            var closestTiles = tiles.OrderBy(tile => ((tile - Position).GetAngleRelativeToX() - localRight + 360) % 360);
+            foreach (var closestTile in closestTiles)
             {
-                var localRight = _controller.GetGlobalAngle() + 180 % 360;
-                var closestTiles = tiles.OrderBy(tile => ((tile - Position).GetAngleRelativeToX() - localRight + 360) % 360);
-                foreach (var closestTile in closestTiles)
+                // Take candidateTile from local right sweeping counter clockwise
+                var angle = Vector2.SignedAngle(Vector2.right, closestTile - Position);
+                var vector = Geometry.VectorFromDegreesAndMagnitude(angle, VisionRadius + 1);
+                var candidateTile = Vector2Int.FloorToInt(vector + Position);
+                closestTile.DrawDebugLineFromRobot(_map, Color.yellow);
+                if (candidateTile == _previousWaypoint.Destination)
                 {
-                    // Take candidateTile from local right sweeping counter clockwise
-                    var angle = Vector2.SignedAngle(Vector2.right, closestTile - Position);
-                    var vector = Geometry.VectorFromDegreesAndMagnitude(angle, VisionRadius + 1);
-                    var candidateTile = Vector2Int.FloorToInt(vector + Position);
-                    closestTile.DrawDebugLineFromRobot(_map, Color.yellow);
-                    if (candidateTile == _previousWaypoint.Destination)
-                    {
-                        continue;
-                    }
-
-                    candidateTile.DrawDebugLineFromRobot(_map, Color.white);
-                    _controller.MoveTo(closestTile);
-                    _waypoint = new Waypoint(closestTile, Waypoint.WaypointType.Edge);
-                    return true;
+                    continue;
                 }
+
+                candidateTile.DrawDebugLineFromRobot(_map, Color.white);
+                _controller.MoveTo(closestTile);
+                _waypoint = new Waypoint(closestTile, Waypoint.WaypointType.Edge);
+                return true;
             }
             return false;
         }
@@ -776,23 +783,19 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             }
 
             var path = _map.GetPath(tile.perpendicularTile, beOptimistic: true, acceptPartialPaths: false);
-            if (path == null)
-            {
-                return false;
-            }
-            return true;
+            return path != null;
         }
 
         private bool MoveToNearestUnseenWithinRoom()
         {
-            var doorTiles = _map.FromSlamMapCoordinates(_doorways.SelectMany(doorway => doorway.Tiles));
+            var doorTiles = CoarseGrainedMap.FromSlamMapCoordinates(_doorways.SelectMany(doorway => doorway.Tiles));
             var startCoordinate = Position;
             if (_map.GetTileStatus(startCoordinate) == SlamTileStatus.Solid)
             {
-                var NearestOpenTile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Open, doorTiles);
-                if (NearestOpenTile.HasValue)
+                var nearestOpenTile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Open, doorTiles);
+                if (nearestOpenTile.HasValue)
                 {
-                    startCoordinate = NearestOpenTile.Value;
+                    startCoordinate = nearestOpenTile.Value;
                 }
             }
             var tile = _map.GetNearestTileFloodFill(startCoordinate, SlamTileStatus.Unseen, doorTiles);
@@ -865,14 +868,21 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
         private bool IsAroundExplorable(int range)
         {
-            return _edgeDetector.GetTilesAroundPoint(VisionRadius + range, new List<SlamTileStatus> { SlamTileStatus.Solid, SlamTileStatus.Unseen })
-                                .Count(tile => _map.GetTileStatus(tile) == SlamTileStatus.Unseen) > 0;
+            foreach (var tile in _edgeDetector.GetTilesAroundPoint(VisionRadius + range, SolidUnseenLimiters))
+            {
+                if (_map.GetTileStatus(tile) == SlamTileStatus.Unseen)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private List<RelativeWall> GetWallsNearRobot()
         {
             var slamMap = _controller.GetSlamMap();
-            return _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, new List<SlamTileStatus> { SlamTileStatus.Solid, SlamTileStatus.Unseen }, slamPrecision: true).Where(tile => slamMap.GetTileStatus(tile) == SlamTileStatus.Solid)
+            return _edgeDetector.GetTilesAroundPoint(VisionRadius + 2, SolidUnseenLimiters, slamPrecision: true).Where(tile => slamMap.GetTileStatus(tile) == SlamTileStatus.Solid)
                                      .Distinct()
                                      .Select(tile =>
                                          new RelativeWall
@@ -894,14 +904,14 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             }
 
             var slamMap = _controller.GetSlamMap();
-            var wallTilePositions = visibleWallTiles.Select(wall => wall.Position).Distinct();
+            var wallTilePositions = visibleWallTiles.Select(wall => wall.Position).Distinct().ToList();
             var slamPosition = slamMap.GetCurrentPosition();
-            var walls = GetWalls(wallTilePositions).Where(wall => wall.Start != wall.End);
-            walls.ToList().ForEach(wall => Debug.DrawLine(slamMap.TileToWorld(wall.Start), slamMap.TileToWorld(wall.End), Color.white, 0.1f));
+            var walls = GetWalls(wallTilePositions).Where(wall => wall.Start != wall.End).ToList();
+            walls.ForEach(wall => Debug.DrawLine(slamMap.TileToWorld(wall.Start), slamMap.TileToWorld(wall.End), Color.white, 0.1f));
 
-            if (walls.Count() == 1)
+            if (walls.Count == 1)
             {
-                var wall = walls.First();
+                var wall = walls[0];
                 var (start, end) = (Vector2Int.FloorToInt(wall.Start), Vector2Int.FloorToInt(wall.End));
                 var wallDirectionVector = CardinalDirection.DirectionFromDegrees((end - start).GetAngleRelativeToX()).Vector;
                 var closestWallPoint = wallTilePositions.OrderBy(tile => Vector2.Distance(slamPosition, tile)).First();
@@ -959,11 +969,12 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             var slamMap = _controller.GetSlamMap();
             var slamPosition = slamMap.GetCurrentPosition();
-            var intersectionPoints = GetIntersectionPoints(slamMap, walls).Distinct();
-            intersectionPoints = intersectionPoints.Where(point => !point.walls.All(wall => wall.Rasterize().Select(tile => Vector2Int.FloorToInt(tile)).Contains(point.intersection)));
-            if (intersectionPoints.Any())
+            var intersectionPoints = GetIntersectionPoints(slamMap, walls).Distinct()
+                .Where(point => !point.walls.All(wall => wall.Rasterize().Select(tile => Vector2Int.FloorToInt(tile)).Contains(point.intersection)))
+                .ToList();
+            if (intersectionPoints.Count > 0)
             {
-                var intersectionPoint = intersectionPoints.First();
+                var intersectionPoint = intersectionPoints[0];
                 var closest = GetClosestPoints(intersectionPoint.walls, intersectionPoint.intersection);
                 var (start, end) = (closest.First(), closest.Last());
                 var center = (start + end) / 2;
@@ -990,7 +1001,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             }
         }
 
-        private IEnumerable<Vector2Int> GetClosestPoints(List<Line2D> walls, Vector2Int queryPoint)
+        private static IEnumerable<Vector2Int> GetClosestPoints(List<Line2D> walls, Vector2Int queryPoint)
         {
             return walls.Select(wall => Vector2Int.FloorToInt(wall.Rasterize().OrderBy(tile => Vector2.Distance(tile, queryPoint)).First()));
         }
@@ -1024,15 +1035,19 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         {
             var doorwayDistance = float.MaxValue;
             Doorway? nearestDoorway = null;
-            var unexploredDoorways = _doorways.Where(doorway => !doorway.Explored);
-            foreach (var doorway in unexploredDoorways)
+            foreach (var doorway in _doorways)
             {
+                if (doorway.Explored)
+                {
+                    continue;
+                }
+
                 var distance = PathDistanceToPoint(doorway.Center);
                 if (distance < doorwayDistance)
                 {
                     doorwayDistance = distance;
                     nearestDoorway = doorway;
-                };
+                }
             }
             return nearestDoorway;
         }
@@ -1050,17 +1065,17 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 return Mathf.Infinity;
             }
 
-            var distances = new List<float>();
+            var sum = 0f;
             for (var i = 0; i < path.Length - 2; i++)
             {
                 var pathStep = path[i];
                 if (pathStep == path.First())
                 {
-                    distances.Add(Vector2.Distance(path.First(), Position));
+                    sum += Vector2.Distance(path.First(), Position);
                 }
-                distances.Add(Vector2.Distance(pathStep, path[i + 1]));
+                sum += Vector2.Distance(pathStep, path[i + 1]);
             }
-            return distances.Sum();
+            return sum;
         }
     }
 }

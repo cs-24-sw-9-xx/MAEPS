@@ -27,17 +27,17 @@ using Maes.Statistics;
 
 namespace Maes.Map.Visualization.Exploration
 {
-    internal class CurrentlyVisibleAreaVisualizationExploration : CurrentlyVisibleAreaVisualization<ExplorationCell, ExplorationVisualizer>, IExplorationVisualizationMode
+    internal class CurrentlyVisibleAreaVisualizationExploration : CurrentlyVisibleAreaVisualization<ExplorationVisualizer>, IExplorationVisualizationMode
     {
 
-        public CurrentlyVisibleAreaVisualizationExploration(SimulationMap<ExplorationCell> explorationMap, Robot2DController selectedRobot) : base(explorationMap, selectedRobot) { }
+        public CurrentlyVisibleAreaVisualizationExploration(SimulationMap<Cell> explorationMap, Robot2DController selectedRobot) : base(explorationMap, selectedRobot) { }
 
-        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, ExplorationCell)> exploredCells)
+        public void RegisterNewlyExploredCells(MonaRobot robot, List<(int, Cell)> exploredCells)
         {
             /* Ignore new exploration data as we are interested in all VISIBLE cells */
         }
 
-        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, ExplorationCell)> coveredCells)
+        public void RegisterNewlyCoveredCells(MonaRobot robot, List<(int, Cell)> coveredCells)
         {
             /* Coverage data not needed */
         }

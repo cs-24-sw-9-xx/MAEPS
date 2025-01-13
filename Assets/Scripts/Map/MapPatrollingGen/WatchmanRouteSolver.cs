@@ -17,32 +17,34 @@ namespace Maes.Map.MapPatrollingGen
             var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = SolveWatchmanRoute(map);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
-            var connectedvertices = ConnectVerticies(vertexPositions, distanceMatrix, colorIslands);
-            return new PatrollingMap(connectedvertices, simulationMap);
+            var connectVertices = ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
+            return new PatrollingMap(connectVertices, simulationMap);
         }
 
-        private static Vertex[] ConnectVerticies(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
+        private static Vertex[] ConnectVertices(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
         {
-            const int numberOfReverstNearestNeighbors = 1;
-            var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverstNearestNeighbors);
+            const int numberOfReverseNearestNeighbors = 1;
+            var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
             var i = 0;
             var vertices = guardPositions.Select(pos => new Vertex(i++, 0, pos)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
             {
-                if (vertexMap.TryGetValue(position, out var vertex))
+                if (!vertexMap.TryGetValue(position, out var vertex))
                 {
-                    var color = colorIslands ? UnityEngine.Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
-                    vertex.Color = color;
-                    foreach (var neighborPos in neighbors)
+                    continue;
+                }
+
+                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
+                vertex.Color = color;
+                foreach (var neighborPos in neighbors)
+                {
+                    if (vertexMap.TryGetValue(neighborPos, out var neighborVertex))
                     {
-                        if (vertexMap.TryGetValue(neighborPos, out var neighborVertex))
-                        {
-                            neighborVertex.Color = color;
-                            vertex.AddNeighbor(neighborVertex);
-                            neighborVertex.AddNeighbor(vertex);
-                        }
+                        neighborVertex.Color = color;
+                        vertex.AddNeighbor(neighborVertex);
+                        neighborVertex.AddNeighbor(vertex);
                     }
                 }
             }
@@ -86,7 +88,7 @@ namespace Maes.Map.MapPatrollingGen
 
                     if (coverage.Count > bestCoverage.Count ||
                        (coverage.Count == bestCoverage.Count &&
-                        AveargeEuclideanDistance(candidate, guardPositions) < AveargeEuclideanDistance(bestGuardPosition, guardPositions)))
+                        AverageEuclideanDistance(candidate, guardPositions) < AverageEuclideanDistance(bestGuardPosition, guardPositions)))
                     {
                         bestGuardPosition = candidate;
                         bestCoverage = coverage;
@@ -127,7 +129,7 @@ namespace Maes.Map.MapPatrollingGen
         }
 
         // Helper method to calculate the average Euclidean distance of a guard position to a list of other guard positions
-        private static float AveargeEuclideanDistance(Vector2Int guardPosition, List<Vector2Int> currentGuardPositions)
+        private static float AverageEuclideanDistance(Vector2Int guardPosition, List<Vector2Int> currentGuardPositions)
         {
             var sum = 0f;
             foreach (var pos in currentGuardPositions)
@@ -181,7 +183,7 @@ namespace Maes.Map.MapPatrollingGen
             return reverseNearestNeighbors;
         }
 
-        // Merge islands (isolated connected verticies) recursively until all islands are connected
+        // Merge islands (isolated connected vertices) recursively until all islands are connected
         private static List<Vertex> MergeIslandsRecursively(
             List<Vertex> currentIsland,
             List<List<Vertex>> remainingIslands,
@@ -238,35 +240,6 @@ namespace Maes.Map.MapPatrollingGen
             Dictionary<(Vector2Int, Vector2Int), int> distanceDict)
         {
             var visited = new HashSet<Vertex>();
-
-            // Function to traverse a cluster and collect its vertices
-            List<Vertex> TraverseCluster(Vertex start)
-            {
-                var cluster = new List<Vertex>();
-                var stack = new Stack<Vertex>();
-                stack.Push(start);
-
-                while (stack.Count > 0)
-                {
-                    var current = stack.Pop();
-                    if (!visited.Contains(current))
-                    {
-                        visited.Add(current);
-                        cluster.Add(current);
-
-                        foreach (var neighbor in current.Neighbors)
-                        {
-                            if (!visited.Contains(neighbor))
-                            {
-                                stack.Push(neighbor);
-                            }
-                        }
-                    }
-                }
-
-                return cluster;
-            }
-
             var clusters = new List<List<Vertex>>();
 
             // Identify disconnected clusters dynamically
@@ -287,10 +260,39 @@ namespace Maes.Map.MapPatrollingGen
                 // Recursively merge all clusters into one
                 MergeIslandsRecursively(initialIsland, clusters, distanceDict);
             }
+
+            return;
+
+            // Function to traverse a cluster and collect its vertices
+            List<Vertex> TraverseCluster(Vertex start)
+            {
+                var cluster = new List<Vertex>();
+                var stack = new Stack<Vertex>();
+                stack.Push(start);
+
+                while (stack.Count > 0)
+                {
+                    var current = stack.Pop();
+                    if (visited.Add(current))
+                    {
+                        cluster.Add(current);
+
+                        foreach (var neighbor in current.Neighbors)
+                        {
+                            if (!visited.Contains(neighbor))
+                            {
+                                stack.Push(neighbor);
+                            }
+                        }
+                    }
+                }
+
+                return cluster;
+            }
         }
 
 
-        // Calculate the shortest path between all pairs of verticies
+        // Calculate the shortest path between all pairs of vertices
         private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
@@ -319,7 +321,7 @@ namespace Maes.Map.MapPatrollingGen
             new(-1, 0)
         };
 
-        // BFS to find the shortest path from the start position to all other verticies
+        // BFS to find the shortest path from the start position to all other vertices
         private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, bool[,] map)
         {
             var queue = new Queue<Vector2Int>();

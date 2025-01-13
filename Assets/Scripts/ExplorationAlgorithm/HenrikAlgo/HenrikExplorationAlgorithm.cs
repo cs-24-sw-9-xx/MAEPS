@@ -6,6 +6,7 @@
 //   - Proposed fix: When finding the nearest unexplored tile, the robot could exclude tiles which are close to other robots.
 // - The anti-wall collision 'CollisionCorrector()' is primitive.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -66,7 +67,7 @@ namespace Maes.ExplorationAlgorithm.HenrikAlgo
             {
                 Debug.Log("Received slam");
                 var combinedMessage = receivedHeartbeats[0];
-                foreach (var message in receivedHeartbeats[1..])
+                foreach (var message in receivedHeartbeats.AsSpan(1))
                 {
                     combinedMessage = combinedMessage.Combine(message, _logicTicks);
                 }

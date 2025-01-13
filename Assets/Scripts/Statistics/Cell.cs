@@ -23,10 +23,10 @@ using System;
 
 namespace Maes.Statistics
 {
-    public abstract class Cell
+    public sealed class Cell
     {
         // --- Exploration over time --- 
-        public bool IsExplorable { get; }
+        public readonly bool IsExplorable;
         public bool IsExplored { get; private set; }
 
         // --- Coverage over time  ---
@@ -46,10 +46,12 @@ namespace Maes.Statistics
         /// </summary>
         public void RegisterExploration(int currentTimeTicks)
         {
+#if DEBUG
             if (!IsExplorable)
             {
-                throw new Exception("Registered exploration for a tile that was marked not explorable");
+                throw new InvalidOperationException("Registered exploration for a tile that was marked not explorable");
             }
+#endif
 
             ExplorationTimeInTicks += 1;
             LastExplorationTimeInTicks = currentTimeTicks;
@@ -58,33 +60,21 @@ namespace Maes.Statistics
 
         public void RegisterCoverage(int currenTimeTicks)
         {
+#if DEBUG
             if (!CanBeCovered)
             {
-                throw new Exception("Registered coverage for a tile that was marked not coverable");
+                throw new InvalidOperationException("Registered coverage for a tile that was marked not coverable");
             }
+#endif
 
             CoverageTimeInTicks += 1;
             LastCoverageTimeInTicks = currenTimeTicks;
             IsCovered = true;
         }
 
-        protected Cell(bool isExplorable)
+        public Cell(bool isExplorable)
         {
             IsExplorable = isExplorable;
-        }
-    }
-
-    public class ExplorationCell : Cell
-    {
-        public ExplorationCell(bool isExplorable) : base(isExplorable)
-        {
-        }
-    }
-
-    public class PatrollingCell : Cell
-    {
-        public PatrollingCell(bool isExplorable) : base(isExplorable)
-        {
         }
     }
 }

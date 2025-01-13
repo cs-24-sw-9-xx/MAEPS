@@ -106,7 +106,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                 {
                     sim?.PatrollingTracker.ShowAllVerticesLineOfSight();
                 });
-            }); ;
+            });
 
             PlottingFrequencyInputField.onValueChanged.AddListener(
                 changedValue =>
@@ -169,9 +169,9 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             if (newSimulation != null)
             {
-                newSimulation!.PatrollingTracker.Chart = Chart;
-                newSimulation!.PatrollingTracker.Zoom = Chart.EnsureChartComponent<DataZoom>();
-                newSimulation!.PatrollingTracker.InitIdleGraph();
+                newSimulation.PatrollingTracker.Chart = Chart;
+                newSimulation.PatrollingTracker.Zoom = Chart.EnsureChartComponent<DataZoom>();
+                newSimulation.PatrollingTracker.InitIdleGraph();
                 newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }

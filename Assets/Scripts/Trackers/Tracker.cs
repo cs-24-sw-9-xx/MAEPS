@@ -10,17 +10,16 @@ using Maes.Visualizers;
 
 namespace Maes.Trackers
 {
-    public abstract class Tracker<TCell, TVisualizer, TVisualizationMode> : ITracker
-        where TCell : Cell
-        where TVisualizer : IVisualizer<TCell>
-        where TVisualizationMode : class, IVisualizationMode<TCell, TVisualizer>
+    public abstract class Tracker<TVisualizer, TVisualizationMode> : ITracker
+        where TVisualizer : IVisualizer
+        where TVisualizationMode : class, IVisualizationMode<TVisualizer>
     {
-        protected readonly CoverageCalculator<TCell> _coverageCalculator;
+        protected readonly CoverageCalculator _coverageCalculator;
 
         protected readonly TVisualizer _visualizer;
 
-        protected readonly SimulationMap<TCell> _map;
-        protected readonly RayTracingMap<TCell> _rayTracingMap;
+        protected readonly SimulationMap<Cell> _map;
+        protected readonly RayTracingMap<Cell> _rayTracingMap;
         public delegate void VisualizationModeConsumer(TVisualizationMode mode);
         public event VisualizationModeConsumer? OnVisualizationModeChanged;
 
@@ -34,18 +33,18 @@ namespace Maes.Trackers
         // Set by derived class constructor.
         protected TVisualizationMode _currentVisualizationMode = null!;
 
-        private readonly CoverageCalculator<TCell>.MiniTileConsumer _preCoverageTileConsumerDelegate;
+        private readonly CoverageCalculator.MiniTileConsumer _preCoverageTileConsumerDelegate;
 
-        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, TCell> mapper)
+        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper)
         {
             _visualizer = visualizer;
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
 
             _visualizer.SetSimulationMap(_map, collisionMap.ScaledOffset);
-            _rayTracingMap = new RayTracingMap<TCell>(_map);
+            _rayTracingMap = new RayTracingMap<Cell>(_map);
 
-            _coverageCalculator = new CoverageCalculator<TCell>(_map, collisionMap);
+            _coverageCalculator = new CoverageCalculator(_map, collisionMap);
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
         }
 
@@ -125,7 +124,7 @@ namespace Maes.Trackers
 
 
 
-        protected virtual void PreCoverageTileConsumer(int index1, TCell triangle1, int index2, TCell triangle2) { }
+        protected virtual void PreCoverageTileConsumer(int index1, Cell triangle1, int index2, Cell triangle2) { }
 
         protected virtual void AfterUpdateCoverageStatus(MonaRobot robot) { }
     }

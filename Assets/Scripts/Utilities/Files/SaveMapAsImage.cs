@@ -2,36 +2,39 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-public static class SaveAsImage
+namespace Maes.Utilities.Files
 {
-    public static void SaveVisibileTiles(HashSet<Vector2Int> pointsOfInterest, Vector2Int startPoint, bool optimized, bool[,] map)
+    public static class SaveAsImage
     {
-        var texture = new Texture2D(map.GetLength(0), map.GetLength(1));
-        for (var x = 0; x < map.GetLength(0); x++)
+        public static void SaveVisibleTiles(HashSet<Vector2Int> pointsOfInterest, Vector2Int startPoint, bool optimized, bool[,] map)
         {
-            for (var y = 0; y < map.GetLength(1); y++)
+            var texture = new Texture2D(map.GetLength(0), map.GetLength(1));
+            for (var x = 0; x < map.GetLength(0); x++)
             {
-                if (map[x, y])
+                for (var y = 0; y < map.GetLength(1); y++)
                 {
-                    texture.SetPixel(x, y, Color.blue);
-                }
-                else
-                {
+                    if (map[x, y])
+                    {
+                        texture.SetPixel(x, y, Color.blue);
+                    }
+                    else
+                    {
 
-                    texture.SetPixel(x, y, Color.white);
+                        texture.SetPixel(x, y, Color.white);
+                    }
                 }
             }
-        }
 
-        foreach (var point in pointsOfInterest)
-        {
-            texture.SetPixel(point.x, point.y, Color.black);
-        }
+            foreach (var point in pointsOfInterest)
+            {
+                texture.SetPixel(point.x, point.y, Color.black);
+            }
 
-        texture.SetPixel(startPoint.x, startPoint.y, Color.red);
-        texture.Apply();
-        var bytes = texture.EncodeToPNG();
-        var filename = optimized ? "optimized.png" : "origin.png";
-        System.IO.File.WriteAllBytes(filename, bytes);
+            texture.SetPixel(startPoint.x, startPoint.y, Color.red);
+            texture.Apply();
+            var bytes = texture.EncodeToPNG();
+            var filename = optimized ? "optimized.png" : "origin.png";
+            System.IO.File.WriteAllBytes(filename, bytes);
+        }
     }
 }

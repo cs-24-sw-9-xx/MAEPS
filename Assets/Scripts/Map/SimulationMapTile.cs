@@ -21,8 +21,6 @@
 
 using System;
 
-using Maes.Utilities;
-
 namespace Maes.Map
 {
     public readonly struct SimulationMapTile<TCell>
@@ -34,7 +32,7 @@ namespace Maes.Map
         ///  |0\1|2/3|
         private readonly TCell[] _triangleCells;
 
-        public SimulationMapTile(Functional.Factory<TCell> cellFactory)
+        public SimulationMapTile(Func<TCell> cellFactory)
         {
             _triangleCells = new TCell[8];
             for (var i = 0; i < 8; i++)

@@ -28,7 +28,6 @@ using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;
 using Maes.Simulation.SimulationScenarios;
-using Maes.Statistics;
 using Maes.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 using Maes.Visualizers;
@@ -37,10 +36,9 @@ using UnityEngine;
 
 namespace Maes.Simulation
 {
-    public abstract class SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
-    where TSimulation : SimulationBase<TSimulation, TVisualizer, TVisualizerTile, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
-    where TVisualizerTile : Cell
-    where TVisualizer : MonoBehaviour, IVisualizer<TVisualizerTile>
+    public abstract class SimulationBase<TSimulation, TVisualizer, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner> : MonoBehaviour, ISimulation<TSimulation, TAlgorithm, TScenario>
+    where TSimulation : SimulationBase<TSimulation, TVisualizer, TTracker, TSimulationInfoUIController, TAlgorithm, TScenario, TRobotSpawner>
+    where TVisualizer : MonoBehaviour, IVisualizer
     where TTracker : ITracker
     where TSimulationInfoUIController : SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario>
     where TAlgorithm : IAlgorithm

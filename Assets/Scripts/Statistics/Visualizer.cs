@@ -8,8 +8,7 @@ using UnityEngine.Rendering;
 
 namespace Maes.Statistics
 {
-    public abstract class Visualizer<TCell> : MonoBehaviour, IVisualizer<TCell>
-        where TCell : Cell
+    public abstract class Visualizer : MonoBehaviour, IVisualizer
     {
         public MeshRenderer meshRenderer = null!;
         public MeshFilter meshFilter = null!;
@@ -28,16 +27,16 @@ namespace Maes.Statistics
         private readonly List<int> _triangles = new();
 
         // Set in SetSimulationMap
-        private SimulationMap<TCell> _map = null!;
+        private SimulationMap<Cell> _map = null!;
         protected Color32[] _colors = null!;
 
         private const int ResolutionMultiplier = 2;
 
 
-        public delegate Color32 CellToColor(TCell cell);
+        public delegate Color32 CellToColor(Cell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
 
-        public virtual void SetSimulationMap(SimulationMap<TCell> newMap, Vector3 offset)
+        public virtual void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
         {
             _map = newMap;
             _widthInTiles = _map.WidthInTiles;
@@ -136,7 +135,7 @@ namespace Maes.Statistics
         }
 
         // Colors each triangle depending on its current state
-        private void InitializeColors(SimulationMap<TCell> newMap)
+        private void InitializeColors(SimulationMap<Cell> newMap)
         {
             foreach (var (index, cell) in newMap)
             {
@@ -148,7 +147,7 @@ namespace Maes.Statistics
             }
         }
 
-        protected virtual Color32 InitializeCellColor(TCell cell)
+        protected virtual Color32 InitializeCellColor(Cell cell)
         {
             return cell.IsExplorable ? StandardCellColor : SolidColor;
         }
@@ -157,7 +156,7 @@ namespace Maes.Statistics
         /// Updates the color of ALL triangles based on the given map and color function. This is an expensive operation
         /// and should be only called when it is necessary to replace all colors.
         /// </summary>
-        public void SetAllColors(SimulationMap<TCell> map, CellToColor cellToColor)
+        public void SetAllColors(SimulationMap<Cell> map, CellToColor cellToColor)
         {
             foreach (var (index, cell) in map)
             {
@@ -175,7 +174,7 @@ namespace Maes.Statistics
         /// Updates the color of ALL triangles based on the given map and color function. This is an expensive operation
         /// and should be only called when it is necessary to replace all colors.
         /// </summary>
-        public void SetAllColors(SimulationMap<TCell> map, CellIndexToColor cellToColor)
+        public void SetAllColors(SimulationMap<Cell> map, CellIndexToColor cellToColor)
         {
             foreach (var (index, _) in map)
             {

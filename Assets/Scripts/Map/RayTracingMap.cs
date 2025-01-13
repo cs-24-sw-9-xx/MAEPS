@@ -31,11 +31,12 @@ namespace Maes.Map
     {
         private readonly SimulationMap<TCell> _map;
         private readonly RayTracingTriangle[] _traceableTriangles;
+        private readonly int _traceableTrianglesCount;
 
         // The order in which edges are stored for each RayTracingTriangle
         private const int Diagonal = 0, Horizontal = 1, Vertical = 2;
 
-        private static readonly double MaxTraceLengthPerTriangle = Math.Sqrt(2) / 4f;
+        private static readonly float MaxTraceLengthPerTriangle = Mathf.Sqrt(2.0f) / 4.0f;
 
         public RayTracingMap(SimulationMap<TCell> map)
         {
@@ -45,6 +46,7 @@ namespace Maes.Map
             const float vertexDistance = 0.5f; // Vertices and in triangles are 0.5 tiles apart
 
             _traceableTriangles = new RayTracingTriangle[totalTriangles];
+            _traceableTrianglesCount = totalTriangles;
             for (var x = 0; x < map.WidthInTiles; x++)
             {
                 for (var y = 0; y < map.HeightInTiles; y++)
@@ -70,106 +72,90 @@ namespace Maes.Map
             var x = bottomLeft.x;
             var y = bottomLeft.y;
             // Triangle 0
-            var neighbours = new int[3];
-            neighbours[Diagonal] = index + 1;
-            neighbours[Horizontal] = index - trianglesPerRow + 4;
-            neighbours[Vertical] = index - 5;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x, y + vertexDistance),
                 new Vector2(x + vertexDistance, y),
                 new Vector2(x, y),
-                neighbours
+                index + 1,
+                index - trianglesPerRow + 4,
+                index - 5
             );
 
             // Triangle 1
             index++;
-            var neighbours1 = new int[3];
-            neighbours1[Diagonal] = index - 1;
-            neighbours1[Horizontal] = index + 4;
-            neighbours1[Vertical] = index + 1;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + vertexDistance, y),
                 new Vector2(x, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
-                neighbours1
+                index - 1,
+                index + 4,
+                index + 1
             );
 
             // Triangle 2
             index++;
-            var neighbours2 = new int[3];
-            neighbours2[Diagonal] = index + 1;
-            neighbours2[Horizontal] = index + 4;
-            neighbours2[Vertical] = index - 1;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + vertexDistance, y),
                 new Vector2(x + 2 * vertexDistance, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
-                neighbours2
+            index + 1,
+            index + 4,
+            index - 1
             );
 
             // Triangle 3
             index++;
-            var neighbours3 = new int[3];
-            neighbours3[Diagonal] = index - 1;
-            neighbours3[Horizontal] = index - trianglesPerRow + 4;
-            neighbours3[Vertical] = index + 5;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + 2 * vertexDistance, y + vertexDistance),
                 new Vector2(x + vertexDistance, y),
                 new Vector2(x + 2 * vertexDistance, y),
-                neighbours3
+                index - 1,
+                index - trianglesPerRow + 4,
+                index + 5
             );
 
             // Triangle 4
             index++;
-            var neighbours4 = new int[3];
-            neighbours4[Diagonal] = index + 1;
-            neighbours4[Horizontal] = index + trianglesPerRow - 4;
-            neighbours4[Vertical] = index - 5;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + 2 * vertexDistance),
                 new Vector2(x, y + 2 * vertexDistance),
-                neighbours4
+                index + 1,
+                index + trianglesPerRow - 4,
+                index - 5
             );
 
             // Triangle 5
             index++;
-            var neighbours5 = new int[3];
-            neighbours5[Diagonal] = index - 1;
-            neighbours5[Horizontal] = index - 4;
-            neighbours5[Vertical] = index + 1;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + vertexDistance, y + 2 * vertexDistance),
                 new Vector2(x, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
-                neighbours5
+                index - 1,
+                index - 4,
+                index + 1
             );
 
             // Triangle 6
             index++;
-            var neighbours6 = new int[3];
-            neighbours6[Diagonal] = index + 1;
-            neighbours6[Horizontal] = index - 4;
-            neighbours6[Vertical] = index - 1;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + vertexDistance, y + 2 * vertexDistance),
                 new Vector2(x + 2 * vertexDistance, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
-                neighbours6
+                index + 1,
+                index - 4,
+                index - 1
             );
 
             // Triangle 7
             index++;
-            var neighbours7 = new int[3];
-            neighbours7[Diagonal] = index - 1;
-            neighbours7[Horizontal] = index + trianglesPerRow - 4;
-            neighbours7[Vertical] = index + 5;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + 2 * vertexDistance, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + 2 * vertexDistance),
                 new Vector2(x + 2 * vertexDistance, y + 2 * vertexDistance),
-                neighbours7
+                index - 1,
+                index + trianglesPerRow - 4,
+                index + 5
             );
         }
 
@@ -204,7 +190,7 @@ namespace Maes.Map
             var startingIndex = _map.GetTriangleIndex(startingPoint);
 
             // Convert given angle and starting point to a linear equation: ax + b
-            var a = Mathf.Tan(Mathf.PI / 180 * angleDegrees);
+            var a = Mathf.Tan(Mathf.PI / 180f * angleDegrees);
             var b = startingPoint.y - a * startingPoint.x;
 
             var triangle = _traceableTriangles[startingIndex];
@@ -234,7 +220,7 @@ namespace Maes.Map
                 traceCount++;
 
                 // Break if the next triangle is outside the map bounds
-                if (trace.NextTriangleIndex < 0 || trace.NextTriangleIndex >= _traceableTriangles.Length)
+                if (trace.NextTriangleIndex < 0 || trace.NextTriangleIndex >= _traceableTrianglesCount)
                 {
                     break;
                 }
@@ -340,16 +326,18 @@ namespace Maes.Map
             return null;
         }
 
-        private struct RayTracingTriangle
+        private unsafe struct RayTracingTriangle
         {
             public readonly Line2D[] Lines;
-            private readonly int[] _neighbourIndex;
+            private fixed int _neighbourIndex[3];
             public TCell Cell;
 
-            public RayTracingTriangle(Vector2 p1, Vector2 p2, Vector2 p3, int[] neighbourIndex)
+            public RayTracingTriangle(Vector2 p1, Vector2 p2, Vector2 p3, int diagonalNeighbor, int horizontalNeighbor, int verticalNeighbor)
             {
                 Lines = new[] { new Line2D(p1, p2), new Line2D(p2, p3), new Line2D(p3, p1) };
-                _neighbourIndex = neighbourIndex;
+                _neighbourIndex[0] = diagonalNeighbor;
+                _neighbourIndex[1] = horizontalNeighbor;
+                _neighbourIndex[2] = verticalNeighbor;
                 Cell = default!;
             }
 
@@ -402,26 +390,10 @@ namespace Maes.Map
                         {
                             var currentIntersectionValue = currentIntersection.Value;
                             var intersectionValue = intersection.Value;
-                            if (currentIntersectionValue.y > intersectionValue.y)
+                            if (currentIntersectionValue.y > intersectionValue.y || (Math.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f && ((angle < 90 && currentIntersectionValue.x > intersectionValue.x) || (angle > 90 && currentIntersectionValue.x < intersectionValue.x))))
                             {
                                 intersection = currentIntersectionValue;
                                 intersectionEdge = edge;
-                            }
-                            else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
-                            {
-                                // If the y-axis is the same then choose by x-axis instead
-                                if (angle < 90 && currentIntersectionValue.x > intersectionValue.x)
-                                {
-                                    // For 0-90 degrees prefer intersection with highest x value
-                                    intersection = currentIntersectionValue;
-                                    intersectionEdge = edge;
-                                }
-                                else if (angle > 90 && currentIntersectionValue.x < intersectionValue.x)
-                                {
-                                    // For 90-180 degrees prefer intersection with lowest x value
-                                    intersection = currentIntersectionValue;
-                                    intersectionEdge = edge;
-                                }
                             }
                         }
                         else
@@ -429,26 +401,10 @@ namespace Maes.Map
                             var currentIntersectionValue = currentIntersection.Value;
                             var intersectionValue = intersection.Value;
                             // For 180-360 degrees prefer intersection with lowest y-value
-                            if (currentIntersectionValue.y < intersectionValue.y)
+                            if (currentIntersectionValue.y < intersectionValue.y || (Math.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f && ((angle < 270 && currentIntersectionValue.x < intersectionValue.x) || (angle > 270 && currentIntersectionValue.x > intersectionValue.x))))
                             {
                                 intersection = currentIntersectionValue;
                                 intersectionEdge = edge;
-                            }
-                            else if (Mathf.Abs(currentIntersectionValue.y - intersectionValue.y) < 0.0001f)
-                            {
-                                // If the y-axis is the same choose by x-axis instead
-                                if (angle < 270 && currentIntersectionValue.x < intersectionValue.x)
-                                {
-                                    // For 180-270 degrees prefer intersection with highest x value
-                                    intersection = currentIntersectionValue;
-                                    intersectionEdge = edge;
-                                }
-                                else if (angle > 270 && currentIntersectionValue.x > intersectionValue.x)
-                                {
-                                    // For 270-360 degrees prefer intersection with lowest x value
-                                    intersection = currentIntersectionValue;
-                                    intersectionEdge = edge;
-                                }
                             }
                         }
                     }
@@ -468,9 +424,9 @@ namespace Maes.Map
 
             // When starting a ray trace, it must be determined which of the 3 edges are to be considered to the
             // initial "entering" edge
-            public unsafe int FindInitialEnteringEdge(float direction, float a, float b)
+            public int FindInitialEnteringEdge(float direction, float a, float b)
             {
-                var intersectionsAndEdge = (Span<(Vector2, int)>)stackalloc (Vector2, int)[3];
+                var intersectionsAndEdge = stackalloc (Vector2, int)[3];
                 var i = 0;
                 for (var edge = 0; edge < 3; edge++)
                 {

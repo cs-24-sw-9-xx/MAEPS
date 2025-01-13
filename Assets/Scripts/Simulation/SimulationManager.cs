@@ -26,7 +26,6 @@ using Maes.Algorithms;
 using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
 using Maes.UI.SimulationInfoUIControllers;
-using Maes.Utilities;
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -128,7 +127,7 @@ namespace Maes.Simulation
 
             PlayState = targetState;
             // Reset next update time when changing play mode to avoid skipping ahead
-            _nextUpdateTimeMillis = TimeUtils.CurrentTimeMillis();
+            _nextUpdateTimeMillis = (long)(Time.realtimeSinceStartup * 1000f);
             UISpeedController.UpdateButtonsUI(PlayState);
             return PlayState;
         }
@@ -186,7 +185,7 @@ namespace Maes.Simulation
                 AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }
 
-            var startTimeMillis = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            var startTimeMillis = (long)(Time.realtimeSinceStartup * 1000f);
             var millisPerFixedUpdate = (int)(1000f * Time.fixedDeltaTime);
             // Subtract 8 milliseconds to allow for other procedures such as rendering to occur between updates 
             millisPerFixedUpdate -= 8;
@@ -197,7 +196,8 @@ namespace Maes.Simulation
                 GlobalSettings.LogicTickDeltaMillis / GlobalSettings.PhysicsTicksPerLogicUpdate;
 
             // Only calculate updates if there is still time left in the current update
-            while (TimeUtils.CurrentTimeMillis() - startTimeMillis < millisPerFixedUpdate)
+            var currentTimeMillis = (long)(Time.realtimeSinceStartup * 1000f);
+            while (currentTimeMillis - startTimeMillis < millisPerFixedUpdate)
             {
                 // Yield if no more updates are needed this FixedUpdate cycle
                 if (_nextUpdateTimeMillis > fixedUpdateEndTime)
@@ -216,7 +216,8 @@ namespace Maes.Simulation
                 var updateDelayMillis = physicsTickDeltaMillis / (int)PlayState;
                 // Do not try to catch up if more than 0.5 seconds behind (higher if tick delta is high)
                 long maxDelayMillis = Math.Max(500, physicsTickDeltaMillis * 10);
-                _nextUpdateTimeMillis = Math.Max(_nextUpdateTimeMillis + updateDelayMillis, TimeUtils.CurrentTimeMillis() - maxDelayMillis);
+                currentTimeMillis = (long)(Time.realtimeSinceStartup * 1000f);
+                _nextUpdateTimeMillis = Math.Max(_nextUpdateTimeMillis + updateDelayMillis, currentTimeMillis - maxDelayMillis);
             }
         }
 

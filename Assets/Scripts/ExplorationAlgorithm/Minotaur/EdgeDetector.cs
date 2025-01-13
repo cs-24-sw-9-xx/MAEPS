@@ -34,22 +34,12 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 {
     internal class EdgeDetector
     {
-        public EdgeState State => UpdateState();
-        public bool isStuck => GetTilesAroundPoint(_edgeSize, _defaultLimitors).Where(tile => _coarseMap.GetTileStatus(tile) != SlamTileStatus.Open).Any();
-
         private readonly SlamMap _slamMap;
         private readonly CoarseGrainedMap _coarseMap;
         private readonly int _edgeSize;
         private readonly int _visionRange;
-        private readonly List<SlamTileStatus> _defaultLimitors = new List<SlamTileStatus> { SlamTileStatus.Solid };
-        private Vector2Int _robotPosition => _coarseMap.GetCurrentPosition();
-
-        public enum EdgeState
-        {
-            Forward,
-            ForwardLeft,
-            ForwardRight,
-        }
+        private static readonly SlamTileStatus[] _defaultLimiters = { SlamTileStatus.Solid };
+        private Vector2Int RobotPosition => _coarseMap.GetCurrentPosition();
 
         public EdgeDetector(SlamMap map, float visionRange)
         {
@@ -57,11 +47,6 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             _coarseMap = map.GetCoarseMap();
             _edgeSize = (int)visionRange + 1;
             _visionRange = (int)visionRange;
-        }
-
-        private EdgeState UpdateState()
-        {
-            return EdgeState.ForwardRight;
         }
 
         public Vector2Int? GetNearestUnseenTile()
@@ -74,7 +59,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 var removedAngles = new List<int>();
                 foreach (var angle in angles)
                 {
-                    var tile = GetFurthestTileAroundPoint(_coarseMap.GetApproximateGlobalDegrees() + angle, range, _defaultLimitors);
+                    var tile = GetFurthestTileAroundPoint(_coarseMap.GetApproximateGlobalDegrees() + angle, range, _defaultLimiters);
 
                     if (_coarseMap.GetTileStatus(tile) == SlamTileStatus.Solid)
                     {
@@ -92,7 +77,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
                 }
                 if (unseenTiles.Any())
                 {
-                    return unseenTiles.OrderBy(tile => Vector2.Distance(_robotPosition, tile)).First();
+                    return unseenTiles.OrderBy(tile => Vector2.Distance(RobotPosition, tile)).First();
                 }
                 range++;
             }
@@ -102,7 +87,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         /// <summary>
         /// Gets the tiles around the robot by casting 360-<paramref name="startAngle"/> rays. These rays expand from the robot and out being stopped by the <paramref name="limiters"/>.
         /// <para></para>
-        /// If only one ray is desired, consider <seealso cref="GetFurthestTileAroundPoint(float, int, List{SlamTileStatus}, Vector2Int?, bool, bool)"/>
+        /// If only one ray is desired, consider <seealso cref="GetFurthestTileAroundPoint(float, int, SlamTileStatus[], Vector2Int?, bool, bool)"/>
         /// </summary>
         /// <param name="range">The distance of the ray</param>
         /// <param name="limiters">What tiles should stop the rays</param>
@@ -110,7 +95,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
         /// <param name="slamPrecision">Target slam tiles instead of coarse tiles</param>
         /// <param name="startAngle">If set above 0 then this will create arcs instead of circles around the robot, based on <see cref="Vector2.right"/> counter-clockwise</param>
         /// <returns>The unique tiles that were hit</returns>
-        public HashSet<Vector2Int> GetTilesAroundPoint(int range, List<SlamTileStatus> limiters, Vector2Int? point = null, bool slamPrecision = false, int startAngle = 0)
+        public HashSet<Vector2Int> GetTilesAroundPoint(int range, SlamTileStatus[] limiters, Vector2Int? point = null, bool slamPrecision = false, int startAngle = 0)
         {
             IPathFindingMap map = slamPrecision ? _slamMap : _coarseMap;
             var tiles = new HashSet<Vector2Int>();
@@ -126,7 +111,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             return tiles;
         }
 
-        public Vector2Int GetFurthestTileAroundPoint(float angle, int range, List<SlamTileStatus> limiters, Vector2Int? point = null, bool snapToGrid = false, bool slamPrecision = false)
+        public Vector2Int GetFurthestTileAroundPoint(float angle, int range, SlamTileStatus[] limiters, Vector2Int? point = null, bool snapToGrid = false, bool slamPrecision = false)
         {
             Vector2Int position;
             if (point.HasValue)
@@ -135,7 +120,7 @@ namespace Maes.ExplorationAlgorithm.Minotaur
             }
             else
             {
-                position = slamPrecision ? _slamMap.GetCurrentPosition() : _robotPosition;
+                position = slamPrecision ? _slamMap.GetCurrentPosition() : RobotPosition;
             }
             IPathFindingMap map = slamPrecision ? _slamMap : _coarseMap;
             var tile = position;
@@ -160,20 +145,38 @@ namespace Maes.ExplorationAlgorithm.Minotaur
 
         public IEnumerable<Vector2Int> GetBoxAroundRobot()
         {
-            var boxTileList = new List<Vector2Int>();
             for (var x = -_edgeSize; x <= _edgeSize; x++)
             {
                 for (var y = _edgeSize; y <= _edgeSize + 1; y++)
                 {
-                    boxTileList.Add(_robotPosition + new Vector2Int(x, y));
-                    boxTileList.Add(_robotPosition + new Vector2Int(x, -y));
-                    boxTileList.Add(_robotPosition + new Vector2Int(y, x));
-                    boxTileList.Add(_robotPosition + new Vector2Int(-y, x));
+                    var rx = RobotPosition.x;
+                    var ry = RobotPosition.y;
+
+                    var xy = new Vector2Int(rx + x, ry + y);
+                    if (_coarseMap.IsWithinBounds(xy))
+                    {
+                        yield return xy;
+                    }
+
+                    var xmy = new Vector2Int(rx + x, ry - y);
+                    if (_coarseMap.IsWithinBounds(xmy))
+                    {
+                        yield return xmy;
+                    }
+
+                    var yx = new Vector2Int(rx + y, ry + x);
+                    if (_coarseMap.IsWithinBounds(yx))
+                    {
+                        yield return yx;
+                    }
+
+                    var myx = new Vector2Int(rx - y, ry + x);
+                    if (_coarseMap.IsWithinBounds(myx))
+                    {
+                        yield return myx;
+                    }
                 }
             }
-            return boxTileList.Where(tile => _coarseMap.IsWithinBounds(tile));
         }
-
-
     }
 }

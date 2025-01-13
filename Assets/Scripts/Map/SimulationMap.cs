@@ -25,7 +25,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using Maes.Map.MapGen;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -50,7 +49,7 @@ namespace Maes.Map
         // The tiles of the map (each tile containing 8 triangle cells) 
         private readonly SimulationMapTile<TCell>[,] _tiles;
 
-        public SimulationMap(Functional.Factory<TCell> cellFactory, int widthInTiles, int heightInTiles,
+        public SimulationMap(Func<TCell> cellFactory, int widthInTiles, int heightInTiles,
             Vector2 scaledOffset, List<Room> rooms, bool brokenCollisionMap)
         {
             Rooms = rooms;
