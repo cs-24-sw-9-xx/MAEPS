@@ -32,7 +32,7 @@ namespace Maes.PatrollingAlgorithms
         private bool _goingToInitialVertex = true;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
         private bool _hasCollided;
         private bool _firstCollision;
 
@@ -81,7 +81,7 @@ namespace Maes.PatrollingAlgorithms
                 }
                 return;
             }
-            
+
             EveryTick();
 
             if (_controller.IsCurrentlyColliding)
@@ -123,8 +123,8 @@ namespace Maes.PatrollingAlgorithms
 
             SetNextVertex();
         }
-        
-        protected virtual void EveryTick() {}
+
+        protected virtual void EveryTick() { }
 
         private void SetNextVertex()
         {

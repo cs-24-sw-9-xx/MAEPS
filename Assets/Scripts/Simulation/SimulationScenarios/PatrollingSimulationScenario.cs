@@ -3,10 +3,7 @@ using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
-using Maes.PatrollingAlgorithms;
 using Maes.Robot;
-
-using UnityEngine;
 
 namespace Maes.Simulation.SimulationScenarios
 {

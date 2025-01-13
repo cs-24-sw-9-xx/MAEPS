@@ -202,7 +202,7 @@ namespace Maes.Robot
 
             return messages;
         }
-        
+
         private CommunicationInfo RayTraceCommunication(Vector2 pos1, Vector2 pos2)
         {
             var distance = Vector2.Distance(pos1, pos2);

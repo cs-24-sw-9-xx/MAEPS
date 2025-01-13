@@ -1,6 +1,6 @@
-using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using Maes.Map;
 
@@ -11,17 +11,17 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new Dictionary<int, Vertex>();
-        private List<Vertex> _currentPath = new List<Vertex>();
+        private readonly Dictionary<int, Vertex> _unavailableVertices = new();
+        private List<Vertex> _currentPath = new();
         private int _iterator = 0;
 
-        private List<KeyValuePair<int, Vertex>> _messages = new();
+        private readonly List<KeyValuePair<int, Vertex>> _messages = new();
 
         public override string GetDebugInfo()
         {
             return
-                base.GetDebugInfo() +
                 new StringBuilder()
+                    .Append(base.GetDebugInfo())
                     .Append("Highest idle:")
                     .Append(HighestIdle().Position.ToString())
                     .ToString();
@@ -36,37 +36,16 @@ namespace Maes.PatrollingAlgorithms
         {
             if (_messages.Count > 1)
             {
-                Debug.Log($"Got {_messages.Count} messages! yay :)");
                 foreach (var message in _messages)
                 {
-                    _unavailableVertices[message.Key] = message.Value;    
+                    _unavailableVertices[message.Key] = message.Value;
                 }
 
                 _messages.Clear();
             }
 
-            int r = 0;
-
-            foreach (var vertex in _unavailableVertices.Values)
-            {
-                r++;
-                Debug.Log(vertex.ToString());
-            }
-            /*
-            if (r > 0)
-            {
-                Debug.Log("there is something");
-            }
-            else
-            {
-                Debug.Log("no broadcast");
-            }*/
-
             ConstructPath();
-            var next = _currentPath[_iterator];
-            _iterator++;
-
-            return next;
+            return _currentPath[_iterator++];
         }
 
         private void ConstructPath()
@@ -78,10 +57,10 @@ namespace Maes.PatrollingAlgorithms
                 _currentPath = AStar(GetClosestVertex(), HighestIdle());
                 _currentPath.Remove(_currentPath.First());
                 _controller.Broadcast(_currentPath.Last());
-                
+
                 return;
             }
-            
+
             if (_iterator < _currentPath.Count)
             {
                 //_controller.Broadcast(_iterator);
@@ -98,7 +77,7 @@ namespace Maes.PatrollingAlgorithms
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-           var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
+            var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
 
             var position = TargetVertex.Position;
             var first = availableVertices.First();
@@ -110,12 +89,11 @@ namespace Maes.PatrollingAlgorithms
                 //would be better if it wasn't euclidean distance
                 if (Vector2Int.Distance(position, vertex.Position) < Vector2Int.Distance(position, closestVertex.Position))
                 {
-                   closestVertex = vertex; 
+                    closestVertex = vertex;
                 }
             }
 
             return closestVertex;
-           //return _vertices.OrderBy((x) => x.LastTimeVisitedTick).First();
         }
 
         private static List<Vertex> AStar(Vertex start, Vertex target)

@@ -347,7 +347,7 @@ namespace Maes.Robot
         {
             return CommunicationManager.ReadMessagesWithId(_robot);
         }
-        
+
         public IRobotController.DetectedWall? DetectWall(float globalAngle)
         {
 #if DEBUG
