@@ -20,7 +20,7 @@ namespace PlayModeTests
         private MySimulator _maes;
         private PatrollingSimulation _simulation;
 
-        public void InitializeTestingSimulator()
+        private void InitializeTestingSimulator()
         {
             _maes = new MySimulator();
             var random = new System.Random(12345);
@@ -28,7 +28,7 @@ namespace PlayModeTests
 
             var constraintName = "Global";
             var robotConstraints = StandardTestingConfiguration.GlobalRobotConstraints();
-            var mapConfig = new CaveMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
+            var mapConfig = new CaveMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
