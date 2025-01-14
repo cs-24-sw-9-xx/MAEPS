@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: Assets/Packages
-          key: Packages
+          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -52,11 +52,11 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: Library
-          key: Library-test
+          key: Library-Test-${{ hashFiles('Packages/*') }}
       - uses: actions/cache/restore@v3
         with:
           path: Assets/Packages
-          key: Packages
+          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
       - uses: game-ci/unity-test-runner@v4
         id: testRunner
         env:
@@ -91,11 +91,11 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/*') }}
       - uses: actions/cache/restore@v3
         with:
           path: Assets/Packages
-          key: Packages
+          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
