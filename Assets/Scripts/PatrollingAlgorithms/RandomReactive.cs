@@ -13,7 +13,8 @@ namespace Maes.PatrollingAlgorithms
 
         protected override Vertex NextVertex()
         {
-            return TargetVertex.Neighbors.ElementAt(UnityEngine.Random.Range(0, TargetVertex.Neighbors.Count));
+            var index = UnityEngine.Random.Range(0, TargetVertex.Neighbors.Count);
+            return TargetVertex.Neighbors.ElementAt(index);
         }
     }
 }

@@ -11,11 +11,11 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new();
+        private readonly Dictionary<int, int> _unavailableVertices = new();
         private List<Vertex> _currentPath = new();
-        private int _iterator = 0;
+        private int _pathStep = 0;
 
-        private readonly List<KeyValuePair<int, Vertex>> _messages = new();
+        private readonly List<(int robotId, OccupiedVertexMessage message)> _messages = new();
 
         public override string GetDebugInfo()
         {
@@ -29,55 +29,51 @@ namespace Maes.PatrollingAlgorithms
 
         protected override void EveryTick()
         {
-            _messages.AddRange(_controller.ReceiveBroadcastWithId().Select(m => new KeyValuePair<int, Vertex>(m.Key, (Vertex)m.Value)));
+            _messages.AddRange(_controller.ReceiveBroadcastWithId().Select(m => (m.Key, (OccupiedVertexMessage)m.Value)));
         }
 
         protected override Vertex NextVertex()
         {
-            if (_messages.Count > 1)
+            foreach (var (robotId, occupiedVertexMessage) in _messages)
             {
-                foreach (var message in _messages)
+                var vertex = _vertices[occupiedVertexMessage.VertexId];
+                if (vertex.LastTimeVisitedTick < occupiedVertexMessage.LastTimeVisitedTick)
                 {
-                    _unavailableVertices[message.Key] = message.Value;
+                    vertex.VisitedAtTick(occupiedVertexMessage.LastTimeVisitedTick);
                 }
-
-                _messages.Clear();
+                _unavailableVertices[robotId] = occupiedVertexMessage.VertexId;
             }
 
-            ConstructPath();
-            return _currentPath[_iterator++];
+            _messages.Clear();
+
+            CreatePathIfNeeded();
+            return _currentPath[_pathStep++];
         }
 
-        private void ConstructPath()
+        private void CreatePathIfNeeded()
         {
-            // calculates a new path if another agent is going towards same end vertex
-            if (_unavailableVertices.Values.Any(value => value == _currentPath.Last()))
+            // If our target is not unavailable, and we have steps left, keep it.
+            if (_unavailableVertices.Values.All(unavailableVertexId => unavailableVertexId != _currentPath.Last().Id) && _pathStep < _currentPath.Count)
             {
-                _iterator = 0;
-                _currentPath = AStar(GetClosestVertex(), HighestIdle());
-                _currentPath.Remove(_currentPath.First());
-                _controller.Broadcast(_currentPath.Last());
-
                 return;
             }
 
-            if (_iterator < _currentPath.Count)
-            {
-                //_controller.Broadcast(_iterator);
-                return;
-            }
-
-            _iterator = 0;
-
+            // Create a path to the vertex with the highest idleness
+            _pathStep = 0;
             _currentPath = AStar(TargetVertex, HighestIdle());
             _currentPath.Remove(_currentPath.First());
-            _controller.Broadcast(_currentPath.Last());
+            var lastVertex = _currentPath.Last();
+            _controller.Broadcast(new OccupiedVertexMessage(lastVertex.Id, lastVertex.LastTimeVisitedTick));
         }
 
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices.Except(_unavailableVertices.Values).OrderBy((x) => x.LastTimeVisitedTick).ToList();
+            var availableVertices = _vertices
+                .Where(vertex =>
+                    _unavailableVertices.Values.All(unavailableVertexId => unavailableVertexId != vertex.Id))
+                .OrderBy(vertex => vertex.LastTimeVisitedTick)
+                .ToList();
 
             var position = TargetVertex.Position;
             var first = availableVertices.First();
@@ -162,5 +158,19 @@ namespace Maes.PatrollingAlgorithms
             // Use Manhattan distance as the heuristic for grid-based graphs
             return Vector2Int.Distance(a.Position, b.Position);
         }
+
+        private sealed class OccupiedVertexMessage
+        {
+            public int VertexId { get; }
+
+            public int LastTimeVisitedTick { get; }
+
+            public OccupiedVertexMessage(int vertexId, int lastTimeVisitedTick)
+            {
+                VertexId = vertexId;
+                LastTimeVisitedTick = lastTimeVisitedTick;
+            }
+        }
     }
+
 }
