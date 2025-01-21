@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Maes.Algorithms;
@@ -16,7 +17,25 @@ namespace Maes.PatrollingAlgorithms
     {
         public abstract string AlgorithmName { get; }
 
-        public Vertex TargetVertex => _targetVertex ?? throw new InvalidOperationException("TargetVertex is null");
+
+        // Do not change visibility of this!
+        private PatrollingMap _globalMap;
+
+        public Vertex TargetVertex
+        {
+            get => _targetVertex ?? throw new InvalidOperationException("TargetVertex is null");
+            private set
+            {
+#if DEBUG
+                if (!AllowForeignVertices && !_vertices.Contains(value))
+                {
+                    throw new ArgumentException("TargetVertex is not from our patrolling map", nameof(value));
+                }
+#endif
+
+                _targetVertex = value;
+            }
+        }
 
         private Vertex? _targetVertex;
 
@@ -36,6 +55,16 @@ namespace Maes.PatrollingAlgorithms
         private bool _hasCollided;
         private bool _firstCollision;
 
+        /// <summary>
+        /// Allow NextVertex to return a vertex that is not from _vertices.
+        /// You must know what you are doing when setting this to true.
+        /// </summary>
+        /// <remarks>
+        /// This allows for using a global map such that they can share idleness knowledge globally.
+        /// This is mostly useful for algorithms with a central planner / coordinator.
+        /// </remarks>
+        protected virtual bool AllowForeignVertices => false;
+
         private readonly StringBuilder _stringBuilder = new();
 
         protected event OnReachVertex? OnReachVertexHandler;
@@ -51,6 +80,12 @@ namespace Maes.PatrollingAlgorithms
             _paths = map.Paths;
         }
 
+        /// <inheritdoc/>
+        public virtual void SetGlobalPatrollingMap(PatrollingMap globalMap)
+        {
+            _globalMap = globalMap;
+        }
+
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
         {
             OnReachVertexHandler += onReachVertex;
@@ -60,14 +95,21 @@ namespace Maes.PatrollingAlgorithms
         {
             var atTick = _controller.GetRobot().Simulation.SimulatedLogicTicks;
             OnReachVertexHandler?.Invoke(vertex.Id, atTick);
-            vertex.VisitedAtTick(atTick);
+
+            if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
+            {
+                vertex.VisitedAtTick(atTick);
+            }
         }
 
         public virtual void UpdateLogic()
         {
             if (_goingToInitialVertex)
             {
-                _targetVertex ??= GetClosestVertex();
+                if (_targetVertex == null)
+                {
+                    TargetVertex = GetClosestVertex();
+                }
                 var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
                 if (currentPosition != TargetVertex.Position)
                 {
@@ -86,7 +128,6 @@ namespace Maes.PatrollingAlgorithms
 
             if (_controller.IsCurrentlyColliding)
             {
-                _firstCollision = !_hasCollided;
                 _hasCollided = true;
             }
 
@@ -100,6 +141,20 @@ namespace Maes.PatrollingAlgorithms
                     if (_firstCollision)
                     {
                         _controller.StopCurrentTask();
+
+                        if (_controller.GetStatus() == RobotStatus.Idle)
+                        {
+                            // Back up Terry!
+                            _controller.Move(1.0f, reverse: true);
+
+                            _firstCollision = false;
+                        }
+                        return;
+                    }
+                    else if (_controller.GetStatus() != RobotStatus.Idle)
+                    {
+                        // Try to complete task before doing anything
+                        return;
                     }
 
                     _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
@@ -130,27 +185,26 @@ namespace Maes.PatrollingAlgorithms
         {
             var currentVertex = TargetVertex;
             OnReachTargetVertex(currentVertex);
-            _targetVertex = NextVertex();
-            _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, _targetVertex.Id)]);
+            TargetVertex = NextVertex(currentVertex);
+            _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, TargetVertex.Id)]);
             _currentTarget = null;
         }
 
-        protected abstract Vertex NextVertex();
+        protected abstract Vertex NextVertex(Vertex currentVertex);
 
-        public virtual string GetDebugInfo()
+        public string GetDebugInfo()
         {
             _stringBuilder.Clear();
-            return
-                _stringBuilder
-                    .AppendLine(AlgorithmName)
-                    .Append("Target vertex position: ")
-                    .AppendLine(TargetVertex.Position.ToString())
-                    .Append("Has Collided: ")
-                    .Append(_hasCollided)
-                    .Append(" First Collision: ")
-                    .AppendLine(_firstCollision.ToString())
-                    .ToString();
+            _stringBuilder
+                .AppendLine(AlgorithmName)
+                .AppendFormat("Target vertex: {0}\n", TargetVertex)
+                .AppendFormat("Has Collided: {0}\n", _hasCollided)
+                .AppendFormat("First Collision: {0}\n", _firstCollision);
+            GetDebugInfo(_stringBuilder);
+            return _stringBuilder.ToString();
         }
+
+        protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
 
         private void PathAndMoveToTarget()
         {

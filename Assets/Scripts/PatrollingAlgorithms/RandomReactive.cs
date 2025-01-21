@@ -11,10 +11,10 @@ namespace Maes.PatrollingAlgorithms
     {
         public override string AlgorithmName => "Random Reactive Algorithm";
 
-        protected override Vertex NextVertex()
+        protected override Vertex NextVertex(Vertex currentVertex)
         {
-            var index = UnityEngine.Random.Range(0, TargetVertex.Neighbors.Count);
-            return TargetVertex.Neighbors.ElementAt(index);
+            var index = UnityEngine.Random.Range(0, currentVertex.Neighbors.Count);
+            return currentVertex.Neighbors.ElementAt(index);
         }
     }
 }

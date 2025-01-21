@@ -52,5 +52,10 @@ namespace Maes.Map
         {
             _neighbors.Remove(neighbor);
         }
+
+        public override string ToString()
+        {
+            return $"Vertex {Id} @{Position}";
+        }
     }
 }
