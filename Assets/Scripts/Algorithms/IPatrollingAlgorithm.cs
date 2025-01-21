@@ -12,6 +12,12 @@ namespace Maes.Algorithms
 
         void SetPatrollingMap(PatrollingMap map);
 
+        /// <summary>
+        /// A shared map. Should not be used in distributed algorithms.
+        /// </summary>
+        /// <param name="globalMap">The shared patrolling map.</param>
+        void SetGlobalPatrollingMap(PatrollingMap globalMap);
+
         void SubscribeOnReachVertex(OnReachVertex onReachVertex);
     }
 }

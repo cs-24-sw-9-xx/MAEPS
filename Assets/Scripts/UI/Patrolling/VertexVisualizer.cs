@@ -36,7 +36,7 @@ namespace Maes.UI.Patrolling
 
         public void OnMouseEnter()
         {
-            Tooltip.ShowTooltip_Static($"Visits: {VertexDetails.Vertex.NumberOfVisits}");
+            Tooltip.ShowTooltip_Static($"{VertexDetails.Vertex} Visits: {VertexDetails.Vertex.NumberOfVisits}");
         }
         public void OnMouseExit()
         {

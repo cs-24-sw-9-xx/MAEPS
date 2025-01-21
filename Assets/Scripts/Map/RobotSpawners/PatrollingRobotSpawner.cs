@@ -25,6 +25,8 @@ namespace Maes.Map.RobotSpawners
             algorithm.SetPatrollingMap(_patrollingMap.Clone());
             algorithm.SubscribeOnReachVertex(_tracker.OnReachedVertex);
 
+            algorithm.SetGlobalPatrollingMap(_patrollingMap);
+
             return robot;
         }
     }

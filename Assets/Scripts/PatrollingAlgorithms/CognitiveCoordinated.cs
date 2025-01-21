@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,71 +12,70 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, int> _unavailableVertices = new();
         private List<Vertex> _currentPath = new();
         private int _pathStep = 0;
+        private bool _initialVertex = true;
 
-        private readonly List<(int robotId, OccupiedVertexMessage message)> _messages = new();
+        protected override bool AllowForeignVertices => true;
 
-        public override string GetDebugInfo()
+        protected override void GetDebugInfo(StringBuilder stringBuilder)
         {
-            return
-                new StringBuilder()
-                    .Append(base.GetDebugInfo())
-                    .Append("Highest idle:")
-                    .Append(HighestIdle().Position.ToString())
-                    .ToString();
+            stringBuilder
+                .AppendFormat("Last Vertex: {0}\n", _currentPath.Count > 0 ? _currentPath[^1].ToString() : "None");
         }
 
-        protected override void EveryTick()
+        public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
         {
-            _messages.AddRange(_controller.ReceiveBroadcastWithId().Select(m => (m.Key, (OccupiedVertexMessage)m.Value)));
+            base.SetGlobalPatrollingMap(globalMap);
+
+            // Will be set multiple times.
+            // Too bad!
+            Coordinator.GlobalMap = globalMap;
+
+            // We must clear Coordinators knowledge of occupied vertices as we have new robots, and we might just have started a new experiment.
+            // This will break if robots are added mid-experiment.
+            Coordinator.ClearOccupiedVertices();
         }
 
-        protected override Vertex NextVertex()
+        protected override Vertex NextVertex(Vertex currentVertex)
         {
-            foreach (var (robotId, occupiedVertexMessage) in _messages)
+            // We have reached our target. Create a new path.
+            if (_pathStep == _currentPath.Count)
             {
-                var vertex = _vertices[occupiedVertexMessage.VertexId];
-                if (vertex.LastTimeVisitedTick < occupiedVertexMessage.LastTimeVisitedTick)
-                {
-                    vertex.VisitedAtTick(occupiedVertexMessage.LastTimeVisitedTick);
-                }
-                _unavailableVertices[robotId] = occupiedVertexMessage.VertexId;
+                CreatePath(currentVertex);
             }
 
-            _messages.Clear();
-
-            CreatePathIfNeeded();
             return _currentPath[_pathStep++];
         }
 
-        private void CreatePathIfNeeded()
+        private void CreatePath(Vertex currentVertex)
         {
-            // If our target is not unavailable, and we have steps left, keep it.
-            if (_unavailableVertices.Values.All(unavailableVertexId => unavailableVertexId != _currentPath.Last().Id) && _pathStep < _currentPath.Count)
+            // Initially we are on the local copy of patrolling map.
+            // Move onto the global map so we get global knowledge of idleness.
+            var currentVertexOnGlobalMap = currentVertex;
+            if (_initialVertex && !Coordinator.GlobalMap.Vertices.Contains(currentVertexOnGlobalMap))
             {
-                return;
+                currentVertexOnGlobalMap = Coordinator.GlobalMap.Vertices[currentVertexOnGlobalMap.Id];
+                _initialVertex = false;
             }
 
             // Create a path to the vertex with the highest idleness
             _pathStep = 0;
-            _currentPath = AStar(TargetVertex, HighestIdle());
+            _currentPath = AStar(currentVertexOnGlobalMap, HighestIdle(currentVertexOnGlobalMap));
             _currentPath.Remove(_currentPath.First());
             var lastVertex = _currentPath.Last();
-            _controller.Broadcast(new OccupiedVertexMessage(lastVertex.Id, lastVertex.LastTimeVisitedTick));
+
+            Coordinator.OccupyVertex(_controller.GetRobotID(), lastVertex);
         }
 
-        private Vertex HighestIdle()
+        private Vertex HighestIdle(Vertex targetVertex)
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices
-                .Where(vertex =>
-                    _unavailableVertices.Values.All(unavailableVertexId => unavailableVertexId != vertex.Id))
+            var availableVertices = Coordinator.GetUnoccupiedVertices(_controller.GetRobotID())
                 .OrderBy(vertex => vertex.LastTimeVisitedTick)
                 .ToList();
 
-            var position = TargetVertex.Position;
+            var position = targetVertex.Position;
             var first = availableVertices.First();
             var closestVertex = first;
 
@@ -159,16 +159,41 @@ namespace Maes.PatrollingAlgorithms
             return Vector2Int.Distance(a.Position, b.Position);
         }
 
-        private sealed class OccupiedVertexMessage
+        // TODO: Find a better way to have a coordinator, so that it is not static.
+        private static class Coordinator
         {
-            public int VertexId { get; }
+            public static PatrollingMap GlobalMap { get; set; } = null!; // Set by CognitiveCoordinated.SetGlobalPatrollingMap
 
-            public int LastTimeVisitedTick { get; }
+            private static readonly Dictionary<int, Vertex> VerticesOccupiedByRobot = new();
 
-            public OccupiedVertexMessage(int vertexId, int lastTimeVisitedTick)
+            public static IEnumerable<Vertex> GetOccupiedVertices(int robotId)
             {
-                VertexId = vertexId;
-                LastTimeVisitedTick = lastTimeVisitedTick;
+                return VerticesOccupiedByRobot
+                    .Where(p => p.Key != robotId)
+                    .Select(p => p.Value);
+            }
+
+            public static IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
+            {
+                var occupiedVertices = GetOccupiedVertices(robotId);
+                return GlobalMap.Vertices.Except(occupiedVertices);
+            }
+
+            public static void OccupyVertex(int robotId, Vertex vertex)
+            {
+#if DEBUG
+                if (!GlobalMap.Vertices.Contains(vertex))
+                {
+                    throw new ArgumentException("Vertex is not a part of GlobalMap.Vertices.", nameof(vertex));
+                }
+#endif
+
+                VerticesOccupiedByRobot[robotId] = vertex;
+            }
+
+            public static void ClearOccupiedVertices()
+            {
+                VerticesOccupiedByRobot.Clear();
             }
         }
     }
