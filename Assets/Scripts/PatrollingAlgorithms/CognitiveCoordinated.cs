@@ -13,6 +13,7 @@ namespace Maes.PatrollingAlgorithms
         private readonly Dictionary<int, int> _unavailableVertices = new();
         private List<Vertex> _currentPath = new();
         private int _pathStep = 0;
+        private Vertex _currentVertex;
 
         private readonly List<OccupiedVertexMessage> _messagesLockVertex = new();
         private readonly List<UpdateVertexMessage> _messagesUpdateVertices = new();
@@ -48,12 +49,16 @@ namespace Maes.PatrollingAlgorithms
                 _messagesUpdateVertices.Clear();
             }
 
+            if (_currentVertex != null)
+            {
+                _controller.Broadcast(new UpdateVertexMessage(_currentVertex.Id, _currentVertex.LastTimeVisitedTick));
+            }
+
             ConstructPath();
-            var next = _currentPath[_pathStep];
-            _controller.Broadcast(new UpdateVertexMessage(next.Id, next.LastTimeVisitedTick));
+            _currentVertex = _currentPath[_pathStep];
             _pathStep++;
 
-            return next;
+            return _currentVertex;
         }
 
         private void ConstructPath()
