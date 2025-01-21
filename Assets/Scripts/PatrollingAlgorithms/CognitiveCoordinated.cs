@@ -186,10 +186,10 @@ namespace Maes.PatrollingAlgorithms
             
             public int RobotId { get; }
 
-            public OccupiedVertexMessage(int vertexId, int robotId)
+            public OccupiedVertexMessage(int robotId, int vertexId)
             {
-                VertexId = vertexId;
                 RobotId = robotId;
+                VertexId = vertexId;
             }
         }
         
