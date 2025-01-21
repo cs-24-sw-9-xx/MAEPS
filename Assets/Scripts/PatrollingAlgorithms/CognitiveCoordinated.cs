@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using Maes.Map;
 
@@ -11,27 +10,17 @@ namespace Maes.PatrollingAlgorithms
     public class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
-        private readonly Dictionary<int, Vertex> _unavailableVertices = new();
+        private readonly Dictionary<int, int> _unavailableVertices = new();
         private List<Vertex> _currentPath = new();
-        private int _iterator = 0;
+        private int _pathStep = 0;
 
-        private readonly List<KeyValuePair<int, Vertex>> _messagesLockVertex = new();
-        private readonly List<Vertex> _messagesUpdateVertices = new();
-
-        public override string GetDebugInfo()
-        {
-            return
-                base.GetDebugInfo() +
-                new StringBuilder()
-                    .Append("Highest idle:")
-                    .Append(HighestIdle().Position.ToString())
-                    .ToString();
-        }
+        private readonly List<OccupiedVertexMessage> _messagesLockVertex = new();
+        private readonly List<UpdateVertexMessage> _messagesUpdateVertices = new();
 
         protected override void EveryTick()
         {
-            _messagesUpdateVertices.AddRange(_controller.ReceiveBroadcast().OfType<Vertex>());
-            _messagesLockVertex.AddRange(_controller.ReceiveBroadcast().OfType<KeyValuePair<int, Vertex>>());
+            _messagesUpdateVertices.AddRange(_controller.ReceiveBroadcast().OfType<UpdateVertexMessage>());
+            _messagesLockVertex.AddRange(_controller.ReceiveBroadcast().OfType<OccupiedVertexMessage>());
         }
 
         protected override Vertex NextVertex()
@@ -40,7 +29,7 @@ namespace Maes.PatrollingAlgorithms
             {
                 foreach (var message in _messagesLockVertex)
                 {
-                    _unavailableVertices[message.Key] = message.Value;
+                    _unavailableVertices[message.RobotId] = message.VertexId;
                 }
 
                 _messagesLockVertex.Clear();
@@ -50,9 +39,9 @@ namespace Maes.PatrollingAlgorithms
             {
                 foreach (var vertex in _vertices)
                 {
-                    foreach (var message in _messagesUpdateVertices.Where(message => message.Id == vertex.Id && message.LastTimeVisitedTick > vertex.LastTimeVisitedTick))
+                    foreach (var message in _messagesUpdateVertices.Where(message => message.VertexId == vertex.Id && message.VisitedTick > vertex.LastTimeVisitedTick))
                     {
-                        vertex.VisitedAtTick(message.LastTimeVisitedTick);
+                        vertex.VisitedAtTick(message.VisitedTick);
                     }
                 }
 
@@ -60,9 +49,9 @@ namespace Maes.PatrollingAlgorithms
             }
 
             ConstructPath();
-            var next = _currentPath[_iterator];
-            _controller.Broadcast(next);
-            _iterator++;
+            var next = _currentPath[_pathStep];
+            _controller.Broadcast(new UpdateVertexMessage(next.Id, next.LastTimeVisitedTick));
+            _pathStep++;
 
             return next;
         }
@@ -70,14 +59,14 @@ namespace Maes.PatrollingAlgorithms
         private void ConstructPath()
         {
             // calculates a new path if another agent is going towards same end vertex
-            if (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value.Id == _currentPath.Last().Id))
+            if (_currentPath.Count > 0 && _unavailableVertices.Values.Any(value => value == _currentPath.Last().Id))
             {
                 PathConstructor();
 
                 return;
             }
 
-            if (_iterator < _currentPath.Count)
+            if (_pathStep < _currentPath.Count)
             {
                 return;
             }
@@ -87,25 +76,22 @@ namespace Maes.PatrollingAlgorithms
 
         private void PathConstructor()
         {
-            _iterator = 0;
+            _pathStep = 0;
 
             var firstElement = (_currentPath.Any()) ? _currentPath.Last() : GetClosestVertex();
             _currentPath = AStar(firstElement, HighestIdle());
 
-            _controller.Broadcast(new KeyValuePair<int, Vertex>(_controller.GetRobotID(), _currentPath.Last()));
+            _controller.Broadcast(new OccupiedVertexMessage(_controller.GetRobotID(), _currentPath.Last().Id));
         }
 
         private Vertex HighestIdle()
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = _vertices.ToList();
-
-            foreach (var vertex in _unavailableVertices.Values.SelectMany(vertex1 => availableVertices.Where(vertex2 => vertex1.Id == vertex2.Id).ToList()))
-            {
-                availableVertices.Remove(vertex);
-            }
-
-            availableVertices = availableVertices.OrderBy((x) => x.LastTimeVisitedTick).ToList();
+            var availableVertices = _vertices
+                .Where(vertex => 
+                    _unavailableVertices.Values.All(unavailableVertexId => unavailableVertexId != vertex.Id))
+                .OrderBy(vertex => vertex.LastTimeVisitedTick)
+                .ToList();
 
             var position = TargetVertex.Position;
             var first = availableVertices.First();
@@ -122,7 +108,7 @@ namespace Maes.PatrollingAlgorithms
 
             return closestVertex;
         }
-
+        
         private static List<Vertex> AStar(Vertex start, Vertex target)
         {
             // Dictionary to store the cost of the path from the start to each vertex (g-cost)
@@ -192,6 +178,32 @@ namespace Maes.PatrollingAlgorithms
         {
             // Use Manhattan distance as the heuristic for grid-based graphs
             return Vector2Int.Distance(a.Position, b.Position);
+        }
+
+        private sealed class OccupiedVertexMessage
+        {
+            public int VertexId { get; }
+            
+            public int RobotId { get; }
+
+            public OccupiedVertexMessage(int vertexId, int robotId)
+            {
+                VertexId = vertexId;
+                RobotId = robotId;
+            }
+        }
+        
+        private sealed class UpdateVertexMessage
+        {
+            public int VertexId { get; }
+            
+            public int VisitedTick { get; }
+
+            public UpdateVertexMessage(int vertexId, int visitedTick)
+            {
+                VertexId = vertexId;
+                VisitedTick = visitedTick;
+            }
         }
     }
 }
