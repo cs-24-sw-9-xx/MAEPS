@@ -1,0 +1,105 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/style.uss?fileID=7433441132597879392&amp;guid=7c156309215ba8ef2a1604c503fc30ae&amp;type=3#style" />
+    <engine:VisualElement name="ExperimentController" class="background" style="flex-grow: 1; flex-direction: row; position: absolute; top: 0; left: 0;">
+        <engine:GroupBox name="RestartGroupBox" text="Restart">
+            <engine:Button text="Current" name="RestartCurrentButton" />
+            <engine:Button text="All" name="RestartAllButton" />
+        </engine:GroupBox>
+        <engine:GroupBox name="CreateNewGroupBox" text="Create New">
+            <engine:Button text="Make and Run" />
+            <engine:Button text="Create Batch" />
+        </engine:GroupBox>
+    </engine:VisualElement>
+    <engine:VisualElement name="CameraController" class="background" style="flex-grow: 1; position: absolute; bottom: 0; left: 0; flex-direction: row;">
+        <engine:GroupBox name="CameraMove" style="flex-direction: row; align-items: center;">
+            <engine:Button tooltip="Move left" text="" class="fa-button" />
+            <engine:VisualElement style="flex-grow: 1;">
+                <engine:Button text="" tooltip="Move up" class="fa-button" />
+                <engine:Button text="" tooltip="Move down" class="fa-button" />
+            </engine:VisualElement>
+            <engine:Button tooltip="Move right" text="" class="fa-button" />
+        </engine:GroupBox>
+        <engine:GroupBox name="CameraRotateZoom" style="flex-direction: row; align-items: center;">
+            <engine:Button text="" tooltip="Rotate counter-clockwise" class="fa-button" />
+            <engine:VisualElement style="flex-grow: 1;">
+                <engine:Button text="+" tooltip="Zoom in" class="fa-button" />
+                <engine:Button text="" tooltip="Zoom out" class="fa-button" />
+            </engine:VisualElement>
+            <engine:Button text="" tooltip="Rotate clockwise" class="fa-button" />
+        </engine:GroupBox>
+    </engine:VisualElement>
+    <engine:GroupBox name="TimeController" class="background" style="position: absolute; bottom: 0; align-self: center; padding-left: 3px; padding-top: 5px; padding-bottom: 5px; padding-right: 3px; flex-direction: row;">
+        <engine:Button text="" tooltip="Pause" class="fa-button" />
+        <engine:Button text="" tooltip="Play" class="fa-button" />
+        <engine:Button text="" tooltip="Fast" class="fa-button" />
+        <engine:Button text="" tooltip="Fast as possible" class="fa-button" />
+        <engine:Button text="" tooltip="Step while paused" class="fa-button" />
+    </engine:GroupBox>
+    <engine:VisualElement name="RightSide" style="position: absolute; right: 0; bottom: 0; top: 0; flex-direction: row;">
+        <engine:VisualElement style="flex-grow: 1; flex-direction: column-reverse;">
+            <engine:Label text="(x: 0.00, y: 0.00)" name="CoordinatesLabel" class="background" style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; color: rgb(255, 255, 255);" />
+        </engine:VisualElement>
+        <engine:ScrollView name="SettingsController" touch-scroll-type="Elastic" class="background">
+            <engine:GroupBox text="Patrolling Cycles" name="PatrollingCyclesGroupBox">
+                <engine:ProgressBar value="22" title="completed / total" />
+            </engine:GroupBox>
+            <engine:GroupBox name="StatisticsGroupBox" text="Statistics">
+                <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
+                    <engine:VisualElement style="flex-grow: 1;">
+                        <engine:Label text="Distance Travelled:" name="DistanceTravelledLabel" class="statistics-label" />
+                        <engine:Label text="Current Idleness:" name="CurrentIdlenessLabel" class="statistics-label" />
+                        <engine:Label text="Worst Idleness:" name="WorstIdlenessLabel" class="statistics-label" />
+                        <engine:Label text="Average Idleness:" name="AverageIdlenessLabel" class="statistics-label" />
+                    </engine:VisualElement>
+                    <engine:VisualElement style="flex-grow: 1;">
+                        <engine:Label text="0" name="DistanceTravelledValueLabel" class="statistics-label statistics-value-label" />
+                        <engine:Label text="0" name="CurrentIdlenessValueLabel" class="statistics-label statistics-value-label" />
+                        <engine:Label text="0" name="WorstIdlenessValueLabel" class="statistics-label statistics-value-label" />
+                        <engine:Label text="0" name="AverageIdlenessValueLabel" class="statistics-label statistics-value-label" />
+                    </engine:VisualElement>
+                </engine:VisualElement>
+            </engine:GroupBox>
+            <engine:GroupBox name="VisualizationGroupBox" text="Visualization">
+                <engine:VisualElement style="flex-direction: row;">
+                    <engine:GroupBox text="All Robots" class="visualization-groupbox">
+                        <engine:Button text="None" />
+                        <engine:Button text="Waypoint&#10;Heatmap" />
+                        <engine:Button text="Coverage&#10;Heatmap" />
+                        <engine:Button text="Waypoint&#10;Line of Sight" />
+                        <engine:Button text="Highlight&#10;Robots" />
+                    </engine:GroupBox>
+                    <engine:GroupBox text="Selected Robot" class="visualization-groupbox">
+                        <engine:Button text="Sticky Camera" />
+                        <engine:Button text="Target&#10;Waypoint" />
+                    </engine:GroupBox>
+                </engine:VisualElement>
+            </engine:GroupBox>
+            <engine:GroupBox name="GraphGroupBox" text="Graph">
+                <engine:Toggle label="Show" value="false" />
+                <engine:IntegerField label="Ticks per Update" value="50" />
+            </engine:GroupBox>
+            <engine:GroupBox text="Status" name="StatusGroupBox">
+                <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
+                    <engine:VisualElement style="flex-grow: 1;">
+                        <engine:Label text="Physics Ticks:" name="PhysicsTicksLabel" class="statistics-label" />
+                        <engine:Label text="Logic Ticks:" name="LogicTicksLabel" class="statistics-label" />
+                        <engine:Label text="Simulated Time:" name="SimulatedTimeLabel" class="statistics-label" />
+                    </engine:VisualElement>
+                    <engine:VisualElement style="flex-grow: 1;">
+                        <engine:Label text="0" name="PhysicsTicksValueLabel" class="statistics-label statistics-value-label" />
+                        <engine:Label text="0" name="LogicTicksValueLabel" class="statistics-label statistics-value-label" />
+                        <engine:Label text="0" name="SimulatedTimeValueLabel" class="statistics-label statistics-value-label" />
+                    </engine:VisualElement>
+                </engine:VisualElement>
+            </engine:GroupBox>
+            <engine:GroupBox name="DebugGroupBox" text="Debug">
+                <engine:Label text="Robot Controller:" name="RobotControllerLabel" class="statistics-label statistics-header-label" />
+                <engine:Label text="Text goes here at runtime :)" name="RobotControllerValueLabel" class="statistics-label" />
+                <engine:Label text="Algorithm:" name="AlgorithmLabel" class="statistics-label statistics-header-label" />
+                <engine:Label text="Text goes here at runtime :)" name="AlgorithmValueLabel" class="statistics-label" />
+                <engine:Label text="Tag:" name="TagLabel" class="statistics-label statistics-header-label" />
+                <engine:Label text="Text goes here at runtime :)" name="TagValueLabel" class="statistics-label" />
+            </engine:GroupBox>
+        </engine:ScrollView>
+    </engine:VisualElement>
+</engine:UXML>

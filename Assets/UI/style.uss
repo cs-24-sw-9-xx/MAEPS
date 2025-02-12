@@ -1,0 +1,106 @@
+.background {
+    background-color: rgba(48, 48, 48, 0.78);
+    margin: 8px;
+    padding: 0;
+}
+:root {
+    --text-color: white;
+    --font-size: 10px;
+    --header-font-size: 14px;
+}
+
+* {
+    color: var(--text-color);
+    border-color: #0d0d0d;
+    font-size: var(--font-size);
+}
+
+Button, .unity-progress-bar__background, .unity-toggle__checkmark, .unity-base-text-field__input {
+    border-width: 1px;
+    background-color: #2a2a2a;
+    border-radius: 3px;
+}
+
+Button {
+    background-color: #585858;
+}
+
+Button:hover {
+    background-color: #676767;
+}
+
+Button:active {
+    background-color: #4f657f;
+}
+
+Button:focus {
+    border-color: #7baefa;
+}
+
+.unity-base-field:focus:enabled > .unity-base-field__label {
+    color: var(--text-color);
+}
+
+.unity-progress-bar__background {
+    background-color: #2a2a2a;
+}
+
+.unity-toggle__checkmark {
+    -unity-background-image-tint-color: white;
+}
+
+.unity-group-box {
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.unity-group-box__label {
+    -unity-text-align: upper-center;
+    -unity-font-style: bold;
+    font-size: var(--header-font-size);
+}
+
+.unity-progress-bar__progress {
+    background-color: rgb(83, 180, 52);
+}
+
+.statistics-label {
+    -unity-text-align: upper-left;
+    padding: 0;
+    margin: 2px 4px;
+}
+
+.statistics-value-label {
+    -unity-text-align: upper-right;
+}
+
+.statistics-header-label {
+    -unity-font-style: bold;
+}
+
+.visualization-groupbox > .unity-group-box__label {
+    font-size: var(--font-size);
+}
+
+#unity-text-input {
+    padding: 2px;
+}
+
+.fa-button {
+    width: 30px;
+    height: 30px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&guid=16bfc248653ea7145aa33fddd027b421&type=3#Font Awesome 6 Free-Solid-900");
+    -unity-font-style: normal;
+    border-radius: 8px;
+    border-width: 0;
+    background-color: rgb(32, 32, 32);
+    font-size: 14px;
+}
+
+.fa-button:hover {
+    background-color: rgb(48, 48, 48);
+}
+
+.fa-button:active {
+    background-color: rgb(80, 80, 80);
+}
