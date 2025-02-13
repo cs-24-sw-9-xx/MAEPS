@@ -5,127 +5,87 @@ using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
-using TMPro;
-
-using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 using XCharts.Runtime;
+
 
 namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
-        private static readonly float MaxRobotHighlightingSize = 25.0f;
-        public BaseChart Chart = null!;
-        public Image ProgressBarMask = null!;
-        public TextMeshProUGUI ProgressText = null!;
+        public BaseChart chart = null!;
 
-        public Toggle StoppingCriteriaToggle = null!;
+        // Set by AfterStart
+        private ProgressBar _patrollingCyclesProgressBar = null!;
 
-        public TextMeshProUGUI DistanceTravelledText = null!;
-        public TextMeshProUGUI CurrentGraphIdlenessText = null!;
-        public TextMeshProUGUI WorstGraphIdlenessText = null!;
-        public TextMeshProUGUI AverageGraphIdlenessText = null!;
+        private Label _distanceTravelledValueLabel = null!;
+        private Label _currentIdlenessValueLabel = null!;
+        private Label _worstIdlenessValueLabel = null!;
+        private Label _averageIdlenessValueLabel = null!;
 
-        public Button WaypointHeatMapButton = null!;
-        public Button CoverageHeatMapButton = null!;
-        public Button NoneButton = null!;
-        public Button ToggleAllRobotsHighlightingButton = null!;
-        public Button AllVerticesLineOfSightButton = null!;
+        private Button _allRobotsNoneButton = null!;
+        private Button _allRobotsWaypointHeatMapButton = null!;
+        private Button _allRobotsCoverageHeatMapButton = null!;
+        private Button _allRobotsWaypointLineOfSightButton = null!;
+        private Button _allRobotsHighlightRobotsButton = null!;
 
-        public Button TargetWaypointSelectedButton = null!;
-        public Button ToogleIdleGraphButton = null!;
+        private Button _selectedRobotStickyCameraButton = null!;
+        private Button _selectedRobotTargetWaypointButton = null!;
 
-        public Slider RobotHighlightingSlider = null!;
-
-        public TMP_InputField PlottingFrequencyInputField = null!;
-
+        private Toggle _graphShowToggle = null!;
+        private IntegerField _graphTicksPerUpdateField = null!;
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
+            _allRobotsNoneButton,
+            _allRobotsWaypointHeatMapButton,
+            _allRobotsCoverageHeatMapButton,
+            _allRobotsWaypointLineOfSightButton,
+            _allRobotsHighlightRobotsButton,
+            _selectedRobotTargetWaypointButton
         };
 
         protected override void AfterStart()
         {
-            ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
-            SelectVisualizationButton(NoneButton);
+            _patrollingCyclesProgressBar = modeSpecificUiDocument.rootVisualElement.Q<ProgressBar>("PatrollingCyclesProgressBar");
 
-            if (Simulation != null)
-            {
-                StoppingCriteriaToggle.isOn = Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria;
-            }
+            _distanceTravelledValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("DistanceTravelledValueLabel");
+            _currentIdlenessValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("CurrentIdlenessValueLabel");
+            _worstIdlenessValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("WorstIdlenessValueLabel");
+            _averageIdlenessValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("AverageIdlenessValueLabel");
 
-            StoppingCriteriaToggle.onValueChanged.AddListener(toggleValue =>
-            {
-                if (Simulation != null)
-                {
-                    Simulation.PatrollingTracker.HaveToggledSecondStoppingCriteria = toggleValue;
-                }
-            });
+            _allRobotsNoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsNoneButton");
+            _allRobotsWaypointHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointHeatMapButton");
+            _allRobotsCoverageHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageHeatMapButton");
+            _allRobotsWaypointLineOfSightButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointLineOfSightButton");
+            _allRobotsHighlightRobotsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsHighlightRobotsButton");
 
-            WaypointHeatMapButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowWaypointHeatMap());
-            });
+            _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
+            _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
 
-            CoverageHeatMapButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotCoverageHeatMap());
-            });
+            _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
+            _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
 
-            NoneButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowNone());
-            });
 
-            ToggleAllRobotsHighlightingButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim => sim?.PatrollingTracker.ShowAllRobotsHighlighting());
-            });
+            _allRobotsNoneButton.RegisterCallback<ClickEvent>(AllRobotsNoneButtonClicked);
 
-            TargetWaypointSelectedButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim =>
-                {
-                    if (sim != null)
-                    {
-                        if (!sim.HasSelectedRobot())
-                        {
-                            sim.SelectFirstRobot();
-                        }
+            _allRobotsWaypointHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsWaypointHeatMapButtonClicked);
 
-                        sim.PatrollingTracker.ShowTargetWaypointSelected();
-                    }
-                });
-            });
+            _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
 
-            AllVerticesLineOfSightButton.onClick.AddListener(() =>
-            {
-                ExecuteAndRememberMapVisualizationModification(sim =>
-                {
-                    sim?.PatrollingTracker.ShowAllVerticesLineOfSight();
-                });
-            });
+            _allRobotsWaypointLineOfSightButton.RegisterCallback<ClickEvent>(AllRobotsWaypointLineOfSightButtonClicked);
 
-            PlottingFrequencyInputField.onValueChanged.AddListener(
-                changedValue =>
-                {
-                    var intValue = Convert.ToInt32(changedValue);
-                    if (intValue != 0)
-                    {
-                        if (Simulation != null)
-                        {
-                            Simulation.PatrollingTracker.PlottingFrequency = Convert.ToInt32(changedValue);
-                        }
-                    }
-                });
-            RobotHighlightingSlider.onValueChanged.AddListener(
-                changedValue =>
-                {
-                    Simulation?.PatrollingTracker.SetRobotHighlightingSize(changedValue * MaxRobotHighlightingSize);
-                });
+            _allRobotsHighlightRobotsButton.RegisterCallback<ClickEvent>(AllRobotsHighlightRobotsButtonClicked);
+
+            _selectedRobotTargetWaypointButton.RegisterCallback<ClickEvent>(SelectedRobotTargetWaypointButtonClicked);
+
+            _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
+
+            SelectVisualizationButton(_allRobotsNoneButton);
+
+            _graphTicksPerUpdateField.RegisterValueChangedCallback(GraphTicksPerUpdateFieldChanged);
         }
+
 
         public void Update()
         {
@@ -140,22 +100,22 @@ namespace Maes.UI.SimulationInfoUIControllers
             switch (mode)
             {
                 case WaypointHeatMapVisualizationMode:
-                    SelectVisualizationButton(WaypointHeatMapButton);
+                    SelectVisualizationButton(_allRobotsWaypointHeatMapButton);
                     break;
                 case PatrollingCoverageHeatMapVisualizationMode:
-                    SelectVisualizationButton(CoverageHeatMapButton);
+                    SelectVisualizationButton(_allRobotsCoverageHeatMapButton);
                     break;
                 case NoneVisualizationMode:
-                    SelectVisualizationButton(NoneButton);
+                    SelectVisualizationButton(_allRobotsNoneButton);
                     break;
                 case AllRobotsHighlightingVisualizationMode:
-                    SelectVisualizationButton(ToggleAllRobotsHighlightingButton);
+                    SelectVisualizationButton(_allRobotsHighlightRobotsButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
-                    SelectVisualizationButton(TargetWaypointSelectedButton);
+                    SelectVisualizationButton(_selectedRobotTargetWaypointButton);
                     break;
                 case LineOfSightAllVerticesVisualizationMode:
-                    SelectVisualizationButton(AllVerticesLineOfSightButton);
+                    SelectVisualizationButton(_allRobotsWaypointLineOfSightButton);
                     break;
                 case LineOfSightVertexVisualizationMode:
                     UnHighlightVisualizationButtons();
@@ -169,8 +129,8 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             if (newSimulation != null)
             {
-                newSimulation.PatrollingTracker.Chart = Chart;
-                newSimulation.PatrollingTracker.Zoom = Chart.EnsureChartComponent<DataZoom>();
+                newSimulation.PatrollingTracker.Chart = chart;
+                newSimulation.PatrollingTracker.Zoom = chart.EnsureChartComponent<DataZoom>();
                 newSimulation.PatrollingTracker.InitIdleGraph();
                 newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
@@ -193,34 +153,80 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void SetProgress(int completed, int total)
         {
-            ProgressBarMask.fillAmount = (float)completed / total;
-            ProgressText.text = $"{completed}/{total}";
+            _patrollingCyclesProgressBar.highValue = total;
+            _patrollingCyclesProgressBar.value = completed;
+            _patrollingCyclesProgressBar.title = $"{completed}/{total}";
         }
 
         private void SetDistanceTravelled(float distance)
         {
-            DistanceTravelledText.text = $"The total patrolling distance traveled: {distance} meters";
+            _distanceTravelledValueLabel.text = distance.ToString();
         }
 
         private void SetCurrentGraphIdleness(float idleness)
         {
-            CurrentGraphIdlenessText.text = $"Current graph idleness: {idleness} ticks";
+            _currentIdlenessValueLabel.text = idleness.ToString();
         }
 
         private void SetWorstGraphIdleness(float idleness)
         {
-            WorstGraphIdlenessText.text = $"Worst graph idleness: {idleness} ticks";
+            _worstIdlenessValueLabel.text = idleness.ToString();
         }
 
         private void SetAverageGraphIdleness(float idleness)
         {
-            AverageGraphIdlenessText.text = $"Average graph idleness: {idleness} ticks";
+            _averageIdlenessValueLabel.text = idleness.ToString();
         }
 
-        private void ToggleGraph()
+        private void AllRobotsNoneButtonClicked(ClickEvent _)
         {
-            Chart.gameObject.SetActive(!Chart.gameObject.activeSelf);
-            ToogleIdleGraphButton.image.color = Chart.gameObject.activeSelf ? new Color(150 / 255f, 200 / 255f, 150 / 255f) : Color.white;
+            ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowNone());
+        }
+
+        private void AllRobotsWaypointHeatMapButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowWaypointHeatMap());
+        }
+
+        private void AllRobotsCoverageHeatMapButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowAllRobotCoverageHeatMap());
+        }
+
+        private void AllRobotsWaypointLineOfSightButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim => { sim.PatrollingTracker.ShowAllVerticesLineOfSight(); });
+        }
+
+        private void AllRobotsHighlightRobotsButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowAllRobotsHighlighting());
+        }
+
+        private void SelectedRobotTargetWaypointButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim =>
+            {
+                if (!sim.HasSelectedRobot())
+                {
+                    sim.SelectFirstRobot();
+                }
+
+                sim.PatrollingTracker.ShowTargetWaypointSelected();
+            });
+        }
+
+        private void ToggleGraph(ChangeEvent<bool> changeEvent)
+        {
+            chart.gameObject.SetActive(changeEvent.newValue);
+        }
+
+        private void GraphTicksPerUpdateFieldChanged(ChangeEvent<int> changeEvent)
+        {
+            if (changeEvent.newValue > 0)
+            {
+                Simulation!.PatrollingTracker.PlottingFrequency = changeEvent.newValue;
+            }
         }
     }
 }

@@ -28,10 +28,11 @@ using Maes.UI;
 using QuickOutline;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Maes.Robot
 {
-    public class MonaRobot : MonoBehaviour, ISimulationUnit
+    public class MonaRobot : MonoBehaviour, ISimulationUnit, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         public Transform leftWheelTransform = null!;
         public Transform rightWheelTransform = null!;
@@ -96,20 +97,20 @@ namespace Maes.Robot
             }
         }
 
-        public void OnMouseDown()
-        {
-            CameraController.SingletonInstance.movementTransform = transform;
-            OnRobotSelected(this);
-        }
-
-        public void OnMouseEnter()
+        public void OnPointerEnter(PointerEventData eventData)
         {
             Tooltip.ShowTooltip_Static($"robot{id}");
         }
 
-        public void OnMouseExit()
+        public void OnPointerExit(PointerEventData eventData)
         {
             Tooltip.HideTooltip_Static();
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            CameraController.SingletonInstance.movementTransform = transform;
+            OnRobotSelected(this);
         }
 
         public GameObject ClaimTag()
