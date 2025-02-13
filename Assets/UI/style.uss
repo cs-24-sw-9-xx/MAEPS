@@ -1,21 +1,21 @@
 .background {
     background-color: rgba(48, 48, 48, 0.78);
-    margin-top: 8px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    margin-left: 8px;
-    padding-top: 0;
-    padding-right: 0;
-    padding-bottom: 0;
-    padding-left: 0;
+    margin: 8px;
+    padding: 0;
+}
+:root {
+    --text-color: white;
+    --font-size: 10px;
+    --header-font-size: 14px;
 }
 
 * {
+    color: var(--text-color);
     border-color: #0d0d0d;
+    font-size: var(--font-size);
 }
 
 Button, .unity-progress-bar__background, .unity-toggle__checkmark, .unity-base-text-field__input {
-    color: white;
     border-width: 1px;
     background-color: #2a2a2a;
     border-radius: 3px;
@@ -38,7 +38,7 @@ Button:focus {
 }
 
 .unity-base-field:focus:enabled > .unity-base-field__label {
-    color: white;
+    color: var(--text-color);
 }
 
 .unity-progress-bar__background {
@@ -49,64 +49,37 @@ Button:focus {
     -unity-background-image-tint-color: white;
 }
 
-GroupBox {
-    -unity-text-align: upper-center;
-    -unity-font-style: bold;
-    color: rgb(255, 255, 255);
-}
-
-Button {
-    -unity-font-style: normal;
-    opacity: 1;
-}
-
-Toggle {
-    -unity-font-style: normal;
-}
-
-IntegerField {
-    -unity-font-style: normal;
-}
-
-.vertical-groupbox {
+.unity-group-box {
     padding-right: 0;
     padding-left: 0;
+}
+
+.unity-group-box__label {
+    -unity-text-align: upper-center;
+    -unity-font-style: bold;
+    font-size: var(--header-font-size);
 }
 
 .unity-progress-bar__progress {
     background-color: rgb(83, 180, 52);
 }
 
-.unity-progress-bar__title {
-    -unity-font-style: normal;
-    font-size: 11px;
-}
-
-.vertical-groupbox {
-    padding-right: 0;
-    padding-left: 0;
-}
-
 .statistics-label {
-    font-size: 10px;
-    -unity-font-style: normal;
     -unity-text-align: upper-left;
-    padding-top: 0;
-    padding-right: 0;
-    padding-bottom: 0;
-    padding-left: 0;
-    margin-top: 2px;
-    margin-right: 4px;
-    margin-bottom: 2px;
-    margin-left: 4px;
+    padding: 0;
+    margin: 2px 4px;
 }
 
 .statistics-value-label {
     -unity-text-align: upper-right;
 }
 
-.visualization-groupbox {
-    font-size: 10px;
+.statistics-header-label {
+    -unity-font-style: bold;
+}
+
+.visualization-groupbox > .unity-group-box__label {
+    font-size: var(--font-size);
 }
 
 #unity-text-input {
@@ -118,17 +91,10 @@ IntegerField {
     height: 30px;
     -unity-font-definition: url("project://database/Assets/Fonts/Font%20Awesome%206%20Free-Solid-900.otf?fileID=12800000&guid=16bfc248653ea7145aa33fddd027b421&type=3#Font Awesome 6 Free-Solid-900");
     -unity-font-style: normal;
-    color: rgb(255, 255, 255);
     border-radius: 8px;
-    border-top-width: 0;
-    border-right-width: 0;
-    border-bottom-width: 0;
-    border-left-width: 0;
+    border-width: 0;
     background-color: rgb(32, 32, 32);
-    border-left-color: rgb(32, 32, 32);
-    border-right-color: rgb(32, 32, 32);
-    border-top-color: rgb(32, 32, 32);
-    border-bottom-color: rgb(32, 32, 32);
+    font-size: 14px;
 }
 
 .fa-button:hover {

@@ -1,7 +1,7 @@
 <engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/style.uss?fileID=7433441132597879392&amp;guid=7c156309215ba8ef2a1604c503fc30ae&amp;type=3#style" />
     <engine:VisualElement name="ExperimentController" class="background" style="flex-grow: 1; flex-direction: row; position: absolute; top: 0; left: 0;">
-        <engine:GroupBox name="RestartGroupBox" text="Restart" class="vertical-groupbox">
+        <engine:GroupBox name="RestartGroupBox" text="Restart">
             <engine:Button text="Current" name="RestartCurrentButton" />
             <engine:Button text="All" name="RestartAllButton" />
         </engine:GroupBox>
@@ -11,7 +11,7 @@
         </engine:GroupBox>
     </engine:VisualElement>
     <engine:VisualElement name="CameraController" class="background" style="flex-grow: 1; position: absolute; bottom: 0; left: 0; flex-direction: row;">
-        <engine:GroupBox name="CameraMove" class="vertical-groupbox" style="flex-direction: row; align-items: center;">
+        <engine:GroupBox name="CameraMove" style="flex-direction: row; align-items: center;">
             <engine:Button tooltip="Move left" text="" class="fa-button" />
             <engine:VisualElement style="flex-grow: 1;">
                 <engine:Button text="" tooltip="Move up" class="fa-button" />
@@ -40,10 +40,10 @@
             <engine:Label text="(x: 0.00, y: 0.00)" name="CoordinatesLabel" class="background" style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; color: rgb(255, 255, 255);" />
         </engine:VisualElement>
         <engine:ScrollView name="SettingsController" touch-scroll-type="Elastic" class="background">
-            <engine:GroupBox text="Patrolling Cycles" name="PatrollingCyclesGroupBox" class="vertical-groupbox">
+            <engine:GroupBox text="Patrolling Cycles" name="PatrollingCyclesGroupBox">
                 <engine:ProgressBar value="22" title="completed / total" />
             </engine:GroupBox>
-            <engine:GroupBox name="StatisticsGroupBox" text="Statistics" class="vertical-groupbox">
+            <engine:GroupBox name="StatisticsGroupBox" text="Statistics">
                 <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
                     <engine:VisualElement style="flex-grow: 1;">
                         <engine:Label text="Distance Travelled:" name="DistanceTravelledLabel" class="statistics-label" />
@@ -59,9 +59,9 @@
                     </engine:VisualElement>
                 </engine:VisualElement>
             </engine:GroupBox>
-            <engine:GroupBox name="VisualizationGroupBox" text="Visualization" class="vertical-groupbox">
-                <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
-                    <engine:GroupBox text="All Robots" class="visualization-groupbox vertical-groupbox">
+            <engine:GroupBox name="VisualizationGroupBox" text="Visualization">
+                <engine:VisualElement style="flex-direction: row;">
+                    <engine:GroupBox text="All Robots" class="visualization-groupbox">
                         <engine:Button text="None" />
                         <engine:Button text="Waypoint&#10;Heatmap" />
                         <engine:Button text="Coverage&#10;Heatmap" />
@@ -74,11 +74,11 @@
                     </engine:GroupBox>
                 </engine:VisualElement>
             </engine:GroupBox>
-            <engine:GroupBox name="GraphGroupBox" text="Graph" class="vertical-groupbox">
-                <engine:Toggle label="Show" value="false" class="statistics-label" />
-                <engine:IntegerField label="Ticks per Update" value="50" class="statistics-label" />
+            <engine:GroupBox name="GraphGroupBox" text="Graph">
+                <engine:Toggle label="Show" value="false" />
+                <engine:IntegerField label="Ticks per Update" value="50" />
             </engine:GroupBox>
-            <engine:GroupBox text="Status" name="StatusGroupBox" class="vertical-groupbox">
+            <engine:GroupBox text="Status" name="StatusGroupBox">
                 <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
                     <engine:VisualElement style="flex-grow: 1;">
                         <engine:Label text="Physics Ticks:" name="PhysicsTicksLabel" class="statistics-label" />
@@ -92,12 +92,12 @@
                     </engine:VisualElement>
                 </engine:VisualElement>
             </engine:GroupBox>
-            <engine:GroupBox name="DebugGroupBox" text="Debug" class="vertical-groupbox">
-                <engine:Label text="Robot Controller:" name="RobotControllerLabel" class="statistics-label" style="-unity-font-style: bold;" />
+            <engine:GroupBox name="DebugGroupBox" text="Debug">
+                <engine:Label text="Robot Controller:" name="RobotControllerLabel" class="statistics-label statistics-header-label" />
                 <engine:Label text="Text goes here at runtime :)" name="RobotControllerValueLabel" class="statistics-label" />
-                <engine:Label text="Algorithm:" name="AlgorithmLabel" class="statistics-label" style="-unity-font-style: bold;" />
+                <engine:Label text="Algorithm:" name="AlgorithmLabel" class="statistics-label statistics-header-label" />
                 <engine:Label text="Text goes here at runtime :)" name="AlgorithmValueLabel" class="statistics-label" />
-                <engine:Label text="Tag:" name="TagLabel" class="statistics-label" style="-unity-font-style: bold;" />
+                <engine:Label text="Tag:" name="TagLabel" class="statistics-label statistics-header-label" />
                 <engine:Label text="Text goes here at runtime :)" name="TagValueLabel" class="statistics-label" />
             </engine:GroupBox>
         </engine:ScrollView>
