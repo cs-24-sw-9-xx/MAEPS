@@ -46,7 +46,7 @@ namespace Maes.Map.MapGen
 
         [Tooltip("Include an invisible 3D collider on the inner walls to allow for ray trace collisions. " +
                  "Enabling this can impact performance of map generation by up to 2x")]
-        public bool Include3DCollider = true;
+        public bool Include3DCollider = false;
 
         // Uses the marching squares algorithm to smooth out the grid and create a continuous wall around the rooms
         private SquareGrid? _squareGrid2D;
@@ -82,9 +82,9 @@ namespace Maes.Map.MapGen
         {
             _squareGrid2D = null;
             _squareGrid3D = null;
-            Destroy(InnerWalls3D.gameObject.GetComponent<MeshCollider>());
+            //Destroy(InnerWalls3D.gameObject.GetComponent<MeshCollider>());
             InnerWalls3D.sharedMesh?.Clear();
-            Destroy(InnerWalls2D.gameObject.GetComponent<MeshCollider>());
+            //Destroy(InnerWalls2D.gameObject.GetComponent<MeshCollider>());
             InnerWalls2D.sharedMesh?.Clear();
             WallRoof.sharedMesh?.Clear();
             _vertices2D.Clear();
@@ -405,8 +405,6 @@ namespace Maes.Map.MapGen
 
             if (isMesh3D)
             {
-                var wallCollider = InnerWalls3D.gameObject.AddComponent<MeshCollider>();
-                wallCollider.sharedMesh = innerWallsMesh;
                 InnerWalls3D.mesh = innerWallsMesh;
             }
             else
