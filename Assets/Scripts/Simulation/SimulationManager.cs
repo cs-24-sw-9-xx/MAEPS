@@ -71,6 +71,10 @@ namespace Maes.Simulation
 
         public bool AutoMaxSpeedInBatchMode { get; set; }
 
+        private float _startTime;
+
+        private int _simulations;
+
         // Runs once when starting the program
         private void Start()
         {
@@ -88,6 +92,8 @@ namespace Maes.Simulation
                 UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
+
+            _startTime = Time.realtimeSinceStartup;
         }
 
         private void RemoveFastForwardButtonsFromControlPanel()
@@ -235,7 +241,7 @@ namespace Maes.Simulation
                 if (Scenarios.Count == 0)
                 {
                     // Indicate that no further updates are needed
-                    Debug.Log("No more simulations to run, pausing");
+                    Debug.Log($"Finished in {Time.realtimeSinceStartup - _startTime} seconds.");
                     return false;
                 }
 
@@ -265,6 +271,7 @@ namespace Maes.Simulation
 
         private void CreateSimulation(TScenario scenario)
         {
+            Debug.Log($"Creating Simulation nr {_simulations++} rest: {Scenarios.Count}");
             CurrentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();
