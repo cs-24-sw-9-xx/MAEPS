@@ -48,7 +48,7 @@ namespace Maes.Simulation
         {
             if (_scenario.TotalCycles > PatrollingTracker.CurrentCycle)
             {
-                return PatrollingTracker.HaveToggledSecondStoppingCriteria && (PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= StoppingCriteriaDifference);
+                return _scenario.StopAfterDiff && (PatrollingTracker.AverageGraphDiffLastTwoCyclesProportion <= StoppingCriteriaDifference);
             }
 
             return true;
