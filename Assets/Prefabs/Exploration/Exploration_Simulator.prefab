@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4230307919047253345}
   - component: {fileID: 3687030379856162721}
   - component: {fileID: 4230307919047253344}
+  - component: {fileID: 8776602244897348717}
+  - component: {fileID: 5399053512144307151}
   m_Layer: 0
   m_Name: Exploration_Simulator
   m_TagString: Untagged
@@ -45,16 +47,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6edcf4ce86a4c3a8b5af715b9418ac3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  modeSpecificUiDocument: {fileID: 0}
   SimulationPrefab: {fileID: 0}
-  UISpeedController: {fileID: 0}
-  UIControllerDebugTitle: {fileID: 0}
-  UIControllerDebugInfo: {fileID: 0}
-  SimulationStatusText: {fileID: 0}
-  CurrentSimulation: {fileID: 0}
-  SettingsPanel: {fileID: 0}
-  RestartRemakePanel: {fileID: 0}
   RosClockPrefab: {fileID: 8420379381742167934, guid: b78f79af27f36bedbb7abcd4c9d0f623, type: 3}
   RosVisualizerPrefab: {fileID: 2315420966074849842, guid: 9ccaf897dbd316d32931129760020fa8, type: 3}
+  UISpeedController: {fileID: 0}
+  SimulationInfoUIController: {fileID: 0}
 --- !u!114 &4230307919047253344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -67,8 +65,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 673f6a3e43a254e0aa73ab5a867bcdf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseButton: {fileID: 0}
-  playButton: {fileID: 0}
-  fastForwardButton: {fileID: 0}
-  fastAsPossibleButton: {fileID: 0}
-  stepperButton: {fileID: 0}
+  uiDocument: {fileID: 0}
+--- !u!114 &8776602244897348717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4230307919047253350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d2b78eed934984b636c7d2d7b0ff7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiDocument: {fileID: 0}
+  simulationManager: {fileID: 3687030379856162721}
+--- !u!114 &5399053512144307151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4230307919047253350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d371b223cf040b19c29e1057d1b9e77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraController: {fileID: 0}
+  uIDocument: {fileID: 0}
+  modeSpecificUiDocument: {fileID: 0}
+  simulationManager: {fileID: 3687030379856162721}

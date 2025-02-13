@@ -45,7 +45,7 @@ namespace Maes.Trackers
 
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
-        public bool HaveToggledSecondStoppingCriteria { get; set; }
+        public bool HaveToggledSecondStoppingCriteria { get; }
 
         public readonly List<PatrollingSnapShot> SnapShots = new();
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
