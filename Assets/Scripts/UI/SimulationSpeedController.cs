@@ -22,7 +22,6 @@
 using Maes.Simulation;
 
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using UnityEngine.UIElements;
 
 namespace Maes.UI
@@ -30,7 +29,7 @@ namespace Maes.UI
     public class SimulationSpeedController : MonoBehaviour
     {
         public UIDocument uiDocument = null!; // Set in editor
-        
+
         // Set by Start
         private ISimulationManager _simulationManager = null!;
         private Button _pauseButton = null!;
@@ -42,14 +41,14 @@ namespace Maes.UI
         private void Awake()
         {
             _simulationManager = GetComponent<ISimulationManager>();
-            
+
             _pauseButton = uiDocument.rootVisualElement.Q<Button>("PauseButton");
             _playButton = uiDocument.rootVisualElement.Q<Button>("PlayButton");
             FastForwardButton = uiDocument.rootVisualElement.Q<Button>("FastForwardButton");
             FastAsPossibleButton = uiDocument.rootVisualElement.Q<Button>("FastAsPossibleButton");
             StepButton = uiDocument.rootVisualElement.Q<Button>("StepButton");
-            
-            
+
+
             _pauseButton.RegisterCallback<ClickEvent>(Pause);
             _playButton.RegisterCallback<ClickEvent>(Play);
             FastForwardButton.RegisterCallback<ClickEvent>(FastForward);

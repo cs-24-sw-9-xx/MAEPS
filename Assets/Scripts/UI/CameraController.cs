@@ -61,17 +61,17 @@ namespace Maes.UI
         public Vector3 rotateCurrentPosition;
 
         public bool stickyCam;
-        
+
         public UIDocument uiDocument = null!;
         public UIDocument modeSpecificUiDocument = null!;
-        
+
         private readonly Dictionary<Direction, bool> _buttonStates = new();
-        
+
         private Button _leftButton = null!;
         private Button _rightButton = null!;
         private Button _upButton = null!;
         private Button _downButton = null!;
-        
+
         private Button _rotateCounterClockwiseButton = null!;
         private Button _rotateClockwiseButton = null!;
         private Button _zoomInButton = null!;
@@ -87,22 +87,22 @@ namespace Maes.UI
             _rightButton = uiDocument.rootVisualElement.Q<Button>("MoveRightButton");
             _upButton = uiDocument.rootVisualElement.Q<Button>("MoveUpButton");
             _downButton = uiDocument.rootVisualElement.Q<Button>("MoveDownButton");
-            
+
             _rotateCounterClockwiseButton = uiDocument.rootVisualElement.Q<Button>("RotateCounterClockwiseButton");
             _rotateClockwiseButton = uiDocument.rootVisualElement.Q<Button>("RotateClockwiseButton");
             _zoomInButton = uiDocument.rootVisualElement.Q<Button>("ZoomInButton");
             _zoomOutButton = uiDocument.rootVisualElement.Q<Button>("ZoomOutButton");
-            
+
             HandleButton(_leftButton, Direction.Left);
             HandleButton(_rightButton, Direction.Right);
             HandleButton(_upButton, Direction.Up);
             HandleButton(_downButton, Direction.Down);
-            
+
             HandleButton(_rotateCounterClockwiseButton, Direction.RotateCounterClockwise);
             HandleButton(_rotateClockwiseButton, Direction.RotateClockwise);
             HandleButton(_zoomInButton, Direction.ZoomIn);
             HandleButton(_zoomOutButton, Direction.ZoomOut);
-            
+
             SingletonInstance = this;
             newPosition = transform.position;
             newRotation = transform.rotation;
@@ -120,7 +120,7 @@ namespace Maes.UI
         {
             _buttonStates[direction] = true;
         }
-        
+
         private void ButtonUpHandler(MouseUpEvent mouseupEvent, Direction direction)
         {
             _buttonStates[direction] = false;
@@ -224,8 +224,8 @@ namespace Maes.UI
 
         private void HandleKeyboardRotateZoomInput()
         {
-            var keyboard = Keyboard.current; 
-            
+            var keyboard = Keyboard.current;
+
             if (keyboard.uKey.isPressed || GetButtonState(Direction.RotateCounterClockwise))
             {
                 newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
@@ -371,7 +371,7 @@ namespace Maes.UI
         private void HandleKeyboardMovementInput()
         {
             var keyboard = Keyboard.current;
-            
+
             var t = transform;
             if (keyboard.iKey.isPressed || GetButtonState(Direction.Up))
             {
@@ -414,7 +414,7 @@ namespace Maes.UI
                 Camera = camera;
             }
         }
-        
+
         private enum Direction
         {
             Up,

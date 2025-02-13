@@ -15,10 +15,10 @@ namespace Maes.UI.SimulationInfoUIControllers
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         public BaseChart chart = null!;
-        
+
         // Set by AfterStart
         private ProgressBar _patrollingCyclesProgressBar = null!;
-        
+
         private Label _distanceTravelledValueLabel = null!;
         private Label _currentIdlenessValueLabel = null!;
         private Label _worstIdlenessValueLabel = null!;
@@ -29,10 +29,10 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _allRobotsCoverageHeatMapButton = null!;
         private Button _allRobotsWaypointLineOfSightButton = null!;
         private Button _allRobotsHighlightRobotsButton = null!;
-        
+
         private Button _selectedRobotStickyCameraButton = null!;
         private Button _selectedRobotTargetWaypointButton = null!;
-        
+
         private Toggle _graphShowToggle = null!;
         private IntegerField _graphTicksPerUpdateField = null!;
 
@@ -48,7 +48,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected override void AfterStart()
         {
             _patrollingCyclesProgressBar = modeSpecificUiDocument.rootVisualElement.Q<ProgressBar>("PatrollingCyclesProgressBar");
-            
+
             _distanceTravelledValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("DistanceTravelledValueLabel");
             _currentIdlenessValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("CurrentIdlenessValueLabel");
             _worstIdlenessValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("WorstIdlenessValueLabel");
@@ -59,14 +59,14 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsCoverageHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageHeatMapButton");
             _allRobotsWaypointLineOfSightButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointLineOfSightButton");
             _allRobotsHighlightRobotsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsHighlightRobotsButton");
-            
+
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
             _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
-            
+
             _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
             _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
-            
-            
+
+
             _allRobotsNoneButton.RegisterCallback<ClickEvent>(AllRobotsNoneButtonClicked);
 
             _allRobotsWaypointHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsWaypointHeatMapButtonClicked);
@@ -76,11 +76,11 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsWaypointLineOfSightButton.RegisterCallback<ClickEvent>(AllRobotsWaypointLineOfSightButtonClicked);
 
             _allRobotsHighlightRobotsButton.RegisterCallback<ClickEvent>(AllRobotsHighlightRobotsButtonClicked);
-            
+
             _selectedRobotTargetWaypointButton.RegisterCallback<ClickEvent>(SelectedRobotTargetWaypointButtonClicked);
-            
+
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
-            
+
             SelectVisualizationButton(_allRobotsNoneButton);
 
             _graphTicksPerUpdateField.RegisterValueChangedCallback(GraphTicksPerUpdateFieldChanged);
@@ -220,7 +220,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             chart.gameObject.SetActive(changeEvent.newValue);
         }
-        
+
         private void GraphTicksPerUpdateFieldChanged(ChangeEvent<int> changeEvent)
         {
             if (changeEvent.newValue > 0)

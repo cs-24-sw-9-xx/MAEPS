@@ -38,14 +38,14 @@ namespace Maes.UI.SimulationInfoUIControllers
         public CameraController cameraController = null!;
         public UIDocument uIDocument = null!;
         public UIDocument modeSpecificUiDocument = null!;
-        
+
         // Set by Start
         private Label _robotControllerValueLabel = null!;
         private Label _algorithmValueLabel = null!;
         private Label _tagValueLabel = null!;
-        
+
         private Label _coordinatesLabel = null!;
-        
+
         private Button _stickyCameraButton = null!;
 
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
@@ -64,13 +64,13 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void Start()
         {
             _stickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
-            
+
             _robotControllerValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("RobotControllerValueLabel");
             _algorithmValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("AlgorithmValueLabel");
             _tagValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("TagValueLabel");
-            
+
             _coordinatesLabel = uIDocument.rootVisualElement.Q<Label>("CoordinatesLabel");
-            
+
             _stickyCameraButton.RegisterCallback<ClickEvent>(_ =>
             {
                 cameraController.stickyCam = !cameraController.stickyCam;
@@ -134,7 +134,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 return;
             }
-            
+
             UpdateStatistics((TSimulation)simulation);
         }
 
@@ -142,7 +142,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected void SelectVisualizationButton(Button selectedButton)
         {
             UnHighlightVisualizationButtons();
-            
+
             selectedButton.AddToClassList("toggled");
         }
 

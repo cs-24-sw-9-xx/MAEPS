@@ -14,7 +14,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         // Set in AfterStart
         private ProgressBar _explorationProgressBar = null!;
         private ProgressBar _coverageProgressBar = null!;
-        
+
         private Label _explorationRateValueLabel = null!;
         private Label _coverageRateValueLabel = null!;
 
@@ -23,7 +23,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _allRobotsExplorationHeatMapButton = null!;
         private Button _allRobotsCoverageHeatMapButton = null!;
         private Button _allRobotsVisualizeTagsButton = null!;
-        
+
         private Button _selectedRobotCurrentlyVisibleButton = null!;
         private Button _selectedRobotSlamMapButton = null!;
         private Button _selectedRobotVisualizeTagsButton = null!;
@@ -46,30 +46,30 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             _explorationProgressBar = modeSpecificUiDocument.rootVisualElement.Q<ProgressBar>("ExplorationProgressBar");
             _coverageProgressBar = modeSpecificUiDocument.rootVisualElement.Q<ProgressBar>("CoverageProgressBar");
-            
+
             _explorationRateValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("ExplorationRateValueLabel");
             _coverageRateValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("CoverageRateValueLabel");
-            
+
             _allRobotsExplorationButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsExplorationButton");
             _allRobotsCoverageButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageButton");
             _allRobotsExplorationHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsExplorationHeatMapButton");
             _allRobotsCoverageHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageHeatMapButton");
             _allRobotsVisualizeTagsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsVisualizeTagsButton");
-            
+
             _selectedRobotCurrentlyVisibleButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotCurrentlyVisibleButton");
             _selectedRobotSlamMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotSlamMapButton");
             _selectedRobotVisualizeTagsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotVisualizeTagsButton");
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
-            
+
             SelectVisualizationButton(_allRobotsExplorationButton);
-            
+
             // Set listeners for all map visualization buttons
             _allRobotsExplorationButton.RegisterCallback<ClickEvent>(AllRobotsExplorationButtonClicked);
             _allRobotsCoverageButton.RegisterCallback<ClickEvent>(AllRobotsCoverageButtonClicked);
             _allRobotsExplorationHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsExplorationHeatMapButtonClicked);
             _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
             _allRobotsVisualizeTagsButton.RegisterCallback<ClickEvent>(AllRobotsVisualizeTagsButtonClicked);
-            
+
             _selectedRobotCurrentlyVisibleButton.RegisterCallback<ClickEvent>(SelectedRobotCurrentlyVisibleButtonClicked);
             _selectedRobotSlamMapButton.RegisterCallback<ClickEvent>(SelectedRobotSlamMapButtonClicked);
             _selectedRobotVisualizeTagsButton.RegisterCallback<ClickEvent>(SelectedRobotVisualizeTagsButtonClicked);
@@ -153,10 +153,10 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             SetExplorationProgress(explorationSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(explorationSimulation.ExplorationTracker.CoverageProportion);
-            
+
             _explorationRateValueLabel.text = (explorationSimulation.ExplorationTracker.ExploredTriangles /
                                           explorationSimulation.SimulateTimeSeconds).ToString("#.0");
-            
+
             // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
             _coverageRateValueLabel.text = (explorationSimulation.ExplorationTracker.CoveredMiniTiles * 2 /
                                             explorationSimulation.SimulateTimeSeconds).ToString("#.0");

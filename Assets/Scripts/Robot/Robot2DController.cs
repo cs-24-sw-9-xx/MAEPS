@@ -385,7 +385,7 @@ namespace Maes.Robot
         public string GetDebugInfo()
         {
             _debugStringBuilder.Clear();
-            
+
             _debugStringBuilder.AppendFormat("id: {0}\n", _robot.id);
             _debugStringBuilder.AppendFormat("Current task: {0}\n", _currentTask?.GetType().Name ?? "none");
 
