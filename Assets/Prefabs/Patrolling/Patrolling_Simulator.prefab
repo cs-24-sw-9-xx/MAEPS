@@ -11,6 +11,8 @@ GameObject:
   - component: {fileID: 4230307919047253345}
   - component: {fileID: 4335076633358407167}
   - component: {fileID: 4230307919047253344}
+  - component: {fileID: 9093377932578344294}
+  - component: {fileID: 5924617800109182993}
   m_Layer: 0
   m_Name: Patrolling_Simulator
   m_TagString: Untagged
@@ -45,15 +47,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8e0f4c7e6634e479ebccd43f20cfca3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  modeSpecificUiDocument: {fileID: 0}
   SimulationPrefab: {fileID: 0}
-  UISpeedController: {fileID: 0}
-  UIControllerDebugTitle: {fileID: 0}
-  UIControllerDebugInfo: {fileID: 0}
-  SimulationStatusText: {fileID: 0}
-  SimulationInfoUIController: {fileID: 0}
-  CurrentSimulation: {fileID: 0}
   RosClockPrefab: {fileID: 8420379381742167934, guid: b78f79af27f36bedbb7abcd4c9d0f623, type: 3}
   RosVisualizerPrefab: {fileID: 2315420966074849842, guid: 9ccaf897dbd316d32931129760020fa8, type: 3}
+  UISpeedController: {fileID: 0}
+  SimulationInfoUIController: {fileID: 0}
 --- !u!114 &4230307919047253344
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -66,8 +65,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 673f6a3e43a254e0aa73ab5a867bcdf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pauseButton: {fileID: 0}
-  playButton: {fileID: 0}
-  fastForwardButton: {fileID: 0}
-  fastAsPossibleButton: {fileID: 0}
-  stepperButton: {fileID: 0}
+  uiDocument: {fileID: 0}
+--- !u!114 &9093377932578344294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4230307919047253350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7ac643e2ac14d4c8091e2c8447ca44c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  uiDocument: {fileID: 0}
+  simulationManager: {fileID: 4335076633358407167}
+--- !u!114 &5924617800109182993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4230307919047253350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c37ccbba99a04c01a5a4c0cb8299bab0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraController: {fileID: 0}
+  uIDocument: {fileID: 0}
+  modeSpecificUiDocument: {fileID: 0}
+  simulationManager: {fileID: 4335076633358407167}
+  Chart: {fileID: 0}
+  ProgressBarMask: {fileID: 0}
+  ProgressText: {fileID: 0}
+  StoppingCriteriaToggle: {fileID: 0}
+  DistanceTravelledText: {fileID: 0}
+  CurrentGraphIdlenessText: {fileID: 0}
+  WorstGraphIdlenessText: {fileID: 0}
+  AverageGraphIdlenessText: {fileID: 0}
+  WaypointHeatMapButton: {fileID: 0}
+  CoverageHeatMapButton: {fileID: 0}
+  NoneButton: {fileID: 0}
+  ToggleAllRobotsHighlightingButton: {fileID: 0}
+  AllVerticesLineOfSightButton: {fileID: 0}
+  TargetWaypointSelectedButton: {fileID: 0}
+  ToogleIdleGraphButton: {fileID: 0}
+  RobotHighlightingSlider: {fileID: 0}
+  PlottingFrequencyInputField: {fileID: 0}

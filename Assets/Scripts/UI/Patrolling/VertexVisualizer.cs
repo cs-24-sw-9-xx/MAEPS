@@ -1,10 +1,11 @@
 using Maes.Trackers;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Maes.UI.Patrolling
 {
-    public class VertexVisualizer : MonoBehaviour
+    public class VertexVisualizer : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
         public MeshRenderer meshRenderer = null!;
         public VertexDetails VertexDetails { get; private set; } = null!;
@@ -29,16 +30,17 @@ namespace Maes.UI.Patrolling
             meshRenderer.material.color = VertexDetails.Vertex.Color;
         }
 
-        public void OnMouseDown()
+        public void OnPointerClick(PointerEventData eventData)
         {
             OnVertexSelected(this);
         }
 
-        public void OnMouseEnter()
+        public void OnPointerEnter(PointerEventData eventData)
         {
             Tooltip.ShowTooltip_Static($"{VertexDetails.Vertex} Visits: {VertexDetails.Vertex.NumberOfVisits}");
         }
-        public void OnMouseExit()
+
+        public void OnPointerExit(PointerEventData eventData)
         {
             Tooltip.HideTooltip_Static();
         }

@@ -25,10 +25,11 @@ using Maes.UI;
 using QuickOutline;
 
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Maes.Map
 {
-    public class VisibleTagInfoHandler : MonoBehaviour
+    public class VisibleTagInfoHandler : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
         public Outline outline = null!;
         public ExplorationSimulation Simulation = null!;
@@ -40,31 +41,30 @@ namespace Maes.Map
 
         private delegate void OnVisibleTagSelectedDelegate(VisibleTagInfoHandler t);
 
-
         public void SetTag(EnvironmentTag t)
         {
             _environmentTag = t;
             _onVisibleTagSelected = Simulation.SetSelectedTag;
         }
 
-        public void OnMouseEnter()
+        public string GetDebugInfo()
         {
-            Tooltip.ShowTooltip_Static(_environmentTag.ToString());
+            return _environmentTag.GetDebugInfo();
         }
 
-        public void OnMouseExit()
-        {
-            Tooltip.HideTooltip_Static();
-        }
-
-        public void OnMouseDown()
+        public void OnPointerClick(PointerEventData eventData)
         {
             _onVisibleTagSelected(this);
         }
 
-        public string GetDebugInfo()
+        public void OnPointerEnter(PointerEventData eventData)
         {
-            return _environmentTag.GetDebugInfo();
+            Tooltip.ShowTooltip_Static(_environmentTag.ToString());
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            Tooltip.HideTooltip_Static();
         }
     }
 }

@@ -2,7 +2,7 @@
     <Style src="project://database/Assets/UI/style.uss?fileID=7433441132597879392&amp;guid=7c156309215ba8ef2a1604c503fc30ae&amp;type=3#style" />
     <engine:ScrollView name="SettingsController" touch-scroll-type="Elastic" class="background" style="position: absolute; right: 0; bottom: 0; top: 0;">
         <engine:GroupBox text="Patrolling Cycles" name="PatrollingCyclesGroupBox">
-            <engine:ProgressBar value="22" title="completed / total" />
+            <engine:ProgressBar value="22" title="completed / total" name="PatrollingCyclesProgressBar" high-value="100" />
         </engine:GroupBox>
         <engine:GroupBox name="StatisticsGroupBox" text="Statistics">
             <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
@@ -24,20 +24,20 @@
             <engine:VisualElement style="flex-direction: row;">
                 <engine:GroupBox text="All Robots" class="visualization-groupbox">
                     <engine:Button text="None" name="AllRobotsNoneButton" />
-                    <engine:Button text="Waypoint&#10;Heatmap" />
-                    <engine:Button text="Coverage&#10;Heatmap" />
-                    <engine:Button text="Waypoint&#10;Line of Sight" />
-                    <engine:Button text="Highlight&#10;Robots" />
+                    <engine:Button text="Waypoint&#10;Heatmap" name="AllRobotsWaypointHeatMapButton" />
+                    <engine:Button text="Coverage&#10;Heatmap" name="AllRobotsCoverageHeatMapButton" />
+                    <engine:Button text="Waypoint&#10;Line of Sight" name="AllRobotsWaypointLineOfSightButton" />
+                    <engine:Button text="Highlight&#10;Robots" name="AllRobotsHighlightRobotsButton" />
                 </engine:GroupBox>
                 <engine:GroupBox text="Selected Robot" class="visualization-groupbox">
-                    <engine:Button text="Sticky Camera" />
-                    <engine:Button text="Target&#10;Waypoint" />
+                    <engine:Button text="Sticky Camera" name="SelectedRobotStickyCameraButton" />
+                    <engine:Button text="Target&#10;Waypoint" name="SelectedRobotTargetWaypointButton" />
                 </engine:GroupBox>
             </engine:VisualElement>
         </engine:GroupBox>
         <engine:GroupBox name="GraphGroupBox" text="Graph">
-            <engine:Toggle label="Show" value="false" />
-            <engine:IntegerField label="Ticks per Update" value="50" />
+            <engine:Toggle label="Show" value="false" name="GraphShowToggle" />
+            <engine:IntegerField label="Ticks per Update" value="50" name="GraphTicksPerUpdateField" />
         </engine:GroupBox>
         <engine:GroupBox text="Status" name="StatusGroupBox">
             <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
