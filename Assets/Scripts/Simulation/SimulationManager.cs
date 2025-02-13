@@ -28,7 +28,8 @@ using Maes.UI;
 using Maes.UI.SimulationInfoUIControllers;
 
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 namespace Maes.Simulation
 {
@@ -40,16 +41,11 @@ namespace Maes.Simulation
         public Queue<TScenario> Scenarios = new();
         public readonly Queue<TScenario> InitialScenarios = new();
 
+        public UIDocument modeSpecificUiDocument = null!;
         public GameObject SimulationPrefab = null!;
         public GameObject RosClockPrefab = null!;
         public GameObject RosVisualizerPrefab = null!;
         public SimulationSpeedController UISpeedController = null!;
-        public GameObject UIControllerDebugTitle = null!;
-        public GameObject UIControllerDebugInfo = null!;
-        public Text SimulationStatusText = null!;
-        public RectTransform controlPanel = null!;
-        public RectTransform playButton = null!;
-        public RectTransform pauseButton = null!;
 
         public SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimulationInfoUIController = null!;
         ISimulationInfoUIController ISimulationManager.SimulationInfoUIController => SimulationInfoUIController;
@@ -71,9 +67,18 @@ namespace Maes.Simulation
 
         public bool AutoMaxSpeedInBatchMode { get; set; }
 
+        // Set by Start
+        private Label _physicsTicksValueLabel = null!;
+        private Label _logicTicksValueLabel = null!;
+        private Label _simulatedTimeValueLabel = null!;
+
         // Runs once when starting the program
         private void Start()
         {
+            _physicsTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("PhysicsTicksValueLabel");
+            _logicTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("LogicTicksValueLabel");
+            _simulatedTimeValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("SimulatedTimeValueLabel");
+            
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics.simulationMode = SimulationMode.Script;
             //Physics.autoSimulation = false;
@@ -84,8 +89,6 @@ namespace Maes.Simulation
             {
                 CreateRosClockAndVisualiserObjects();
                 RemoveFastForwardButtonsFromControlPanel();
-                UIControllerDebugTitle.SetActive(false);
-                UIControllerDebugInfo.SetActive(false);
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
         }
@@ -93,18 +96,9 @@ namespace Maes.Simulation
         private void RemoveFastForwardButtonsFromControlPanel()
         {
             // Deactivate fast forward buttons
-            UISpeedController.stepperButton.gameObject.SetActive(false);
-            UISpeedController.fastForwardButton.gameObject.SetActive(false);
-            UISpeedController.fastAsPossibleButton.gameObject.SetActive(false);
-
-            // Resize background
-            controlPanel.sizeDelta = new Vector2(100, 50);
-
-            // Reposition play button
-            playButton.anchoredPosition = new Vector2(-20, 0);
-
-            // Reposition pause button
-            pauseButton.anchoredPosition = new Vector2(20, 0);
+            UISpeedController.FastForwardButton.enabledSelf = false;
+            UISpeedController.FastAsPossibleButton.enabledSelf = false;
+            UISpeedController.StepButton.enabledSelf = false;
         }
 
         private void CreateRosClockAndVisualiserObjects()
@@ -134,21 +128,22 @@ namespace Maes.Simulation
 
         private void Update()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            var keyboard = Keyboard.current;
+            if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
             {
-                if (Input.GetKeyDown(KeyCode.Alpha1))
+                if (keyboard.digit1Key.wasPressedThisFrame)
                 {
                     AttemptSetPlayState(SimulationPlayState.Play);
                 }
-                else if (Input.GetKeyDown(KeyCode.Alpha2))
+                else if (keyboard.digit2Key.wasPressedThisFrame)
                 {
                     AttemptSetPlayState(SimulationPlayState.FastForward);
                 }
-                else if (Input.GetKeyDown(KeyCode.Alpha3))
+                else if (keyboard.digit3Key.wasPressedThisFrame)
                 {
                     AttemptSetPlayState(SimulationPlayState.FastAsPossible);
                 }
-                else if (Input.GetKeyDown(KeyCode.P))
+                else if (keyboard.pKey.wasPressedThisFrame)
                 {
                     AttemptSetPlayState(SimulationPlayState.Step);
                 }
@@ -161,9 +156,9 @@ namespace Maes.Simulation
 
             var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
             var output = simulatedTimeSpan.ToString(@"hh\:mm\:ss");
-            SimulationStatusText.text = "Phys. ticks: " + CurrentSimulation.SimulatedPhysicsTicks +
-                                        "\nLogic ticks: " + CurrentSimulation.SimulatedLogicTicks +
-                                        "\nSimulated: " + output;
+            _physicsTicksValueLabel.text = CurrentSimulation.SimulatedPhysicsTicks.ToString();
+            _logicTicksValueLabel.text = CurrentSimulation.SimulatedLogicTicks.ToString();
+            _simulatedTimeValueLabel.text = output;
         }
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in

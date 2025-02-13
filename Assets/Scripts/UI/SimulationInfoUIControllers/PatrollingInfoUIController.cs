@@ -42,14 +42,15 @@ namespace Maes.UI.SimulationInfoUIControllers
         public TMP_InputField PlottingFrequencyInputField = null!;
 
 
-        protected override Button[] MapVisualizationToggleGroup => new[] {
-            WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
+        // TODO: FIX
+        protected override UnityEngine.UIElements.Button[] MapVisualizationToggleGroup => new UnityEngine.UIElements.Button[] {
+            //WaypointHeatMapButton, CoverageHeatMapButton, NoneButton, TargetWaypointSelectedButton, ToggleAllRobotsHighlightingButton, AllVerticesLineOfSightButton
         };
 
         protected override void AfterStart()
         {
             ToogleIdleGraphButton.onClick.AddListener(ToggleGraph);
-            SelectVisualizationButton(NoneButton);
+            //SelectVisualizationButton(NoneButton);
 
             if (Simulation != null)
             {
@@ -140,25 +141,25 @@ namespace Maes.UI.SimulationInfoUIControllers
             switch (mode)
             {
                 case WaypointHeatMapVisualizationMode:
-                    SelectVisualizationButton(WaypointHeatMapButton);
+                    //SelectVisualizationButton(WaypointHeatMapButton);
                     break;
                 case PatrollingCoverageHeatMapVisualizationMode:
-                    SelectVisualizationButton(CoverageHeatMapButton);
+                    //SelectVisualizationButton(CoverageHeatMapButton);
                     break;
                 case NoneVisualizationMode:
-                    SelectVisualizationButton(NoneButton);
+                    //SelectVisualizationButton(NoneButton);
                     break;
                 case AllRobotsHighlightingVisualizationMode:
-                    SelectVisualizationButton(ToggleAllRobotsHighlightingButton);
+                    //SelectVisualizationButton(ToggleAllRobotsHighlightingButton);
                     break;
                 case PatrollingTargetWaypointVisualizationMode:
-                    SelectVisualizationButton(TargetWaypointSelectedButton);
+                    //SelectVisualizationButton(TargetWaypointSelectedButton);
                     break;
                 case LineOfSightAllVerticesVisualizationMode:
-                    SelectVisualizationButton(AllVerticesLineOfSightButton);
+                    //SelectVisualizationButton(AllVerticesLineOfSightButton);
                     break;
                 case LineOfSightVertexVisualizationMode:
-                    UnHighlightVisualizationButtons();
+                    //UnHighlightVisualizationButtons();
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");

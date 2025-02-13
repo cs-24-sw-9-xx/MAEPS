@@ -1,0 +1,42 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/style.uss?fileID=7433441132597879392&amp;guid=7c156309215ba8ef2a1604c503fc30ae&amp;type=3#style" />
+    <engine:VisualElement name="ExperimentController" class="background" style="flex-grow: 1; flex-direction: row; position: absolute; top: 0; left: 0;">
+        <engine:GroupBox name="RestartGroupBox" text="Restart">
+            <engine:Button text="Current" name="RestartCurrentButton" />
+            <engine:Button text="All" name="RestartAllButton" />
+        </engine:GroupBox>
+        <engine:GroupBox name="CreateNewGroupBox" text="Create New">
+            <engine:Button text="Make and Run" name="MakeAndRunButton" />
+            <engine:Button text="Create Batch" name="CreateBatchButton" />
+        </engine:GroupBox>
+    </engine:VisualElement>
+    <engine:GroupBox name="TimeController" class="background" style="position: absolute; bottom: 0; align-self: center; padding-left: 3px; padding-top: 5px; padding-bottom: 5px; padding-right: 3px; flex-direction: row;">
+        <engine:Button text="" tooltip="Pause" name="PauseButton" class="fa-button" />
+        <engine:Button text="" tooltip="Play" name="PlayButton" class="fa-button" />
+        <engine:Button text="" tooltip="Fast" name="FastForwardButton" class="fa-button" />
+        <engine:Button text="" tooltip="Fast as possible" name="FastAsPossibleButton" class="fa-button" />
+        <engine:Button text="" tooltip="Step while paused" name="StepButton" class="fa-button" />
+    </engine:GroupBox>
+    <engine:VisualElement style="flex-grow: 1; position: absolute; bottom: 0; left: 0; align-items: flex-start;">
+        <engine:Label text="(x: 0.00, y: 0.00)" name="CoordinatesLabel" class="background" style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; color: rgb(255, 255, 255);" />
+        <engine:VisualElement name="CameraController" class="background" style="flex-grow: 1; position: relative; bottom: auto; left: auto; flex-direction: row;">
+            <engine:GroupBox name="CameraMove" style="flex-direction: row; align-items: center;">
+                <engine:Button tooltip="Move left" text="" name="MoveLeftButton" class="fa-button" />
+                <engine:VisualElement style="flex-grow: 1;">
+                    <engine:Button text="" tooltip="Move up" name="MoveUpButton" class="fa-button" />
+                    <engine:Button text="" tooltip="Move down" name="MoveDownButton" class="fa-button" />
+                </engine:VisualElement>
+                <engine:Button tooltip="Move right" text="" name="MoveRightButton" class="fa-button" />
+            </engine:GroupBox>
+            <engine:GroupBox name="CameraRotateZoom" style="flex-direction: row; align-items: center;">
+                <engine:Button text="" tooltip="Rotate counter-clockwise" name="RotateCounterClockwiseButton" class="fa-button" />
+                <engine:VisualElement style="flex-grow: 1;">
+                    <engine:Button text="+" tooltip="Zoom in" name="ZoomInButton" class="fa-button" />
+                    <engine:Button text="" tooltip="Zoom out" name="ZoomOutButton" class="fa-button" />
+                </engine:VisualElement>
+                <engine:Button text="" tooltip="Rotate clockwise" name="RotateClockwiseButton" class="fa-button" />
+            </engine:GroupBox>
+        </engine:VisualElement>
+    </engine:VisualElement>
+    <engine:Label text="Label" name="Tooltip" class="background" style="position: absolute; margin-top: 16px; margin-right: 16px; margin-bottom: 16px; margin-left: 16px;" />
+</engine:UXML>

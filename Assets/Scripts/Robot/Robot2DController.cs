@@ -381,32 +381,24 @@ namespace Maes.Robot
             return new IRobotController.DetectedWall(distance, relativeWallAngle);
         }
 
+        private readonly StringBuilder _debugStringBuilder = new();
         public string GetDebugInfo()
         {
-            var info = new StringBuilder();
-
-            info.Append("id: ");
-            info.AppendLine(_robot.id.ToString());
-
-            info.Append("Current task: ");
-            info.AppendLine(_currentTask == null ? "none" : _currentTask.GetType().ToString());
+            _debugStringBuilder.Clear();
+            
+            _debugStringBuilder.AppendFormat("id: {0}\n", _robot.id);
+            _debugStringBuilder.AppendFormat("Current task: {0}\n", _currentTask?.GetType().Name ?? "none");
 
             var position = Transform.position;
-            info.Append("World Position: ");
-            info.Append(position.x.ToString("#.0"));
-            info.Append(", ");
-            info.AppendLine(position.y.ToString("#.0"));
+            _debugStringBuilder.AppendFormat("World Position: {0:#.0}, {1:#.0}\n", position.x, position.y);
 
-            info.Append("Slam tile: ");
-            info.AppendLine(SlamMap.GetCurrentPosition().ToString());
+            _debugStringBuilder.AppendFormat("Slam tile: {0}\n", SlamMap.GetCurrentPosition());
 
-            info.Append("Coarse tile: ");
-            info.AppendLine(SlamMap.CoarseMap.GetApproximatePosition().ToString());
+            _debugStringBuilder.AppendFormat("Coarse tile: {0}\n", SlamMap.CoarseMap.GetApproximatePosition());
 
-            info.Append("Is colliding: ");
-            info.AppendLine(IsCurrentlyColliding.ToString());
+            _debugStringBuilder.AppendFormat("Is colliding: {0}\n", IsCurrentlyColliding);
 
-            return info.ToString();
+            return _debugStringBuilder.ToString();
         }
 
         public void Move(float distanceInMeters, bool reverse = false)
