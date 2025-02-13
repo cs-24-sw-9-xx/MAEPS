@@ -45,7 +45,6 @@ namespace Maes.Trackers
 
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
-        public bool HaveToggledSecondStoppingCriteria { get; }
 
         public readonly List<PatrollingSnapShot> SnapShots = new();
         public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
@@ -67,7 +66,6 @@ namespace Maes.Trackers
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetLineOfSightVertices(collisionMap, map);
             TotalCycles = scenario.TotalCycles;
-            HaveToggledSecondStoppingCriteria = scenario.StopAfterDiff;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;

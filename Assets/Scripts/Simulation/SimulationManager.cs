@@ -78,7 +78,7 @@ namespace Maes.Simulation
             _physicsTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("PhysicsTicksValueLabel");
             _logicTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("LogicTicksValueLabel");
             _simulatedTimeValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("SimulatedTimeValueLabel");
-            
+
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics.simulationMode = SimulationMode.Script;
             //Physics.autoSimulation = false;
