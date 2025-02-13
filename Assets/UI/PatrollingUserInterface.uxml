@@ -37,9 +37,9 @@
     </engine:GroupBox>
     <engine:VisualElement name="RightSide" style="position: absolute; right: 0; bottom: 0; top: 0; flex-direction: row;">
         <engine:VisualElement style="flex-grow: 1; flex-direction: column-reverse;">
-            <engine:Label text="(x: 0.00, y: 0.00)" name="Coordinates" class="background" style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; color: rgb(255, 255, 255);" />
+            <engine:Label text="(x: 0.00, y: 0.00)" name="CoordinatesLabel" class="background" style="padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; color: rgb(255, 255, 255);" />
         </engine:VisualElement>
-        <engine:ScrollView name="SettingsController" class="background">
+        <engine:ScrollView name="SettingsController" touch-scroll-type="Elastic" class="background">
             <engine:GroupBox text="Patrolling Cycles" name="PatrollingCyclesGroupBox" class="vertical-groupbox">
                 <engine:ProgressBar value="22" title="completed / total" />
             </engine:GroupBox>
@@ -75,7 +75,7 @@
                 </engine:VisualElement>
             </engine:GroupBox>
             <engine:GroupBox name="GraphGroupBox" text="Graph" class="vertical-groupbox">
-                <engine:Toggle label="Show" class="statistics-label" />
+                <engine:Toggle label="Show" value="false" class="statistics-label" />
                 <engine:IntegerField label="Ticks per Update" value="50" class="statistics-label" />
             </engine:GroupBox>
             <engine:GroupBox text="Status" name="StatusGroupBox" class="vertical-groupbox">
