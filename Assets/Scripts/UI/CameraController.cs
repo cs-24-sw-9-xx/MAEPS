@@ -20,18 +20,17 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using System.Linq;
 
 using Maes.Simulation;
 using Maes.Utilities;
 
 using UnityEngine;
-
-// ReSharper disable ConvertIfStatementToNullCoalescingAssignment
+using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 namespace Maes.UI
 {
-    internal class CameraController : MonoBehaviour
+    public class CameraController : MonoBehaviour
     {
         // HACK
         public static CameraController SingletonInstance = null!;
@@ -61,22 +60,70 @@ namespace Maes.UI
         public Vector3 rotateStartPosition;
         public Vector3 rotateCurrentPosition;
 
-        public List<UIMovementButton> buttons = null!;
-
-        public List<RectTransform> uiPanels = null!;
-
         public bool stickyCam;
+        
+        public UIDocument uiDocument = null!;
+        public UIDocument modeSpecificUiDocument = null!;
+        
+        private readonly Dictionary<Direction, bool> _buttonStates = new();
+        
+        private Button _leftButton = null!;
+        private Button _rightButton = null!;
+        private Button _upButton = null!;
+        private Button _downButton = null!;
+        
+        private Button _rotateCounterClockwiseButton = null!;
+        private Button _rotateClockwiseButton = null!;
+        private Button _zoomInButton = null!;
+        private Button _zoomOutButton = null!;
+
 
         // Start is called before the first frame update
         private void Start()
         {
             _simulationManager = simulationManagerObject.GetComponent<ISimulationManager>();
+
+            _leftButton = uiDocument.rootVisualElement.Q<Button>("MoveLeftButton");
+            _rightButton = uiDocument.rootVisualElement.Q<Button>("MoveRightButton");
+            _upButton = uiDocument.rootVisualElement.Q<Button>("MoveUpButton");
+            _downButton = uiDocument.rootVisualElement.Q<Button>("MoveDownButton");
+            
+            _rotateCounterClockwiseButton = uiDocument.rootVisualElement.Q<Button>("RotateCounterClockwiseButton");
+            _rotateClockwiseButton = uiDocument.rootVisualElement.Q<Button>("RotateClockwiseButton");
+            _zoomInButton = uiDocument.rootVisualElement.Q<Button>("ZoomInButton");
+            _zoomOutButton = uiDocument.rootVisualElement.Q<Button>("ZoomOutButton");
+            
+            HandleButton(_leftButton, Direction.Left);
+            HandleButton(_rightButton, Direction.Right);
+            HandleButton(_upButton, Direction.Up);
+            HandleButton(_downButton, Direction.Down);
+            
+            HandleButton(_rotateCounterClockwiseButton, Direction.RotateCounterClockwise);
+            HandleButton(_rotateClockwiseButton, Direction.RotateClockwise);
+            HandleButton(_zoomInButton, Direction.ZoomIn);
+            HandleButton(_zoomOutButton, Direction.ZoomOut);
+            
             SingletonInstance = this;
-            var t = transform; // Temp storage of build-in is (apparently) more efficient than repeated access.
-            newPosition = t.position;
-            newRotation = t.rotation;
+            newPosition = transform.position;
+            newRotation = transform.rotation;
             CameraInitialization();
             stickyCam = false;
+        }
+
+        private void HandleButton(Button button, Direction direction)
+        {
+            button.RegisterCallback<MouseDownEvent, Direction>(ButtonDownHandler, direction);
+            button.RegisterCallback<MouseUpEvent, Direction>(ButtonUpHandler, direction);
+        }
+
+        private void ButtonDownHandler(MouseDownEvent mouseDownEvent, Direction direction)
+        {
+            _buttonStates[direction] = true;
+        }
+        
+        private void ButtonUpHandler(MouseUpEvent mouseupEvent, Direction direction)
+        {
+            _buttonStates[direction] = false;
         }
 
         private void CameraInitialization()
@@ -111,7 +158,7 @@ namespace Maes.UI
 
             ApplyMovement();
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Keyboard.current.escapeKey.wasPressedThisFrame)
             {
                 movementTransform = null;
                 // Notify current simulation that no robot is selected
@@ -127,22 +174,21 @@ namespace Maes.UI
 
         private void HandleCameraSelect()
         {
-            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            var keyboard = Keyboard.current;
+            if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
             {
                 return;
             }
 
-            if (Input.GetKey(KeyCode.Alpha1))
+            if (keyboard.digit1Key.wasPressedThisFrame)
             {
                 SwitchCameraTo("Camera45");
             }
-
-            if (Input.GetKey(KeyCode.Alpha2))
+            else if (keyboard.digit2Key.wasPressedThisFrame)
             {
                 SwitchCameraTo("Camera70");
             }
-
-            if (Input.GetKey(KeyCode.Alpha3))
+            else if (keyboard.digit3Key.wasPressedThisFrame)
             {
                 SwitchCameraTo("Camera90");
             }
@@ -171,26 +217,33 @@ namespace Maes.UI
             }
         }
 
+        private bool GetButtonState(Direction direction)
+        {
+            return _buttonStates.TryGetValue(direction, out var value) && value;
+        }
+
         private void HandleKeyboardRotateZoomInput()
         {
-            if (Input.GetKey(KeyCode.U) || buttons[(int)UIMovementButton.Direction.RLeft].isActive)
+            var keyboard = Keyboard.current; 
+            
+            if (keyboard.uKey.isPressed || GetButtonState(Direction.RotateCounterClockwise))
             {
                 newRotation *= Quaternion.Euler(Vector3.up * rotationAmount);
             }
 
-            if (Input.GetKey(KeyCode.O) || buttons[(int)UIMovementButton.Direction.RRight].isActive)
+            if (keyboard.oKey.isPressed || GetButtonState(Direction.RotateClockwise))
             {
                 newRotation *= Quaternion.Euler(Vector3.up * (-1 * rotationAmount));
             }
 
-            if (Input.GetKey(KeyCode.Period) || Input.GetKey(KeyCode.Plus) || Input.GetKey(KeyCode.KeypadPlus) ||
-                buttons[(int)UIMovementButton.Direction.In].isActive)
+            if (keyboard.periodKey.isPressed || keyboard.numpadPlusKey.isPressed ||
+                GetButtonState(Direction.ZoomIn))
             {
                 PrepareZoom(1f);
             }
 
-            if (Input.GetKey(KeyCode.Comma) || Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus) ||
-                buttons[(int)UIMovementButton.Direction.Out].isActive)
+            if (keyboard.commaKey.isPressed || keyboard.minusKey.isPressed || keyboard.numpadMinusKey.isPressed ||
+                GetButtonState(Direction.ZoomOut))
             {
                 PrepareZoom(-1f);
             }
@@ -198,37 +251,31 @@ namespace Maes.UI
 
         private void HandleMouseRotateZoomInput()
         {
-            #region MouseZoomRegion
-
-            if (Input.mouseScrollDelta.y != 0 && !uiPanels.Any(panel =>
-                    RectTransformUtility.RectangleContainsScreenPoint(panel, Input.mousePosition)))
+            var mouse = Mouse.current;
+            var yScroll = mouse.scroll.y.ReadValue();
+            if (yScroll != 0 && !MouseIsOnUI())
             {
-                PrepareZoom(Input.mouseScrollDelta.y);
+                PrepareZoom(yScroll);
             }
 
-            #endregion
-
-            #region MouseRotateRegion
-
-            if (Input.GetMouseButtonDown(1))
+            var rightMouseButton = mouse.rightButton;
+            if (rightMouseButton.wasPressedThisFrame)
             {
-                rotateStartPosition = Input.mousePosition;
+                rotateStartPosition = mouse.position.ReadValue();
             }
 
-            if (!Input.GetMouseButton(1))
+            if (!rightMouseButton.isPressed)
             {
                 return;
             }
 
-            rotateCurrentPosition = Input.mousePosition;
+            rotateCurrentPosition = mouse.position.ReadValue();
 
             var diff = rotateStartPosition - rotateCurrentPosition;
 
             rotateStartPosition = rotateCurrentPosition;
 
             newRotation *= Quaternion.Euler(Vector3.up * (-1 * diff.x / 5f));
-
-            #endregion
         }
 
         // Positive direction = zoom in
@@ -251,22 +298,11 @@ namespace Maes.UI
             }
         }
 
-        public void Subscribe(UIMovementButton button)
-        {
-            buttons.Add(button);
-            buttons = buttons.OrderBy(b => b.direction).ToList();
-        }
-
-        public void Subscribe(RectTransform panel)
-        {
-            uiPanels.Add(panel);
-        }
-
         private Vector2? GetMouseWorldPosition()
         {
             // Create temp plane along playing field, and a the current mouse position
             var plane = new Plane(Vector3.forward, Vector3.zero);
-            var ray = currentCam.ScreenPointToRay(Input.mousePosition);
+            var ray = currentCam.ScreenPointToRay(Pointer.current.position.ReadValue());
 
 
             // Only continue if the ray cast intersects the plane
@@ -298,7 +334,7 @@ namespace Maes.UI
         {
             // If sticky cam is enabled and a robot is selected, then camera movement is determined entirely by the
             // movement of the robot
-            if (stickyCam && movementTransform is not null)
+            if (stickyCam && movementTransform != null)
             {
                 newPosition = movementTransform.position;
                 return;
@@ -310,53 +346,59 @@ namespace Maes.UI
                 return;
             }
 
-            if (uiPanels.Any(panel =>
-                RectTransformUtility.RectangleContainsScreenPoint(panel, Input.mousePosition)))
+            if (MouseIsOnUI())
             {
                 return; // Don't do anything here, if mouse is in a UI panel.
             }
 
-            #region MouseMovementRegion
+            var mouseLeftButton = Mouse.current.leftButton;
 
             // If left mouse button has been clicked since last update()
-            if (Input.GetMouseButtonDown(0))
+            if (mouseLeftButton.wasPressedThisFrame)
             {
                 dragStartPosition = mouseWorldPosition.Value;
             }
 
             // If left mouse button is still being held down since last update()
-            if (Input.GetMouseButton(0))
+            if (mouseLeftButton.isPressed)
             {
                 dragCurrentPosition = mouseWorldPosition.Value;
                 // New position should be current position, plus difference in dragged position, relative to temp plane
                 newPosition = transform.position + (dragStartPosition - dragCurrentPosition);
             }
-
-            #endregion
         }
 
         private void HandleKeyboardMovementInput()
         {
+            var keyboard = Keyboard.current;
+            
             var t = transform;
-            if (Input.GetKey(KeyCode.I) || buttons[(int)UIMovementButton.Direction.Forwards].isActive)
+            if (keyboard.iKey.isPressed || GetButtonState(Direction.Up))
             {
                 newPosition += t.forward * movementSpeed;
             }
 
-            if (Input.GetKey(KeyCode.K) || buttons[(int)UIMovementButton.Direction.Backwards].isActive)
+            if (keyboard.kKey.isPressed || GetButtonState(Direction.Down))
             {
                 newPosition += t.forward * (-1 * movementSpeed);
             }
 
-            if (Input.GetKey(KeyCode.J) || buttons[(int)UIMovementButton.Direction.Left].isActive)
+            if (keyboard.jKey.isPressed || GetButtonState(Direction.Left))
             {
                 newPosition += t.right * (-1 * movementSpeed);
             }
 
-            if (Input.GetKey(KeyCode.L) || buttons[(int)UIMovementButton.Direction.Right].isActive)
+            if (keyboard.lKey.isPressed || GetButtonState(Direction.Right))
             {
                 newPosition += t.right * movementSpeed;
             }
+        }
+
+        private bool MouseIsOnUI()
+        {
+            var mousePosition = Pointer.current.position.ReadValue();
+            var uiPosition = new Vector2(mousePosition.x, Screen.height - mousePosition.y);
+            return !(uiDocument.rootVisualElement.panel.Pick(uiPosition) == null && modeSpecificUiDocument.rootVisualElement.panel.Pick(uiPosition) == null);
         }
 
         private class CamAssembly
@@ -371,6 +413,18 @@ namespace Maes.UI
                 ZoomAmount = zoomAmount;
                 Camera = camera;
             }
+        }
+        
+        private enum Direction
+        {
+            Up,
+            Down,
+            Left,
+            Right,
+            ZoomIn,
+            ZoomOut,
+            RotateCounterClockwise,
+            RotateClockwise
         }
     }
 }

@@ -22,30 +22,39 @@
 using Maes.Simulation;
 
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.PlayerLoop;
+using UnityEngine.UIElements;
 
 namespace Maes.UI
 {
     public class SimulationSpeedController : MonoBehaviour
     {
-        public Button pauseButton = null!;
-        public Button playButton = null!;
-        public Button fastForwardButton = null!;
-        public Button fastAsPossibleButton = null!;
-        public Button stepperButton = null!;
-
+        public UIDocument uiDocument = null!; // Set in editor
+        
         // Set by Start
         private ISimulationManager _simulationManager = null!;
+        private Button _pauseButton = null!;
+        private Button _playButton = null!;
+        public Button FastForwardButton { get; private set; } = null!;
+        public Button FastAsPossibleButton { get; private set; } = null!;
+        public Button StepButton { get; private set; } = null!;
 
-        private void Start()
+        private void Awake()
         {
             _simulationManager = GetComponent<ISimulationManager>();
-
-            pauseButton.onClick.AddListener(Pause);
-            playButton.onClick.AddListener(Play);
-            fastForwardButton.onClick.AddListener(FastForward);
-            fastAsPossibleButton.onClick.AddListener(FastAsPossible);
-            stepperButton.onClick.AddListener(Step);
+            
+            _pauseButton = uiDocument.rootVisualElement.Q<Button>("PauseButton");
+            _playButton = uiDocument.rootVisualElement.Q<Button>("PlayButton");
+            FastForwardButton = uiDocument.rootVisualElement.Q<Button>("FastForwardButton");
+            FastAsPossibleButton = uiDocument.rootVisualElement.Q<Button>("FastAsPossibleButton");
+            StepButton = uiDocument.rootVisualElement.Q<Button>("StepButton");
+            
+            
+            _pauseButton.RegisterCallback<ClickEvent>(Pause);
+            _playButton.RegisterCallback<ClickEvent>(Play);
+            FastForwardButton.RegisterCallback<ClickEvent>(FastForward);
+            FastAsPossibleButton.RegisterCallback<ClickEvent>(FastAsPossible);
+            StepButton.RegisterCallback<ClickEvent>(Step);
         }
 
         public void UpdateButtonsUI(SimulationPlayState currentState)
@@ -56,36 +65,34 @@ namespace Maes.UI
                 return;
             }
 
-            pauseButton.image.color = (currentState == SimulationPlayState.Paused) ? Color.green : Color.white;
-            playButton.image.color = (currentState == SimulationPlayState.Play) ? Color.green : Color.white;
-            fastForwardButton.image.color =
-                (currentState == SimulationPlayState.FastForward) ? Color.green : Color.white;
-            fastAsPossibleButton.image.color =
-                (currentState == SimulationPlayState.FastAsPossible) ? Color.green : Color.white;
+            _pauseButton.EnableInClassList("toggled", currentState == SimulationPlayState.Paused);
+            _playButton.EnableInClassList("toggled", currentState == SimulationPlayState.Play);
+            FastForwardButton.EnableInClassList("toggled", currentState == SimulationPlayState.FastForward);
+            FastAsPossibleButton.EnableInClassList("toggled", currentState == SimulationPlayState.FastAsPossible);
         }
 
-        public void Pause()
+        private void Pause(ClickEvent clickEvent)
         {
             AttemptSwitchState(SimulationPlayState.Paused);
         }
 
-        public void Play()
+        private void Play(ClickEvent clickEvent)
         {
             AttemptSwitchState(SimulationPlayState.Play);
         }
 
-        public void FastForward()
+        private void FastForward(ClickEvent clickEvent)
         {
             AttemptSwitchState(SimulationPlayState.FastForward);
         }
 
-        public void FastAsPossible()
+        private void FastAsPossible(ClickEvent clickEvent)
         {
             AttemptSwitchState(SimulationPlayState.FastAsPossible);
         }
 
         // Perform a single logic step then stop again
-        public void Step()
+        private void Step(ClickEvent clickEvent)
         {
             AttemptSwitchState(SimulationPlayState.Step);
         }

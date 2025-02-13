@@ -20,48 +20,43 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Maes.UI
 {
     internal class Tooltip : MonoBehaviour
     {
         // Set by Awake
-        private Text _text = null!;
-        private RectTransform _backgroundTransform = null!;
-        private RectTransform _parentTransform = null!;
+        private Label _tooltip = null!;
 
         private static Tooltip s_instance = null!;
 
         private void Awake()
         {
             s_instance = this;
-            _text = transform.Find("Text").GetComponent<Text>();
-            _backgroundTransform = transform.Find("Background").GetComponent<RectTransform>();
-            _parentTransform = transform.parent.GetComponent<RectTransform>();
+            _tooltip = GetComponent<UIDocument>().rootVisualElement.Q<Label>("Tooltip");
             HideTooltip();
         }
 
         private void ShowTooltip(string text)
         {
-            gameObject.SetActive(true);
-            _text.text = text;
-            const float padding = 2f;
-            var bgSize = new Vector2(_text.preferredWidth + 2f * padding, _text.preferredHeight + 2f * padding);
-            _backgroundTransform.sizeDelta = bgSize;
+            _tooltip.visible = true;
+            _tooltip.text = text;
         }
 
         private void HideTooltip()
         {
-            gameObject.SetActive(false);
+            _tooltip.visible = false;
         }
 
         private void Update()
         {
             // Have the tooltip follow the mouse-pointer around.
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(_parentTransform,
-                Input.mousePosition, null, out var localPoint);
-            transform.localPosition = localPoint + new Vector2(2f, 2f);
+            var mousePosition = Mouse.current.position.ReadValue();
+            _tooltip.style.top = Screen.height - mousePosition.y;
+            _tooltip.style.left = mousePosition.x;
         }
 
         public static void ShowTooltip_Static(string text)

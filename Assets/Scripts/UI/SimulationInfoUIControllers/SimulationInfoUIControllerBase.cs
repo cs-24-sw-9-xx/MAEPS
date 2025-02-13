@@ -19,12 +19,14 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using System;
+
 using Maes.Algorithms;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Maes.UI.SimulationInfoUIControllers
 {
@@ -33,25 +35,27 @@ namespace Maes.UI.SimulationInfoUIControllers
     where TAlgorithm : IAlgorithm
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
-        public Text AlgorithmDebugText = null!;
-        public Text ControllerDebugText = null!;
-        public Text TagDebugText = null!;
-
-        public Text MouseCoordinateText = null!;
-
-        public Button StickyCameraButton = null!;
+        public CameraController cameraController = null!;
+        public UIDocument uIDocument = null!;
+        public UIDocument modeSpecificUiDocument = null!;
+        
+        // Set by Start
+        private Label _robotControllerValueLabel = null!;
+        private Label _algorithmValueLabel = null!;
+        private Label _tagValueLabel = null!;
+        
+        private Label _coordinatesLabel = null!;
+        
+        private Button _stickyCameraButton = null!;
 
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
 
         public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager = null!;
         // Represents a function that modifies the given simulation in some way
         // (for example by changing map visualization mode)
-        protected delegate void SimulationModification(TSimulation? simulation);
+        protected delegate void SimulationModification(TSimulation simulation);
 
         protected SimulationModification? _mostRecentMapVisualizationModification;
-
-        protected readonly Color _mapVisualizationColor = Color.white;
-        protected readonly Color _mapVisualizationSelectedColor = new(150 / 255f, 200 / 255f, 150 / 255f);
 
         protected abstract Button[] MapVisualizationToggleGroup { get; }
 
@@ -59,10 +63,18 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void Start()
         {
-            StickyCameraButton.onClick.AddListener(() =>
+            _stickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
+            
+            _robotControllerValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("RobotControllerValueLabel");
+            _algorithmValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("AlgorithmValueLabel");
+            _tagValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("TagValueLabel");
+            
+            _coordinatesLabel = uIDocument.rootVisualElement.Q<Label>("CoordinatesLabel");
+            
+            _stickyCameraButton.RegisterCallback<ClickEvent>(_ =>
             {
-                CameraController.SingletonInstance.stickyCam = !CameraController.SingletonInstance.stickyCam;
-                StickyCameraButton.image.color = CameraController.SingletonInstance.stickyCam ? _mapVisualizationSelectedColor : _mapVisualizationColor;
+                cameraController.stickyCam = !cameraController.stickyCam;
+                _stickyCameraButton.EnableInClassList("toggled", cameraController.stickyCam);
             });
 
             AfterStart();
@@ -73,14 +85,13 @@ namespace Maes.UI.SimulationInfoUIControllers
         public virtual void ClearSelectedRobot()
         {
             CameraController.SingletonInstance.stickyCam = false;
-            StickyCameraButton.image.color = _mapVisualizationColor;
         }
 
         public void UpdateMouseCoordinates(Vector2 mousePosition)
         {
             var xNumberString = $"{mousePosition.x:00.00}".PadLeft(6);
             var yNumberString = $"{mousePosition.y:00.00}".PadLeft(6);
-            MouseCoordinateText.text = $"(x: {xNumberString}, y: {yNumberString})";
+            _coordinatesLabel.text = $"(x: {xNumberString}, y: {yNumberString})";
         }
 
         // This function executes the given map visualization change and remembers it.
@@ -88,23 +99,23 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected void ExecuteAndRememberMapVisualizationModification(SimulationModification modificationFunc)
         {
             _mostRecentMapVisualizationModification = modificationFunc;
-            modificationFunc(Simulation);
+            modificationFunc(Simulation ?? throw new InvalidOperationException("Simulation is null"));
         }
 
         public void UpdateAlgorithmDebugInfo(string info)
         {
-            AlgorithmDebugText.text = info;
+            _algorithmValueLabel.text = info;
         }
 
 
         public void UpdateControllerDebugInfo(string info)
         {
-            ControllerDebugText.text = info;
+            _robotControllerValueLabel.text = info;
         }
 
         public void UpdateTagDebugInfo(string info)
         {
-            TagDebugText.text = info;
+            _tagValueLabel.text = info;
         }
 
         // Called whenever the simulator instantiates a new simulation object 
@@ -115,29 +126,31 @@ namespace Maes.UI.SimulationInfoUIControllers
             NotifyNewSimulation((TSimulation?)simulation);
         }
 
-        protected abstract void UpdateStatistics(TSimulation? simulation);
+        protected abstract void UpdateStatistics(TSimulation simulation);
 
         public void UpdateStatistics(ISimulation? simulation)
         {
-            UpdateStatistics((TSimulation?)simulation);
+            if (simulation == null)
+            {
+                return;
+            }
+            
+            UpdateStatistics((TSimulation)simulation);
         }
 
         // Highlights the selected map visualization button
         protected void SelectVisualizationButton(Button selectedButton)
         {
-            foreach (var button in MapVisualizationToggleGroup)
-            {
-                button.image.color = _mapVisualizationColor;
-            }
-
-            selectedButton.image.color = _mapVisualizationSelectedColor;
+            UnHighlightVisualizationButtons();
+            
+            selectedButton.AddToClassList("toggled");
         }
 
         protected void UnHighlightVisualizationButtons()
         {
             foreach (var button in MapVisualizationToggleGroup)
             {
-                button.image.color = _mapVisualizationColor;
+                button.RemoveFromClassList("toggled");
             }
         }
     }
