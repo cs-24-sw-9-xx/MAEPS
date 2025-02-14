@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map.MapGen;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -31,7 +32,7 @@ namespace Maes.Map.MapPatrollingGen
 
             var vertices = CreateVerticesFromRooms(new SplitRoom(roomTiles.ToArray(), "Start"));
 
-            return new PatrollingMap(vertices, simulationMap);
+            return new PatrollingMap(vertices, simulationMap, LineOfSightUtilities.ComputeVisibilityOfPoint);
         }
 
         private static Vertex[] CreateVerticesFromRooms(SplitRoom splitRoom)
