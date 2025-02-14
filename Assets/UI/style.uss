@@ -7,6 +7,10 @@
     --text-color: white;
     --font-size: 10px;
     --header-font-size: 14px;
+    --button-color: #585858;
+    --button-hover-color: #676767;
+    --button-active-color: #4f657f;
+    --dark-background: #404040;
 }
 
 * {
@@ -22,15 +26,15 @@ Button, .unity-progress-bar__background, .unity-toggle__checkmark, .unity-base-t
 }
 
 Button {
-    background-color: #585858;
+    background-color: var(--button-color);
 }
 
 Button:hover {
-    background-color: #676767;
+    background-color: var(--button-hover-color);
 }
 
 Button:active {
-    background-color: #4f657f;
+    background-color: var(--button-active-color);
 }
 
 Button:focus {
@@ -38,7 +42,7 @@ Button:focus {
 }
 
 Button.toggled, .fa-button.toggled {
-    background-color: #4f657f;
+    background-color: var(--button-active-color);
 }
 
 .unity-base-field:focus:enabled > .unity-base-field__label {
@@ -117,4 +121,45 @@ Button:hover.toggled, .fa-button:hover.toggled {
 
 Button:active.toggled, .fa-button:active.toggled {
     background-color: rgb(119, 141, 167);
+}
+
+.unity-base-slider__tracker {
+    background-color: var(--dark-background);
+}
+
+.unity-scroller, .unity-scroller__high-button, .unity-scroller__low-button, .unity-base-slider__tracker, .unity-base-slider__dragger {
+    border-width: 0;
+}
+
+.unity-scroller, .unity-scroller__slider, .unity-scroller__high-button, .unity-scroller__low-button {
+    min-width: 12px;
+    width: 12px;
+}
+
+.unity-scroller__slider {
+    margin-top: 12px;
+    margin-bottom: 12px;
+}
+
+.unity-scroller__high-button, .unity-scroller__low-button {
+    height: 12px;
+    -unity-background-image-tint-color: white;
+}
+
+.unity-base-slider__dragger {
+    width: 10px;
+    left: 1px;
+    border-radius: 5px;
+}
+
+.unity-base-slider__dragger, .unity-scroller__high-button, .unity-scroller__low-button {
+    background-color: var(--button-color);
+}
+
+.unity-base-slider__dragger:hover, .unity-scroller__high-button:hover, .unity-scroller__low-button:hover {
+    background-color: var(--button-hover-color);
+}
+
+.unity-scroller__high-button:active, .unity-scroller__low-button:active {
+    background-color: var(--button-active-color);
 }
