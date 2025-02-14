@@ -118,7 +118,7 @@ namespace Maes.Map.MapPatrollingGen
                     {
                         // Precompute visibility for each tile
                         // Optionally use ComputeVisibilityOfPointFastBreakColumn for improved performance
-                        precomputedVisibility[tile] = LineOfSightUtilities.ComputeVisibilityOfPoint(tile, map);
+                        precomputedVisibility[tile] = LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn(tile, map);
                     }
                 }
             });
