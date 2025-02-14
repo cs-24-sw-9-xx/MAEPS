@@ -227,6 +227,7 @@ namespace Maes.Trackers
             _selectedRobot = null;
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
+            SetRobotHighlightingSize(4f);
         }
 
         public void SetRobotHighlightingSize(float highlightingSize)
