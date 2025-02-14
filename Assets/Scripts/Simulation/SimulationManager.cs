@@ -80,8 +80,6 @@ namespace Maes.Simulation
             _simulatedTimeValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("SimulatedTimeValueLabel");
 
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
-            Physics.simulationMode = SimulationMode.Script;
-            //Physics.autoSimulation = false;
             Physics2D.simulationMode = SimulationMode2D.Script;
 
             // Adapt UI for ros mode

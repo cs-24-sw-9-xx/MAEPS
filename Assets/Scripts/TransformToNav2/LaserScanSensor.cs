@@ -186,10 +186,9 @@ namespace Maes.TransformToNav2
                 var directionVector = Quaternion.Euler(0f, yawDegrees, 0f) * Vector3.forward;
                 directionVector = new Vector3(directionVector.x, directionVector.z, directionVector.y);
                 var measurementStart = RangeMetersMin * directionVector + transform.position + Vector3.back * 0.1f;
-                var measurementRay = new Ray(measurementStart, directionVector);
-                var foundValidMeasurement = Physics.Raycast(measurementRay, out var hit, RangeMetersMax, layerMask: 1 << 3);
+                var hit = Physics2D.Raycast(measurementStart, directionVector, RangeMetersMax, layerMask: 1 << 3);
                 // Only record measurement if it's within the sensor's operating range
-                if (foundValidMeasurement)
+                if (hit)
                 {
                     // Visualise raytracing by uncommenting this part
                     // Debug.DrawRay(measurementStart, directionVector * hit.distance, Color.red, 1, true);

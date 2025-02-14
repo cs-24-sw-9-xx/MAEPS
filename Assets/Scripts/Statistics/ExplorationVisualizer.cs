@@ -21,49 +21,17 @@
 
 using System.Collections.Generic;
 
-using Maes.Map;
-
 using UnityEngine;
 
 namespace Maes.Statistics
 {
     public class ExplorationVisualizer : Visualizer
     {
-        public LayerMask _foglayer;
-
-        private GameObject? _fogOfWarPlane;
-        private Mesh? _fogMesh;
-        private Vector3[]? _fogVertices;
-        private Color[]? _fogColors;
-
         public static readonly Color32 ExploredColor = new(32, 130, 57, 255);
         public static readonly Color32 CoveredColor = new(32, 80, 240, 255);
         public static readonly Color32 SlamSeenColor = new(50, 120, 180, 255);
         public static readonly Color32 WarmColor = new(200, 60, 60, 255);
         public static readonly Color32 ColdColor = new(50, 120, 180, 255);
-
-        public override void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
-        {
-            base.SetSimulationMap(newMap, offset);
-
-            //Fog of War related stuff below
-            _fogOfWarPlane = GameObject.Find("FogPlaneBetter");
-            if (_fogOfWarPlane != null)
-            {
-                _fogMesh = _fogOfWarPlane.GetComponent<MeshFilter>().mesh;
-                _fogVertices = _fogMesh.vertices;
-                _fogColors = new Color[_fogVertices.Length];
-                for (var i = 0; i < _fogColors.Length; i++)
-                {
-                    _fogColors[i] = Color.black;
-                }
-                for (var i = 0; i < _fogVertices.Length; i++)
-                {
-                    _fogVertices[i] = _fogOfWarPlane.transform.TransformPoint(_fogVertices[i]);
-                }
-                UpdateFogColor();
-            }
-        }
 
         protected override Color32 InitializeCellColor(Cell cell)
         {
@@ -88,60 +56,9 @@ namespace Maes.Statistics
                 _colors[vertexIndex] = color;
                 _colors[vertexIndex + 1] = color;
                 _colors[vertexIndex + 2] = color;
-
-                //Fog of War colorchange below, done for every vertex that is seen and explored
-                //If turn off exploration mode, tiles dont change color, therefore dont change the FogMesh
-                if (_fogMesh is not null && _fogColors != null)
-                {
-                    for (var i = 0; i <= 2; i++) //The more vertices nearby you check, the more computation and the further you see, 0-2 work, above 0 is much slower
-                    {
-                        var ray = new Ray(_vertices[vertexIndex + i] + new Vector3(0, 0, -10), Vector3.forward);
-                        if (Physics.Raycast(ray, out var hit, 1000, _foglayer, QueryTriggerInteraction.Collide))
-                        {
-                            var vertexIndexHit = GetClosestVertex(hit, _fogMesh.triangles);
-                            _fogColors[vertexIndexHit].a = 0;
-                            UpdateFogColor();
-                        }
-                    }
-                }
             }
 
             _mesh.colors32 = _colors;
-        }
-
-        private void UpdateFogColor()
-        {
-            if (_fogMesh != null)
-            {
-                _fogMesh.colors = _fogColors;
-            }
-        }
-
-        private static int GetClosestVertex(RaycastHit aHit, int[] aTriangles)
-        {
-            var b = aHit.barycentricCoordinate;
-            var index = aHit.triangleIndex * 3;
-            if (index < 0 || index + 2 >= aTriangles.Length)
-            {
-                return -1;
-            }
-
-            if (b.x > b.y)
-            {
-                if (b.x > b.z)
-                {
-                    return aTriangles[index]; // x
-                }
-
-                return aTriangles[index + 2]; // z
-            }
-
-            if (b.y > b.z)
-            {
-                return aTriangles[index + 1]; // y
-            }
-
-            return aTriangles[index + 2]; // z
         }
     }
 }
