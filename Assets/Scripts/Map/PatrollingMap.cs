@@ -8,6 +8,8 @@ using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;
 
+using UnityEngine;
+
 namespace Maes.Map
 {
     public class PatrollingMap : ICloneable<PatrollingMap>
@@ -16,10 +18,13 @@ namespace Maes.Map
 
         public readonly IReadOnlyDictionary<(int, int), PathStep[]> Paths;
 
-        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap)
+        public readonly Func<Vector2Int, bool[,], HashSet<Vector2Int>> VisibilityFunciton;
+
+        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, Func<Vector2Int, bool[,], HashSet<Vector2Int>> visibilityAlgorithm)
         {
             Vertices = vertices;
             Paths = CreatePaths(vertices, simulationMap);
+            VisibilityFunciton = visibilityAlgorithm;
         }
 
         private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths)

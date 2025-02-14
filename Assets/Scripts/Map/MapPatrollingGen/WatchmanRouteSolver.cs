@@ -12,13 +12,14 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WatchmanRouteSolver
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
         {
+            System.Func<Vector2Int, bool[,], HashSet<Vector2Int>> visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = SolveWatchmanRoute(map);
+            var vertexPositions = SolveWatchmanRoute(map, visibilityAlgorithm);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
             var connectVertices = ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
-            return new PatrollingMap(connectVertices, simulationMap);
+            return new PatrollingMap(connectVertices, simulationMap, visibilityAlgorithm);
         }
 
         private static Vertex[] ConnectVertices(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
@@ -57,9 +58,9 @@ namespace Maes.Map.MapPatrollingGen
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
-        private static List<Vector2Int> SolveWatchmanRoute(bool[,] map)
+        private static List<Vector2Int> SolveWatchmanRoute(bool[,] map, System.Func<Vector2Int, bool[,], HashSet<Vector2Int>> visibilityAlgorithm)
         {
-            var precomputedVisibility = ComputeVisibility(map);
+            var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
             var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
             return guardPositions;
         }
@@ -102,7 +103,7 @@ namespace Maes.Map.MapPatrollingGen
             return guardPositions;
         }
 
-        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
+        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map, System.Func<Vector2Int, bool[,], HashSet<Vector2Int>> visibilityAlgorithm)
         {
             var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
             var width = map.GetLength(0);
@@ -117,8 +118,7 @@ namespace Maes.Map.MapPatrollingGen
                     if (!map[x, y])
                     {
                         // Precompute visibility for each tile
-                        // Optionally use ComputeVisibilityOfPointFastBreakColumn for improved performance
-                        precomputedVisibility[tile] = LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn(tile, map);
+                        precomputedVisibility[tile] = visibilityAlgorithm(tile, map); 
                     }
                 }
             });
