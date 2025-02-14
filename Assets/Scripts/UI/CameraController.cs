@@ -112,8 +112,8 @@ namespace Maes.UI
 
         private void HandleButton(Button button, Direction direction)
         {
-            button.RegisterCallback<MouseDownEvent, Direction>(ButtonDownHandler, direction);
-            button.RegisterCallback<MouseUpEvent, Direction>(ButtonUpHandler, direction);
+            button.RegisterCallback<MouseDownEvent>(e => ButtonDownHandler(e, direction), TrickleDown.TrickleDown);
+            button.RegisterCallback<MouseUpEvent>(e => ButtonUpHandler(e, direction), TrickleDown.TrickleDown);
         }
 
         private void ButtonDownHandler(MouseDownEvent mouseDownEvent, Direction direction)
