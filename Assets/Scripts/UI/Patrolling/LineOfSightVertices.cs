@@ -31,7 +31,7 @@ namespace Maes.UI.Patrolling
 
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                var tiles = LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn(vertex.Position, bitmap);
+                var tiles = _patrollingMap.VisibilityFunciton(vertex.Position, bitmap);
 
                 foreach (var tile in tiles)
                 {
