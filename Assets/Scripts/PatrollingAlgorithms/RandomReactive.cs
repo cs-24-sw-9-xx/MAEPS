@@ -2,6 +2,8 @@ using System.Linq;
 
 using Maes.Map;
 
+using Random = System.Random;
+
 namespace Maes.PatrollingAlgorithms
 {
     /// <summary>
@@ -9,11 +11,18 @@ namespace Maes.PatrollingAlgorithms
     /// </summary>
     public class RandomReactive : PatrollingAlgorithm
     {
+        private readonly Random _random;
+
+        public RandomReactive(int seed)
+        {
+            _random = new Random(seed);
+        }
+
         public override string AlgorithmName => "Random Reactive Algorithm";
 
         protected override Vertex NextVertex(Vertex currentVertex)
         {
-            var index = UnityEngine.Random.Range(0, currentVertex.Neighbors.Count);
+            var index = _random.Next(currentVertex.Neighbors.Count);
             return currentVertex.Neighbors.ElementAt(index);
         }
     }
