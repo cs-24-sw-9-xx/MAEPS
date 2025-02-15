@@ -112,13 +112,13 @@ namespace Maes.ExperimentSimulations
             var buildingConfigList100 = new List<BuildingMapConfig>();
             foreach (var val in randNumbers)
             {
-                buildingConfigList100.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100));
+                buildingConfigList100.Add(new BuildingMapConfig(val, widthInTiles: 100, heightInTiles: 100, brokenCollisionMap: false));
             }
 
             var mapSizes = new List<int> { 50, 75, 100 };
             var algorithms = new Dictionary<string, RobotSpawner<IPatrollingAlgorithm>.CreateAlgorithmDelegate>
                 {
-                    { "random_reactive", _ => new RandomReactive() },
+                    { "random_reactive", seed => new RandomReactive(seed) },
                 };
             var buildingMaps = ((buildingConfigList100));
             foreach (var mapConfig in buildingMaps)
@@ -169,7 +169,7 @@ namespace Maes.ExperimentSimulations
             }
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
-            var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
+            var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50, brokenCollisionMap: false);
             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 totalCycles: 3,
                 stopAfterDiff: true,
@@ -179,7 +179,7 @@ namespace Maes.ExperimentSimulations
                                                                  seed: 123,
                                                                  numberOfRobots: 5,
                                                                  suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: _ => new RandomReactive()),
+                                                                 createAlgorithmDelegate: seed => new RandomReactive(seed)),
                 statisticsFileName: "delete-me",
                 robotConstraints: robotConstraints));
 
