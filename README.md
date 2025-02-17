@@ -3,7 +3,7 @@ MAEPS is a tool for simulating and testing multi robot online exploration and pa
 MAEPS is visualised and physics driven using the Unity Game Engine.
 MAEPS was created as part of a Master's Thesis at Aalborg University, Denmark, on the subject of distributed systems.
 
-A video trailer for MAEPS can be found [here](https://youtu.be/lgUNrTfJW5g)
+A video trailer for the exploration part of MAEPS can be found [here](https://youtu.be/lgUNrTfJW5g)
 
 <p float="left">
   <img src=".readmeAssets/example_image_1.png" width="400" alt="Screenshots taken in MAEPS"/>
