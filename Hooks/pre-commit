@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo "Running pre-commit hook..."
+
+# Define script paths (adjust if needed)
+SCRIPT_DIR="$(git rev-parse --show-toplevel)/"
+
+# Detect Windows and run the appropriate script
+if [ "$OS" = "Windows_NT" ]; then
+    echo "Detected Windows - Running run-formatting.bat"
+    cmd.exe /c "$SCRIPT_DIR/run-formatting.bat" || exit 1
+else
+    echo "Detected Linux/macOS - Running run-formatting.sh"
+    sh "$SCRIPT_DIR/run-formatting.sh" || exit 1
+fi
+
+echo "Pre-commit checks passed!"
