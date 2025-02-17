@@ -280,6 +280,11 @@ Headless runs will start simulating immediately on the "**Fast as possible**" sp
 
 When in batch mode, the application will quit automatically when the scenario queue is empty.
 
+# Setting Up Git Hooks
+To install pre-commit hooks, run:
+- **Linux/macOS**: `./install-hooks.sh`
+- **Windows**: `install-hooks.bat`
+
 # Performance Testing (Linux only)
 This repository contains a [bash-script](PerformanceTest/perf.sh) for continuously logging memory usage, CPU utilization, and network activity.
 The script currently assumes that the network activity to be logged is happening on the docker0 interface.
