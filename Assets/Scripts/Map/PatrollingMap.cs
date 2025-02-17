@@ -14,17 +14,18 @@ namespace Maes.Map
 {
     public class PatrollingMap : ICloneable<PatrollingMap>
     {
+        public delegate HashSet<Vector2Int> VisibilityMethod(Vector2Int position, bool[,] map);
         public readonly Vertex[] Vertices;
 
         public readonly IReadOnlyDictionary<(int, int), PathStep[]> Paths;
 
-        public readonly Func<Vector2Int, bool[,], HashSet<Vector2Int>> VisibilityFunciton;
+        public readonly VisibilityMethod VisibilityAlgorithm;
 
-        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, Func<Vector2Int, bool[,], HashSet<Vector2Int>> visibilityAlgorithm)
+        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, VisibilityMethod visibilityAlgorithm)
         {
             Vertices = vertices;
             Paths = CreatePaths(vertices, simulationMap);
-            VisibilityFunciton = visibilityAlgorithm;
+            VisibilityAlgorithm = visibilityAlgorithm;
         }
 
         private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths)
