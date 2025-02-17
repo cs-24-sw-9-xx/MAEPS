@@ -1,7 +1,7 @@
 using System.Linq;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
+using Maes.Algorithms.Exploration.TheNextFrontier;
 using Maes.Map.RobotSpawners;
 using Maes.Simulation.SimulationScenarios;
 using Maes.Statistics;

@@ -23,7 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.FollowWaypoints;
+using Maes.Algorithms.Exploration.FollowWaypoints;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;

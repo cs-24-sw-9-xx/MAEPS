@@ -19,8 +19,8 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExplorationAlgorithm.Greed;
-using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Algorithms.Exploration.Greed;
+using Maes.Algorithms.Exploration.Minotaur;
 using Maes.Map.MapGen;
 using Maes.Robot;
 using Maes.Simulation;

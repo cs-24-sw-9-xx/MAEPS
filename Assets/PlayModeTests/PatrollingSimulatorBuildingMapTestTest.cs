@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Map.MapGen;
-using Maes.PatrollingAlgorithms;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 

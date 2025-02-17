@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Robot;
 
@@ -32,10 +34,23 @@ namespace PlayModeTests
 
         public delegate void CustomUpdateFunction(int tick, Robot2DController controller);
 
-        public void UpdateLogic()
+        public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
-            UpdateFunction(Tick, Controller);
-            Tick++;
+            while (true)
+            {
+                yield return WaitForCondition.ContinueUpdateLogic();
+            }
+        }
+
+        public IEnumerable<WaitForCondition> UpdateLogic()
+        {
+            while (true)
+            {
+                UpdateFunction(Tick, Controller);
+                Tick++;
+
+                yield return WaitForCondition.WaitForLogicTicks(1);
+            }
         }
 
         public void SetController(Robot2DController controller)

@@ -1,10 +1,14 @@
+using System.Collections.Generic;
+
 using Maes.Robot;
 
 namespace Maes.Algorithms
 {
     public interface IAlgorithm
     {
-        void UpdateLogic();
+        IEnumerable<WaitForCondition> PreUpdateLogic();
+
+        IEnumerable<WaitForCondition> UpdateLogic();
 
         void SetController(Robot2DController controller);
 

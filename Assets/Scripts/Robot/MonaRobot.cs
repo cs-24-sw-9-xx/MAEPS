@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
+using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Simulation;
@@ -52,7 +53,22 @@ namespace Maes.Robot
 
         // The algorithm that controls the logic of the robot
         // Set by RobotSpawner
-        public IAlgorithm Algorithm { get; set; } = null!;
+        public IAlgorithm Algorithm
+        {
+            get => _algorithm;
+            set
+            {
+                _algorithm = value;
+
+                _preUpdateLogicEnumerator = _algorithm.PreUpdateLogic().GetEnumerator();
+                _updateLogicEnumerator = _algorithm.UpdateLogic().GetEnumerator();
+            }
+        }
+
+        private IAlgorithm _algorithm = null!;
+
+        private IEnumerator<WaitForCondition> _preUpdateLogicEnumerator = null!;
+        private IEnumerator<WaitForCondition> _updateLogicEnumerator = null!;
 
         private int _collidingGameObjects;
 
@@ -69,10 +85,94 @@ namespace Maes.Robot
             Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation ?? throw new InvalidOperationException("No current simulation");
         }
 
+        private WaitForCondition _preUpdateLogicWaitForCondition = WaitForCondition.ContinueUpdateLogic();
+        private WaitForCondition _updateLogicWaitForCondition = WaitForCondition.ContinueUpdateLogic();
+
+        private int _preUpdateLogicWaitForTicks;
+        private int _updateLogicWaitForTicks;
+
+
         public void LogicUpdate()
         {
-            Algorithm.UpdateLogic();
-            Controller.UpdateLogic();
+            switch (_preUpdateLogicWaitForCondition.Type)
+            {
+                case WaitForCondition.ConditionType.LogicTicks:
+                    if (--_preUpdateLogicWaitForTicks > 0)
+                    {
+                        Controller.UpdateLogic();
+                        return;
+                    }
+
+                    break;
+                case WaitForCondition.ConditionType.RobotStatus:
+                    if (Controller.GetStatus() != _preUpdateLogicWaitForCondition.RobotStatus)
+                    {
+                        Controller.UpdateLogic();
+                        return;
+                    }
+
+                    break;
+                case WaitForCondition.ConditionType.ContinueUpdateLogic:
+                    // Lets continue :)
+                    break;
+            }
+
+            _preUpdateLogicEnumerator.MoveNext();
+            _preUpdateLogicWaitForCondition = _preUpdateLogicEnumerator.Current;
+
+            // Update state
+            switch (_preUpdateLogicWaitForCondition.Type)
+            {
+                case WaitForCondition.ConditionType.LogicTicks:
+                    _preUpdateLogicWaitForTicks = _preUpdateLogicWaitForCondition.LogicTicks;
+                    Controller.UpdateLogic();
+                    return;
+                case WaitForCondition.ConditionType.RobotStatus:
+                    Controller.UpdateLogic();
+                    return;
+                case WaitForCondition.ConditionType.ContinueUpdateLogic:
+                    break;
+            }
+
+            switch (_updateLogicWaitForCondition.Type)
+            {
+                case WaitForCondition.ConditionType.LogicTicks:
+                    if (--_updateLogicWaitForTicks > 0)
+                    {
+                        Controller.UpdateLogic();
+                        return;
+                    }
+
+                    break;
+                case WaitForCondition.ConditionType.RobotStatus:
+                    if (Controller.GetStatus() != _updateLogicWaitForCondition.RobotStatus)
+                    {
+                        Controller.UpdateLogic();
+                        return;
+                    }
+
+                    break;
+                case WaitForCondition.ConditionType.ContinueUpdateLogic:
+                    // Lets continue :)
+                    break;
+            }
+
+            _updateLogicEnumerator.MoveNext();
+            _updateLogicWaitForCondition = _updateLogicEnumerator.Current;
+
+            // Update state
+            switch (_updateLogicWaitForCondition.Type)
+            {
+                case WaitForCondition.ConditionType.LogicTicks:
+                    _updateLogicWaitForTicks = _updateLogicWaitForCondition.LogicTicks;
+                    Controller.UpdateLogic();
+                    return;
+                case WaitForCondition.ConditionType.RobotStatus:
+                    Controller.UpdateLogic();
+                    return;
+                case WaitForCondition.ConditionType.ContinueUpdateLogic:
+                    throw new InvalidOperationException("ContinueUpdateLogic is invalid in UpdateLogic");
+            }
         }
 
         public void PhysicsUpdate()
