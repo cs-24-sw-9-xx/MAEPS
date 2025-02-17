@@ -1,17 +1,17 @@
-# Introduction to MAES
-MAES is a tool for simulating and testing multi robot online exploration algorithms in a realistic continuous space environment.
-MAES is visualised and physics driven using the Unity Game Engine.
-MAES was created as part of a Master's Thesis at Aalborg University, Denmark, on the subject of distributed systems.
+# Introduction to MAEPS
+MAEPS is a tool for simulating and testing multi robot online exploration and patrolling algorithms in a realistic continuous space environment.
+MAEPS is visualised and physics driven using the Unity Game Engine.
+MAEPS was created as part of a Master's Thesis at Aalborg University, Denmark, on the subject of distributed systems.
 
-A video trailer for MAES can be found [here](https://youtu.be/lgUNrTfJW5g)
+A video trailer for MAEPS can be found [here](https://youtu.be/lgUNrTfJW5g)
 
 <p float="left">
-  <img src=".readmeAssets/example_image_1.png" width="400" alt="Screenshots taken in MAES"/>
+  <img src=".readmeAssets/example_image_1.png" width="400" alt="Screenshots taken in MAEPS"/>
   <img src=".readmeAssets/example_image_2.png" width="400" />
 </p>
 
 # Table of Contents
-- [Introduction to MAES](#introduction-to-maes)
+- [Introduction to MAEPS](#introduction-to-maes)
 - [Getting started](#getting-started)
     * [Running in UnityMode](#running-in-unitymode)
         + [Creating your own algorithm](#creating-your-own-algorithm)
@@ -23,7 +23,7 @@ A video trailer for MAES can be found [here](https://youtu.be/lgUNrTfJW5g)
 - [Extracting Statistics (Applies to both ROSMode and UnityMode)](#extracting-statistics-applies-to-both-rosmode-and-unitymode)
 - [Headless Runs (Only UnityMode)](#headless-runs-only-unitymode)
 - [Performance Testing (Linux only)](#performance-testing-linux-only)
-- [Adding Dependencies To MAES](#adding-dependencies-to-maes)
+- [Adding Dependencies To MAEPS](#adding-dependencies-to-maes)
 - [Testing Procedure](#testing-procedure)
     * [System Tests](#system-tests)
     * [Unit Tests](#unit-tests)
@@ -31,7 +31,7 @@ A video trailer for MAES can be found [here](https://youtu.be/lgUNrTfJW5g)
 - [Contributors](#contributors)
 
 # Getting started
-MAES can be run in two different configurations, either ROSMode or UnityMode.
+MAEPS can be run in two different configurations, either ROSMode or UnityMode.
 UnityMode requires an installed Unity editor (last tested with version 2022.3.13f1), and allows for developing algorithm in C#.
 It has been tested to work on both Linux (Ubuntu 20.04, 21.04, 21.10, 22.04, and Arch), MacOS Monterey 12, Windows (10 and 11).
 Click [here](#running-in-unitymode) to get started in UnityMode.
@@ -42,14 +42,14 @@ A Docker image with ROS preinstalled is supplied to make it easier to get starte
 Click [here](#running-in-rosmode) to get started running in ROSMode.
 
 ## Running in UnityMode
-Install MAES by opening Unity's Package Manager (Window -> Package Manager) and clicking on the plus -> 'Add package from git url' 
+Install MAEPS by opening Unity's Package Manager (Window -> Package Manager) and clicking on the plus -> 'Add package from git url' 
 
 Then paste the following address:
 ```
 https://github.com/DEIS-Tools/MAES.git?path=/Assets
 ```
 
-Once the package has been downloaded and installed you are ready to use MAES!
+Once the package has been downloaded and installed you are ready to use MAEPS!
 
 Start by creating a script and attaching it to any Unity GameObject. 
 Then inside the Start() method of the script enter the following code:
@@ -75,7 +75,7 @@ Additionally, a scenario contains a file name, that is used if the statistics of
 This can be configured inside the [GlobalSettings.cs](Assets/Scripts/GlobalSettings.cs) file.
 
 ### Creating your own algorithm
-In order to implement your own algorithm, you must create a class that implements the [IExplorationAlgorithm.cs](Assets/Scripts/ExplorationAlgorithm/IExplorationAlgorithm.cs) interface.
+In order to implement your own exploration algorithm, you must create a class that implements the [IExplorationAlgorithm.cs](Assets/Scripts/Algorithms/IExplorationAlgorithm.cs) interface. The approach is similar for patrolling algorithms, but using the [IPatrollingAlgorithm.cs](Assets/Scripts/Algorithms/IPatrollingAlgorithm.cs).
 This provides the algorithm with access to the robot controller, which in turn provides access to movement controls, slam map and all sensor data available on the agent given the constraints of the scenario.
 
 Once you have defined the class for your algorithm you can inject it into the simulator by providing an algorithm factory:
@@ -92,13 +92,13 @@ var scenario = new SimulationScenario(seed: 123, robotSpawner:(map, spawner) => 
 ```
 
 ## Running in ROSMode
-MAES can be run with ROS running either in a docker image or natively installed on your operation system.
+MAEPS can be run with ROS running either in a docker image or natively installed on your operation system.
 The docker image has everything preinstalled and is thus easier to set up. 
 ROSMode has been tested to work with the Galactic release of ROS2.
  
 ### ROSMode with Docker
 1. Install Docker https://docs.docker.com/get-docker/ (On Windows 10 we recommend using the WSL2 backend for Docker)
-2. Download MAES package from our [releases-page](https://github.com/MalteZA/MAES/releases), and extract the content to an empty folder
+2. Download MAEPS package from our [releases-page](https://github.com/MalteZA/MAES/releases), and extract the content to an empty folder
 3. Open a terminal in the root of this folder
 4. Pull our docker image with the following command (x86_64 architecture only)
 ```bash
@@ -150,7 +150,7 @@ ros2 launch maes_ros2_interface maes_ros2_multi_robot_launch.py use_rviz:=true
 
 HOW TO CONFIGURE:
 
-The workspace (maes-ros-slam-ws) inside the MAES package is shared with the docker container. 
+The workspace (maes-ros-slam-ws) inside the MAEPS package is shared with the docker container. 
 It is thus possible to change these files directly using your favorite editor or IDE.
 
 The logic controlling the behavior of the robots can be found in [maes_robot_controller.py](maes-ros-slam-ws/src/maes_robot_controller/maes_robot_controller/maes_robot_controller.py). 
@@ -159,7 +159,7 @@ Actionservers, subscriptions and services are already setup and can be used in t
 The configuration of the ROS2 system can be changed by tuning parameters in [maes_config.yaml](maes-ros-slam-ws/src/maes_ros2_interface/maes_config.yaml) found inside the maes_ros2_interface package in the workspace.
 Note: The field-names must be written in [snake_case](https://en.wikipedia.org/wiki/Snake_case).
 Explanations for all configuration parameters can be seen in Section [Simulation Parameters Explanations](#simulator-parameters-explanations).
-MAES and ROS synchronize parameters from this configuration file automatically.
+MAEPS and ROS synchronize parameters from this configuration file automatically.
 
 Remember to execute a `colcon build` after each change in config file or controller to recompile the ROS project.
 
@@ -178,7 +178,7 @@ Going through the configuration, choose the default values for the first two win
 Finally, you can choose to save this configuration to local storage, and use it as a shortcut for starting up XLaunch.
 To launch an X-server with the settings now, press "finish".
 
-Now, in your WSL terminal, go to the root MAES directory and enter the following commands:
+Now, in your WSL terminal, go to the root MAEPS directory and enter the following commands:
 ```bash
 export DISPLAY=$(grep nameserver /etc/resolv.conf | awk '{print $2}'):0.0
 ```
@@ -238,20 +238,20 @@ The configuration of the ROS2 system can be changed by tuning parameters in [mae
 found inside the maes_ros2_interface package in the workspace. Many fields have default values, which can be seen in [MaesYamlConfigLoader.cs](Assets/Scripts/MaesYamlConfigLoader.cs).
 Note: The field names must be written in [snake_case](https://en.wikipedia.org/wiki/Snake_case).
 Explanations for all configuration parameters can be seen in Section [Simulation Parameters Explanations](#simulator-parameters-explanations).
-Both MAES and ROS take parameters from the same file, so they automatically synchronise.
+Both MAEPS and ROS take parameters from the same file, so they automatically synchronise.
 
 Remember to colcon build after each change in config file or controller.
 
 # ROS Workspace packages
-A workspace is included in this repository for connecting ROS with MAES. 
+A workspace is included in this repository for connecting ROS with MAEPS. 
 The workspace is found under [maes-ros-slam-ws](maes-ros-slam-ws) and contains 5 packages.
 
 | Name                  | Content                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| maes_msgs             | Contains ROS msgs types used to communicate robot state between MAES and ROS                                                                                                                                                                                                                                                                                                                                                            |
-| maes_robot_controller | Contains the maes_robot_controller.py script, which has the main logic loop for controlling the robots in MAES. Subscriptions, services and actions servers for nav2, state etc. are already setup in this script. Each robot has its own controller.                                                                                                                                                                                   |
-| maes_ros2_interface   | Contains behaviour trees, main launch files, parameters files, rviz configuration and main parameter file shared between ROS and MAES, i.e. [maes_config.yaml](maes-ros-slam-ws/src/maes_ros2_interface/maes_config.yaml). In order to launch a multi robot system, the [maes_ros2_multi_robot_launch.py](maes-ros-slam-ws/src/maes_ros2_interface/launch/maes_ros2_multi_robot_launch.py) file is used.                                |
-| ROS-TCP-Endpoint      | A node relaying all messages from the ROS-TCP-Connector, which receives the ROS msgs sent inside MAES. The official repository can be found here: [https://github.com/Unity-Technologies/ROS-TCP-Endpoint](https://github.com/Unity-Technologies/ROS-TCP-Endpoint ). We use version 0.7.0. The TCP connector inside MAES is also version 0.7.0.                                                                                         |
+| maes_msgs             | Contains ROS msgs types used to communicate robot state between MAEPS and ROS                                                                                                                                                                                                                                                                                                                                                            |
+| maes_robot_controller | Contains the maes_robot_controller.py script, which has the main logic loop for controlling the robots in MAEPS. Subscriptions, services and actions servers for nav2, state etc. are already setup in this script. Each robot has its own controller.                                                                                                                                                                                   |
+| maes_ros2_interface   | Contains behaviour trees, main launch files, parameters files, rviz configuration and main parameter file shared between ROS and MAEPS, i.e. [maes_config.yaml](maes-ros-slam-ws/src/maes_ros2_interface/maes_config.yaml). In order to launch a multi robot system, the [maes_ros2_multi_robot_launch.py](maes-ros-slam-ws/src/maes_ros2_interface/launch/maes_ros2_multi_robot_launch.py) file is used.                                |
+| ROS-TCP-Endpoint      | A node relaying all messages from the ROS-TCP-Connector, which receives the ROS msgs sent inside MAEPS. The official repository can be found here: [https://github.com/Unity-Technologies/ROS-TCP-Endpoint](https://github.com/Unity-Technologies/ROS-TCP-Endpoint ). We use version 0.7.0. The TCP connector inside MAEPS is also version 0.7.0.                                                                                         |
 | slam_toolbox          | Officially available at [https://github.com/SteveMacenski/slam_toolbox/](https://github.com/SteveMacenski/slam_toolbox/tree/galactic). We included it here, since the official release of 2.5.1 from September 2021 had a bug, where the odom was constantly published to /tf. The version in our repository is from the galactic branch and the latest commit has message "Backport 479 galactic" and was committed on 25. march 2022. |
 
  
@@ -291,7 +291,7 @@ The script currently assumes that the network activity to be logged is happening
 If you are not running anything in a container, please change the captured interface accordingly in the script.
 Memory use and CPU utilization is measured as system-wide measurements.
 
-The script is especially useful when measuring whether changes made to an exploration algorithm (or the MAES-tool itself) have reduced or increased resource usage.
+The script is especially useful when measuring whether changes made to an exploration algorithm (or the MAEPS-tool itself) have reduced or increased resource usage.
 
 Open a terminal and run the script to start logging.
 The script checks for missing packages, and will abort if any are not found.
@@ -302,8 +302,8 @@ While the script is logging, it will prompt for entering in names of events.
 These can be used as "bookmarks" for interpreting the data at a later point, making it easier to determine at which epoch some event happened.
 The "bookmarks" are saved in a separate file.
 
-# Adding Dependencies to MAES
-NOTE: If you add new external dependencies to the MAES code, you must ensure that the assembly definitions for these dependencies are referenced in the [CustomScriptsAssembly](Assets/Scripts/CustomScriptsAssembly.asmdef) found in the Assets/Scripts folder.
+# Adding Dependencies to MAEPS
+NOTE: If you add new external dependencies to the MAEPS code, you must ensure that the assembly definitions for these dependencies are referenced in the [CustomScriptsAssembly](Assets/Scripts/CustomScriptsAssembly.asmdef) found in the Assets/Scripts folder.
 This can be done via the unity editor.
 
 If you do not add the dependencies to this assembly file the program and the unit tests will not compile.
@@ -313,7 +313,7 @@ In order to assure functionality before any contributions some tests (unit and s
 For now, only the unit tests are automated.
 
 ## System Tests
-The system test includes using both ROS and MAES, thus the entire system.
+The system test includes using both ROS and MAEPS, thus the entire system.
 The test can be used by using the following guide:
 1. Replace the content of [maes_config.yaml](maes-ros-slam-ws/src/maes_ros2_interface/maes_config.yaml) with the content of [maes_config_ros_system_test.yaml](maes-ros-slam-ws/src/maes_ros2_interface/maes_config_ros_system_test.yaml)
 2. Ensure that the [maes_robot_controller.py](maes-ros-slam-ws/src/maes_robot_controller/maes_robot_controller/maes_robot_controller.py) uses the default example frontier algorithm found in the main branch
@@ -321,8 +321,8 @@ The test can be used by using the following guide:
 ```bash
 ros2 launch maes_ros2_interface maes_ros2_multi_robot_launch.py
 ```
-4. Run MAES
-5. Press play in MAES
+4. Run MAEPS
+5. Press play in MAEPS
 
 A single robot will start exploring. The configuration has been shown to achieve about 99.9% after about 1480 ticks (2:28 seconds).
 The result can deviate with up to 10 seconds.
@@ -407,7 +407,7 @@ Agent Spawn Configuration:
 
 Global settings
 
-MAES contains several settings that influences the behaviour of the simulation. These can be found in the [GlobalSettings.cs](Assets/Scripts/GlobalSettings.cs) file. An explanation can be found below
+MAEPS contains several settings that influences the behaviour of the simulation. These can be found in the [GlobalSettings.cs](Assets/Scripts/GlobalSettings.cs) file. An explanation can be found below
 
 | Name                                         | Type   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 |:---------------------------------------------|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -439,17 +439,17 @@ Andreas Sebastian Sørensen - [todes92@protonmail.com](mailto:todes92@protonmail
 
 Thor Beregaard - [thor@beregaard.dk](mailto:thor@beregaard.dk?subject=Regarding%20the%20MAES%20Project)
 
-Casper Nyvang Sørensen - [caspernyvang@gmail.com](mailto:caspernyvang@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Casper Nyvang Sørensen - [caspernyvang@gmail.com](mailto:caspernyvang@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
 
-Christian Ziegler Sejersen - [ChristianZ.Sejersen@gmail.com](mailto:ChristianZ.Sejersen@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Christian Ziegler Sejersen - [ChristianZ.Sejersen@gmail.com](mailto:ChristianZ.Sejersen@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
 
-Henrik Van Peet - [henneboycool@gmail.com](mailto:henneboycool@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Henrik Van Peet - [henneboycool@gmail.com](mailto:henneboycool@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
 
-Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
 
-Mads Beyer Mogensen -[mail@madsmogensen.dk](mailto:mail@madsmogensen.dk?subject=Regarding%20the%20MAES%20Project)
+Mads Beyer Mogensen -[mail@madsmogensen.dk](mailto:mail@madsmogensen.dk?subject=Regarding%20the%20MAEPS%20Project)
 
-Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvikaransanthirasegaram@gmail.com?subject=Regarding%20the%20MAES%20Project)
+Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvikaransanthirasegaram@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
 
 # CI
 The CI is documented in the [CI.md](CI.md) file.
