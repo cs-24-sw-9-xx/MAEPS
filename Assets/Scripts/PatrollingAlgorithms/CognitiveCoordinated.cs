@@ -16,7 +16,7 @@ namespace Maes.PatrollingAlgorithms
         private int _pathStep = 0;
         private bool _initialVertex = true;
 
-        private readonly Dictionary<(Vector2Int, Vector2Int), List<Vertex>> _pathsCache = new();
+        private readonly Dictionary<(Vector2Int, Vector2Int), Vertex[]> _pathsCache = new();
 
         protected override bool AllowForeignVertices => true;
 
@@ -99,12 +99,12 @@ namespace Maes.PatrollingAlgorithms
             // Check if path is already cached
             if (_pathsCache.TryGetValue((start.Position, target.Position), out var cachedPath))
             {
-                return cachedPath;
+                return cachedPath.ToList();
             }
             if (_pathsCache.TryGetValue((target.Position, start.Position), out var cachedReversePath))
             {
                 cachedReversePath.Reverse();
-                return cachedReversePath;
+                return cachedReversePath.ToList();
             }
 
             // Dictionary to store the cost of the path from the start to each vertex (g-cost)
@@ -128,7 +128,7 @@ namespace Maes.PatrollingAlgorithms
                 if (current.Position == target.Position)
                 {
                     var optimalPath = ReconstructPath(cameFrom, current);
-                    _pathsCache[(start.Position, target.Position)] = optimalPath;
+                    _pathsCache[(start.Position, target.Position)] = optimalPath.ToArray();
                     return optimalPath;
                 }
 
