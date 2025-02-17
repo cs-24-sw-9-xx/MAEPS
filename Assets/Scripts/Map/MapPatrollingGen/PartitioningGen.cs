@@ -44,13 +44,13 @@ namespace Maes.Map.MapPatrollingGen
             var map = MapUtilities.MapToBitMap(simulationMap);
             VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var vertexPositions = GreedyWaypointGenerator.TSPHeuresticSolver(map, visibilityAlgorithm);
-            var distanceMatrix = GreedyWaypointGenerator.CalculateDistanceMatrix(map, vertexPositions);
+            var distanceMatrix = Util.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitions(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
             foreach (var cluster in clusters)
             {
-                var localDistanceMatrix = GreedyWaypointGenerator.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = GreedyWaypointGenerator.ConnectVertices(cluster.Value, localDistanceMatrix, colorIslands);
+                var localDistanceMatrix = Util.CalculateDistanceMatrix(map, cluster.Value);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value, localDistanceMatrix, colorIslands);
                 allVertices.AddRange(vertices);
             }
             return new PatrollingMap(allVertices.ToArray(), simulationMap, visibilityAlgorithm);
@@ -66,29 +66,8 @@ namespace Maes.Map.MapPatrollingGen
         private static Dictionary<int, List<Vector2Int>> KMeansPartitionsGenerator(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int amountOfPartitions)
         {
             var amountOfVertices = vertexPositions.Count;
-            var adjacencyMatrix = Matrix<double>.Build.Dense(amountOfVertices, amountOfVertices);
-
-            var sigma = StandardDeviation(distanceMatrix);
-
-            // Construct the weighted adjacency matrix using Gaussian kernel
-            for (var i = 0; i < amountOfVertices; i++)
-            {
-                for (var j = 0; j < amountOfVertices; j++)
-                {
-                    if (i != j)
-                    {
-                        var distance = distanceMatrix[(vertexPositions[i], vertexPositions[j])];
-                        adjacencyMatrix[i, j] = GaussianKernel(distance, sigma);
-                    }
-                }
-            }
-
-            // Calculate the degree matrix
-            var degreeMatrix = Matrix<double>.Build.DenseDiagonal(amountOfVertices, 0.0);
-            for (var i = 0; i < amountOfVertices; i++)
-            {
-                degreeMatrix[i, i] = adjacencyMatrix.Row(i).Sum();
-            }
+            var adjacencyMatrix = AdjacencyMatrix(distanceMatrix, vertexPositions, amountOfVertices);
+            var degreeMatrix = DegreeMatrix(amountOfVertices, adjacencyMatrix);
 
             // Compute the Laplacian matrix
             var laplacianMatrix = degreeMatrix - adjacencyMatrix;
@@ -126,6 +105,37 @@ namespace Maes.Map.MapPatrollingGen
             }
 
             return clusterDictionary;
+        }
+
+        // Construct the weighted adjacency matrix using Gaussian kernel
+        private static Matrix<double> AdjacencyMatrix(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int amountOfVertices)
+        {
+            var adjacencyMatrix = Matrix<double>.Build.Dense(amountOfVertices, amountOfVertices);
+            var sd = StandardDeviation(distanceMatrix);
+
+            for (var i = 0; i < amountOfVertices; i++)
+            {
+                for (var j = 0; j < amountOfVertices; j++)
+                {
+                    if (i != j)
+                    {
+                        var distance = distanceMatrix[(vertexPositions[i], vertexPositions[j])];
+                        adjacencyMatrix[i, j] = GaussianKernel(distance, sd);
+                    }
+                }
+            }
+            return adjacencyMatrix;
+        }
+
+        private static Matrix<double> DegreeMatrix(int amountOfVertices, Matrix<double> adjacencyMatrix)
+        {
+            var degreeMatrix = Matrix<double>.Build.DenseDiagonal(amountOfVertices, 0.0);
+            for (var i = 0; i < amountOfVertices; i++)
+            {
+                degreeMatrix[i, i] = adjacencyMatrix.Row(i).Sum();
+            }
+
+            return degreeMatrix;
         }
 
         private static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
@@ -204,36 +214,16 @@ namespace Maes.Map.MapPatrollingGen
         }
 
 
-
+        // Bisection algorithm to partition the graph
         private static List<List<Vector2Int>> Bisection(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions)
         {
             var amountOfVertices = vertexPositions.Count;
-            var adjacencyMatrix = Matrix<double>.Build.Dense(amountOfVertices, amountOfVertices);
-            var sigma = StandardDeviation(distanceMatrix);
-
-            for (var i = 0; i < amountOfVertices; i++)
-            {
-                for (var j = 0; j < amountOfVertices; j++)
-                {
-                    if (i != j)
-                    {
-                        var distance = distanceMatrix[(vertexPositions[i], vertexPositions[j])];
-                        adjacencyMatrix[i, j] = GaussianKernel(distance, sigma);
-                    }
-                }
-            }
-
-            var degreeMatrix = Matrix<double>.Build.DenseDiagonal(amountOfVertices, 0.0);
-            for (var i = 0; i < amountOfVertices; i++)
-            {
-                degreeMatrix[i, i] = adjacencyMatrix.Row(i).Sum();
-            }
+            var adjacencyMatrix = AdjacencyMatrix(distanceMatrix, vertexPositions, amountOfVertices);
+            var degreeMatrix = DegreeMatrix(amountOfVertices, adjacencyMatrix);
 
             var laplacianMatrix = degreeMatrix - adjacencyMatrix;
-
             var eigen = laplacianMatrix.Evd(Symmetricity.Symmetric);
             var eigenVectors = eigen.EigenVectors;
-
             var fiedlerVector = eigenVectors.Column(1);
 
             var cluster1 = new List<Vector2Int>();
