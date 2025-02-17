@@ -14,7 +14,6 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WatchmanRouteSolver
     {
-        //public delegate HashSet<Vector2Int> VisibilityAlgorithm(Vector2Int startPos, bool[,] map);
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
         {
             VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
