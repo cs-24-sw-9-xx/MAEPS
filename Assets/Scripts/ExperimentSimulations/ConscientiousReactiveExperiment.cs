@@ -110,7 +110,7 @@ namespace Maes.ExperimentSimulations
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
-            const int robotCount = 6;
+            const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
@@ -120,7 +120,7 @@ namespace Maes.ExperimentSimulations
             simulator.EnqueueScenario(
                 new MySimulationScenario(
                     seed: 123,
-                    totalCycles: 10,
+                    totalCycles: 4,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
