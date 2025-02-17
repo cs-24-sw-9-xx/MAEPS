@@ -23,7 +23,7 @@ A video trailer for the exploration part of MAEPS can be found [here](https://yo
 - [Extracting Statistics (Applies to both ROSMode and UnityMode)](#extracting-statistics-applies-to-both-rosmode-and-unitymode)
 - [Headless Runs (Only UnityMode)](#headless-runs-only-unitymode)
 - [Performance Testing (Linux only)](#performance-testing-linux-only)
-- [Adding Dependencies To MAEPS](#adding-dependencies-to-maes)
+- [Adding Dependencies To MAEPS](#adding-dependencies-to-maeps)
 - [Testing Procedure](#testing-procedure)
     * [System Tests](#system-tests)
     * [Unit Tests](#unit-tests)
