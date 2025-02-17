@@ -12,25 +12,27 @@ using static Maes.Map.PatrollingMap;
 
 namespace Maes.Map.MapPatrollingGen
 {
-    public static class WatchmanRouteSolver
+    public static class GreedyWaypointGenerator
     {
+        private static int currentVertexId = 0;
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
         {
             VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = SolveWatchmanRoute(map, visibilityAlgorithm);
+            var vertexPositions = TSPHeuresticSolver(map, visibilityAlgorithm);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
             var connectVertices = ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
             return new PatrollingMap(connectVertices, simulationMap, visibilityAlgorithm);
         }
 
-        private static Vertex[] ConnectVertices(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
+        public static Vertex[] ConnectVertices(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
         {
             const int numberOfReverseNearestNeighbors = 1;
             var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-            var i = 0;
-            var vertices = guardPositions.Select(pos => new Vertex(i++, 0, pos)).ToArray();
+            // var i = 0;
+            var vertices = guardPositions.Select(pos => new Vertex(currentVertexId++, 0, pos)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
+            var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
             {
@@ -39,7 +41,6 @@ namespace Maes.Map.MapPatrollingGen
                     continue;
                 }
 
-                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
                 vertex.Color = color;
                 foreach (var neighborPos in neighbors)
                 {
@@ -60,7 +61,7 @@ namespace Maes.Map.MapPatrollingGen
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
-        private static List<Vector2Int> SolveWatchmanRoute(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        public static List<Vector2Int> TSPHeuresticSolver(bool[,] map, VisibilityMethod visibilityAlgorithm)
         {
             var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
             var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
@@ -295,7 +296,7 @@ namespace Maes.Map.MapPatrollingGen
 
 
         // Calculate the shortest path between all pairs of vertices
-        private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
+        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
