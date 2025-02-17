@@ -80,8 +80,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             AfterStart();
         }
 
-        public virtual void Update() { }
-
         public virtual void ClearSelectedRobot()
         {
             CameraController.SingletonInstance.stickyCam = false;

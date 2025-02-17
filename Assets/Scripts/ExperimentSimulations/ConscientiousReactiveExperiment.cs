@@ -122,17 +122,15 @@ namespace Maes.ExperimentSimulations
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    showIslands: false
-                )
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether", showIslands: false)
             );
 
             simulator.EnqueueScenario(
@@ -140,17 +138,15 @@ namespace Maes.ExperimentSimulations
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig2),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    mapSpawner: generator => generator.GenerateMap(mapConfig2),
                     robotConstraints: robotConstraints,
-                    showIslands: true
-                )
+                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether", showIslands: true)
             );
 
 
