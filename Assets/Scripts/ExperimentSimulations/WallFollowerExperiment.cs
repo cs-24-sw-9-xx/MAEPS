@@ -23,8 +23,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.ExplorationAlgorithm.WallFollower;
+using Maes.Algorithms.Exploration.Minotaur;
+using Maes.Algorithms.Exploration.WallFollower;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;

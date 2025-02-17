@@ -23,8 +23,8 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.HenrikAlgo;
-using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Algorithms.Exploration.HenrikAlgo;
+using Maes.Algorithms.Exploration.Minotaur;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;

@@ -31,6 +31,8 @@ namespace Maes.Statistics
 
         public override void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
         {
+            transform.position = newMap.ScaledOffset;
+
             base.SetSimulationMap(newMap, Vector3.zero);
 
             foreach (var visualizer in _visualizerObjects)

@@ -23,7 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Algorithms.Exploration.Minotaur;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;

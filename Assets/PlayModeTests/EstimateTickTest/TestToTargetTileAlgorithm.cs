@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Maes.Algorithms;
 using Maes.Robot;
 
@@ -12,16 +14,30 @@ namespace PlayModeTests.EstimateTickTest
         public Vector2Int TargetTile;
         public bool TargetReached;
 
-        public void UpdateLogic()
+        public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
-            if (!IsDestinationReached(TargetTile))
+            while (true)
             {
-                Controller.PathAndMoveTo(TargetTile);
-                Tick++;
-                return;
+                yield return WaitForCondition.ContinueUpdateLogic();
             }
+        }
 
-            TargetReached = true;
+        public IEnumerable<WaitForCondition> UpdateLogic()
+        {
+            while (true)
+            {
+                if (!IsDestinationReached(TargetTile))
+                {
+                    Controller.PathAndMoveTo(TargetTile);
+                    Tick++;
+                }
+                else
+                {
+                    TargetReached = true;
+                }
+
+                yield return WaitForCondition.WaitForLogicTicks(1);
+            }
         }
 
         public void SetController(Robot2DController controller)

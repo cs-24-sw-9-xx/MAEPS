@@ -1,5 +1,5 @@
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.RandomBallisticWalk;
+using Maes.Algorithms.Exploration.RandomBallisticWalk;
 using Maes.FaultInjections;
 using Maes.Robot;
 

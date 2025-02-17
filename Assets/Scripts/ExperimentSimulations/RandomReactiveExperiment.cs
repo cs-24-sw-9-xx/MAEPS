@@ -28,9 +28,9 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms;
+using Maes.Algorithms.Patrolling;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
-using Maes.PatrollingAlgorithms;
 using Maes.Robot;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;

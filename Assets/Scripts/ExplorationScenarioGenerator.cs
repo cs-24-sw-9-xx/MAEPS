@@ -24,11 +24,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm;
-using Maes.ExplorationAlgorithm.RandomBallisticWalk;
-using Maes.ExplorationAlgorithm.SSB;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
-using Maes.ExplorationAlgorithm.Voronoi;
+using Maes.Algorithms.Exploration;
+using Maes.Algorithms.Exploration.RandomBallisticWalk;
+using Maes.Algorithms.Exploration.TheNextFrontier;
+using Maes.Algorithms.Exploration.Voronoi;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;
@@ -37,6 +36,8 @@ using Maes.Simulation.SimulationScenarios;
 using Maes.Utilities.Files;
 
 using UnityEngine;
+
+using SsbAlgorithm = Maes.Algorithms.Exploration.SSB.SsbAlgorithm;
 
 namespace Maes
 {

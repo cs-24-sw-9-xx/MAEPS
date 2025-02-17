@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.Minotaur;
+using Maes.Algorithms.Exploration.Minotaur;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;

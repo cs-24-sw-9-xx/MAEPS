@@ -23,9 +23,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms;
-using Maes.ExplorationAlgorithm.Greed;
-using Maes.ExplorationAlgorithm.Minotaur;
-using Maes.ExplorationAlgorithm.TheNextFrontier;
+using Maes.Algorithms.Exploration.Greed;
+using Maes.Algorithms.Exploration.Minotaur;
+using Maes.Algorithms.Exploration.TheNextFrontier;
 using Maes.Map.MapGen;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;
