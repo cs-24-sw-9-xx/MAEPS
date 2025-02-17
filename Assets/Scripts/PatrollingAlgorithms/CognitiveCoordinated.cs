@@ -101,6 +101,11 @@ namespace Maes.PatrollingAlgorithms
             {
                 return cachedPath;
             }
+            if (_pathsCache.TryGetValue((target.Position, start.Position), out var cachedReversePath))
+            {
+                cachedReversePath.Reverse();
+                return cachedReversePath;
+            }
 
             // Dictionary to store the cost of the path from the start to each vertex (g-cost)
             var gCost = new Dictionary<Vertex, float> { [start] = 0 };
