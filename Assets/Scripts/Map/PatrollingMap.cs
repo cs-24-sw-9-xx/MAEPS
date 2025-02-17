@@ -28,10 +28,11 @@ namespace Maes.Map
             VisibilityAlgorithm = visibilityAlgorithm;
         }
 
-        private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths)
+        private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths, VisibilityMethod visibilityAlgorithm)
         {
             Vertices = vertices;
             Paths = paths;
+            VisibilityAlgorithm = visibilityAlgorithm;
         }
 
         public PatrollingMap Clone()
@@ -52,7 +53,7 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VisibilityAlgorithm);
         }
 
         private static IReadOnlyDictionary<(int, int), PathStep[]> CreatePaths(Vertex[] vertices, SimulationMap<Tile> simulationMap)
