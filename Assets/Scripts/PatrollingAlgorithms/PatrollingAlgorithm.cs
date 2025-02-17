@@ -102,6 +102,12 @@ namespace Maes.PatrollingAlgorithms
             }
         }
 
+        private bool HasReachedTarget()
+        {
+            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
+            return currentPosition == TargetVertex.Position;
+        }
+
         public virtual void UpdateLogic()
         {
             if (_goingToInitialVertex)
@@ -110,8 +116,7 @@ namespace Maes.PatrollingAlgorithms
                 {
                     TargetVertex = GetClosestVertex();
                 }
-                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-                if (currentPosition != TargetVertex.Position)
+                if (!HasReachedTarget())
                 {
                     // Do normal astar pathing
                     _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
@@ -135,8 +140,7 @@ namespace Maes.PatrollingAlgorithms
             {
                 // Do default AStar
                 _currentPath.Clear();
-                var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-                if (currentPosition != TargetVertex.Position)
+                if (!HasReachedTarget())
                 {
                     if (_firstCollision)
                     {
@@ -175,8 +179,15 @@ namespace Maes.PatrollingAlgorithms
                 PathAndMoveToTarget();
                 return;
             }
-
-            SetNextVertex();
+            else
+            {
+                // Last part of the path, this target is a vertex.
+                if (HasReachedTarget())
+                {
+                    SetNextVertex();
+                }
+            }
+            PathAndMoveToTarget();
         }
 
         protected virtual void EveryTick() { }
