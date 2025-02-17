@@ -11,7 +11,7 @@ A video trailer for the exploration part of MAEPS can be found [here](https://yo
 </p>
 
 # Table of Contents
-- [Introduction to MAEPS](#introduction-to-maes)
+- [Introduction to MAEPS](#introduction-to-maeps)
 - [Getting started](#getting-started)
     * [Running in UnityMode](#running-in-unitymode)
         + [Creating your own algorithm](#creating-your-own-algorithm)
