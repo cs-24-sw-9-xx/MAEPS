@@ -78,16 +78,15 @@ namespace Maes.ExperimentSimulations
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: _ => new CognitiveCoordinated()),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints
-                )
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
+                    robotConstraints: robotConstraints,
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
             );
 
             simulator.PressPlayButton(); // Instantly enter play mode

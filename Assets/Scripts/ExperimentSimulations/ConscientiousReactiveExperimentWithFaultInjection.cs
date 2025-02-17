@@ -122,17 +122,15 @@ namespace Maes.ExperimentSimulations
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 4)
-                )
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether", faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 4))
             );
 
 

@@ -18,7 +18,7 @@ namespace Maes.Algorithms.Patrolling
 
 
         // Do not change visibility of this!
-        private PatrollingMap _globalMap;
+        private PatrollingMap _globalMap = null!;
 
         public Vertex TargetVertex
         {

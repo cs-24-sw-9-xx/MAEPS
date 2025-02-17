@@ -41,7 +41,7 @@ namespace Maes.Trackers
 
         public int PlottingFrequency = 50;
 
-        private int _lastPlottedSnapshot = 0;
+        private int _lastPlottedSnapshot;
 
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
@@ -53,10 +53,10 @@ namespace Maes.Trackers
         private VertexVisualizer? _selectedVertex;
 
         private float _totalGraphIdleness;
-        private float _lastCyclesTotalGraphIdleness = 0f;
-        private int _lastAmountOfTicksSinceLastCycle = 0;
-        private float _lastCycleAverageGraphIdleness = 0f;
-        private int _lastCycle = 0;
+        private float _lastCyclesTotalGraphIdleness;
+        private int _lastAmountOfTicksSinceLastCycle;
+        private float _lastCycleAverageGraphIdleness;
+        private int _lastCycle;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
@@ -93,8 +93,9 @@ namespace Maes.Trackers
         }
 
         // Hack: Cursed way of updating ui using unitys update event.
-        public void UIUpdate()
+        public override void UIUpdate()
         {
+            base.UIUpdate();
             // TODO: Fix graph data limit.
             if (Chart != null && Chart.gameObject.activeSelf && SnapShots.Count > 0)
             {
@@ -230,7 +231,7 @@ namespace Maes.Trackers
             SetRobotHighlightingSize(4f);
         }
 
-        public void SetRobotHighlightingSize(float highlightingSize)
+        private void SetRobotHighlightingSize(float highlightingSize)
         {
             foreach (var robot in Simulation.Robots)
             {
@@ -311,7 +312,7 @@ namespace Maes.Trackers
             }
             else
             {
-                // Revert to none visualization when vetex is deselected
+                // Revert to none visualization when vertex is deselected
                 ShowNone();
             }
         }
