@@ -16,6 +16,8 @@ namespace Maes.PatrollingAlgorithms
         private int _pathStep = 0;
         private bool _initialVertex = true;
 
+        private readonly Dictionary<(Vector2Int, Vector2Int), List<Vertex>> _pathsCache = new();
+
         protected override bool AllowForeignVertices => true;
 
         protected override void GetDebugInfo(StringBuilder stringBuilder)
@@ -92,8 +94,14 @@ namespace Maes.PatrollingAlgorithms
             return closestVertex;
         }
 
-        private static List<Vertex> AStar(Vertex start, Vertex target)
+        private List<Vertex> AStar(Vertex start, Vertex target)
         {
+            // Check if path is already cached
+            if (_pathsCache.TryGetValue((start.Position, target.Position), out var cachedPath))
+            {
+                return cachedPath;
+            }
+
             // Dictionary to store the cost of the path from the start to each vertex (g-cost)
             var gCost = new Dictionary<Vertex, float> { [start] = 0 };
 
@@ -114,7 +122,9 @@ namespace Maes.PatrollingAlgorithms
                 // If reached target, reconstruct path
                 if (current.Position == target.Position)
                 {
-                    return ReconstructPath(cameFrom, current);
+                    var optimalPath = ReconstructPath(cameFrom, current);
+                    _pathsCache[(start.Position, target.Position)] = optimalPath;
+                    return optimalPath;
                 }
 
                 openSet.Remove(current);
