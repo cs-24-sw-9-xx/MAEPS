@@ -133,15 +133,15 @@ namespace Maes.ExperimentSimulations
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                              totalCycles: 3,
                                                                              stopAfterDiff: true,
-                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
                                                                                  suggestedStartingPoint: null,
                                                                                  createAlgorithmDelegate: algorithm),
-                                                                             statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                                                                             robotConstraints: robotConstraints)
+                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                                                             robotConstraints: robotConstraints,
+                                                                             statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
                             );
 
                             var spawningPosList = new List<Vector2Int>();
@@ -153,15 +153,15 @@ namespace Maes.ExperimentSimulations
                             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                                                                              totalCycles: 3,
                                                                              stopAfterDiff: true,
-                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                                  collisionMap: buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
                                                                                  spawnPositions: spawningPosList,
                                                                                  createAlgorithmDelegate: algorithm),
-                                                                             statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                                                             robotConstraints: robotConstraints)
+                                                                             mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                                                             robotConstraints: robotConstraints,
+                                                                             statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart")
                             );
                         }
                     }
@@ -173,15 +173,15 @@ namespace Maes.ExperimentSimulations
             simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
                 totalCycles: 3,
                 stopAfterDiff: true,
-                mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
-                                                                 buildingConfig,
-                                                                 seed: 123,
-                                                                 numberOfRobots: 5,
-                                                                 suggestedStartingPoint: Vector2Int.zero,
-                                                                 createAlgorithmDelegate: seed => new RandomReactive(seed)),
-                statisticsFileName: "delete-me",
-                robotConstraints: robotConstraints));
+                    buildingConfig,
+                    seed: 123,
+                    numberOfRobots: 5,
+                    suggestedStartingPoint: Vector2Int.zero,
+                    createAlgorithmDelegate: seed => new RandomReactive(seed)),
+                mapSpawner: generator => generator.GenerateMap(dumpMap),
+                robotConstraints: robotConstraints,
+                statisticsFileName: "delete-me"));
 
             simulator.PressPlayButton(); // Instantly enter play mode
 

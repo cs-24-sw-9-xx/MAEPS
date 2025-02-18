@@ -53,7 +53,7 @@ namespace Maes.TransformToNav2
 
         private void OnValidate()
         {
-            var clocks = FindObjectsOfType<ROSClockPublisher>();
+            var clocks = FindObjectsByType<ROSClockPublisher>(FindObjectsSortMode.None);
             if (clocks.Length > 1)
             {
                 Debug.LogWarning("Found too many clock publishers in the scene, there should only be one!");

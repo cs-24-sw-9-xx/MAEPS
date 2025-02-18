@@ -77,18 +77,16 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void SelectedRobotVisualizeTagsButtonClicked(ClickEvent _)
         {
-            ExecuteAndRememberTagVisualization(sim =>
+            var sim = Simulation ?? throw new InvalidOperationException("Simulation is null");
+            if (sim.HasSelectedRobot())
             {
-                if (sim.HasSelectedRobot())
-                {
-                    ToggleVisualizeTagsButtons(false);
-                }
-            });
+                ToggleVisualizeTagsButtons(false);
+            }
         }
 
         private void AllRobotsVisualizeTagsButtonClicked(ClickEvent _)
         {
-            ExecuteAndRememberTagVisualization(_ => { ToggleVisualizeTagsButtons(true); });
+            ToggleVisualizeTagsButtons(true);
         }
 
         private void SelectedRobotSlamMapButtonClicked(ClickEvent _)
@@ -162,7 +160,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                                             explorationSimulation.SimulateTimeSeconds).ToString("#.0");
         }
 
-        public override void Update()
+        public void Update()
         {
             if (Simulation is null)
             {
@@ -222,12 +220,6 @@ namespace Maes.UI.SimulationInfoUIControllers
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }
         }
-
-        private void ExecuteAndRememberTagVisualization(SimulationModification modificationFunc)
-        {
-            modificationFunc(Simulation);
-        }
-
 
         private void ToggleVisualizeTagsButtons(bool allRobots)
         {

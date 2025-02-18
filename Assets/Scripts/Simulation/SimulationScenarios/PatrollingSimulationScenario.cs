@@ -15,18 +15,16 @@ namespace Maes.Simulation.SimulationScenarios
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; }
 
-        public PatrollingSimulationScenario(
-            int seed,
+        public PatrollingSimulationScenario(int seed,
             int totalCycles,
             bool stopAfterDiff,
+            RobotFactory<IPatrollingAlgorithm> robotSpawner,
             MapFactory? mapSpawner = null,
-            RobotFactory<IPatrollingAlgorithm>? robotSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
-            bool showIslands = false
-            )
+            bool showIslands = false)
             : base(seed,
                 robotSpawner,
                 null,
