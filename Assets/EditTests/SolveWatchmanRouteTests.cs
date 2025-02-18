@@ -1,9 +1,9 @@
+using System.Collections.Generic;
+
 using Maes.Map.MapPatrollingGen;
 using Maes.Utilities;
 
 using NUnit.Framework;
-
-using System.Collections.Generic;
 
 using UnityEngine;
 
