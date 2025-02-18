@@ -114,7 +114,7 @@ namespace Maes.Map.MapPatrollingGen
             // Outermost loop parallelized to improve performance
             Parallel.For(0, height, y =>
             {
-                for (var x = 0; x < height; x++)
+                for (var x = 0; x < width; x++)
                 {
                     var tile = new Vector2Int(x, y);
                     if (!map[y, x])
