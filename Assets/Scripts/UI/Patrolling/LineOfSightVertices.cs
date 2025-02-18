@@ -27,7 +27,7 @@ namespace Maes.UI.Patrolling
 
             var bitmap = MapUtilities.MapToBitMap(_simulationMap);
 
-            var rows = bitmap.GetLength(0);
+            var width = bitmap.Width;
 
             foreach (var vertex in _patrollingMap.Vertices)
             {
@@ -35,7 +35,7 @@ namespace Maes.UI.Patrolling
 
                 foreach (var tile in tiles)
                 {
-                    var index = tile.x + tile.y * rows;
+                    var index = tile.x + tile.y * width;
                     VerticesVisibleTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
                 }
 
