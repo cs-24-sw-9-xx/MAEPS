@@ -112,12 +112,12 @@ namespace Maes.Map.MapPatrollingGen
             var height = map.Height;
 
             // Outermost loop parallelized to improve performance
-            Parallel.For(0, width, x =>
+            Parallel.For(0, height, y =>
             {
-                for (var y = 0; y < height; y++)
+                for (var x = 0; x < height; x++)
                 {
                     var tile = new Vector2Int(x, y);
-                    if (!map[x, y])
+                    if (!map[y, x])
                     {
                         // Precompute visibility for each tile
                         precomputedVisibility[tile] = visibilityAlgorithm(tile, map);
