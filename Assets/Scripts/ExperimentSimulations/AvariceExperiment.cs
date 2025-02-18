@@ -134,7 +134,7 @@ namespace Maes.ExperimentSimulations
                                                                                     buildingConfig,
                                                                                     seed: 123,
                                                                                     numberOfRobots: robotCount,
-                                                                                    suggestedStartingPoint: new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)),
+                                                                                    suggestedStartingPoint: null,
                                                                                     createAlgorithmDelegate: algorithm),
                                                                                 statisticsFileName: $"avarice-seed-{mapConfig.RandomSeed}-mapConfig.HeightInTiles-{mapConfig.HeightInTiles}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                                 robotConstraints: constraint)

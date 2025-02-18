@@ -54,10 +54,7 @@ namespace Maes.UI.RestartRemakeControllers
             _createBatchButton = uiDocument.rootVisualElement.Q<Button>("CreateBatchButton");
 
             // TODO: What is the point of this panel?
-            // Why would you ever restart scenarios?
-            // It should all be deterministic.
             // 2 of the buttons don't even do anything.
-            // FIXME: !!!!! IT IS NOT DETERMINISTIC WHEN YOU RESTART SCENARIOS !!!!!
 
             _restartCurrentButton.RegisterCallback<ClickEvent>(RestartCurrentScenario);
             _restartAllButton.RegisterCallback<ClickEvent>(RestartAllScenarios);

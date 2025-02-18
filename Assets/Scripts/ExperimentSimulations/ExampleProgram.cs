@@ -138,7 +138,7 @@ namespace Maes.ExperimentSimulations
                                                                                  buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 suggestedStartingPoint: new Vector2Int(random.Next(0, size), random.Next(0, size)),
+                                                                                 suggestedStartingPoint: null,
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                                                                              robotConstraints: robotConstraints)

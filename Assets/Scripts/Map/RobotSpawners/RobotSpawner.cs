@@ -214,8 +214,12 @@ namespace Maes.Map.RobotSpawners
             var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
             possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
 
-            // If no suggestions made, simply spawn around 0,0
-            suggestedStartingPoint ??= new Vector2Int(0, 0);
+            // If no suggestions made, simply spawn randomly
+            var random = new System.Random(seed);
+            var maxWidth = collisionMap.WidthInTiles / 2;
+            var maxHeight = collisionMap.HeightInTiles / 2;
+            suggestedStartingPoint ??= new Vector2Int(random.Next(-maxWidth, maxWidth), random.Next(-maxHeight, maxHeight));
+
             // Offset suggested starting point to map
             suggestedStartingPoint = new Vector2Int(suggestedStartingPoint.Value.x - (int)collisionMap.ScaledOffset.x,
                     suggestedStartingPoint.Value.y - (int)collisionMap.ScaledOffset.y);
