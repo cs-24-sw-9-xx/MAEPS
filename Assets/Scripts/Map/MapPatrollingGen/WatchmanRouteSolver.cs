@@ -14,9 +14,8 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WatchmanRouteSolver
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, VisibilityMethod visibilityAlgorithm)
         {
-            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = SolveWatchmanRoute(map, visibilityAlgorithm);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
@@ -60,61 +59,79 @@ namespace Maes.Map.MapPatrollingGen
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
-        private static List<Vector2Int> SolveWatchmanRoute(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        private static List<Vector2Int> SolveWatchmanRoute(Bitmap map, VisibilityMethod visibilityAlgorithm)
         {
             var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
-            var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
+            var guardPositions = ComputeGreedyGuardPositions(map, precomputedVisibility);
             return guardPositions;
         }
 
-        private static List<Vector2Int> ComputeVertexCoordinates(Dictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
+        private static List<Vector2Int> ComputeGreedyGuardPositions(Bitmap map,
+            Dictionary<Vector2Int, Bitmap> precomputedVisibility)
         {
-            var guardPositions = new List<Vector2Int>();
-            var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
+            var startTime = Time.realtimeSinceStartup;
 
-            // Greedy algorithm to find the best guard positions
+            var guardPositions = new List<Vector2Int>();
+
+            var uncoveredTiles = new Bitmap(0, 0, map.Width, map.Height);
+            var uncoveredTilesSet = precomputedVisibility.Keys.ToHashSet();
+            foreach (var uncoveredTile in precomputedVisibility.Keys)
+            {
+                uncoveredTiles.Set(uncoveredTile.x, uncoveredTile.y);
+            }
+
             while (uncoveredTiles.Count > 0)
             {
                 var bestGuardPosition = Vector2Int.zero;
-                var bestCoverage = new HashSet<Vector2Int>();
+                var bestCoverage = new Bitmap(0, 0, 0, 0);
 
-                // Find the guard position that covers the most uncovered tiles
-                var orderedCandidates = uncoveredTiles.OrderByDescending(t => precomputedVisibility[t].Count);
-                foreach (var candidate in orderedCandidates)
+                var foundCandidate = false;
+
+                foreach (var uncoveredTile in uncoveredTilesSet.OrderByDescending(t => precomputedVisibility[t].Count))
                 {
-                    if (precomputedVisibility[candidate].Count < bestCoverage.Count)
+                    var candidate = precomputedVisibility[uncoveredTile];
+                    if (candidate.Count <= bestCoverage.Count)
                     {
                         break;
                     }
-                    var coverage = new HashSet<Vector2Int>(precomputedVisibility[candidate]);
-                    coverage.IntersectWith(uncoveredTiles);
 
-                    if (coverage.Count > bestCoverage.Count ||
-                       (coverage.Count == bestCoverage.Count &&
-                        AverageEuclideanDistance(candidate, guardPositions) < AverageEuclideanDistance(bestGuardPosition, guardPositions)))
+                    var coverage = Bitmap.Intersection(uncoveredTiles, candidate);
+
+                    if (coverage.Count > bestCoverage.Count)
                     {
-                        bestGuardPosition = candidate;
+                        bestGuardPosition = uncoveredTile;
                         bestCoverage = coverage;
+                        foundCandidate = true;
                     }
+                }
+
+                if (!foundCandidate)
+                {
+                    Debug.LogErrorFormat("Found no candidates. Missing: {0}", string.Join(", ", uncoveredTiles));
+                    Debug.LogErrorFormat("Missing candidates in hashmap: {0}", string.Join(", ", uncoveredTilesSet));
+                    break;
                 }
 
                 guardPositions.Add(bestGuardPosition);
                 uncoveredTiles.ExceptWith(bestCoverage);
+                uncoveredTilesSet.ExceptWith(bestCoverage);
             }
+
+            Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
         }
 
-        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        private static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, VisibilityMethod visibilityAlgorithm)
         {
-            var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
-            var width = map.GetLength(0);
-            var height = map.GetLength(1);
+            var startTime = Time.realtimeSinceStartup;
+
+            var precomputedVisibility = new ConcurrentDictionary<Vector2Int, Bitmap>();
 
             // Outermost loop parallelized to improve performance
-            Parallel.For(0, width, x =>
+            Parallel.For(0, map.Width, x =>
             {
-                for (var y = 0; y < height; y++)
+                for (var y = 0; y < map.Height; y++)
                 {
                     var tile = new Vector2Int(x, y);
                     if (!map[x, y])
@@ -127,19 +144,9 @@ namespace Maes.Map.MapPatrollingGen
             // To debug the ComputeVisibility method, use the following utility method to save as image
             // SaveAsImage.SaveVisibileTiles();
 
+            Debug.LogFormat("Compute visibility took {0} seconds", Time.realtimeSinceStartup - startTime);
+
             return precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
-
-        // Helper method to calculate the average Euclidean distance of a guard position to a list of other guard positions
-        private static float AverageEuclideanDistance(Vector2Int guardPosition, List<Vector2Int> currentGuardPositions)
-        {
-            var sum = 0f;
-            foreach (var pos in currentGuardPositions)
-            {
-                sum += Vector2Int.Distance(guardPosition, pos);
-            }
-
-            return sum / currentGuardPositions.Count;
         }
 
         // Find the k nearest neighbors for each point and return the reverse mapping
@@ -295,7 +302,7 @@ namespace Maes.Map.MapPatrollingGen
 
 
         // Calculate the shortest path between all pairs of vertices
-        private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
+        private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, List<Vector2Int> verticies)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
@@ -308,10 +315,10 @@ namespace Maes.Map.MapPatrollingGen
         }
 
         // Function to check if a position is within bounds and walkable
-        private static bool IsWalkable(Vector2Int pos, bool[,] map)
+        private static bool IsWalkable(Vector2Int pos, Bitmap map)
         {
-            return pos.x >= 0 && pos.x < map.GetLength(0) &&
-                   pos.y >= 0 && pos.y < map.GetLength(1) &&
+            return pos.x >= 0 && pos.x < map.Width &&
+                   pos.y >= 0 && pos.y < map.Height &&
                    !map[pos.x, pos.y]; // true if the position is not a wall
         }
 
@@ -324,7 +331,7 @@ namespace Maes.Map.MapPatrollingGen
         };
 
         // BFS to find the shortest path from the start position to all other vertices
-        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, bool[,] map)
+        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();

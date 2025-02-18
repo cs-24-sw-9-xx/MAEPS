@@ -4,6 +4,7 @@ using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
 using Maes.Robot;
+using Maes.Utilities;
 
 namespace Maes.Simulation.SimulationScenarios
 {
@@ -37,7 +38,7 @@ namespace Maes.Simulation.SimulationScenarios
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map, showIslands));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => WatchmanRouteSolver.MakePatrollingMap(map, showIslands, (start, map) => LineOfSightUtilities.ComputeVisibilityOfPoint(start, map)));
         }
     }
 }

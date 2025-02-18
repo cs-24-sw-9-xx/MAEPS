@@ -27,15 +27,13 @@ namespace Maes.UI.Patrolling
 
             var bitmap = MapUtilities.MapToBitMap(_simulationMap);
 
-            var rows = bitmap.GetLength(0);
-
             foreach (var vertex in _patrollingMap.Vertices)
             {
                 var tiles = _patrollingMap.VisibilityAlgorithm(vertex.Position, bitmap);
 
                 foreach (var tile in tiles)
                 {
-                    var index = tile.x + tile.y * rows;
+                    var index = tile.x + tile.y * bitmap.Width;
                     VerticesVisibleTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
                 }
 

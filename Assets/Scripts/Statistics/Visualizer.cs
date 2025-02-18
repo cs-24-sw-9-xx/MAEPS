@@ -67,10 +67,10 @@ namespace Maes.Statistics
             const float vertexDistance = 1f / ResolutionMultiplier;
             for (var y = 0; y < _heightInTiles; y++)
             {
-                var translatedY = y + _offset.y;
+                var translatedY = y + _offset.y - 0.5f;
                 for (var x = 0; x < _widthInTiles; x++)
                 {
-                    var translatedX = x + _offset.x;
+                    var translatedX = x + _offset.x - 0.5f;
                     AddTileTriangleVertices(translatedX, translatedY, vertexDistance);
                 }
             }

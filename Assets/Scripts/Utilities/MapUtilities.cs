@@ -5,16 +5,19 @@ namespace Maes.Utilities
 {
     public static class MapUtilities
     {
-        public static bool[,] MapToBitMap(SimulationMap<Tile> simulationMap)
+        public static Bitmap MapToBitMap(SimulationMap<Tile> simulationMap)
         {
-            var map = new bool[simulationMap.WidthInTiles, simulationMap.HeightInTiles];
+            var map = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
             for (var x = 0; x < simulationMap.WidthInTiles; x++)
             {
                 for (var y = 0; y < simulationMap.HeightInTiles; y++)
                 {
                     var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];
-                    map[x, y] = Tile.IsWall(firstTri.Type);
+                    if (Tile.IsWall(firstTri.Type))
+                    {
+                        map.Set(x, y);
+                    }
                 }
             }
 

@@ -1,101 +1,101 @@
-using System.Collections.Generic;
+using System;
 
 using UnityEngine;
 
 namespace Maes.Utilities
 {
-    public class LineOfSightUtilities
+    public static class LineOfSightUtilities
     {
-        // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
+        // Precompute visibility using an efficient grid-traversal algorithm
+        public static Bitmap ComputeVisibilityOfPoint(Vector2Int start, Bitmap map)
         {
-            var visibilitySet = new HashSet<Vector2Int>();
-            for (var x = 0; x < map.GetLength(0); x++)
+            var visibilityBitmap = new Bitmap(0, 0, map.Width, map.Height);
+            for (var x = 0; x < map.Width; x++)
             {
-                for (var y = 0; y < map.GetLength(1); y++)
+                for (var y = 0; y < map.Height; y++)
                 {
                     var target = new Vector2Int(x, y);
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
+                    if (!map[x, y] && !visibilityBitmap.Contains(x, y))
                     {
-                        visibilitySet.Add(target);
+                        GridRayTracingLineOfSight(start, target, map, visibilityBitmap);
                     }
                 }
             }
-            return visibilitySet;
+            return visibilityBitmap;
         }
 
-        // Method to check visibility using a line-of-sight algorithm
-        private static bool IsInLineOfSight(Vector2Int start, Vector2Int end, bool[,] map)
+        // Precompute visibility using an efficient grid-traversal algorithm
+        public static Bitmap ComputeVisibilityOfPoint(Vector2Int start, Bitmap map, int range)
         {
-            // Implement Bresenham's line algorithm for visibility check
-            // Return true if there is a clear line-of-sight, otherwise false
-            var dx = Mathf.Abs(end.x - start.x);
-            var dy = Mathf.Abs(end.y - start.y);
-            var sx = start.x < end.x ? 1 : -1;
-            var sy = start.y < end.y ? 1 : -1;
-            var err = dx - dy;
+            var xEnd = Math.Min(map.Width, start.x + range + 1);
+            var yEnd = Math.Min(map.Height, start.y + range + 1);
 
+            var xStart = Math.Max(0, start.x - range - 1);
+            var yStart = Math.Max(0, start.y - range - 1);
+
+            var squaredRange = range * range;
+
+            var visibilityBitmap = new Bitmap(xStart, yStart, xEnd, yEnd);
+
+            for (var x = xStart; x < xEnd; x++)
+            {
+                for (var y = yStart; y < yEnd; y++)
+                {
+                    var target = new Vector2Int(x, y);
+                    if (!map[x, y] && !visibilityBitmap.Contains(x, y) && squaredRange >= (start.x - x) * (start.x - x) + (start.y - y) * (start.y - y))
+                    {
+                        GridRayTracingLineOfSight(start, target, map, visibilityBitmap);
+                    }
+                }
+            }
+
+            return visibilityBitmap;
+        }
+
+        // Implements http://www.cse.yorku.ca/~amana/research/grid.pdf
+        private static void GridRayTracingLineOfSight(Vector2Int start, Vector2Int end, Bitmap map, Bitmap bitmap)
+        {
             var x = start.x;
             var y = start.y;
 
-            while (x != end.x || y != end.y)
+            var diffX = end.x - start.x;
+            var diffY = end.y - start.y;
+
+            var stepX = Math.Sign(diffX);
+            var stepY = Math.Sign(diffY);
+
+            var angle = Mathf.Atan2(-diffY, diffX);
+
+            var tMaxX = 0.5f / Mathf.Cos(angle);
+            var tMaxY = 0.5f / Mathf.Sin(angle);
+
+            var tDeltaX = 1.0f / Mathf.Cos(angle);
+            var tDeltaY = 1.0f / Mathf.Sin(angle);
+
+            var manhattenDistance = Math.Abs(end.x - start.x) + Math.Abs(end.y - start.y);
+
+            for (var t = 0; t < manhattenDistance; t++)
             {
+                bitmap.Set(x, y);
+
+                if (Mathf.Abs(tMaxX) < Mathf.Abs(tMaxY))
+                {
+                    tMaxX += tDeltaX;
+                    x += stepX;
+                }
+                else
+                {
+                    tMaxY += tDeltaY;
+                    y += stepY;
+                }
+
                 if (map[x, y])
                 {
-                    return false; // Hit a wall
-                }
-
-                var e2 = 2 * err;
-                if (e2 > -dy)
-                {
-                    err -= dy;
-                    x += sx;
-                }
-                if (e2 < dx)
-                {
-                    err += dx;
-                    y += sy;
+                    return;
                 }
             }
 
-            return true;
-        }
-
-        // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPointFastBreakColumn(Vector2Int start, bool[,] map)
-        {
-            var visibilitySet = new HashSet<Vector2Int>();
-
-            // Traverse columns in both directions
-            TraverseColumn(start, map, visibilitySet, 1);  // Right direction
-            TraverseColumn(start, map, visibilitySet, -1); // Left direction
-
-            return visibilitySet;
-        }
-
-        // Traverses the map column by column, pruning the search based on visibility
-        private static void TraverseColumn(Vector2Int start, bool[,] map, HashSet<Vector2Int> visibilitySet, int direction)
-        {
-            for (var x = start.x; x >= 0 && x < map.GetLength(0); x += direction)
-            {
-                var resultInCurrentColumn = false;
-                for (var y = 0; y < map.GetLength(1); y++)
-                {
-                    var target = new Vector2Int(x, y);
-
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
-                    {
-                        visibilitySet.Add(target);
-                        resultInCurrentColumn = true;
-                    }
-                }
-
-                // Stop if the current column has no visible tiles
-                if (!resultInCurrentColumn && x != start.x)
-                {
-                    break;
-                }
-            }
+            bitmap.Set(x, y);
         }
     }
 }
