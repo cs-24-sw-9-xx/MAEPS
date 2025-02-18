@@ -60,7 +60,7 @@ namespace Maes.Map.MapPatrollingGen
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
-        private static List<Vector2Int> SolveWatchmanRoute(BitMap2D map, VisibilityMethod visibilityAlgorithm)
+        public static List<Vector2Int> SolveWatchmanRoute(BitMap2D map, VisibilityMethod visibilityAlgorithm)
         {
             var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
             var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
