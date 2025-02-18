@@ -44,9 +44,6 @@ namespace Maes.Algorithms.Patrolling
 
         private Queue<PathStep> _currentPath = new();
 
-        private PathStep? _initialPathStep;
-        private Vector2Int? _currentTarget;
-
         // Set by SetController
         protected Robot2DController _controller = null!;
 
@@ -115,6 +112,12 @@ namespace Maes.Algorithms.Patrolling
                     _controller.Move(1.0f, reverse: true);
                     yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
 
+                    if (_controller.IsCurrentlyColliding)
+                    {
+                        _controller.Move(1.0f, reverse: false);
+                        yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
+                    }
+
                     while (!HasReachedTarget())
                     {
                         _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
@@ -140,20 +143,57 @@ namespace Maes.Algorithms.Patrolling
                 yield return WaitForCondition.WaitForLogicTicks(1);
             }
 
-            SetNextVertex();
-
             while (true)
             {
-                if (_currentPath.Count != 0 || !HasReachedTarget())
+                SetNextVertex();
+
+                // Go to the start of the first step.
+                var initialPathStep = _currentPath.Peek();
+                foreach (var condition in MoveToPosition(initialPathStep.Start))
                 {
-                    PathAndMoveToTarget();
-                    yield return WaitForCondition.WaitForLogicTicks(1);
+                    yield return condition;
+                }
+
+                // Go to the end of each path step.
+                while (_currentPath.Count > 0)
+                {
+                    var target = _currentPath.Dequeue();
+                    foreach (var condition in MoveToPosition(target.End))
+                    {
+                        yield return condition;
+                    }
+                }
+            }
+        }
+
+        private const float _closeness = 0.25f;
+
+        private IEnumerable<WaitForCondition> MoveToPosition(Vector2Int target)
+        {
+            while (true)
+            {
+                yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
+
+                var relativePosition = GetRelativePositionTo(target);
+                if (relativePosition.Distance <= _closeness)
+                {
+                    yield break;
+                }
+
+                if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
+                {
+                    _controller.Rotate(relativePosition.RelativeAngle);
                 }
                 else
                 {
-                    SetNextVertex();
+                    _controller.Move(relativePosition.Distance);
                 }
             }
+        }
+
+        private RelativePosition GetRelativePositionTo(Vector2Int position)
+        {
+            return _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(position, dependOnBrokenBehaviour: false);
         }
 
         private void SetNextVertex()
@@ -162,7 +202,6 @@ namespace Maes.Algorithms.Patrolling
             OnReachTargetVertex(currentVertex);
             TargetVertex = NextVertex(currentVertex);
             _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, TargetVertex.Id)]);
-            _currentTarget = null;
         }
 
         protected abstract Vertex NextVertex(Vertex currentVertex);
@@ -179,53 +218,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
 
-        private void PathAndMoveToTarget()
-        {
-            const float closeness = 0.25f;
-
-            if (_controller.GetStatus() != RobotStatus.Idle)
-            {
-                return;
-            }
-
-            if (_currentTarget == null)
-            {
-                _initialPathStep = _currentPath.Dequeue();
-                _currentTarget = _initialPathStep.Value.Start;
-            }
-
-            var relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
-            if (relativePosition.Distance < closeness)
-            {
-                if (_currentPath.Count == 0)
-                {
-                    _currentTarget = null;
-                    return;
-                }
-
-                if (_initialPathStep != null)
-                {
-                    _currentTarget = _initialPathStep.Value.End;
-                    _initialPathStep = null;
-                }
-                else
-                {
-                    _currentTarget = _currentPath.Dequeue().End;
-                }
-                relativePosition = _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget.Value, dependOnBrokenBehaviour: false);
-            }
-
-            if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
-            {
-                _controller.Rotate(relativePosition.RelativeAngle);
-            }
-            else if (relativePosition.Distance > closeness)
-            {
-                _controller.Move(relativePosition.Distance);
-            }
-        }
-
-        protected Vertex GetClosestVertex()
+        private Vertex GetClosestVertex()
         {
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
             var closestVertex = _vertices[0];

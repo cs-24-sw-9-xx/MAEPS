@@ -22,30 +22,29 @@
 // Henrik van Peet,
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 using Maes.Map.MapGen;
 using Maes.Utilities;
 
-using UnityEngine;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
 
-using static Maes.Map.PatrollingMap;
+using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
 {
     public static class GreedyWaypointGenerator
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
         {
-            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
-            var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = TSPHeuresticSolver(map, visibilityAlgorithm);
+            using var map = MapUtilities.MapToBitMap(simulationMap);
+            var vertexPositions = TSPHeuresticSolver(map);
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var connectVertices = WaypointConnection.ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
-            return new PatrollingMap(connectVertices, simulationMap, visibilityAlgorithm);
+            return new PatrollingMap(connectVertices, simulationMap, vertexPositions);
         }
 
         /// <summary>
@@ -54,74 +53,148 @@ namespace Maes.Map.MapPatrollingGen
         /// <param name="map"></param>
         /// <param name="visibilityAlgorithm"></param>
         /// <returns></returns>
-        public static List<Vector2Int> TSPHeuresticSolver(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        public static Dictionary<Vector2Int, Bitmap> TSPHeuresticSolver(Bitmap map)
         {
-            var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
-            var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
+            var precomputedVisibility = ComputeVisibility(map);
+            var guardPositions = ComputeVertexCoordinates(map, precomputedVisibility);
             return guardPositions;
         }
 
-        private static List<Vector2Int> ComputeVertexCoordinates(Dictionary<Vector2Int, HashSet<Vector2Int>> precomputedVisibility)
+        private static Dictionary<Vector2Int, Bitmap> ComputeVertexCoordinates(Bitmap map, Dictionary<Vector2Int, Bitmap> precomputedVisibility)
         {
-            var guardPositions = new List<Vector2Int>();
-            var uncoveredTiles = precomputedVisibility.Keys.ToHashSet();
+            var startTime = Time.realtimeSinceStartup;
 
-            // Greedy algorithm to find the best guard positions
+            var guardPositions = new Dictionary<Vector2Int, Bitmap>();
+
+            using var uncoveredTiles = new Bitmap(0, 0, map.Width, map.Height);
+            var uncoveredTilesSet = precomputedVisibility.Keys.ToHashSet();
+            foreach (var uncoveredTile in precomputedVisibility.Keys)
+            {
+                uncoveredTiles.Set(uncoveredTile.x, uncoveredTile.y);
+            }
+
             while (uncoveredTiles.Count > 0)
             {
                 var bestGuardPosition = Vector2Int.zero;
-                var bestCoverage = new HashSet<Vector2Int>();
+                var bestCoverage = new Bitmap(0, 0, 0, 0);
+                var bestCandidate = new Bitmap(0, 0, 0, 0);
 
-                // Find the guard position that covers the most uncovered tiles
-                var orderedCandidates = uncoveredTiles.OrderByDescending(t => precomputedVisibility[t].Count);
-                foreach (var candidate in orderedCandidates)
+                var foundCandidate = false;
+
+                foreach (var uncoveredTile in uncoveredTilesSet.OrderByDescending(t => precomputedVisibility[t].Count))
                 {
-                    if (precomputedVisibility[candidate].Count < bestCoverage.Count)
+                    var candidate = precomputedVisibility[uncoveredTile];
+                    if (candidate.Count <= bestCoverage.Count)
                     {
                         break;
                     }
-                    var coverage = new HashSet<Vector2Int>(precomputedVisibility[candidate]);
-                    coverage.IntersectWith(uncoveredTiles);
 
-                    if (coverage.Count > bestCoverage.Count ||
-                       (coverage.Count == bestCoverage.Count &&
-                        AverageEuclideanDistance(candidate, guardPositions) < AverageEuclideanDistance(bestGuardPosition, guardPositions)))
+                    var coverage = Bitmap.Intersection(uncoveredTiles, candidate);
+
+                    if (coverage.Count > bestCoverage.Count)
                     {
-                        bestGuardPosition = candidate;
+                        bestGuardPosition = uncoveredTile;
+                        bestCoverage.Dispose();
                         bestCoverage = coverage;
+                        bestCandidate = candidate;
+                        foundCandidate = true;
+                    }
+                    else
+                    {
+                        coverage.Dispose();
                     }
                 }
 
-                guardPositions.Add(bestGuardPosition);
+                if (!foundCandidate)
+                {
+                    Debug.LogErrorFormat("Found no candidates. Missing: {0}", string.Join(", ", uncoveredTiles));
+                    Debug.LogErrorFormat("Missing candidates in hashmap: {0}", string.Join(", ", uncoveredTilesSet));
+                    break;
+                }
+
+                guardPositions.Add(bestGuardPosition, bestCandidate);
                 uncoveredTiles.ExceptWith(bestCoverage);
+                uncoveredTilesSet.ExceptWith(bestCoverage);
+
+                bestCoverage.Dispose();
             }
+
+            Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
         }
 
-        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map)
         {
-            var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
-            var width = map.GetLength(0);
-            var height = map.GetLength(1);
+            var startTime = Time.realtimeSinceStartup;
+
+            var nativeMap = map.ToUint4Array();
+            var nativeVisibilities = new NativeArray<uint4>[map.Width];
+
+            for (var i = 0; i < nativeVisibilities.Length; i++)
+            {
+                nativeVisibilities[i] = new NativeArray<uint4>(nativeMap.Length * map.Height, Allocator.Persistent);
+                for (var j = 0; j < nativeVisibilities[i].Length; j++)
+                {
+                    nativeVisibilities[i][j] = uint4.zero;
+                }
+            }
+
+            var jobs = new JobHandle[map.Width];
 
             // Outermost loop parallelized to improve performance
-            Parallel.For(0, width, x =>
+            for (var x = 0; x < map.Width; x++)
             {
-                for (var y = 0; y < height; y++)
+                var job = new VisibilityJob()
                 {
-                    var tile = new Vector2Int(x, y);
-                    if (!map[x, y])
+                    Width = map.Width,
+                    Height = map.Height,
+                    X = x,
+                    Map = nativeMap,
+                    Visibility = nativeVisibilities[x]
+                };
+
+                jobs[x] = job.Schedule();
+            }
+
+            foreach (var job in jobs)
+            {
+                job.Complete();
+            }
+
+            var precomputedVisibilities = new Dictionary<Vector2Int, Bitmap>();
+
+            for (var i = 0; i < nativeVisibilities.Length; i++)
+            {
+                var bitmaps = Bitmap.FromUint4Array(map.Width, map.Height, nativeMap.Length, nativeVisibilities[i]);
+                for (var y = 0; y < map.Height; y++)
+                {
+                    var bitmap = bitmaps[y];
+                    if (bitmap.Count > 0)
                     {
-                        // Precompute visibility for each tile
-                        precomputedVisibility[tile] = visibilityAlgorithm(tile, map);
+                        var tile = new Vector2Int(i, y);
+                        precomputedVisibilities[tile] = bitmap;
+                    }
+                    else
+                    {
+                        bitmap.Dispose();
                     }
                 }
-            });
+
+                nativeVisibilities[i].Dispose();
+            }
+
+
+            nativeMap.Dispose();
+
+
             // To debug the ComputeVisibility method, use the following utility method to save as image
             // SaveAsImage.SaveVisibileTiles();
 
-            return precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            Debug.LogFormat("Compute visibility took {0} seconds", Time.realtimeSinceStartup - startTime);
+
+
+            return precomputedVisibilities;
         }
 
         // Helper method to calculate the average Euclidean distance of a guard position to a list of other guard positions

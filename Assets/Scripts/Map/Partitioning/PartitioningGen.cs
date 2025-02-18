@@ -32,44 +32,42 @@ using MathNet.Numerics.LinearAlgebra;
 
 using UnityEngine;
 
-using static Maes.Map.PatrollingMap;
-
 namespace Maes.Map.Partitioning
 {
     public static class PartitioningGen
     {
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
-            var map = MapUtilities.MapToBitMap(simulationMap);
-            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
-            var vertexPositions = GreedyWaypointGenerator.TSPHeuresticSolver(map, visibilityAlgorithm);
+            using var map = MapUtilities.MapToBitMap(simulationMap);
+            var vertexPositionsDictionary = GreedyWaypointGenerator.TSPHeuresticSolver(map);
+            var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVertices(cluster.Value, localDistanceMatrix, colorIslands);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands);
                 allVertices.AddRange(vertices);
             }
-            return new PatrollingMap(allVertices.ToArray(), simulationMap, visibilityAlgorithm);
+            return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
         }
 
         public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
         {
-            var map = MapUtilities.MapToBitMap(simulationMap);
-            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
-            var vertexPositions = GreedyWaypointGenerator.TSPHeuresticSolver(map, visibilityAlgorithm);
+            using var map = MapUtilities.MapToBitMap(simulationMap);
+            var vertexPositionsDictionary = GreedyWaypointGenerator.TSPHeuresticSolver(map);
+            var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = KMeansPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVertices(cluster.Value, localDistanceMatrix, colorIslands);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands);
                 allVertices.AddRange(vertices);
             }
-            return new PatrollingMap(allVertices.ToArray(), simulationMap, visibilityAlgorithm);
+            return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
         }
 
 

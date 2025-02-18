@@ -26,6 +26,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Utilities;
+
 using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
@@ -33,15 +35,17 @@ namespace Maes.Map.MapPatrollingGen
     public static class WaypointConnection
     {
         // Static variable to keep track of the current vertex id
-        private static int currentVertexId = 0;
+        private static readonly int currentVertexId = 0;
 
-        public static Vertex[] ConnectVertices(List<Vector2Int> guardPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
+        public static Vertex[] ConnectVertices(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
         {
+            var startTime = Time.realtimeSinceStartup;
+
             const int numberOfReverseNearestNeighbors = 1;
             var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-            var vertices = guardPositions.Select(pos => new Vertex(currentVertexId++, 0, pos)).ToArray();
+            var i = 0;
+            var vertices = vertexPositions.Select(pos => new Vertex(i++, 0, pos.Key)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
-            var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
             {
@@ -50,6 +54,7 @@ namespace Maes.Map.MapPatrollingGen
                     continue;
                 }
 
+                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
                 vertex.Color = color;
                 foreach (var neighborPos in neighbors)
                 {
@@ -63,6 +68,9 @@ namespace Maes.Map.MapPatrollingGen
             }
 
             ConnectIslands(vertices, distanceMatrix);
+
+            Debug.LogFormat("Connect Vertices took {0} s", Time.realtimeSinceStartup - startTime);
+
             return vertices;
         }
 
