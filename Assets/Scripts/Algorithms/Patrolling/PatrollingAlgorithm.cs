@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Maes.Algorithms.Components;
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Map.PathFinding;
 using Maes.Robot;
@@ -16,6 +18,13 @@ namespace Maes.Algorithms.Patrolling
     {
         public abstract string AlgorithmName { get; }
 
+        protected PatrollingAlgorithm(ICollisionRecovery<PatrollingAlgorithm>? collisionRecovery = null)
+        {
+            _collisionRecovery = collisionRecovery ?? new DefaultPatrollingCollisionRecovery();
+            _collisionRecovery.SetAlgorithm(this);
+        }
+
+        private readonly ICollisionRecovery<PatrollingAlgorithm> _collisionRecovery;
 
         // Do not change visibility of this!
         private PatrollingMap _globalMap = null!;
@@ -39,10 +48,10 @@ namespace Maes.Algorithms.Patrolling
         private Vertex? _targetVertex;
 
         // Set by SetPatrollingMap
-        protected Vertex[] _vertices = null!;
+        private Vertex[] _vertices = null!;
         private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
 
-        private Queue<PathStep> _currentPath = new();
+        public Queue<PathStep> CurrentPath { get; private set; } = new();
 
         // Set by SetController
         protected Robot2DController _controller = null!;
@@ -64,6 +73,7 @@ namespace Maes.Algorithms.Patrolling
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
+            _collisionRecovery.SetController(_controller);
         }
 
         public void SetPatrollingMap(PatrollingMap map)
@@ -94,38 +104,22 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-        private bool HasReachedTarget()
+        public bool HasReachedTarget()
         {
-            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-            return currentPosition == TargetVertex.Position;
+            var relativePosition = GetRelativePositionTo(TargetVertex.Position);
+            return relativePosition.Distance <= Closeness;
         }
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
             while (true)
             {
-                if (_targetVertex != null && _controller.IsCurrentlyColliding)
+                if (_targetVertex != null)
                 {
-                    _controller.StopCurrentTask();
-                    yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-
-                    _controller.Move(1.0f, reverse: true);
-                    yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-
-                    if (_controller.IsCurrentlyColliding)
+                    foreach (var condition in _collisionRecovery.CheckAndRecoverFromCollision())
                     {
-                        _controller.Move(1.0f, reverse: false);
-                        yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
+                        yield return condition;
                     }
-
-                    while (!HasReachedTarget())
-                    {
-                        _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
-                        yield return WaitForCondition.WaitForLogicTicks(1);
-                    }
-
-                    // Invalidate the old path.
-                    _currentPath.Clear();
                 }
 
                 yield return WaitForCondition.ContinueUpdateLogic();
@@ -148,16 +142,16 @@ namespace Maes.Algorithms.Patrolling
                 SetNextVertex();
 
                 // Go to the start of the first step.
-                var initialPathStep = _currentPath.Peek();
+                var initialPathStep = CurrentPath.Peek();
                 foreach (var condition in MoveToPosition(initialPathStep.Start))
                 {
                     yield return condition;
                 }
 
                 // Go to the end of each path step.
-                while (_currentPath.Count > 0)
+                while (CurrentPath.Count > 0)
                 {
-                    var target = _currentPath.Dequeue();
+                    var target = CurrentPath.Dequeue();
                     foreach (var condition in MoveToPosition(target.End))
                     {
                         yield return condition;
@@ -166,7 +160,7 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-        private const float _closeness = 0.25f;
+        private const float Closeness = 0.25f;
 
         private IEnumerable<WaitForCondition> MoveToPosition(Vector2Int target)
         {
@@ -175,7 +169,7 @@ namespace Maes.Algorithms.Patrolling
                 yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
 
                 var relativePosition = GetRelativePositionTo(target);
-                if (relativePosition.Distance <= _closeness)
+                if (relativePosition.Distance <= Closeness)
                 {
                     yield break;
                 }
@@ -201,7 +195,7 @@ namespace Maes.Algorithms.Patrolling
             var currentVertex = TargetVertex;
             OnReachTargetVertex(currentVertex);
             TargetVertex = NextVertex(currentVertex);
-            _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, TargetVertex.Id)]);
+            CurrentPath = new Queue<PathStep>(_paths[(currentVertex.Id, TargetVertex.Id)]);
         }
 
         protected abstract Vertex NextVertex(Vertex currentVertex);

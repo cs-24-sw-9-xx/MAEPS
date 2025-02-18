@@ -398,6 +398,8 @@ namespace Maes.Robot
 
             _debugStringBuilder.AppendFormat("Is colliding: {0}\n", IsCurrentlyColliding);
 
+            _debugStringBuilder.AppendFormat("Robot status: {0}\n", GetStatus());
+
             return _debugStringBuilder.ToString();
         }
 
