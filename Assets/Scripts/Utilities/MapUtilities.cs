@@ -9,13 +9,13 @@ namespace Maes.Utilities
         public static BitMap2D MapToBitMap(SimulationMap<Tile> simulationMap)
         {
             var map = new BitMap2D(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
-            for (var height = 0; height < simulationMap.HeightInTiles; height++)
+            for (var y = 0; y < simulationMap.HeightInTiles; y++)
             {
-                for (var width = 0; width < simulationMap.WidthInTiles; width++)
+                for (var x = 0; x < simulationMap.WidthInTiles; x++)
                 {
-                    var tile = simulationMap.GetTileByLocalCoordinate(width, height);
+                    var tile = simulationMap.GetTileByLocalCoordinate(x, y);
                     var firstTri = tile.GetTriangles()[0];
-                    map[height, width] = Tile.IsWall(firstTri.Type);
+                    map[y, x] = Tile.IsWall(firstTri.Type);
                 }
             }
 

@@ -26,23 +26,23 @@ namespace Maes.Map.MapPatrollingGen
             Width = map.GetLength(0);
             Height = map.GetLength(1);
             _bits = new BitArray(Width * Height);
-            for (var height = 0; height < Height; height++)
+            for (var y = 0; y < Height; y++)
             {
-                for (var width = 0; width < Width; width++)
+                for (var x = 0; x < Width; x++)
                 {
-                    this[height, width] = map[width, height];
+                    this[y, x] = map[x, y];
                 }
             }
         }
 
         /// <summary>
-        /// width should be in the inner loop for cache efficiency. 
+        /// x should be in the inner loop for cache efficiency. 
         /// </summary>
         /// <value>bool indicating whether a cell is a wall.</value>
-        public bool this[int height, int width]
+        public bool this[int y, int x]
         {
-            get => _bits[height * Width + width];
-            set => _bits[height * Width + width] = value;
+            get => _bits[y * Width + x];
+            set => _bits[y * Width + x] = value;
         }
 
         // Function to check if a position is within bounds and walkable

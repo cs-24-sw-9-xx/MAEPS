@@ -12,12 +12,12 @@ namespace Maes.Utilities
         public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, BitMap2D map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
-            for (var height = 0; height < map.Height; height++)
+            for (var y = 0; y < map.Height; y++)
             {
-                for (var width = 0; width < map.Width; width++)
+                for (var x = 0; x < map.Width; x++)
                 {
-                    var target = new Vector2Int(width, height);
-                    if (!map[height, width] && IsInLineOfSight(start, target, map))
+                    var target = new Vector2Int(x, y);
+                    if (!map[y, x] && IsInLineOfSight(start, target, map))
                     {
                         visibilitySet.Add(target);
                     }
@@ -77,14 +77,14 @@ namespace Maes.Utilities
         // Traverses the map in one direction(up/down) from the starting point, pruning the search based on visibility
         private static void TraverseHalf(Vector2Int start, BitMap2D map, HashSet<Vector2Int> visibilitySet, int direction)
         {
-            for (var height = start.y; height >= 0 && height < map.Height; height += direction)
+            for (var y = start.y; y >= 0 && y < map.Height; y += direction)
             {
                 var resultInLastIteration = false;
-                for (var width = 0; width < map.Width; width++)
+                for (var x = 0; x < map.Width; x++)
                 {
-                    var target = new Vector2Int(width, height);
+                    var target = new Vector2Int(x, y);
 
-                    if (!map[height, width] && IsInLineOfSight(start, target, map))
+                    if (!map[y, x] && IsInLineOfSight(start, target, map))
                     {
                         visibilitySet.Add(target);
                         resultInLastIteration = true;
@@ -92,7 +92,7 @@ namespace Maes.Utilities
                 }
 
                 // Stop if the current iteration has no visible tiles
-                if (!resultInLastIteration && height != start.y)
+                if (!resultInLastIteration && y != start.y)
                 {
                     break;
                 }
