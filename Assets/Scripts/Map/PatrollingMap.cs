@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map.MapGen;
+using Maes.Map.MapPatrollingGen;
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;

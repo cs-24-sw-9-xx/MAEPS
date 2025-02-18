@@ -1,10 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-
 using Maes.Map;
 using Maes.Map.MapGen;
-
-using UnityEngine;
+using Maes.Map.MapPatrollingGen;
 
 namespace Maes.Utilities
 {

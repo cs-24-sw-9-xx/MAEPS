@@ -1,3 +1,4 @@
+using Maes.Map.MapPatrollingGen;
 using Maes.Utilities;
 
 using NUnit.Framework;

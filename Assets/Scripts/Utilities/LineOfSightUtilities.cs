@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using Maes.Map.MapPatrollingGen;
+
 using UnityEngine;
 
 namespace Maes.Utilities
