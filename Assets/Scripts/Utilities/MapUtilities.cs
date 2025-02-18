@@ -1,26 +1,29 @@
+using System.Collections;
+using System.Collections.Generic;
+
 using Maes.Map;
 using Maes.Map.MapGen;
+
+using UnityEngine;
 
 namespace Maes.Utilities
 {
     public static class MapUtilities
     {
-        public static bool[,] MapToBitMap(SimulationMap<Tile> simulationMap)
+        public static BitMap2D MapToBitMap(SimulationMap<Tile> simulationMap)
         {
-            var map = new bool[simulationMap.WidthInTiles, simulationMap.HeightInTiles];
-            for (var x = 0; x < simulationMap.WidthInTiles; x++)
+            var map = new BitMap2D(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            for (var height = 0; height < simulationMap.HeightInTiles; height++)
             {
-                for (var y = 0; y < simulationMap.HeightInTiles; y++)
+                for (var width = 0; width < simulationMap.WidthInTiles; width++)
                 {
-                    var tile = simulationMap.GetTileByLocalCoordinate(x, y);
+                    var tile = simulationMap.GetTileByLocalCoordinate(width, height);
                     var firstTri = tile.GetTriangles()[0];
-                    map[x, y] = Tile.IsWall(firstTri.Type);
+                    map[height, width] = Tile.IsWall(firstTri.Type);
                 }
             }
 
             return map;
         }
-
-
     }
 }

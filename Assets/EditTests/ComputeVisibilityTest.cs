@@ -11,7 +11,7 @@ namespace EditTests
     /// To get a better understanding of the the difference between the two algorithms please use
     /// the SaveAsImage.SaveVisibileTiles() debug method in the following method in WatchmanRouteSolver.cs: 
     /// private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
-    /// In short, the ComputeVisibilityOfPointFastBreakColumn, will break the loop when it finds a column without any visible tiles.
+    /// In short, the ComputeVisibilityOfPointFastBreak, will break the loop when it finds a column without any visible tiles.
     /// However, due to the way visibility is calculated, it is possible that there is a column with visible tiles after a column with no visible tiles.
     /// </summary>
     public class ComputeVisibilityTest
@@ -19,13 +19,13 @@ namespace EditTests
         public class TestCase
         {
             public string Name;
-            public bool[,] Map;
+            public BitMap2D Map;
             public int ExpectedByOriginal;
             public int ExpectedByOptimized;
             public TestCase(string name, bool[,] map, int expectedByOriginal, int expectedByOptimized = -1)
             {
                 Name = name;
-                Map = map;
+                Map = new BitMap2D(map);
                 ExpectedByOriginal = expectedByOriginal;
                 ExpectedByOptimized = expectedByOptimized == -1 ? expectedByOriginal : expectedByOptimized;
             }
@@ -91,7 +91,7 @@ namespace EditTests
                 {false, true},
                 {false, false},
             }, 4),
-            new TestCase("3x9 difference between original and optimized", new bool[,] {
+            new TestCase("3x9 test case to illustrate the difference, but rotated, such that the fast break is not triggered", new bool[,] {
                 {false, false, true},
                 {false, false, true},
                 {false, false, true},
@@ -101,6 +101,11 @@ namespace EditTests
                 {false, false, true},
                 {true, true, false},
                 {true, true, false},
+            }, 2*7+1),
+            new TestCase("9x3 difference between original and optimized", new bool[,] {
+                {false, false, false, false, false, false, false, true, true},
+                {false, false, false, false, false, false, false, true, true},
+                {true, true, true, true, true, true, true, false, false},
             }, 2*7+1, 2*7),
             };
 
@@ -116,11 +121,11 @@ namespace EditTests
 
         [Theory]
         [TestCaseSource("ComputeVisibilityTestCases")]
-        public void ComputeVisibilityOfPointFastBreakColumnTests(TestCase testCase)
+        public void ComputeVisibilityOfPointFastBreakTests(TestCase testCase)
         {
             var map = testCase.Map;
             var expected = testCase.ExpectedByOptimized;
-            var result = LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn(new Vector2Int(0, 0), map);
+            var result = LineOfSightUtilities.ComputeVisibilityOfPointFastBreak(new Vector2Int(0, 0), map);
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
     }

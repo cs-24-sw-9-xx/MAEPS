@@ -16,7 +16,7 @@ namespace Maes.Map.MapPatrollingGen
     {
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, bool useOptimizedLOS = true)
         {
-            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
+            VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreak : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = SolveWatchmanRoute(map, visibilityAlgorithm);
             var distanceMatrix = CalculateDistanceMatrix(map, vertexPositions);
@@ -60,7 +60,7 @@ namespace Maes.Map.MapPatrollingGen
 
         // Solve the watchman route problem using a greedy algorithm.
         // The inspiration for the code can be found in this paper https://www.researchgate.net/publication/37987286_An_Approximate_Algorithm_for_Solving_the_Watchman_Route_Problem
-        private static List<Vector2Int> SolveWatchmanRoute(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        private static List<Vector2Int> SolveWatchmanRoute(BitMap2D map, VisibilityMethod visibilityAlgorithm)
         {
             var precomputedVisibility = ComputeVisibility(map, visibilityAlgorithm);
             var guardPositions = ComputeVertexCoordinates(precomputedVisibility);
@@ -105,11 +105,11 @@ namespace Maes.Map.MapPatrollingGen
             return guardPositions;
         }
 
-        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map, VisibilityMethod visibilityAlgorithm)
+        private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(BitMap2D map, VisibilityMethod visibilityAlgorithm)
         {
             var precomputedVisibility = new ConcurrentDictionary<Vector2Int, HashSet<Vector2Int>>();
-            var width = map.GetLength(0);
-            var height = map.GetLength(1);
+            var width = map.Width;
+            var height = map.Height;
 
             // Outermost loop parallelized to improve performance
             Parallel.For(0, width, x =>
@@ -295,7 +295,7 @@ namespace Maes.Map.MapPatrollingGen
 
 
         // Calculate the shortest path between all pairs of vertices
-        private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(bool[,] map, List<Vector2Int> verticies)
+        private static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(BitMap2D map, List<Vector2Int> verticies)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
@@ -307,14 +307,6 @@ namespace Maes.Map.MapPatrollingGen
             return shortestGridPath;
         }
 
-        // Function to check if a position is within bounds and walkable
-        private static bool IsWalkable(Vector2Int pos, bool[,] map)
-        {
-            return pos.x >= 0 && pos.x < map.GetLength(0) &&
-                   pos.y >= 0 && pos.y < map.GetLength(1) &&
-                   !map[pos.x, pos.y]; // true if the position is not a wall
-        }
-
         private static readonly Vector2Int[] Directions = new Vector2Int[]
         {
             new(0, 1),
@@ -324,7 +316,7 @@ namespace Maes.Map.MapPatrollingGen
         };
 
         // BFS to find the shortest path from the start position to all other vertices
-        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, bool[,] map)
+        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> guardPositions, BitMap2D map)
         {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();
@@ -343,7 +335,7 @@ namespace Maes.Map.MapPatrollingGen
                 {
                     var neighbor = current + direction;
 
-                    if (IsWalkable(neighbor, map) && !visited.Contains(neighbor))
+                    if (map.IsWalkable(neighbor) && !visited.Contains(neighbor))
                     {
                         queue.Enqueue(neighbor);
                         visited.Add(neighbor);

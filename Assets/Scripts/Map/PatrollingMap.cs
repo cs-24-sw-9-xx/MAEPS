@@ -14,7 +14,7 @@ namespace Maes.Map
 {
     public class PatrollingMap : ICloneable<PatrollingMap>
     {
-        public delegate HashSet<Vector2Int> VisibilityMethod(Vector2Int position, bool[,] map);
+        public delegate HashSet<Vector2Int> VisibilityMethod(Vector2Int position, BitMap2D map);
         public readonly Vertex[] Vertices;
 
         public readonly IReadOnlyDictionary<(int, int), PathStep[]> Paths;

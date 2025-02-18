@@ -4,18 +4,18 @@ using UnityEngine;
 
 namespace Maes.Utilities
 {
-    public class LineOfSightUtilities
+    public static class LineOfSightUtilities
     {
         // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, bool[,] map)
+        public static HashSet<Vector2Int> ComputeVisibilityOfPoint(Vector2Int start, BitMap2D map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
-            for (var x = 0; x < map.GetLength(0); x++)
+            for (var height = 0; height < map.Height; height++)
             {
-                for (var y = 0; y < map.GetLength(1); y++)
+                for (var width = 0; width < map.Width; width++)
                 {
-                    var target = new Vector2Int(x, y);
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
+                    var target = new Vector2Int(width, height);
+                    if (!map[height, width] && IsInLineOfSight(start, target, map))
                     {
                         visibilitySet.Add(target);
                     }
@@ -25,7 +25,7 @@ namespace Maes.Utilities
         }
 
         // Method to check visibility using a line-of-sight algorithm
-        private static bool IsInLineOfSight(Vector2Int start, Vector2Int end, bool[,] map)
+        private static bool IsInLineOfSight(Vector2Int start, Vector2Int end, BitMap2D map)
         {
             // Implement Bresenham's line algorithm for visibility check
             // Return true if there is a clear line-of-sight, otherwise false
@@ -40,7 +40,7 @@ namespace Maes.Utilities
 
             while (x != end.x || y != end.y)
             {
-                if (map[x, y])
+                if (map[y, x])
                 {
                     return false; // Hit a wall
                 }
@@ -62,36 +62,35 @@ namespace Maes.Utilities
         }
 
         // Precompute visibility using an efficient line-drawing algorithm
-        public static HashSet<Vector2Int> ComputeVisibilityOfPointFastBreakColumn(Vector2Int start, bool[,] map)
+        public static HashSet<Vector2Int> ComputeVisibilityOfPointFastBreak(Vector2Int start, BitMap2D map)
         {
             var visibilitySet = new HashSet<Vector2Int>();
 
-            // Traverse columns in both directions
-            TraverseColumn(start, map, visibilitySet, 1);  // Right direction
-            TraverseColumn(start, map, visibilitySet, -1); // Left direction
+            TraverseHalf(start, map, visibilitySet, 1);  // up direction
+            TraverseHalf(start, map, visibilitySet, -1); // down direction
 
             return visibilitySet;
         }
 
-        // Traverses the map column by column, pruning the search based on visibility
-        private static void TraverseColumn(Vector2Int start, bool[,] map, HashSet<Vector2Int> visibilitySet, int direction)
+        // Traverses the map in one direction(up/down) from the starting point, pruning the search based on visibility
+        private static void TraverseHalf(Vector2Int start, BitMap2D map, HashSet<Vector2Int> visibilitySet, int direction)
         {
-            for (var x = start.x; x >= 0 && x < map.GetLength(0); x += direction)
+            for (var height = start.y; height >= 0 && height < map.Height; height += direction)
             {
-                var resultInCurrentColumn = false;
-                for (var y = 0; y < map.GetLength(1); y++)
+                var resultInLastIteration = false;
+                for (var width = 0; width < map.Width; width++)
                 {
-                    var target = new Vector2Int(x, y);
+                    var target = new Vector2Int(width, height);
 
-                    if (!map[x, y] && IsInLineOfSight(start, target, map))
+                    if (!map[height, width] && IsInLineOfSight(start, target, map))
                     {
                         visibilitySet.Add(target);
-                        resultInCurrentColumn = true;
+                        resultInLastIteration = true;
                     }
                 }
 
-                // Stop if the current column has no visible tiles
-                if (!resultInCurrentColumn && x != start.x)
+                // Stop if the current iteration has no visible tiles
+                if (!resultInLastIteration && height != start.y)
                 {
                     break;
                 }
