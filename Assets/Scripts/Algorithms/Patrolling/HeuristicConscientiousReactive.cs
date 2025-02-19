@@ -53,7 +53,7 @@ namespace Maes.Algorithms.Patrolling
             // Calculate the normalized distance estimation of the neighbors
             var normalizedDistances = CalculateNormalizedDistance(currentVertex.Neighbors, DistanceEstimatorMethod);
             var result = CalculateNextVertex(normalizedIdleness, normalizedDistances);
-            Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ",result.First().Neighbors.Select(x => x.Id))}");
+            Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ", result.First().Neighbors.Select(x => x.Id))}");
             return result.First();
         }
 
