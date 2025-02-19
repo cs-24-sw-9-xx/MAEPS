@@ -7,7 +7,8 @@ using Random = System.Random;
 namespace Maes.Algorithms.Patrolling
 {
     /// <summary>
-    /// The random reactive patrolling algorithm from "Multi-Agent Movement Coordination in Patrolling", 2002
+    /// Original implementation of the Conscientious Reactive Algorithm of https://doi.org/10.1007/3-540-36483-8_11.
+    /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
     /// </summary>
     public class RandomReactive : PatrollingAlgorithm
     {
