@@ -1,5 +1,23 @@
-// Copyright 2024
+// Copyright 2024 MAES
+// 
+// This file is part of MAES
+// 
+// MAES is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAES is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAES. If not, see http://www.gnu.org/licenses/.
+// 
 // Contributors: Henneboy
+//
+// Note:
 // This algorithm is not optimal:
 // - Robots can get stuck when they collide with eachother
 // - Robots do not share their targets/intentions, i.e. they don't coordinate.
@@ -21,7 +39,6 @@ namespace Maes.Algorithms.Exploration.HenrikAlgo
 {
     public class HenrikExplorationAlgorithm : IExplorationAlgorithm
     {
-        // HACK
         private IRobotController _robotController = null!;
         private Vector2Int? _targetTile;
         private uint _ticksSinceHeartbeat;
