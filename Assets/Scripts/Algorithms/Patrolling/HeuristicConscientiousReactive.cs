@@ -1,6 +1,35 @@
+// Copyright 2024 MAES
+// 
+// This file is part of MAES
+// 
+// MAES is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAES is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAES. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: 
+// Henrik van Peet,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
+// 
+// Original repository: https://github.com/Molitany/MAES
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using Maes.Map;
+
+using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling
 {
@@ -13,28 +42,110 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
 
+        public delegate float DistanceEstimator(Vector2Int position);
+
         protected override Vertex NextVertex(Vertex currentVertex)
         {
+            Debug.Log($"Current vertex {currentVertex.Id}");
             // Calculate the normalized idleness of the neighbors
-            var idleness = currentVertex.Neighbors.Select(x => (x.Id, x.LastTimeVisitedTick));
-            var minIdleness = idleness.Min(x => x.LastTimeVisitedTick);
-            var maxIdleness = idleness.Max(x => x.LastTimeVisitedTick);
-            var normalizedIdleness = idleness.Select(x => (id: x.Id, normalizedIdleness: (x.LastTimeVisitedTick - minIdleness) / (maxIdleness - minIdleness)));
+            var normalizedIdleness = CalculateNormalizedIdleness(currentVertex.Neighbors);
 
             // Calculate the normalized distance estimation of the neighbors
-            var distanceEstimation = currentVertex.Neighbors.Select(x => (id: x.Id, dist: _controller.EstimateDistanceToTarget(x.Position)));
-            var maxDistanceEstimation = distanceEstimation.Max(x => x.dist);
-            distanceEstimation = distanceEstimation.Select(x => (id: x.id, dist: x.dist / maxDistanceEstimation));
+            var normalizedDistances = CalculateNormalizedDistance(currentVertex.Neighbors, DistanceEstimatorMethod);
+            var result = CalculateNextVertex(normalizedIdleness, normalizedDistances);
+            Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ",result.First().Neighbors.Select(x => x.Id))}");
+            return result.First();
+        }
 
-            if (normalizedIdleness.Count() != distanceEstimation.Count())
+        private float DistanceEstimatorMethod(Vector2Int position)
+        {
+            return _controller.EstimateDistanceToTarget(position) ?? throw new Exception("Distance estimation must not be null. Check if the target is reachable.");
+        }
+
+        private IEnumerable<Vertex> CalculateNextVertex(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
+        {
+            if (normalizedIdleness.Count() != normalizedDistances.Count())
             {
-                throw new System.Exception("Length of normalizedIdleness and distanceEstimation must be equal");
+                throw new Exception("Length of normalizedIdleness and distanceEstimation must be equal");
             }
-            var result = from idlenessValue in normalizedIdleness
-                         join distanceValue in distanceEstimation on idlenessValue.id equals distanceValue.id
-                         orderby idlenessValue.normalizedIdleness + distanceValue.dist ascending
-                         select (id: idlenessValue.id, value: idlenessValue.normalizedIdleness + distanceValue.dist);
-            return currentVertex.Neighbors.Single(x => x.Id == result.First().id);
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder = stringBuilder.AppendLine("Normalized Idleness");
+            foreach (var item in normalizedIdleness.OrderBy(x => x.Vertex.Id))
+            {
+                stringBuilder = stringBuilder.AppendLine(item.Vertex.Id + " " + item.Value);
+            }
+            stringBuilder = stringBuilder.AppendLine("Normalized Distance");
+            foreach (var item in normalizedDistances.OrderBy(x => x.Vertex.Id))
+            {
+                stringBuilder = stringBuilder.AppendLine(item.Vertex.Id + " " + item.Value);
+            }
+            Debug.Log(stringBuilder.ToString());
+
+            var result = from idleness in normalizedIdleness
+                         join distance in normalizedDistances on idleness.Vertex.Id equals distance.Vertex.Id
+                         orderby idleness.Value + distance.Value ascending
+                         select idleness.Vertex;
+            return result;
+        }
+
+        private readonly struct NormalizedValue
+        {
+            public Vertex Vertex { get; }
+            public float Value { get; }
+
+            public NormalizedValue(Vertex vertex, float value)
+            {
+                Vertex = vertex;
+                Value = value;
+            }
+        }
+
+        private static IEnumerable<NormalizedValue> CalculateNormalizedIdleness(IEnumerable<Vertex> Verticies)
+        {
+            var minLastTick = Verticies.Min(x => x.LastTimeVisitedTick);
+            var maxLastTick = Verticies.Max(x => x.LastTimeVisitedTick);
+            var idleness = Verticies.Select(x => (x, Idleness: maxLastTick - x.LastTimeVisitedTick));
+            var normalizedIdleness = new List<NormalizedValue>();
+            foreach (var (vertex, idlenessValue) in idleness)
+            {
+                // Avoid division by zero
+                if (maxLastTick - minLastTick == 0)
+                {
+                    normalizedIdleness.Add(new NormalizedValue(vertex, 0));
+                }
+                else
+                {
+                    normalizedIdleness.Add(new NormalizedValue(vertex, 1 - (float)idlenessValue / (maxLastTick - minLastTick)));
+                }
+            }
+            return normalizedIdleness;
+        }
+
+        private static IEnumerable<NormalizedValue> CalculateNormalizedDistance(IEnumerable<Vertex> verticies, DistanceEstimator distanceEstimator)
+        {
+            var distanceEstimations = verticies.Select(x => (Vertex: x, dist: distanceEstimator(x.Position)));
+            if (distanceEstimations.Any(x => x.dist < 0))
+            {
+                throw new Exception("Distance estimation must be positive");
+            }
+            var distances = distanceEstimations.Select(x => (x.Vertex, dist: x.dist));
+            var minDistance = distances.Min(x => x.dist);
+            var maxDistance = distances.Max(x => x.dist);
+            var normalizedDistance = new List<NormalizedValue>();
+            foreach (var (vertex, distanceValue) in distances)
+            {
+                // Avoid division by zero
+                if (maxDistance - minDistance == 0)
+                {
+                    normalizedDistance.Add(new NormalizedValue(vertex, 0));
+                }
+                else
+                {
+                    normalizedDistance.Add(new NormalizedValue(vertex, (distanceValue - minDistance) / (maxDistance - minDistance)));
+                }
+            }
+            return normalizedDistance;
         }
     }
 }
