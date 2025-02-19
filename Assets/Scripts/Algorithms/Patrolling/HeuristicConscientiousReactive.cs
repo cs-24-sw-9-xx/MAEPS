@@ -18,7 +18,7 @@ namespace Maes.Algorithms.Patrolling
             var minIdleness = idleness.Min();
             var maxIdleness = idleness.Max();
             var normalizedIdleness = idleness.Select(x => (x - minIdleness) / (maxIdleness - minIdleness)).ToArray();
-            
+
             var distanceEstimation = currentVertex.Neighbors.Select(x => _controller.EstimateDistanceToTarget(x.Position)).ToArray();
             var maxDistanceEstimation = distanceEstimation.Max();
             return currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
