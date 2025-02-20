@@ -70,7 +70,7 @@ namespace Maes.ExperimentSimulations
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
-                spawningPosList.Add(new Vector2Int(random.Next(0, mapSize), random.Next(0, mapSize)));
+                spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
             }
 
             simulator.EnqueueScenario(
