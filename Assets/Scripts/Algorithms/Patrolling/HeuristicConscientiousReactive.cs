@@ -105,7 +105,7 @@ namespace Maes.Algorithms.Patrolling
         {
             var minLastTick = Verticies.Min(x => x.LastTimeVisitedTick);
             var currentTick = _controller.GetRobot().Simulation.SimulatedPhysicsTicks;
-            var idleness = Verticies.Select(x => (x, Idleness:  - x.LastTimeVisitedTick));
+            var idleness = Verticies.Select(x => (x, Idleness: currentTick - x.LastTimeVisitedTick));
             var normalizedIdleness = new List<NormalizedValue>();
             foreach (var (vertex, idlenessValue) in idleness)
             {
