@@ -80,7 +80,7 @@ namespace Maes.Statistics
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new ExplorationSnapShot(_currentTick, ExploredProportion, CoverageProportion,
+            SnapShots.Add(new ExplorationSnapShot(CurrentTick, ExploredProportion, CoverageProportion,
                 _mostRecentDistance, Simulation.NumberOfActiveRobots));
         }
 
@@ -206,7 +206,7 @@ namespace Maes.Statistics
 
             // The user can specify the tick interval at which the slam map is updated. 
             var shouldUpdateSlamMap = _constraints.AutomaticallyUpdateSlam &&
-                                      _currentTick % _constraints.SlamUpdateIntervalInTicks == 0;
+                                      CurrentTick % _constraints.SlamUpdateIntervalInTicks == 0;
 
             PerformRayTracing(robots, shouldUpdateSlamMap);
         }
@@ -251,14 +251,14 @@ namespace Maes.Statistics
             {
                 if (!cell.IsExplored)
                 {
-                    cell.LastExplorationTimeInTicks = _currentTick;
+                    cell.LastExplorationTimeInTicks = CurrentTick;
                     cell.ExplorationTimeInTicks += 1;
 
                     _newlyExploredTriangles.Add((index, cell));
                     ExploredTriangles++;
                 }
 
-                cell.RegisterExploration(_currentTick);
+                cell.RegisterExploration(CurrentTick);
             }
 
             if (_robotSlamMap != null)
@@ -267,7 +267,7 @@ namespace Maes.Statistics
                 var x = localCoordinate.x;
                 var y = localCoordinate.y;
                 // Update robot slam map if present (slam map only non-null if 'shouldUpdateSlamMap' is true)
-                _robotSlamMap.SetExploredByCoordinate(x, y, isOpen: cell.IsExplorable, tick: _currentTick);
+                _robotSlamMap.SetExploredByCoordinate(x, y, isOpen: cell.IsExplorable, tick: CurrentTick);
                 _robotSlamMap.SetCurrentlyVisibleByTriangle(triangleIndex: index, x, y, isOpen: cell.IsExplorable);
             }
 
