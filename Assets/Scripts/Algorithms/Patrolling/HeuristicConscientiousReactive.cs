@@ -101,22 +101,22 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-        private static IEnumerable<NormalizedValue> CalculateNormalizedIdleness(IEnumerable<Vertex> Verticies)
+        private IEnumerable<NormalizedValue> CalculateNormalizedIdleness(IEnumerable<Vertex> Verticies)
         {
             var minLastTick = Verticies.Min(x => x.LastTimeVisitedTick);
-            var maxLastTick = Verticies.Max(x => x.LastTimeVisitedTick);
-            var idleness = Verticies.Select(x => (x, Idleness: maxLastTick - x.LastTimeVisitedTick));
+            var currentTick = _controller.GetRobot().Simulation.SimulatedPhysicsTicks;
+            var idleness = Verticies.Select(x => (x, Idleness:  - x.LastTimeVisitedTick));
             var normalizedIdleness = new List<NormalizedValue>();
             foreach (var (vertex, idlenessValue) in idleness)
             {
                 // Avoid division by zero
-                if (maxLastTick - minLastTick == 0)
+                if (currentTick - minLastTick == 0)
                 {
                     normalizedIdleness.Add(new NormalizedValue(vertex, 0));
                 }
                 else
                 {
-                    normalizedIdleness.Add(new NormalizedValue(vertex, 1 - (float)idlenessValue / (maxLastTick - minLastTick)));
+                    normalizedIdleness.Add(new NormalizedValue(vertex, 1 - (float)idlenessValue / (currentTick - minLastTick)));
                 }
             }
             return normalizedIdleness;
