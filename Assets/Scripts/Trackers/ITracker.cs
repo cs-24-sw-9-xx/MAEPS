@@ -11,5 +11,7 @@ namespace Maes.Trackers
         void LogicUpdate(List<MonaRobot> robots);
 
         void SetVisualizedRobot(MonaRobot? robot);
+
+        int CurrentTick { get; }
     }
 }

@@ -25,7 +25,7 @@ namespace Maes.Trackers
 
         protected MonaRobot? _selectedRobot;
 
-        protected int _currentTick;
+        public int CurrentTick { get; private set; } = 0;
 
         private bool _isFirstTick = true;
         protected RobotConstraints _constraints;
@@ -50,7 +50,7 @@ namespace Maes.Trackers
 
         public virtual void UIUpdate()
         {
-            _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
+            _currentVisualizationMode.UpdateVisualization(_visualizer, CurrentTick);
         }
 
         public void LogicUpdate(List<MonaRobot> robots)
@@ -82,12 +82,12 @@ namespace Maes.Trackers
             OnLogicUpdate(robots);
 
             if (GlobalSettings.ShouldWriteCsvResults
-                && _currentTick != 0
-                && _currentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
+                && CurrentTick != 0
+                && CurrentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
                 CreateSnapShot();
             }
-            _currentTick++;
+            CurrentTick++;
         }
 
         protected virtual void OnBeforeLogicUpdate(List<MonaRobot> robots) { }
@@ -108,7 +108,7 @@ namespace Maes.Trackers
         protected virtual void SetVisualizationMode(TVisualizationMode newMode)
         {
             _currentVisualizationMode = newMode;
-            _currentVisualizationMode.UpdateVisualization(_visualizer, _currentTick);
+            _currentVisualizationMode.UpdateVisualization(_visualizer, CurrentTick);
             OnVisualizationModeChanged?.Invoke(_currentVisualizationMode);
         }
 
@@ -117,7 +117,7 @@ namespace Maes.Trackers
             var robotPos = robot.transform.position;
 
             // Find each mini tile (two triangle cells) covered by the robot and execute the following function on it
-            _coverageCalculator.UpdateRobotCoverage(robotPos, _currentTick, _preCoverageTileConsumerDelegate);
+            _coverageCalculator.UpdateRobotCoverage(robotPos, CurrentTick, _preCoverageTileConsumerDelegate);
 
             AfterUpdateCoverageStatus(robot);
         }

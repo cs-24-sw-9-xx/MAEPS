@@ -29,7 +29,7 @@ namespace Maes.Trackers
 
         public float CurrentGraphIdleness { get; private set; }
 
-        public float AverageGraphIdleness => _totalGraphIdleness / _currentTick;
+        public float AverageGraphIdleness => _totalGraphIdleness / CurrentTick;
 
         public int CurrentCycle { get; private set; }
 
@@ -133,7 +133,7 @@ namespace Maes.Trackers
             var graphIdlenessSum = 0;
             foreach (var vertex in _vertices)
             {
-                var idleness = _currentTick - vertex.Value.Vertex.LastTimeVisitedTick;
+                var idleness = CurrentTick - vertex.Value.Vertex.LastTimeVisitedTick;
                 if (worstGraphIdleness < idleness)
                 {
                     worstGraphIdleness = idleness;
@@ -148,7 +148,7 @@ namespace Maes.Trackers
 
             if (_lastCycle != CurrentCycle)
             {
-                var lastTick = _currentTick - _lastAmountOfTicksSinceLastCycle;
+                var lastTick = CurrentTick - _lastAmountOfTicksSinceLastCycle;
                 var totalGraphIdlenessCycle = _totalGraphIdleness - _lastCyclesTotalGraphIdleness;
                 var averageGraphIdlenessCycle = totalGraphIdlenessCycle / lastTick;
 
@@ -160,7 +160,7 @@ namespace Maes.Trackers
                 }
                 _lastCycle = CurrentCycle;
                 _lastCyclesTotalGraphIdleness = _totalGraphIdleness;
-                _lastAmountOfTicksSinceLastCycle = _currentTick;
+                _lastAmountOfTicksSinceLastCycle = CurrentTick;
                 _lastCycleAverageGraphIdleness = averageGraphIdlenessCycle;
             }
         }
@@ -184,12 +184,12 @@ namespace Maes.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(_currentTick, CurrentGraphIdleness, WorstGraphIdleness,
+            SnapShots.Add(new PatrollingSnapShot(CurrentTick, CurrentGraphIdleness, WorstGraphIdleness,
                 TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
 
             foreach (var vertex in _vertices.Values)
             {
-                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(_currentTick, _currentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick, CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
         }
 
