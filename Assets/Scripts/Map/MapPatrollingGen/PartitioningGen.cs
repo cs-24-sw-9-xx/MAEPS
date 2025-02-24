@@ -44,12 +44,12 @@ namespace Maes.Map.MapPatrollingGen
             var map = MapUtilities.MapToBitMap(simulationMap);
             VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var vertexPositions = GreedyWaypointGenerator.TSPHeuresticSolver(map, visibilityAlgorithm);
-            var distanceMatrix = Util.CalculateDistanceMatrix(map, vertexPositions);
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitions(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
             foreach (var cluster in clusters)
             {
-                var localDistanceMatrix = Util.CalculateDistanceMatrix(map, cluster.Value);
+                var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
                 var vertices = WaypointConnection.ConnectVertices(cluster.Value, localDistanceMatrix, colorIslands);
                 allVertices.AddRange(vertices);
             }

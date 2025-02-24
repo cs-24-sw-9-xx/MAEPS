@@ -43,7 +43,7 @@ namespace Maes.Map.MapPatrollingGen
             VisibilityMethod visibilityAlgorithm = useOptimizedLOS ? LineOfSightUtilities.ComputeVisibilityOfPointFastBreakColumn : LineOfSightUtilities.ComputeVisibilityOfPoint;
             var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = TSPHeuresticSolver(map, visibilityAlgorithm);
-            var distanceMatrix = Util.CalculateDistanceMatrix(map, vertexPositions);
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var connectVertices = WaypointConnection.ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
             return new PatrollingMap(connectVertices, simulationMap, visibilityAlgorithm);
         }
