@@ -332,6 +332,26 @@ namespace Maes.Utilities
             }
         }
 
+        public bool Any
+        {
+            get
+            {
+                for (var i = 0; i < _length; i++)
+                {
+                    var value = _bits[i];
+                    var result = value - ((value >> 1) & 0x5555555555555555UL);
+                    result = (result & 0x3333333333333333UL) + ((result >> 2) & 0x3333333333333333UL);
+                    if ((byte)(unchecked(((result + (result >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >>
+                               56) != 0)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         public struct VisibilityBitmapEnumerator : IEnumerator<Vector2Int>
         {
             private readonly Bitmap _bitmap;

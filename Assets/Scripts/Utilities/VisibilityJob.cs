@@ -39,8 +39,8 @@ namespace Maes.Utilities
                 {
                     for (var y = 0; y < Height; y++)
                     {
-                        var index = GetIndex(x, y);
-                        if (!GetValue(index))
+                        var index = GetMapIndex(x, y);
+                        if (!GetMapValue(index))
                         {
                             GridRayTracingLineOfSight(x, y, outerY);
                         }
@@ -50,25 +50,31 @@ namespace Maes.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetIndex(int x, int y)
+        private int GetMapIndex(int x, int y)
         {
             return x * Height + y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetIndex(int x, int y, int outerY)
+        private int GetVisibilityMapIndex(int x, int y, int outerY)
         {
-            return GetIndex(x, y) + Map.Length * outerY * 64;
+            return GetMapIndex(x, y) + Map.Length * outerY * 64;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool GetValue(int index)
+        private bool GetMapValue(int index)
         {
             return (Map[index >> 6] & 1ul << (index & 63)) != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetValue(int index)
+        private bool GetVisibilityMapValue(int index)
+        {
+            return (Visibility[index >> 6] & 1ul << (index & 63)) != 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetVisibilityMapValue(int index)
         {
             Visibility[index >> 6] |= (1ul << (index & 63));
         }
@@ -97,16 +103,11 @@ namespace Maes.Utilities
 
             var manhattenDistance = Math.Abs(endX - X) + Math.Abs(endY - outerY);
 
-            for (var t = 0; t < manhattenDistance + 1; t++)
-            {
-                var mapIndex = GetIndex(x, y);
-                if (GetValue(mapIndex))
-                {
-                    return;
-                }
+            var visibilityIndex = GetVisibilityMapIndex(x, y, outerY);
+            SetVisibilityMapValue(visibilityIndex);
 
-                var visibilityIndex = GetIndex(x, y, outerY);
-                SetValue(visibilityIndex);
+            for (var t = 0; t < manhattenDistance; t++)
+            {
                 if (Mathf.Abs(tMaxX) < Mathf.Abs(tMaxY))
                 {
                     tMaxX += tDeltaX;
@@ -117,6 +118,15 @@ namespace Maes.Utilities
                     tMaxY += tDeltaY;
                     y += stepY;
                 }
+
+                var mapIndex = GetMapIndex(x, y);
+                if (GetMapValue(mapIndex))
+                {
+                    return;
+                }
+
+                visibilityIndex = GetVisibilityMapIndex(x, y, outerY);
+                SetVisibilityMapValue(visibilityIndex);
             }
         }
     }

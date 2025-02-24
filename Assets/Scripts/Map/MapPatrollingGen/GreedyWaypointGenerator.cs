@@ -165,7 +165,7 @@ namespace Maes.Map.MapPatrollingGen
                 for (var y = 0; y < map.Height; y++)
                 {
                     var bitmap = bitmaps[y];
-                    if (bitmap.Count > 0)
+                    if (bitmap.Any)
                     {
                         var tile = new Vector2Int(i, y);
                         precomputedVisibilities[tile] = bitmap;

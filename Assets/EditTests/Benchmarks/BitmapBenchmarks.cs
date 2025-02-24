@@ -38,6 +38,33 @@ namespace EditTests.Benchmarks
         }
 
         [Test]
+        public void BitmapAnyBenchmark()
+        {
+            var any = false;
+            const int iterations = 1000000;
+
+            using (var bitmap = Utilities.CreateRandomBitmap(100, 100, 1234))
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                // Benchmark
+                for (var i = 0; i < iterations; i++)
+                {
+                    any |= bitmap.Any;
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+            }
+
+
+            // To make sure we are not optimizing the code away.
+            Assert.True(any);
+        }
+
+        [Test]
         public void BitmapSetBenchmark()
         {
             const int iterations = 100000000;

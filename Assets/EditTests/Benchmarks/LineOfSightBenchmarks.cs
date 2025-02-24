@@ -18,23 +18,26 @@ namespace EditTests.Benchmarks
         [Explicit]
         public void VisibilityComputationBenchmark()
         {
-            const int iterations = 1;
+            const int iterations = 10;
 
-            Dictionary<Vector2Int, Bitmap> result;
+            Dictionary<Vector2Int, Bitmap> result = null;
 
             using (var bitmap = Utilities.BitmapFromString(Map))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
 
-                result = GreedyWaypointGenerator.ComputeVisibility(bitmap);
+                for (var i = 0; i < iterations; i++)
+                {
+                    result = GreedyWaypointGenerator.ComputeVisibility(bitmap);
+                }
 
                 stopWatch.Stop();
 
                 Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
             }
 
-            Assert.Greater(result.Count, 0);
+            Assert.Greater(result!.Count, 0);
         }
 
         private const string Map = "" +
