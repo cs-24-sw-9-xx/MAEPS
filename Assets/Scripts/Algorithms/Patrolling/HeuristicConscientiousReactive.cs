@@ -101,11 +101,11 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-        private IEnumerable<NormalizedValue> CalculateNormalizedIdleness(IEnumerable<Vertex> Verticies)
+        private static IEnumerable<NormalizedValue> CalculateNormalizedIdleness(IEnumerable<Vertex> verticies)
         {
-            var maxLastTick = Verticies.Max(x => x.LastTimeVisitedTick);
-            var minLastTick = Verticies.Min(x => x.LastTimeVisitedTick);
-            var idleness = Verticies.Select(x => (x, Idleness: maxLastTick - x.LastTimeVisitedTick));
+            var maxLastTick = verticies.Max(x => x.LastTimeVisitedTick);
+            var minLastTick = verticies.Min(x => x.LastTimeVisitedTick);
+            var idleness = verticies.Select(x => (x, Idleness: maxLastTick - x.LastTimeVisitedTick));
             var normalizedIdleness = new List<NormalizedValue>();
             foreach (var (vertex, idlenessValue) in idleness)
             {
