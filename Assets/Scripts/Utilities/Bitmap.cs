@@ -8,7 +8,6 @@ using System.Text;
 using JetBrains.Annotations;
 
 using Unity.Collections;
-using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -29,9 +28,9 @@ namespace Maes.Utilities
         private readonly int _length;
 
 #if DEBUG
-        private uint4[] _bits;
+        private ulong[] _bits;
 #else
-        private readonly uint4[] _bits;
+        private readonly ulong[] _bits;
 #endif
 
 #if DEBUG
@@ -79,15 +78,15 @@ namespace Maes.Utilities
             YEnd = yEnd;
 
             // Ceil division
-            _length = ((Width * Height) - 1) / 128 + 1;
-            _bits = ArrayPool<uint4>.Shared.Rent(_length);
+            _length = ((Width * Height) - 1) / 64 + 1;
+            _bits = ArrayPool<ulong>.Shared.Rent(_length);
             for (var i = 0; i < _length; i++)
             {
                 _bits[i] = 0;
             }
         }
 
-        private Bitmap(int xStart, int yStart, int xEnd, int yEnd, uint4[] bits)
+        private Bitmap(int xStart, int yStart, int xEnd, int yEnd, ulong[] bits)
         {
             XStart = xStart;
             YStart = yStart;
@@ -96,7 +95,7 @@ namespace Maes.Utilities
             YEnd = yEnd;
 
             // Ceil division
-            _length = ((Width * Height) - 1) / 128 + 1;
+            _length = ((Width * Height) - 1) / 64 + 1;
             _bits = bits;
         }
 
@@ -117,7 +116,7 @@ namespace Maes.Utilities
         private static Bitmap IntersectionSameSize(Bitmap first, Bitmap second)
         {
             var length = first._length;
-            var bits = ArrayPool<uint4>.Shared.Rent(length);
+            var bits = ArrayPool<ulong>.Shared.Rent(length);
 
             for (var i = 0; i < length; i++)
             {
@@ -151,9 +150,9 @@ namespace Maes.Utilities
             return intersected;
         }
 
-        public NativeArray<uint4> ToUint4Array()
+        public NativeArray<ulong> ToNativeArray()
         {
-            var nativeArray = new NativeArray<uint4>(_length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var nativeArray = new NativeArray<ulong>(_length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
 
             for (var i = 0; i < _length; i++)
             {
@@ -163,7 +162,7 @@ namespace Maes.Utilities
             return nativeArray;
         }
 
-        public static Bitmap[] FromUint4Array(int width, int height, int nativeMapLength, NativeArray<uint4> nativeArray)
+        public static Bitmap[] FromNativeArray(int width, int height, int nativeMapLength, NativeArray<ulong> nativeArray)
         {
             var bitmapAmount = nativeArray.Length / nativeMapLength;
             var bitmaps = new Bitmap[bitmapAmount];
@@ -171,7 +170,7 @@ namespace Maes.Utilities
             for (var b = 0; b < bitmapAmount; b++)
             {
                 var length = nativeArray.Length / bitmapAmount;
-                var bits = ArrayPool<uint4>.Shared.Rent(length);
+                var bits = ArrayPool<ulong>.Shared.Rent(length);
 
                 for (var i = 0; i < length; i++)
                 {
@@ -221,15 +220,12 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Set(int index)
         {
-            var bitIndex = 1u << (index % 32);
-            var innerIndex = (index / 32) % 4;
-            var arrayIndex = index / 128;
+            var bitIndex = 1ul << (index % 64);
+            var arrayIndex = index / 64;
 
             var value = _bits[arrayIndex];
-            var mask = uint4.zero;
-            mask[innerIndex] = uint.MaxValue;
 
-            var result = value | mask & bitIndex;
+            var result = value | bitIndex;
 
             _bits[arrayIndex] = result;
         }
@@ -237,15 +233,11 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Unset(int index)
         {
-            var bitIndex = 1u << (index % 32);
-            var innerIndex = (index / 32) % 4;
-            var arrayIndex = index / 128;
+            var bitIndex = 1ul << (index % 64);
+            var arrayIndex = index / 64;
 
             var value = _bits[arrayIndex];
-            var mask = uint4.zero;
-            mask[innerIndex] = uint.MaxValue;
-
-            var result = value & ~(mask & bitIndex);
+            var result = value & ~(bitIndex);
 
             _bits[arrayIndex] = result;
         }
@@ -253,17 +245,12 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool Contains(int index)
         {
-            var bitIndex = 1u << (index % 32);
-            var innerIndex = (index / 32) % 4;
-            var arrayIndex = index / 128;
+            var bitIndex = 1ul << (index % 64);
+            var arrayIndex = index / 64;
 
             var value = _bits[arrayIndex];
-            var mask = uint4.zero;
-            mask[innerIndex] = uint.MaxValue;
 
-            var result = value & mask & bitIndex;
-
-            return (result.x | result.y | result.z | result.w) != 0;
+            return (value & bitIndex) != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -335,16 +322,10 @@ namespace Maes.Utilities
                 var count = 0;
                 for (var i = 0; i < _length; i++)
                 {
-                    for (var j = 0; j < 4; j++)
-                    {
-                        var n = _bits[i][j];
-                        n -= (n >> 1) & 0x55555555; // 0x55555555 = 01010101010101010101010101010101
-                        n = (n & 0x33333333) + ((n >> 2) & 0x33333333); // 0x33333333 = 00110011001100110011001100110011
-                        n = (n + (n >> 4)) & 0x0F0F0F0F; // 0x0F0F0F0F = 00001111000011110000111100001111
-                        n += n >> 8;
-                        n += n >> 16;
-                        count += (int)(n & 0x3F); // Mask to keep the last 6 bits
-                    }
+                    var value = _bits[i];
+                    var result = value - ((value >> 1) & 0x5555555555555555UL);
+                    result = (result & 0x3333333333333333UL) + ((result >> 2) & 0x3333333333333333UL);
+                    count += (byte)(unchecked(((result + (result >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
                 }
 
                 return count;
@@ -369,7 +350,7 @@ namespace Maes.Utilities
             {
                 while (true)
                 {
-                    if (_bitmap._length <= (++_index / 128))
+                    if (_bitmap._length <= (++_index / 64))
                     {
                         return false;
                     }
@@ -399,7 +380,7 @@ namespace Maes.Utilities
 
         public void Dispose()
         {
-            ArrayPool<uint4>.Shared.Return(_bits, clearArray: false);
+            ArrayPool<ulong>.Shared.Return(_bits, clearArray: false);
 #if DEBUG
             // Catch usage after dispose.
             // It would be very bad as the array may be rented out to another bitmap,
@@ -417,7 +398,7 @@ namespace Maes.Utilities
         [MustDisposeResource]
         public Bitmap Clone()
         {
-            var bits = ArrayPool<uint4>.Shared.Rent(_length);
+            var bits = ArrayPool<ulong>.Shared.Rent(_length);
             for (var i = 0; i < _length; i++)
             {
                 bits[i] = _bits[i];

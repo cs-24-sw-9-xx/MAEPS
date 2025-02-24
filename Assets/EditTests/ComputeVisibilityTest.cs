@@ -6,7 +6,6 @@ using NUnit.Framework;
 
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -141,8 +140,8 @@ namespace EditTests
         {
             using var map = testCase.Map;
             var expected = testCase.ExpectedVisible;
-            var nativeMap = map.ToUint4Array();
-            var nativeVisibility = new NativeArray<uint4>(nativeMap.Length * map.Height, Allocator.Persistent);
+            var nativeMap = map.ToNativeArray();
+            var nativeVisibility = new NativeArray<ulong>(nativeMap.Length * map.Height, Allocator.TempJob, NativeArrayOptions.ClearMemory);
 
             var job = new VisibilityJob()
             {
@@ -155,7 +154,7 @@ namespace EditTests
 
             job.Schedule().Complete();
 
-            using var result = Bitmap.FromUint4Array(map.Width, map.Height, nativeMap.Length, nativeVisibility)[testCase.Point.y];
+            using var result = Bitmap.FromNativeArray(map.Width, map.Height, nativeMap.Length, nativeVisibility)[testCase.Point.y];
             nativeMap.Dispose();
             nativeVisibility.Dispose();
             Debug.Log("Input map");
@@ -167,7 +166,6 @@ namespace EditTests
             Debug.Log(result.DebugView.Replace(' ', '_'));
 
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
-
         }
     }
 }

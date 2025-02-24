@@ -29,15 +29,7 @@ namespace Maes.UI.Patrolling
 
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                Bitmap? tiles = null;
-
-                foreach (var (position, visibility) in _patrollingMap.VertexPositions)
-                {
-                    if (vertex.Position == position)
-                    {
-                        tiles = visibility;
-                    }
-                }
+                var tiles = _patrollingMap.VertexPositions[vertex.Position];
 
                 foreach (var tile in tiles!)
                 {
