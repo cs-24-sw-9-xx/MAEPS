@@ -86,15 +86,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             _graphTicksPerUpdateField.RegisterValueChangedCallback(GraphTicksPerUpdateFieldChanged);
         }
 
-
-        public void Update()
-        {
-            if (Simulation is not null)
-            {
-                Simulation.PatrollingTracker.UIUpdate();
-            }
-        }
-
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
         {
             switch (mode)

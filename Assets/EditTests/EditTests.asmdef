@@ -11,7 +11,8 @@
         "Unity.Robotics.ROSTCPConnector.Editor",
         "Unity.Robotics.ROSTCPConnector.MessageGeneration",
         "Unity.Robotics.ROSTCPConnector.Messages",
-        "YamlDotNet"
+        "Unity.Burst",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [
         "Editor"
