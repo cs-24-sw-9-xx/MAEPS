@@ -68,7 +68,7 @@ namespace Maes.Algorithms.Patrolling
             {
                 throw new Exception("Length of normalizedIdleness and distanceEstimation must be equal");
             }
-            # if DEBUG
+#if DEBUG
             var stringBuilder = new StringBuilder();
             stringBuilder = stringBuilder.AppendLine("Normalized Idleness");
             foreach (var item in normalizedIdleness.OrderBy(x => x.Vertex.Id))
@@ -81,7 +81,7 @@ namespace Maes.Algorithms.Patrolling
                 stringBuilder = stringBuilder.AppendLine(item.Vertex.Id + " " + item.Value);
             }
             Debug.Log(stringBuilder.ToString());
-            # endif
+#endif
             var result = from idleness in normalizedIdleness
                          join distance in normalizedDistances on idleness.Vertex.Id equals distance.Vertex.Id
                          orderby idleness.Value + distance.Value ascending
