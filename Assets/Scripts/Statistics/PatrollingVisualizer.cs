@@ -29,11 +29,11 @@ namespace Maes.Statistics
             LineOfSightVertices.CreateLineOfSightVertices();
         }
 
-        public override void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
+        public override void SetSimulationMap(SimulationMap<Cell> newMap)
         {
             transform.position = newMap.ScaledOffset;
 
-            base.SetSimulationMap(newMap, Vector3.zero);
+            base.SetSimulationMap(newMap);
 
             foreach (var visualizer in _visualizerObjects)
             {

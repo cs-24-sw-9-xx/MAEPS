@@ -41,7 +41,7 @@ namespace Maes.Trackers
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
 
-            _visualizer.SetSimulationMap(_map, collisionMap.ScaledOffset);
+            _visualizer.SetSimulationMap(_map);
             _rayTracingMap = new RayTracingMap<Cell>(_map);
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);
