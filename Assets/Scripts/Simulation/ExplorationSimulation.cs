@@ -34,7 +34,7 @@ namespace Maes.Simulation
 
         protected override void CreateStatisticsFile()
         {
-            var resultForFileName = "e??-c??";
+            var resultForFileName = "e-c";
             if (ExplorationTracker.SnapShots.Any())
             {
                 resultForFileName = $"e{ExplorationTracker.SnapShots[^1].Explored}-c{ExplorationTracker.SnapShots[^1].Covered}";

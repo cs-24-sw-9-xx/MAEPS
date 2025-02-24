@@ -14,24 +14,22 @@ namespace Maes.Map
 {
     public class PatrollingMap : ICloneable<PatrollingMap>
     {
-        public delegate HashSet<Vector2Int> VisibilityMethod(Vector2Int position, bool[,] map);
         public readonly Vertex[] Vertices;
 
         public readonly IReadOnlyDictionary<(int, int), PathStep[]> Paths;
 
-        public readonly VisibilityMethod VisibilityAlgorithm;
+        public readonly Dictionary<Vector2Int, Bitmap> VertexPositions;
 
-        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, VisibilityMethod visibilityAlgorithm)
+        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, Dictionary<Vector2Int, Bitmap> vertexPositions)
+        : this(vertices, CreatePaths(vertices, simulationMap), vertexPositions)
         {
-            Vertices = vertices;
-            Paths = CreatePaths(vertices, simulationMap);
-            VisibilityAlgorithm = visibilityAlgorithm;
         }
 
-        private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths)
+        private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths, Dictionary<Vector2Int, Bitmap> vertexPositions)
         {
             Vertices = vertices;
             Paths = paths;
+            VertexPositions = vertexPositions;
         }
 
         public PatrollingMap Clone()
@@ -52,11 +50,16 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VertexPositions);
         }
 
         private static IReadOnlyDictionary<(int, int), PathStep[]> CreatePaths(Vertex[] vertices, SimulationMap<Tile> simulationMap)
         {
+            // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
+            // TODO: Of cause this requires specific code for that waypoint generation algorithm.
+
+            var startTime = Time.realtimeSinceStartup;
+
             // HACK: Creating a slam map with robot constraints seems a bit hacky tbh :(
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;
@@ -73,6 +76,8 @@ namespace Maes.Map
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
                 }
             }
+
+            Debug.LogFormat("Create Paths took {0} s", Time.realtimeSinceStartup - startTime);
 
             return paths;
         }
