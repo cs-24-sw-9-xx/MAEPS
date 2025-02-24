@@ -7,6 +7,6 @@ namespace Maes.Visualizers
 {
     public interface IVisualizer
     {
-        void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset);
+        void SetSimulationMap(SimulationMap<Cell> newMap);
     }
 }

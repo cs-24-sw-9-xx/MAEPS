@@ -21,7 +21,6 @@ namespace Maes.Statistics
         public static readonly Color32 VisibleColor = new(32, 130, 57, 255);
 
         private int _widthInTiles, _heightInTiles;
-        private Vector3 _offset;
 
         protected readonly List<Vector3> _vertices = new();
         private readonly List<int> _triangles = new();
@@ -36,12 +35,11 @@ namespace Maes.Statistics
         public delegate Color32 CellToColor(Cell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
 
-        public virtual void SetSimulationMap(SimulationMap<Cell> newMap, Vector3 offset)
+        public virtual void SetSimulationMap(SimulationMap<Cell> newMap)
         {
             _map = newMap;
             _widthInTiles = _map.WidthInTiles;
             _heightInTiles = _map.HeightInTiles;
-            _offset = offset;
 
             // GenerateVertices();
             GenerateTriangleVertices();
@@ -67,10 +65,10 @@ namespace Maes.Statistics
             const float vertexDistance = 1f / ResolutionMultiplier;
             for (var y = 0; y < _heightInTiles; y++)
             {
-                var translatedY = y + _offset.y - 0.5f;
+                var translatedY = y - 0.5f;
                 for (var x = 0; x < _widthInTiles; x++)
                 {
-                    var translatedX = x + _offset.x - 0.5f;
+                    var translatedX = x - 0.5f;
                     AddTileTriangleVertices(translatedX, translatedY, vertexDistance);
                 }
             }
