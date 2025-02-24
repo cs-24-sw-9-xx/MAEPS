@@ -30,7 +30,6 @@ using Maes.Utilities;
 
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -128,16 +127,12 @@ namespace Maes.Map.MapPatrollingGen
         {
             var startTime = Time.realtimeSinceStartup;
 
-            var nativeMap = map.ToUint4Array();
-            var nativeVisibilities = new NativeArray<uint4>[map.Width];
+            var nativeMap = map.ToNativeArray();
+            var nativeVisibilities = new NativeArray<ulong>[map.Width];
 
             for (var i = 0; i < nativeVisibilities.Length; i++)
             {
-                nativeVisibilities[i] = new NativeArray<uint4>(nativeMap.Length * map.Height, Allocator.Persistent);
-                for (var j = 0; j < nativeVisibilities[i].Length; j++)
-                {
-                    nativeVisibilities[i][j] = uint4.zero;
-                }
+                nativeVisibilities[i] = new NativeArray<ulong>(nativeMap.Length * map.Height, Allocator.TempJob, NativeArrayOptions.ClearMemory);
             }
 
             var jobs = new JobHandle[map.Width];
@@ -166,7 +161,7 @@ namespace Maes.Map.MapPatrollingGen
 
             for (var i = 0; i < nativeVisibilities.Length; i++)
             {
-                var bitmaps = Bitmap.FromUint4Array(map.Width, map.Height, nativeMap.Length, nativeVisibilities[i]);
+                var bitmaps = Bitmap.FromNativeArray(map.Width, map.Height, nativeMap.Length, nativeVisibilities[i]);
                 for (var y = 0; y < map.Height; y++)
                 {
                     var bitmap = bitmaps[y];
@@ -195,18 +190,6 @@ namespace Maes.Map.MapPatrollingGen
 
 
             return precomputedVisibilities;
-        }
-
-        // Helper method to calculate the average Euclidean distance of a guard position to a list of other guard positions
-        private static float AverageEuclideanDistance(Vector2Int guardPosition, List<Vector2Int> currentGuardPositions)
-        {
-            var sum = 0f;
-            foreach (var pos in currentGuardPositions)
-            {
-                sum += Vector2Int.Distance(guardPosition, pos);
-            }
-
-            return sum / currentGuardPositions.Count;
         }
     }
 }

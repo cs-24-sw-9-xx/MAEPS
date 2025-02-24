@@ -1,9 +1,9 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -26,15 +26,13 @@ namespace Maes.Utilities
 
         [NoAlias]
         [ReadOnly]
-        public NativeArray<uint4> Map;
+        public NativeArray<ulong> Map;
 
         [NoAlias]
-        public NativeArray<uint4> Visibility;
+        public NativeArray<ulong> Visibility;
 
         public void Execute()
         {
-            Log();
-
             for (var outerY = 0; outerY < Height; outerY++)
             {
                 for (var x = 0; x < Width; x++)
@@ -51,48 +49,28 @@ namespace Maes.Utilities
             }
         }
 
-        [BurstDiscard]
-        private void Log()
-        {
-            Debug.Log("NOT RUNNING IN BURST MODE!!?=!?!?!??");
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetIndex(int x, int y)
         {
             return x * Height + y;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetIndex(int x, int y, int outerY)
         {
-            return GetIndex(x, y) + Map.Length * outerY * 128;
+            return GetIndex(x, y) + Map.Length * outerY * 64;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetValue(int index)
         {
-            var bitIndex = 1u << (index % 32);
-            var innerIndex = (index / 32) % 4;
-            var arrayIndex = index / 128;
-
-            var value = Map[arrayIndex];
-            var mask = new uint4(innerIndex == 0 ? uint.MaxValue : uint.MinValue, innerIndex == 1 ? uint.MaxValue : uint.MinValue, innerIndex == 2 ? uint.MaxValue : uint.MinValue, innerIndex == 3 ? uint.MaxValue : uint.MinValue);
-
-            var result = value & mask & bitIndex;
-
-            return (result.x | result.y | result.z | result.w) != 0;
+            return (Map[index >> 6] & 1ul << (index & 63)) != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetValue(int index)
         {
-            var bitIndex = 1u << (index % 32);
-            var innerIndex = (index / 32) % 4;
-            var arrayIndex = index / 128;
-
-            var value = Visibility[arrayIndex];
-            var mask = new uint4(innerIndex == 0 ? uint.MaxValue : uint.MinValue, innerIndex == 1 ? uint.MaxValue : uint.MinValue, innerIndex == 2 ? uint.MaxValue : uint.MinValue, innerIndex == 3 ? uint.MaxValue : uint.MinValue);
-
-            var result = value | mask & bitIndex;
-
-            Visibility[arrayIndex] = result;
+            Visibility[index >> 6] |= (1ul << (index & 63));
         }
 
         private void GridRayTracingLineOfSight(int endX, int endY, int outerY)
