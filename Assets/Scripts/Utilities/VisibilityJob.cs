@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 
 using Unity.Burst;
+using Unity.Burst.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
 
@@ -9,10 +10,9 @@ using UnityEngine;
 
 namespace Maes.Utilities
 {
-    [BurstCompile(CompileSynchronously = true)]
+    [BurstCompile(FloatPrecision.Low, FloatMode.Default, CompileSynchronously = true)]
     public struct VisibilityJob : IJob
     {
-        [NoAlias]
         [ReadOnly]
         public int Width;
 
@@ -33,6 +33,10 @@ namespace Maes.Utilities
 
         public void Execute()
         {
+            Hint.Assume(Height > 0);
+            Hint.Assume(Width > 0);
+            Hint.Assume(X >= 0);
+
             for (var outerY = 0; outerY < Height; outerY++)
             {
                 for (var x = 0; x < Width; x++)
@@ -40,7 +44,7 @@ namespace Maes.Utilities
                     for (var y = 0; y < Height; y++)
                     {
                         var index = GetMapIndex(x, y);
-                        if (!GetMapValue(index))
+                        if (Hint.Likely(!GetMapValue(index)))
                         {
                             GridRayTracingLineOfSight(x, y, outerY);
                         }
@@ -50,36 +54,32 @@ namespace Maes.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetMapIndex(int x, int y)
+        [return: AssumeRange(0, int.MaxValue)]
+        private int GetMapIndex([AssumeRange(0, int.MaxValue)] int x, [AssumeRange(0, int.MaxValue)] int y)
         {
             return x * Height + y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetVisibilityMapIndex(int x, int y, int outerY)
+        [return: AssumeRange(0, int.MaxValue)]
+        private int GetVisibilityMapIndex([AssumeRange(0, int.MaxValue)] int x, [AssumeRange(0, int.MaxValue)] int y, [AssumeRange(0, int.MaxValue)] int outerY)
         {
             return GetMapIndex(x, y) + Map.Length * outerY * 64;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool GetMapValue(int index)
+        private bool GetMapValue([AssumeRange(0, int.MaxValue)] int index)
         {
             return (Map[index >> 6] & 1ul << (index & 63)) != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool GetVisibilityMapValue(int index)
-        {
-            return (Visibility[index >> 6] & 1ul << (index & 63)) != 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetVisibilityMapValue(int index)
+        private void SetVisibilityMapValue([AssumeRange(0, int.MaxValue)] int index)
         {
             Visibility[index >> 6] |= (1ul << (index & 63));
         }
 
-        private void GridRayTracingLineOfSight(int endX, int endY, int outerY)
+        private void GridRayTracingLineOfSight([AssumeRange(0, int.MaxValue)] int endX, [AssumeRange(0, int.MaxValue)] int endY, [AssumeRange(0, int.MaxValue)] int outerY)
         {
             var x = X;
             var y = outerY;
@@ -87,8 +87,14 @@ namespace Maes.Utilities
             var diffX = endX - X;
             var diffY = endY - outerY;
 
+            Hint.Assume(diffX != 0);
+            Hint.Assume(diffY != 0);
+
             var stepX = Math.Sign(diffX);
             var stepY = Math.Sign(diffY);
+
+            Hint.Assume(stepX != 0);
+            Hint.Assume(stepY != 0);
 
             var angle = Mathf.Atan2(-diffY, diffX);
 
@@ -98,10 +104,11 @@ namespace Maes.Utilities
             var tMaxX = 0.5f / cosAngle;
             var tMaxY = 0.5f / sinAngle;
 
-            var tDeltaX = 1.0f / cosAngle;
-            var tDeltaY = 1.0f / sinAngle;
+            var tDeltaX = tMaxX * 2.0f;
+            var tDeltaY = tMaxY * 2.0f;
 
             var manhattenDistance = Math.Abs(endX - X) + Math.Abs(endY - outerY);
+            Hint.Assume(manhattenDistance >= 0);
 
             var visibilityIndex = GetVisibilityMapIndex(x, y, outerY);
             SetVisibilityMapValue(visibilityIndex);
@@ -120,7 +127,7 @@ namespace Maes.Utilities
                 }
 
                 var mapIndex = GetMapIndex(x, y);
-                if (GetMapValue(mapIndex))
+                if (Hint.Unlikely(GetMapValue(mapIndex)))
                 {
                     return;
                 }
