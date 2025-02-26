@@ -131,7 +131,7 @@ namespace Maes.ExperimentSimulations
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    showIslands: false)
+                    showIslands: true)
             );
 
             simulator.EnqueueScenario(

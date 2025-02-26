@@ -70,6 +70,96 @@ namespace Maes.Map.Partitioning
             return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
         }
 
+        public static PatrollingMap MakePatrollingMapWithMultilevelSpectral(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
+        {
+            using var map = MapUtilities.MapToBitMap(simulationMap);
+            var vertexPositionsDictionary = GreedyWaypointGenerator.TSPHeuresticSolver(map);
+            var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
+            // List<Vector2Int> vertexPositions = new List<Vector2Int>
+            // {
+            //     new Vector2Int(0, 0),
+            //     new Vector2Int(0, 10),
+            //     new Vector2Int(10, 0),
+            //     new Vector2Int(10, 10),
+            //     new Vector2Int(20, 0),
+            //     new Vector2Int(20, 10),
+            //     new Vector2Int(30, 0),
+            //     new Vector2Int(30, 10)
+            // };
+
+            // Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix = new Dictionary<(Vector2Int, Vector2Int), int>
+            // {
+            //     { (new Vector2Int(0, 0), new Vector2Int(0, 10)), 10 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(10, 0)), 10 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(10, 10)), 14 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(20, 0)), 20 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(20, 10)), 22 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(30, 0)), 30 },
+            //     { (new Vector2Int(0, 0), new Vector2Int(30, 10)), 32 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(0, 0)), 10 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(10, 0)), 14 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(10, 10)), 10 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(20, 0)), 22 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(20, 10)), 20 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(30, 0)), 32 },
+            //     { (new Vector2Int(0, 10), new Vector2Int(30, 10)), 30 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(0, 0)), 10 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(0, 10)), 14 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(10, 10)), 10 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(20, 0)), 10 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(20, 10)), 14 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(30, 0)), 20 },
+            //     { (new Vector2Int(10, 0), new Vector2Int(30, 10)), 22 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(0, 0)), 14 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(0, 10)), 10 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(10, 0)), 10 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(20, 0)), 14 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(20, 10)), 10 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(30, 0)), 22 },
+            //     { (new Vector2Int(10, 10), new Vector2Int(30, 10)), 20 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(0, 0)), 20 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(0, 10)), 22 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(10, 0)), 10 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(10, 10)), 14 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(20, 10)), 10 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(30, 0)), 10 },
+            //     { (new Vector2Int(20, 0), new Vector2Int(30, 10)), 14 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(0, 0)), 22 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(0, 10)), 20 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(10, 0)), 14 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(10, 10)), 10 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(20, 0)), 10 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(30, 0)), 14 },
+            //     { (new Vector2Int(20, 10), new Vector2Int(30, 10)), 10 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(0, 0)), 30 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(0, 10)), 32 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(10, 0)), 20 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(10, 10)), 22 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(20, 0)), 10 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(20, 10)), 14 },
+            //     { (new Vector2Int(30, 0), new Vector2Int(30, 10)), 10 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(0, 0)), 32 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(0, 10)), 30 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(10, 0)), 22 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(10, 10)), 20 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(20, 0)), 14 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(20, 10)), 10 },
+            //     { (new Vector2Int(30, 10), new Vector2Int(30, 0)), 10 }
+            // };
+
+            // var vertexPositionsDictionary = vertexPositions.ToDictionary(p => p, p => new Bitmap(1, 1, 30, 10));
+            var clusters = MultilevelSpectralPartitioning.PartitionGraph(distanceMatrix, vertexPositions, 1, amountOfPartitions);
+            var allVertices = new List<Vertex>();
+            foreach (var cluster in clusters)
+            {
+                var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands);
+                allVertices.AddRange(vertices);
+            }
+            return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
+        }
+
 
         // Construct the weighted adjacency matrix using Gaussian kernel
         public static Matrix<double> AdjacencyMatrix(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int amountOfVertices)
