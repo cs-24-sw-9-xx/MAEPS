@@ -37,14 +37,22 @@ namespace Maes.Utilities
             Hint.Assume(Width > 0);
             Hint.Assume(X >= 0);
 
+            var heightIndex = X * Height;
+
             for (var outerY = 0; outerY < Height; outerY++)
             {
+                var index = heightIndex + outerY;
+                if (Hint.Unlikely(GetMapValue(index)))
+                {
+                    continue;
+                }
+
                 for (var x = 0; x < Width; x++)
                 {
                     for (var y = 0; y < Height; y++)
                     {
-                        var index = GetMapIndex(x, y);
-                        if (Hint.Likely(!GetMapValue(index)))
+                        var innerIndex = GetMapIndex(x, y);
+                        if (Hint.Likely(!GetMapValue(innerIndex)))
                         {
                             GridRayTracingLineOfSight(x, y, outerY);
                         }
@@ -70,7 +78,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool GetMapValue([AssumeRange(0, int.MaxValue)] int index)
         {
-            return (Map[index >> 6] & 1ul << (index & 63)) != 0;
+            return (Map[index >> 6] & (1ul << (index & 63))) != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -127,7 +135,7 @@ namespace Maes.Utilities
                 }
 
                 var mapIndex = GetMapIndex(x, y);
-                if (Hint.Unlikely(GetMapValue(mapIndex)))
+                if (GetMapValue(mapIndex))
                 {
                     return;
                 }

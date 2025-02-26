@@ -31,7 +31,7 @@ namespace Maes.UI.Patrolling
             {
                 var tiles = _patrollingMap.VertexPositions[vertex.Position];
 
-                foreach (var tile in tiles!)
+                foreach (var tile in tiles)
                 {
                     var index = tile.x + tile.y * bitmap.Width;
                     VerticesVisibleTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);

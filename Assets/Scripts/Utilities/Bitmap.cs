@@ -14,7 +14,7 @@ using UnityEngine;
 namespace Maes.Utilities
 {
     [MustDisposeResource]
-    public sealed class Bitmap : IEnumerable<Vector2Int>, IDisposable, ICloneable<Bitmap>
+    public sealed class Bitmap : IEnumerable<Vector2Int>, IDisposable, ICloneable<Bitmap>, IEquatable<Bitmap>
     {
         public int Width => XEnd - XStart;
         public int Height => YEnd - YStart;
@@ -408,6 +408,24 @@ namespace Maes.Utilities
             _bits = null!;
 #endif
             GC.SuppressFinalize(this);
+        }
+
+        public bool Equals(Bitmap other)
+        {
+            if (XStart != other.XStart || YStart != other.YStart || XEnd != other.XEnd || YEnd != other.YEnd)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < _length; i++)
+            {
+                if (_bits[i] != other._bits[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         ~Bitmap()
