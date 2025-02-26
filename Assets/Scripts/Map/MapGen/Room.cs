@@ -23,17 +23,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using JetBrains.Annotations;
+
+using Maes.Utilities;
+
 using UnityEngine;
 
 using static Maes.Utilities.Geometry;
 
 namespace Maes.Map.MapGen
 {
-    public class Room : IComparable<Room>
+    public sealed class Room : IComparable<Room>, IDisposable
     {
         public List<Vector2Int> Tiles { get; private set; }
 
-        public bool[,] TilesAsArray { get; private set; } // If true, it is contained in room
+        public Bitmap TilesAsBitmap { get; } // If true, it is contained in room
+
         // The tiles next to the walls surrounding the room
         public List<Vector2Int> EdgeTiles { get; private set; }
         public List<Room> ConnectedRooms { get; set; }
@@ -42,17 +47,18 @@ namespace Maes.Map.MapGen
         public bool IsMainRoom { get; set; }
         public bool IsHallWay { get; set; }
 
+        [MustDisposeResource]
         public Room(List<Vector2Int> roomTiles, Tile[,] map)
         {
             Tiles = roomTiles;
             RoomSize = Tiles.Count;
             ConnectedRooms = new List<Room>();
-            TilesAsArray = new bool[map.GetLength(0), map.GetLength(1)];
+            TilesAsBitmap = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
 
             EdgeTiles = new List<Vector2Int>();
             foreach (var tile in Tiles)
             {
-                TilesAsArray[tile.x, tile.y] = true;
+                TilesAsBitmap.Set(tile.x, tile.y);
                 for (var x = tile.x - 1; x <= tile.x + 1; x++)
                 {
                     for (var y = tile.y - 1; y <= tile.y + 1; y++)
@@ -79,6 +85,11 @@ namespace Maes.Map.MapGen
             return x >= 0 && x < map.GetLength(0) && y >= 0 && y < map.GetLength(1);
         }
 
+        private static bool IsInMapRange(int x, int y, Bitmap map)
+        {
+            return x >= map.XStart && x < map.XEnd && y >= map.YStart && y < map.YEnd;
+        }
+
         public bool IsWithinRangeOf(Room other, int range)
         {
             return EdgeTiles.Any(tile => other.EdgeTiles.Any(oTile => ManhattanDistance(tile, oTile) <= range));
@@ -99,7 +110,7 @@ namespace Maes.Map.MapGen
                 }
             }
 
-            return outsideTiles.Where(vec => IsInMapRange(vec.x, vec.y, TilesAsArray)).Distinct().ToList();
+            return outsideTiles.Where(vec => IsInMapRange(vec.x, vec.y, TilesAsBitmap)).Distinct().ToList();
         }
 
         public List<Vector2Int> GetSharedWallTiles(Room other, int wallThickness = 1)
@@ -163,6 +174,11 @@ namespace Maes.Map.MapGen
 
             Tiles = newTiles;
             EdgeTiles = newEdgeTiles;
+        }
+
+        public void Dispose()
+        {
+            TilesAsBitmap.Dispose();
         }
     }
 }

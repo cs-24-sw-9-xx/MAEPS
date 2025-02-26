@@ -102,6 +102,8 @@ namespace Maes.Map.MapGen
         internal SimulationMap<Tile> GenerateMesh(Tile[,] map, float wallHeight,
             bool disableCornerRounding, List<Room> rooms, bool brokenCollisionMap)
         {
+            var startTime = Time.realtimeSinceStartup;
+
             InnerWallsRenderer2D.materials = Materials.ToArray();
             InnerWallsRenderer3D.materials = Materials.ToArray();
 
@@ -155,8 +157,11 @@ namespace Maes.Map.MapGen
 
             Generate2DColliders();
 
-            return GenerateCollisionMap(_squareGrid2D, map,
+            var collisionMap = GenerateCollisionMap(_squareGrid2D, map,
                 new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
+
+            Debug.LogFormat("GenerateMesh took {0}s", Time.realtimeSinceStartup - startTime);
+            return collisionMap;
         }
 
         private void CreateRoofMesh()

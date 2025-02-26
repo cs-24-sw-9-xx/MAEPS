@@ -22,6 +22,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Utilities;
+
 using UnityEngine;
 
 using Random = System.Random;
@@ -100,14 +102,13 @@ namespace Maes.Map.MapGen
             var regions = new List<List<Vector2Int>>();
             // Flags if a given coordinate has already been accounted for
             // 1 = yes, 0 = no
-            var mapFlags = new int[map.GetLength(0), map.GetLength(1)];
-            const int counted = 1, notCounted = 0;
+            using var mapFlags = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
 
             for (var x = 0; x < map.GetLength(0); x++)
             {
                 for (var y = 0; y < map.GetLength(1); y++)
                 {
-                    if (mapFlags[x, y] != notCounted || !tileTypes.Contains(map[x, y].Type))
+                    if (mapFlags.Contains(x, y) || !tileTypes.Contains(map[x, y].Type))
                     {
                         continue;
                     }
@@ -117,7 +118,7 @@ namespace Maes.Map.MapGen
 
                     foreach (var tile in newRegion)
                     {
-                        mapFlags[tile.x, tile.y] = counted;
+                        mapFlags.Set(tile.x, tile.y);
                     }
                 }
             }
@@ -132,14 +133,12 @@ namespace Maes.Map.MapGen
         protected List<Vector2Int> GetRegionTiles(int startX, int startY, Tile[,] map)
         {
             var tiles = new List<Vector2Int>();
-            var mapFlags = new int[map.GetLength(0), map.GetLength(1)];
-            const int counted = 1;
-            const int notCounted = 0;
+            using var mapFlags = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
             var tileType = map[startX, startY].Type;
 
             var queue = new Queue<Vector2Int>();
             queue.Enqueue(new Vector2Int(startX, startY));
-            mapFlags[startX, startY] = counted;
+            mapFlags.Set(startX, startY);
 
             while (queue.Count > 0)
             {
@@ -155,12 +154,12 @@ namespace Maes.Map.MapGen
                             continue;
                         }
 
-                        if (mapFlags[x, y] != notCounted || map[x, y].Type != tileType)
+                        if (mapFlags.Contains(x, y) || map[x, y].Type != tileType)
                         {
                             continue;
                         }
 
-                        mapFlags[x, y] = counted;
+                        mapFlags.Set(x, y);
                         queue.Enqueue(new Vector2Int(x, y));
                     }
                 }

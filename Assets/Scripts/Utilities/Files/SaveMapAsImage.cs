@@ -6,12 +6,12 @@ namespace Maes.Utilities.Files
 {
     public static class SaveAsImage
     {
-        public static void SaveVisibleTiles(HashSet<Vector2Int> pointsOfInterest, Vector2Int startPoint, bool optimized, bool[,] map)
+        public static void SaveVisibleTiles(HashSet<Vector2Int> pointsOfInterest, Vector2Int startPoint, bool optimized, Bitmap map)
         {
-            var texture = new Texture2D(map.GetLength(0), map.GetLength(1));
-            for (var x = 0; x < map.GetLength(0); x++)
+            var texture = new Texture2D(map.Width, map.Height);
+            for (var x = 0; x < map.Width; x++)
             {
-                for (var y = 0; y < map.GetLength(1); y++)
+                for (var y = 0; y < map.Height; y++)
                 {
                     if (map[x, y])
                     {
