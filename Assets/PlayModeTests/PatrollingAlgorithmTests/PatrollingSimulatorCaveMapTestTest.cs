@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Map.MapGen;
@@ -15,7 +14,7 @@ namespace PlayModeTests
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    public class PatrollingSimulatorBuildingMapTestTest : MonoBehaviour
+    public class PatrollingSimulatorCaveMapTestTest : MonoBehaviour
     {
         private MySimulator _maes;
         private PatrollingSimulation _simulation;
@@ -28,14 +27,10 @@ namespace PlayModeTests
 
             var constraintName = "Global";
             var robotConstraints = StandardTestingConfiguration.GlobalRobotConstraints();
-            var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            var mapConfig = new CaveMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
-            var spawningPosList = new List<Vector2Int>();
-            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-            {
-                spawningPosList.Add(new Vector2Int(random.Next(0, mapSize), random.Next(0, mapSize)));
-            }
+            var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, robotCount);
 
             _maes.EnqueueScenario(
                 new MySimulationScenario(
@@ -49,8 +44,7 @@ namespace PlayModeTests
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
+                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
             );
             _simulation = _maes.SimulationManager.CurrentSimulation;
         }
@@ -62,7 +56,7 @@ namespace PlayModeTests
         }
 
         [Test(ExpectedResult = null)]
-        public IEnumerator TestConscientiousReactiveBuildingMap()
+        public IEnumerator TestConscientiousReactiveCaveMap()
         {
             InitializeTestingSimulator();
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
