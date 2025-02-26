@@ -254,6 +254,50 @@ namespace Maes.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Union(Bitmap other)
+        {
+            if (XStart == other.XStart && YStart == other.YStart && XEnd == other.XEnd &&
+                YEnd == other.YEnd)
+            {
+                UnionSameSize(other);
+            }
+            else
+            {
+                UnionDifferentSizes(other);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void UnionSameSize(Bitmap other)
+        {
+            for (var i = 0; i < _length; i++)
+            {
+                _bits[i] |= other._bits[i];
+            }
+        }
+
+        private void UnionDifferentSizes(Bitmap other)
+        {
+            var xStart = Math.Max(XStart, other.XStart);
+            var yStart = Math.Max(YStart, other.YStart);
+
+            var xEnd = Math.Min(XEnd, other.XEnd);
+            var yEnd = Math.Min(YEnd, other.YEnd);
+
+
+            for (var x = xStart; x < xEnd; x++)
+            {
+                for (var y = yStart; y < yEnd; y++)
+                {
+                    if (other.Contains(x, y))
+                    {
+                        Set(x, y);
+                    }
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ExceptWith(Bitmap other)
         {
             if (XStart == other.XStart && YStart == other.YStart && XEnd == other.XEnd &&

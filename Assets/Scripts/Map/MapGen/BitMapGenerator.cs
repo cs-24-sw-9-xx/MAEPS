@@ -66,6 +66,11 @@ namespace Maes.Map.MapGen
             var collisionMap = meshGen.GenerateMesh((Tile[,])cleanedMap.Clone(), _wallHeight,
                 true, survivingRooms, brokenCollisionMap: brokenCollisionMap);
 
+            foreach (var room in survivingRooms)
+            {
+                room.Dispose();
+            }
+
             // Rotate to fit 2D view
             _plane.rotation = Quaternion.AngleAxis(-90, Vector3.right);
             ResizePlaneToFitMap(_bitmap.GetLength(1), _bitmap.GetLength(0));
