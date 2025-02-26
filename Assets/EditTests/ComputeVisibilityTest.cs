@@ -1,5 +1,6 @@
 using JetBrains.Annotations;
 
+using Maes.Map.MapPatrollingGen;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -134,6 +135,109 @@ namespace EditTests
             , 4)
             };
 
+        private const string Map = "" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X                    XX;" +
+           "XX                                                    X    X                  X                    XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X                       X    X               XX;" +
+           "XX                                                    X                       X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXX  XXXXX    XXXXXXXXXXXXXX  XXXXX    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    XX  XXXXXXXXXXXXXX;" +
+           "XX                           X    X                   X    X                  X                    XX;" +
+           "XX                           X                        X    X                  X                    XX;" +
+           "XX                           X                        X    X                  X                    XX;" +
+           "XX                           X    X                   X    X                                       XX;" +
+           "XX                           X    X                   X    X                       XXXXXXXX  XXXXXXXX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XX                           X    X                   X    X                  X    X               XX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXXXXXXXXXXXXX  XXXXX    X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXX    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    XXXXXXXXXXX  XXXXXXX    X               XX;" +
+           "XX                                                    X                            X               XX;" +
+           "XX                                                    X                            X               XX;" +
+           "XX                                                    X                            X               XX;" +
+           "XX                                                    X                            X               XX;" +
+           "XX                                                    X    XXXXXXXXXXX  XXXXXXX    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                         X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XX                                                    X    X                  X    X               XX;" +
+           "XXXXXXXXX  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXXXXXXXXXXXXXXXXXXX    X               XX;" +
+           "XX                                                                                 X               XX;" +
+           "XX                                                                                 X               XX;" +
+           "XX                                                                                 X               XX;" +
+           "XX                                                                                 X               XX;" +
+           "XXXXXX  XXXX    XX  XXXXXXXXXXX    XXXXXXXXXX  XXXXXXX    XXXXXXX  XXXXXXXXXXXX    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X                    XX;" +
+           "XX         X    X             X    X                 X    X                   X                    XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X                  X    X                 X    X                   X    X               XX;" +
+           "XX         X                  X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX              X             X    X                 X    X                   X    X               XX;" +
+           "XX              X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XX         X    X             X    X                 X    X                   X    X               XX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
+           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
+
         [Theory]
         [TestCaseSource("ComputeVisibilityTestCases")]
         public void ComputeVisibilityOfPointTests(TestCase testCase)
@@ -167,5 +271,42 @@ namespace EditTests
 
             Assert.AreEqual(expected, result.Count, $"Name: {testCase.Name}");
         }
+
+        [Test]
+        [Timeout(10 * 60 * 60 * 1000)]
+        public void EnsureValidWaypointsTest()
+        {
+            using (var bitmap = Utilities.BitmapFromString(Map))
+            {
+                var waypoints = GreedyWaypointGenerator.ComputeVisibility(bitmap);
+
+                // Check that there are no waypoints inside the wall
+                foreach (var (waypoint, visibilityMap) in waypoints)
+                {
+                    var contains = bitmap.Contains(waypoint);
+                    Assert.False(contains, "Waypoint is inside wall at {0}!", waypoint);
+                }
+
+                // Check that the whole map is visible
+                using (var checkMap = new Bitmap(bitmap.XStart, bitmap.YStart, bitmap.XEnd, bitmap.YEnd))
+                {
+                    for (var x = checkMap.XStart; x < checkMap.XEnd; x++)
+                    {
+                        for (var y = checkMap.YStart; y < checkMap.YEnd; y++)
+                        {
+                            checkMap.Set(x, y);
+                        }
+                    }
+
+                    foreach (var (waypoint, visibilityMap) in waypoints)
+                    {
+                        checkMap.ExceptWith(visibilityMap);
+                    }
+
+                    Assert.AreEqual(bitmap, checkMap, "Waypoints does not cover map!");
+                }
+            }
+        }
+
     }
 }
