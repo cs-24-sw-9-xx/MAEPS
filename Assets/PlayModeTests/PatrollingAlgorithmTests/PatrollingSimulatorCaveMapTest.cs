@@ -14,7 +14,7 @@ namespace PlayModeTests
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    public class PatrollingSimulatorCaveMapTestTest : MonoBehaviour
+    public class PatrollingSimulatorCaveMapTest : MonoBehaviour
     {
         private MySimulator _maes;
         private PatrollingSimulation _simulation;
