@@ -28,7 +28,8 @@ namespace PlayModeTests
             var constraintName = "Global";
             var robotConstraints = StandardTestingConfiguration.GlobalRobotConstraints();
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var algoName = "conscientious_reactive";
+            var algorithm = new ConscientiousReactiveAlgorithm();
+            var algoName = algorithm.AlgorithmName;
             const int robotCount = 1;
             var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, robotCount);
 
@@ -42,7 +43,7 @@ namespace PlayModeTests
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
+                        createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
