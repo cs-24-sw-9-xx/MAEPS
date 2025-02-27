@@ -17,7 +17,8 @@ namespace PlayModeTests
     public class PatrollingAlgorithmTest : MonoBehaviour
     {
         private MySimulator _maes;
-        private const int Seed = 12345;
+        private const int Seed = 1;
+        private const int MaxSimulatedLogicTicks = 100000;
 
         private PatrollingSimulation EnqueueCaveMapScenario(PatrollingAlgorithm algorithm, int seed = Seed)
         {
@@ -94,7 +95,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new ConscientiousReactiveAlgorithm());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
@@ -106,7 +107,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new ConscientiousReactiveAlgorithm());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
@@ -118,7 +119,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new RandomReactive(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
@@ -130,7 +131,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new RandomReactive(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
@@ -142,7 +143,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new CognitiveCoordinated());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
@@ -154,7 +155,7 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinated());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
