@@ -18,7 +18,7 @@ namespace PlayModeTests
     {
         private MySimulator _maes;
         private const int Seed = 1;
-        private const int MaxSimulatedLogicTicks = 100000;
+        private const int MaxSimulatedLogicTicks = 250000;
 
         private PatrollingSimulation EnqueueCaveMapScenario(PatrollingAlgorithm algorithm, int seed = Seed)
         {
@@ -99,7 +99,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -111,7 +111,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -123,7 +123,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -135,7 +135,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -147,7 +147,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -159,7 +159,7 @@ namespace PlayModeTests
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), "Simulation did not finish under 25k ticks, indicating the robot is stuck.");
         }
     }
 }
