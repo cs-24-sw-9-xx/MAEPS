@@ -1,4 +1,4 @@
-// Copyright 2024 MAEPS
+// Copyright 2025 MAEPS
 // 
 // This file is part of MAEPS
 // 
@@ -21,13 +21,12 @@
 // Thor Beregaard, 
 // Malte Z. Andreasen, 
 // Philip I. Holler,
-// Magnus K. Jensen, 	
+// Magnus K. Jensen, 
+//
+// In 2025:
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
-// Henrik van Peet,
 // Jakob Meyer Olsen,
-// Mads Beyer Mogensen,
-// Puvikaran Santhirasegaram
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -227,7 +226,8 @@ namespace Maes.Robot
             }
 
             var angleMod = angle % 90f;
-            if(angleMod == 0){
+            if (angleMod == 0)
+            {
                 angle += 0.005f;
             }
 

@@ -13,6 +13,7 @@ namespace Maes.Statistics
     public class PatrollingVisualizer : Visualizer
     {
         public static readonly Color32 PatrollingAreaColor = new(255, 120, 0, 255);
+        public static readonly Color32 CommunicationColor = new(0, 255, 255, 255);
 
         public GameObject VertexVisualizer = null!;
         public GameObject EdgeVisualizer = null!;
@@ -22,11 +23,18 @@ namespace Maes.Statistics
         public Dictionary<int, VertexVisualizer> VertexVisualizers { get; } = new();
 
         public LineOfSightVertices LineOfSightVertices { get; private set; } = null!;
+        public CommunicationZoneVertices ComunicationZoneVertices { get; private set; } = null!;
 
         public void SetLineOfSightVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap)
         {
             LineOfSightVertices = new LineOfSightVertices(simulationMap, patrollingMap);
             LineOfSightVertices.CreateLineOfSightVertices();
+        }
+
+        public void SetCommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
+        {
+            ComunicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+            ComunicationZoneVertices.CreateComunicationZoneTiles();
         }
 
         public override void SetSimulationMap(SimulationMap<Cell> newMap)

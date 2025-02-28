@@ -51,6 +51,7 @@ namespace Maes.Map.MapPatrollingGen
             var reverseNearestNeighbors = MapUtilities.FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
             var vertices = vertexPositions.Select(pos => new Vertex(nextId++, 0, pos.Key)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
+            var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
             {
@@ -59,7 +60,6 @@ namespace Maes.Map.MapPatrollingGen
                     continue;
                 }
 
-                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
                 vertex.Color = color;
                 foreach (var neighborPos in neighbors)
                 {
