@@ -34,16 +34,13 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WaypointConnection
     {
-        // Static variable to keep track of the current vertex id
-        private static int currentVertexId = 0;
-
-        public static Vertex[] ConnectVertices(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands)
+        public static Vertex[] ConnectVertices(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0)
         {
             var startTime = Time.realtimeSinceStartup;
 
             const int numberOfReverseNearestNeighbors = 1;
             var reverseNearestNeighbors = FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-            var vertices = vertexPositions.Select(pos => new Vertex(currentVertexId++, 0, pos.Key)).ToArray();
+            var vertices = vertexPositions.Select(pos => new Vertex(nextId++, 0, pos.Key)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
