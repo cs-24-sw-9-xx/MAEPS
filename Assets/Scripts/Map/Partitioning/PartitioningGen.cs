@@ -44,11 +44,13 @@ namespace Maes.Map.Partitioning
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
+            var nextId = 0;
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
                 allVertices.AddRange(vertices);
+                nextId = vertices.Select(v => v.Id).Max() + 1;
             }
             return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
         }
@@ -61,11 +63,13 @@ namespace Maes.Map.Partitioning
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = KMeansPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
             var allVertices = new List<Vertex>();
+            var nextId = 0;
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
                 allVertices.AddRange(vertices);
+                nextId = vertices.Select(v => v.Id).Max() + 1;
             }
             return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
         }
