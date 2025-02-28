@@ -33,6 +33,9 @@
                     <engine:Button text="Sticky Camera" name="SelectedRobotStickyCameraButton" />
                     <engine:Button text="Target&#10;Waypoint" name="SelectedRobotTargetWaypointButton" />
                 </engine:GroupBox>
+                <engine:GroupBox text="Selected Vertex" class="visualization-groupbox">
+                    <engine:Button text="Communication&#10;Zone" name="SelectedVertexCommunicationZoneButton" />
+                </engine:GroupBox>
             </engine:VisualElement>
         </engine:GroupBox>
         <engine:GroupBox name="GraphGroupBox" text="Graph">

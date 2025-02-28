@@ -57,14 +57,19 @@ namespace Maes.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
+        private readonly SimulationMap<Tile> _collisionMap;
+        private readonly PatrollingMap _patrollingMap;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
+            _patrollingMap = map;
+            _collisionMap = collisionMap;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetLineOfSightVertices(collisionMap, map);
+            _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
             TotalCycles = scenario.TotalCycles;
             WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
@@ -209,6 +214,7 @@ namespace Maes.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new WaypointHeatMapVisualizationMode());
+
         }
 
         public void ShowAllRobotCoverageHeatMap()
@@ -266,6 +272,13 @@ namespace Maes.Trackers
             }
 
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+            SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+        }
+
+        public void ShowCommuncationZone()
+        {
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void InitIdleGraph()

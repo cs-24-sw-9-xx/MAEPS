@@ -53,6 +53,11 @@ namespace Maes.Simulation
 
             return true;
         }
+
+        public bool HasSelectedVertex()
+        {
+            return SelectedVertex != null;
+        }
         private bool _hasWrittenStats;
 
         public override void OnSimulationFinished()
@@ -139,5 +144,6 @@ namespace Maes.Simulation
             SelectedVertex = newSelectedVertex;
             Tracker.SetVisualizedVertex(newSelectedVertex);
         }
+
     }
 }
