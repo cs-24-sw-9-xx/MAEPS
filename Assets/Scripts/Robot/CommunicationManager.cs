@@ -1,6 +1,6 @@
-// Copyright 2024 MAES
+// Copyright 2024 MAEPS
 // 
-// This file is part of MAES
+// This file is part of MAEPS
 // 
 // MAES is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the
@@ -15,7 +15,19 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: 
+// Rasmus Borrisholt Schmidt, 
+// Andreas Sebastian Sørensen, 
+// Thor Beregaard, 
+// Malte Z. Andreasen, 
+// Philip I. Holler,
+// Magnus K. Jensen, 	
+// Casper Nyvang Sørensen,
+// Christian Ziegler Sejersen,
+// Henrik van Peet,
+// Jakob Meyer Olsen,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -215,6 +227,10 @@ namespace Maes.Robot
             }
 
             var angleMod = angle % 90f;
+            if(angleMod == 0){
+                angle += 0.005f;
+            }
+
             if (angleMod <= 45.05f && angleMod >= 45f)
             {
                 angle += 0.005f;
@@ -486,5 +502,34 @@ namespace Maes.Robot
             return closestWall;
         }
 
+        public Dictionary<Vector2Int, Bitmap> CalculateCommunicationZone(List<Vector2Int> vertices, int width, int height)
+        {
+            Dictionary<Vector2Int, Bitmap> vertexPositions = new();
+
+            foreach (var vertex in vertices)
+            {
+                var bitmap = new Bitmap(0, 0, width, height);
+                var center = new Vector2(vertex.x - 50 + 0.5f, vertex.y - 50 + 0.5f);
+                for (var x = 0; x < width; x++)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        var p = new Vector2(x - 50 + 0.5f, y - 50 + 0.5f);
+                        if (Vector2.Distance(center, p) == 0)
+                        {
+                            continue;
+                        }
+                        Debug.Log($"Checking position between: {center} and {p}");
+                        var result = RayTraceCommunication(center, p);
+                        if (result.TransmissionSuccessful)
+                        {
+                            bitmap.Set(x, y);
+                        }
+                    }
+                }
+                vertexPositions.Add(vertex, bitmap);
+            }
+            return vertexPositions;
+        }
     }
 }
