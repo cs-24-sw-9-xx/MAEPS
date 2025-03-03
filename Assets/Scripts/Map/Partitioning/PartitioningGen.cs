@@ -39,7 +39,7 @@ namespace Maes.Map.Partitioning
         public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyWaypointGenerator.TSPHeuresticSolver(map);
+            var vertexPositionsDictionary = GreedyWaypointGenerator.ArtGalleryProblemHeuresticSolver(map);
             var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
@@ -58,7 +58,7 @@ namespace Maes.Map.Partitioning
         public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyWaypointGenerator.TSPHeuresticSolver(map);
+            var vertexPositionsDictionary = GreedyWaypointGenerator.ArtGalleryProblemHeuresticSolver(map);
             var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = KMeansPartitions.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
