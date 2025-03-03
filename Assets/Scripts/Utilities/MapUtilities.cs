@@ -146,5 +146,47 @@ namespace Maes.Utilities
             }
         }
 
+        // Find the k nearest neighbors for each point and return the reverse mapping
+        public static Dictionary<Vector2Int, List<Vector2Int>> FindReverseNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
+        {
+            // Dictionary to store the k nearest neighbors of each point
+            var nearestNeighbors = new Dictionary<Vector2Int, List<(Vector2Int, int)>>();
+
+            // Populate nearest neighbors with distances for each start point
+            foreach (var ((start, end), distance) in distanceDict)
+            {
+                if (!nearestNeighbors.ContainsKey(start))
+                {
+                    nearestNeighbors[start] = new List<(Vector2Int, int)>();
+                }
+
+                var neighborsList = nearestNeighbors[start];
+                neighborsList.Add((end, distance));
+
+                // Sort by distance and keep only the top k nearest neighbors
+                neighborsList.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+                if (neighborsList.Count > k)
+                {
+                    neighborsList.RemoveAt(neighborsList.Count - 1); // Remove the farthest neighbor
+                }
+            }
+
+            // Reverse nearest neighbor mapping
+            var reverseNearestNeighbors = new Dictionary<Vector2Int, List<Vector2Int>>();
+
+            foreach (var (start, neighborsList) in nearestNeighbors)
+            {
+                foreach (var (neighbor, _) in neighborsList)
+                {
+                    if (!reverseNearestNeighbors.ContainsKey(neighbor))
+                    {
+                        reverseNearestNeighbors[neighbor] = new List<Vector2Int>();
+                    }
+                    reverseNearestNeighbors[neighbor].Add(start);
+                }
+            }
+
+            return reverseNearestNeighbors;
+        }
     }
 }
