@@ -179,9 +179,9 @@ namespace Maes.Map.MapPatrollingGen
                 return currentIsland; // Base case: no more islands to merge
             }
 
-            List<Vertex>? closestIsland = null;
-            Vertex? closestVertexInCurrent = null;
-            Vertex? closestVertexInNew = null;
+            List<Vertex> closestIsland = null;
+            Vertex closestVertexInCurrent = null;
+            Vertex closestVertexInNew = null;
             var minDistance = int.MaxValue;
 
             // Find the closest island and vertices to merge
