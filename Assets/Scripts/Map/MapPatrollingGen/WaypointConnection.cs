@@ -124,7 +124,7 @@ namespace Maes.Map.MapPatrollingGen
             {
                 if (!visited.Contains(vertex))
                 {
-                    clusters.Add(TraverseCluster(vertex));
+                    clusters.Add(TraverseCluster(vertex, visited));
                 }
             }
 
@@ -141,7 +141,7 @@ namespace Maes.Map.MapPatrollingGen
             return;
 
             // Function to traverse a cluster and collect its vertices
-            List<Vertex> TraverseCluster(Vertex start)
+            static List<Vertex> TraverseCluster(Vertex start, HashSet<Vertex> visited)
             {
                 var cluster = new List<Vertex>();
                 var stack = new Stack<Vertex>();
