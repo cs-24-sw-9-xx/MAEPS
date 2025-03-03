@@ -272,7 +272,6 @@ namespace Maes.Trackers
             }
 
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
-            SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void ShowCommuncationZone()

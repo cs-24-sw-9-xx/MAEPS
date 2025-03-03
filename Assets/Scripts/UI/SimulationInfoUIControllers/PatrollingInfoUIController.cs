@@ -117,6 +117,9 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case LineOfSightVertexVisualizationMode:
                     UnHighlightVisualizationButtons();
                     break;
+                case CommunicationZoneVisualizationMode:
+                    SelectVisualizationButton(_selectedVertexCommunicationZoneButton);
+                    break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
             }

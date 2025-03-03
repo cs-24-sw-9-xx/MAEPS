@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Maes.Map;
 using Maes.Map.MapGen;
@@ -92,6 +93,7 @@ namespace Maes.Robot
         private List<HashSet<int>>? _communicationGroups;
 
         private float _robotRelativeSize;
+        private readonly Vector2 _offset;
 
         public readonly CommunicationTracker CommunicationTracker;
 
@@ -138,6 +140,7 @@ namespace Maes.Robot
             _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
             _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
+            _offset = collisionMap.ScaledOffset;
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize)
@@ -504,22 +507,21 @@ namespace Maes.Robot
 
         public Dictionary<Vector2Int, Bitmap> CalculateCommunicationZone(List<Vector2Int> vertices, int width, int height)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositions = new();
-
-            foreach (var vertex in vertices)
+            var startTimeMultiThread = Time.realtimeSinceStartup;
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new();
+            Parallel.ForEach(vertices, vertex =>
             {
                 var bitmap = new Bitmap(0, 0, width, height);
-                var center = new Vector2(vertex.x - 50 + 0.5f, vertex.y - 50 + 0.5f);
+                var center = new Vector2(vertex.x + 0.5f, vertex.y + 0.5f) + _offset;
                 for (var x = 0; x < width; x++)
                 {
                     for (var y = 0; y < height; y++)
                     {
-                        var p = new Vector2(x - 50 + 0.5f, y - 50 + 0.5f);
+                        var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
                         if (Vector2.Distance(center, p) == 0)
                         {
                             continue;
                         }
-                        Debug.Log($"Checking position between: {center} and {p}");
                         var result = RayTraceCommunication(center, p);
                         if (result.TransmissionSuccessful)
                         {
@@ -527,9 +529,14 @@ namespace Maes.Robot
                         }
                     }
                 }
-                vertexPositions.Add(vertex, bitmap);
-            }
-            return vertexPositions;
+                lock (vertexPositionsMultiThread)
+                {
+                    vertexPositionsMultiThread.Add(vertex, bitmap);
+                }
+            });
+            Debug.Log($"Time taken to calculate communication zones multithreaded: {Time.realtimeSinceStartup - startTimeMultiThread}");
+
+            return vertexPositionsMultiThread;
         }
     }
 }
