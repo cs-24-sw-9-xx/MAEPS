@@ -40,19 +40,20 @@ namespace Maes.Map.MapPatrollingGen
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = TSPHeuresticSolver(map);
+            var vertexPositions = ArtGalleryProblemHeuresticSolver(map);
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var connectVertices = WaypointConnection.ConnectVertices(vertexPositions, distanceMatrix, colorIslands);
             return new PatrollingMap(connectVertices, simulationMap, vertexPositions);
         }
 
         /// <summary>
-        /// Greedy algorithm to solve the Travelling Salesman Problem (TSP) using a local optimization heuristic
+        /// Greedy algorithm to solve the art gallery problem using a local optimization heuristic.
+        /// The result is not the optimal solution, but a good approximation. 
         /// </summary>
         /// <param name="map"></param>
         /// <param name="visibilityAlgorithm"></param>
         /// <returns></returns>
-        public static Dictionary<Vector2Int, Bitmap> TSPHeuresticSolver(Bitmap map)
+        public static Dictionary<Vector2Int, Bitmap> ArtGalleryProblemHeuresticSolver(Bitmap map)
         {
             var precomputedVisibility = ComputeVisibility(map);
             var guardPositions = ComputeVertexCoordinates(map, precomputedVisibility);
