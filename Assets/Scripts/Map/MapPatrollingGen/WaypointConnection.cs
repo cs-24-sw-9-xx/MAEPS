@@ -34,7 +34,17 @@ namespace Maes.Map.MapPatrollingGen
 {
     public static class WaypointConnection
     {
-        public static Vertex[] ConnectVertices(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        /// <summary>
+        /// Connect vertices by reverse nearest neighbors.
+        /// Connect islands of vertices by connecting the closest vertices between islands, to ensure a connected graph. 
+        /// </summary>
+        /// <param name="vertexPositions"></param>
+        /// <param name="distanceMatrix"></param>
+        /// <param name="colorIslands">Color the islands, to ease debugging.</param>
+        /// <param name="nextId">Used by partitioning.</param>
+        /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
+        /// <returns>Vertecies with connections(edges) to other vertecies.</returns>
+        public static Vertex[] ConnectVerticesByRNN(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 
