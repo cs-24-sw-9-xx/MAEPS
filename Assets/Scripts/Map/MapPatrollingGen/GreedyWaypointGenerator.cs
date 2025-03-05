@@ -51,7 +51,6 @@ namespace Maes.Map.MapPatrollingGen
         /// The result is not the optimal solution, but a good approximation. 
         /// </summary>
         /// <param name="map"></param>
-        /// <param name="visibilityAlgorithm"></param>
         /// <returns></returns>
         public static Dictionary<Vector2Int, Bitmap> ArtGalleryProblemHeuresticSolver(Bitmap map)
         {
