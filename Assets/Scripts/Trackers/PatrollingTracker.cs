@@ -214,7 +214,6 @@ namespace Maes.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-
         }
 
         public void ShowAllRobotCoverageHeatMap()

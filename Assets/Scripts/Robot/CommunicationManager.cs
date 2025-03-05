@@ -221,6 +221,12 @@ namespace Maes.Robot
         {
             var distance = Vector2.Distance(pos1, pos2);
             var angle = Vector2.Angle(Vector2.right, pos2 - pos1);
+            // If the distance is greater than the max communication range then the transmission is not successful
+            if (_robotConstraints.MaxCommunicationRange < distance)
+            {
+                return new CommunicationInfo(distance, angle, 0, 0, false, _robotConstraints.TransmitPower);
+
+            }
             // If p1.y > p2.y then angle should be 360 minus the angle difference between the vectors
             // to make the angle relative to the x axis. (Moving from oregon along the x axis is 0 degrees in out system)
             if (pos1.y > pos2.y)
@@ -278,7 +284,6 @@ namespace Maes.Robot
             {
                 transmissionSuccessful = _robotConstraints.ReceiverSensitivity <= signalStrength;
             }
-            //Debug.Log($"strength: {signalStrength}, success: {transmissionSuccessful}");
             return new CommunicationInfo(distance, angle, wallsCellsPassedThrough, regularCellsPassedThrough, transmissionSuccessful, signalStrength);
         }
 
@@ -518,7 +523,9 @@ namespace Maes.Robot
                     for (var y = 0; y < height; y++)
                     {
                         var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
-                        if (Vector2.Distance(center, p) == 0)
+                        var distance = Vector2.Distance(center, p);
+
+                        if (distance == 0 | _robotConstraints.MaxCommunicationRange < distance)
                         {
                             continue;
                         }
@@ -534,7 +541,7 @@ namespace Maes.Robot
                     vertexPositionsMultiThread.Add(vertex, bitmap);
                 }
             });
-            Debug.Log($"Time taken to calculate communication zones multithreaded: {Time.realtimeSinceStartup - startTimeMultiThread}");
+            Debug.Log($"Time taken to calculate communication zones: {Time.realtimeSinceStartup - startTimeMultiThread}");
 
             return vertexPositionsMultiThread;
         }
