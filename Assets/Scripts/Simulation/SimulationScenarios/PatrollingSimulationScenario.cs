@@ -15,6 +15,8 @@ namespace Maes.Simulation.SimulationScenarios
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; }
 
+        public int Partitions { get; set; }
+
         public PatrollingSimulationScenario(int seed,
             int totalCycles,
             bool stopAfterDiff,
@@ -24,7 +26,8 @@ namespace Maes.Simulation.SimulationScenarios
             string? statisticsFileName = null,
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
-            bool showIslands = false)
+            bool showIslands = false,
+            int partitions = 1)
             : base(seed,
                 robotSpawner,
                 null,
@@ -35,6 +38,7 @@ namespace Maes.Simulation.SimulationScenarios
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
+            Partitions = partitions;
             PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyWaypointGenerator.MakePatrollingMap(map, showIslands));
         }
     }

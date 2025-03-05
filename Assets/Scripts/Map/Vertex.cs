@@ -16,7 +16,9 @@ namespace Maes.Map
         public Color Color { get; set; }
         public int NumberOfVisits { get; private set; }
 
-        public Vertex(int id, float weight, Vector2Int position, Color? color = null)
+        public int Partition { get; set; }
+
+        public Vertex(int id, float weight, Vector2Int position, int partition = 1, Color? color = null)
         {
             Id = id;
             Weight = weight;
@@ -24,6 +26,7 @@ namespace Maes.Map
             Color = color ?? Color.green;
             LastTimeVisitedTick = 0;
             NumberOfVisits = 0;
+            Partition = partition;
 
             _neighbors = new();
         }

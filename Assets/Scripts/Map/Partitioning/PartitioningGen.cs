@@ -48,6 +48,7 @@ namespace Maes.Map.Partitioning
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
                 var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                Array.ForEach(vertices, vertex => vertex.Partition = cluster.Key);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }

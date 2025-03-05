@@ -51,6 +51,8 @@ namespace Maes.Robot
 
         public OnRobotSelectedDelegate OnRobotSelected = _ => { };
 
+        public int AssignedPartition { get; set; }
+
         // The algorithm that controls the logic of the robot
         // Set by RobotSpawner
         public IAlgorithm Algorithm
