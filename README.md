@@ -91,7 +91,7 @@ var scenario = new SimulationScenario(seed: 123, robotSpawner:(map, spawner) => 
     createAlgorithmDelegate: algorithmFactory));
 ```
 
-## Running in ROSMode
+## Running in ROSMode (Only support in exploration)
 MAEPS can be run with ROS running either in a docker image or natively installed on your operation system.
 The docker image has everything preinstalled and is thus easier to set up. 
 ROSMode has been tested to work with the Galactic release of ROS2.
