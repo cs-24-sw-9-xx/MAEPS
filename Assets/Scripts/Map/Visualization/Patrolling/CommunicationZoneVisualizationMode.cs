@@ -43,7 +43,7 @@ namespace Maes.Map.Visualization.Patrolling
 
         private Color32 CellIndexToColor(int cellIndex)
         {
-            return Visualizer.ComunicationZoneVertices.CommunicationZoneTiles[SelectedVertexId].Contains(cellIndex)
+            return Visualizer.CommunicationZoneVertices.CommunicationZoneTiles[SelectedVertexId].Contains(cellIndex)
                ? PatrollingVisualizer.CommunicationColor
                : PatrollingVisualizer.StandardCellColor;
         }

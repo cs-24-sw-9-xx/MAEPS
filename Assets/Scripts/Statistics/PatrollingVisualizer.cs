@@ -23,7 +23,7 @@ namespace Maes.Statistics
         public Dictionary<int, VertexVisualizer> VertexVisualizers { get; } = new();
 
         public LineOfSightVertices LineOfSightVertices { get; private set; } = null!;
-        public CommunicationZoneVertices ComunicationZoneVertices { get; private set; } = null!;
+        public CommunicationZoneVertices CommunicationZoneVertices { get; private set; } = null!;
 
         public void SetLineOfSightVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap)
         {
@@ -33,8 +33,8 @@ namespace Maes.Statistics
 
         public void SetCommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
-            ComunicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
-            ComunicationZoneVertices.CreateComunicationZoneTiles();
+            CommunicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+            CommunicationZoneVertices.CreateCommunicationZoneTiles();
         }
 
         public override void SetSimulationMap(SimulationMap<Cell> newMap)

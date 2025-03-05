@@ -38,6 +38,7 @@ namespace Maes.UI.Patrolling
         private readonly SimulationMap<Tile> _simulationMap;
         private readonly PatrollingMap _patrollingMap;
         private readonly CommunicationManager _communicationManager;
+        private const int TrianglesPerCell = 8;
 
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
@@ -47,7 +48,7 @@ namespace Maes.UI.Patrolling
             _communicationManager = communicationManager;
         }
 
-        public void CreateComunicationZoneTiles()
+        public void CreateCommunicationZoneTiles()
         {
             var positions = new List<Vector2Int>();
             foreach (var vertex in _patrollingMap.Vertices)
@@ -82,7 +83,7 @@ namespace Maes.UI.Patrolling
             foreach (var (index, _) in simulationMap)
             {
                 list.Add(index);
-                if ((index + 1) % 8 == 0)
+                if ((index + 1) % TrianglesPerCell == 0)
                 {
                     cellIndexTriangleIndexes.Add(list);
                     list = new List<int>();

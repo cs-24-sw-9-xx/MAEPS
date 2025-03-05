@@ -525,7 +525,7 @@ namespace Maes.Robot
                         var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
                         var distance = Vector2.Distance(center, p);
 
-                        if (distance == 0 | _robotConstraints.MaxCommunicationRange < distance)
+                        if (distance == 0 || _robotConstraints.MaxCommunicationRange < distance)
                         {
                             continue;
                         }
