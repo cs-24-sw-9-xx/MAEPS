@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +31,13 @@ namespace Maes.Map
             VertexPositions = vertexPositions;
         }
 
+        /// <summary>
+        /// Creates a deep copy of the current PatrollingMap instance.
+        /// </summary>
+        /// <remarks>
+        /// Clones all vertices—including their Id, Weight, Position, Partition, and Color—and re-establishes their neighbor relationships.
+        /// The cloned map retains the original path mappings and vertex positions.
+        /// </remarks>
         public PatrollingMap Clone()
         {
             var originalToCloned = new Dictionary<Vertex, Vertex>();

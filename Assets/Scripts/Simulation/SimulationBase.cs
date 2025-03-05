@@ -106,7 +106,14 @@ namespace Maes.Simulation
         // Set by SetInfoUIController
         private SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController = null!;
 
-        // Sets up the simulation by generating the map and spawning the robots
+        /// <summary>
+        /// Initializes the simulation with the provided scenario.
+        /// This method sets up the collision map, communication manager, and robot spawner by generating the map instance,
+        /// invoking the scenario-specific map and robot spawners, and configuring selection callbacks. For patrolling simulation scenarios,
+        /// it dynamically assigns partitions to robots based on their identifiers.
+        /// </summary>
+        /// <param name="scenario">The simulation scenario containing configuration for map generation, robot spawning, communication, constraints,
+        /// fault injection, and optional partitioning for patrolling setups.</param>
         public virtual void SetScenario(TScenario scenario)
         {
             _scenario = scenario;

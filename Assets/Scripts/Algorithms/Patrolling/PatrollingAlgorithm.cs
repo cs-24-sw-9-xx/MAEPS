@@ -206,6 +206,14 @@ namespace Maes.Algorithms.Patrolling
 
         protected abstract Vertex NextVertex(Vertex currentVertex);
 
+        /// <summary>
+        /// Compiles and returns debug information for the patrolling algorithm.
+        /// </summary>
+        /// <remarks>
+        /// This method clears an internal StringBuilder and appends the algorithm’s name,
+        /// its current target vertex, and a comma-separated list of the target vertex's
+        /// neighbors. Additional debug details are appended by calling an overload of GetDebugInfo.
+        /// </remarks>
         public string GetDebugInfo()
         {
             _stringBuilder.Clear();
@@ -219,6 +227,12 @@ namespace Maes.Algorithms.Patrolling
 
         protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
 
+        /// <summary>
+        /// Finds the vertex within the robot's assigned partition that is closest to its current coarse position.
+        /// </summary>
+        /// <returns>
+        /// The vertex from the assigned partition with the smallest Euclidean distance to the robot's current position.
+        /// </returns>
         private Vertex GetClosestVertex()
         {
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);

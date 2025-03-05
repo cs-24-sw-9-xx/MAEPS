@@ -36,6 +36,15 @@ namespace Maes.Map.Partitioning
 {
     public static class PartitioningGen
     {
+        /// <summary>
+        /// Generates a patrolling map from the given simulation map using spectral bisection partitioning.
+        /// </summary>
+        /// <param name="simulationMap">The simulation map to process and partition.</param>
+        /// <param name="colorIslands">If true, applies distinct coloring to island regions when connecting vertices.</param>
+        /// <param name="amountOfPartitions">The number of clusters to create using the spectral bisection algorithm.</param>
+        /// <returns>
+        /// A <see cref="PatrollingMap"/> containing connected vertices with partition assignments based on spectral clustering.
+        /// </returns>
         public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
@@ -97,6 +106,14 @@ namespace Maes.Map.Partitioning
             return adjacencyMatrix;
         }
 
+        /// <summary>
+        /// Constructs a diagonal degree matrix from the given adjacency matrix, where each diagonal element is the sum of the corresponding row.
+        /// </summary>
+        /// <param name="amountOfVertices">The total number of vertices, which defines the dimensions of the matrix.</param>
+        /// <param name="adjacencyMatrix">A square matrix representing edge weights between vertices.</param>
+        /// <returns>
+        /// A diagonal matrix of the same dimension, with each diagonal entry equal to the sum of the corresponding row in the adjacency matrix.
+        /// </returns>
         public static Matrix<double> DegreeMatrix(int amountOfVertices, Matrix<double> adjacencyMatrix)
         {
             var degreeMatrix = Matrix<double>.Build.DenseDiagonal(amountOfVertices, 0.0);
@@ -108,12 +125,23 @@ namespace Maes.Map.Partitioning
             return degreeMatrix;
         }
 
+        /// <summary>
+        /// Computes the standard deviation of the distance values contained in the provided dictionary.
+        /// </summary>
+        /// <param name="distanceMatrix">A dictionary mapping pairs of vertex positions to their respective distance values.</param>
+        /// <returns>The computed standard deviation of the distance values.</returns>
         private static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             var distances = distanceMatrix.Values.ToList();
             return Math.Sqrt(distances.Average(d => Math.Pow(d - distances.Average(), 2)));
         }
 
+        /// <summary>
+        /// Computes the Gaussian kernel weight for a given distance using the specified sigma.
+        /// </summary>
+        /// <param name="distance">The distance value between points.</param>
+        /// <param name="sigma">The standard deviation parameter used in the Gaussian calculation.</param>
+        /// <returns>The computed weight based on the Gaussian function.</returns>
         private static double GaussianKernel(double distance, double sigma)
         {
             return Math.Exp(-Math.Pow(distance, 2) / (2 * Math.Pow(sigma, 2)));

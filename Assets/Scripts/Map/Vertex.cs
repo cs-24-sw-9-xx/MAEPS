@@ -18,6 +18,15 @@ namespace Maes.Map
 
         public int Partition { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Vertex"/> class with the specified identifier, weight, position, partition, and color.
+        /// The vertex's visit counters are set to zero and its neighbor collection is initialized as empty.
+        /// </summary>
+        /// <param name="id">A unique identifier for the vertex.</param>
+        /// <param name="weight">The weight associated with the vertex.</param>
+        /// <param name="position">The vertex's position represented as a <see cref="Vector2Int"/>.</param>
+        /// <param name="partition">The partition identifier for the vertex. Defaults to 0.</param>
+        /// <param name="color">Optional color for the vertex; if null, defaults to green.</param>
         public Vertex(int id, float weight, Vector2Int position, int partition = 0, Color? color = null)
         {
             Id = id;
