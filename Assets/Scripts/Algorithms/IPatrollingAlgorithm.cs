@@ -8,6 +8,9 @@ namespace Maes.Algorithms
     {
         string AlgorithmName { get; }
 
+        /// <summary>
+        /// Only to be used for visualization.
+        /// </summary>
         Vertex TargetVertex { get; }
 
         void SetPatrollingMap(PatrollingMap map);

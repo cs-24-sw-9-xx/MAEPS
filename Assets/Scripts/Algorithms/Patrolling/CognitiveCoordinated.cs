@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Robot;
 
 using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling
 {
-    public class CognitiveCoordinated : PatrollingAlgorithm
+    public sealed class CognitiveCoordinated : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private List<Vertex> _currentPath = new();
@@ -26,6 +28,16 @@ namespace Maes.Algorithms.Patrolling
                 .AppendFormat("Last Vertex: {0}\n", _currentPath.Count > 0 ? _currentPath[^1].ToString() : "None");
         }
 
+        // Set by CreateComponents
+        private GoToNextVertexComponent _goToNextVertexComponent = null!;
+
+        protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
+        {
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+
+            return new IComponent[] { _goToNextVertexComponent };
+        }
+
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
         {
             base.SetGlobalPatrollingMap(globalMap);
@@ -39,7 +51,7 @@ namespace Maes.Algorithms.Patrolling
             Coordinator.ClearOccupiedVertices();
         }
 
-        protected override Vertex NextVertex(Vertex currentVertex)
+        private Vertex NextVertex(Vertex currentVertex)
         {
             // We have reached our target. Create a new path.
             if (_pathStep == _currentPath.Count)

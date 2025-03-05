@@ -27,7 +27,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Robot;
 
 using UnityEngine;
 
@@ -36,15 +38,25 @@ namespace Maes.Algorithms.Patrolling
     /// <summary>
     /// Original implementation of the Heuristic Conscientious Reactive Algorithm of https://repositorio.ufpe.br/handle/123456789/2474.
     /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
-    // Heuristic: The vertex with the lowest idleness and distance estimation
+    /// Heuristic: The vertex with the lowest idleness and distance estimation
     /// </summary>
-    public class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
+    public sealed class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
 
+        // Set by CreateComponents
+        private GoToNextVertexComponent _goToNextVertexComponent = null!;
+
+        protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
+        {
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+
+            return new IComponent[] { _goToNextVertexComponent };
+        }
+
         public delegate float DistanceEstimator(Vector2Int position);
 
-        protected override Vertex NextVertex(Vertex currentVertex)
+        private Vertex NextVertex(Vertex currentVertex)
         {
             Debug.Log($"Current vertex {currentVertex.Id}");
             // Calculate the normalized idleness of the neighbors

@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
-using Maes.Map.PathFinding;
 using Maes.Robot;
-using Maes.Robot.Task;
-
-using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling
 {
@@ -16,33 +13,14 @@ namespace Maes.Algorithms.Patrolling
     {
         public abstract string AlgorithmName { get; }
 
+        /// <inheritdoc/>
+        public Vertex TargetVertex { get; private set; } = null!;
 
         // Do not change visibility of this!
         private PatrollingMap _globalMap = null!;
 
-        public Vertex TargetVertex
-        {
-            get => _targetVertex ?? throw new InvalidOperationException("TargetVertex is null");
-            private set
-            {
-#if DEBUG
-                if (!AllowForeignVertices && !_vertices.Contains(value))
-                {
-                    throw new ArgumentException("TargetVertex is not from our patrolling map", nameof(value));
-                }
-#endif
-
-                _targetVertex = value;
-            }
-        }
-
-        private Vertex? _targetVertex;
-
         // Set by SetPatrollingMap
-        protected Vertex[] _vertices = null!;
-        private IReadOnlyDictionary<(int, int), PathStep[]> _paths = null!;
-
-        private Queue<PathStep> _currentPath = new();
+        private PatrollingMap _patrollingMap = null!;
 
         // Set by SetController
         protected Robot2DController _controller = null!;
@@ -59,17 +37,56 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly StringBuilder _stringBuilder = new();
 
+        private IEnumerator<ComponentWaitForCondition>[] _componentPreUpdates = null!;
+        private IEnumerator<ComponentWaitForCondition>[] _componentPostUpdates = null!;
+
+        private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
+        private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
+
         protected event OnReachVertex? OnReachVertexHandler;
+
+        protected abstract IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap);
+
+        private void SetComponents(IComponent[] components)
+        {
+            var preUpdateSortedComponents = components.OrderBy(component => component.PreUpdateOrder).Select(component => component.PreUpdateLogic().GetEnumerator()).ToArray();
+            var postUpdateSortedComponents = components.OrderBy(component => component.PostUpdateOrder).Select(component => component.PostUpdateLogic().GetEnumerator()).ToArray();
+
+            _componentPreUpdates = preUpdateSortedComponents;
+            _componentPostUpdates = postUpdateSortedComponents;
+
+            foreach (var component in _componentPreUpdates)
+            {
+                _componentPreUpdateStates.Add(component, new ComponentWaitForConditionState());
+            }
+
+            foreach (var component in _componentPostUpdates)
+            {
+                _componentPostUpdateStates.Add(component, new ComponentWaitForConditionState());
+            }
+        }
 
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
+
+            if (_patrollingMap != null)
+            {
+                SetComponents(CreateComponents(_controller, _patrollingMap));
+            }
         }
 
         public void SetPatrollingMap(PatrollingMap map)
         {
-            _vertices = map.Vertices;
-            _paths = map.Paths;
+            _patrollingMap = map;
+
+            // Just to ensure we get no null reference exceptions.
+            TargetVertex = map.Vertices[0];
+
+            if (_controller != null)
+            {
+                SetComponents(CreateComponents(_controller, _patrollingMap));
+            }
         }
 
         /// <inheritdoc/>
@@ -83,9 +100,10 @@ namespace Maes.Algorithms.Patrolling
             OnReachVertexHandler += onReachVertex;
         }
 
-        private void OnReachTargetVertex(Vertex vertex)
+        public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)
         {
             var atTick = _controller.GetRobot().Simulation.SimulatedLogicTicks;
+            TargetVertex = nextVertex;
             OnReachVertexHandler?.Invoke(vertex.Id, atTick);
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
@@ -94,146 +112,112 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-        private bool HasReachedTarget()
-        {
-            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-            return currentPosition == TargetVertex.Position;
-        }
-
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
             while (true)
             {
-                if (_targetVertex != null && _controller.IsCurrentlyColliding)
+                // Run components' PreUpdateLogic
+                // Stops if one has ShouldContinue = false
+                var shouldContinue = true;
+                foreach (var component in _componentPreUpdates)
                 {
-                    _controller.StopCurrentTask();
-                    yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-
-                    _controller.Move(1.0f, reverse: true);
-                    yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-
-                    if (_controller.IsCurrentlyColliding)
+                    shouldContinue = HandleComponent(component, _componentPreUpdateStates[component]);
+                    if (!shouldContinue)
                     {
-                        _controller.Move(1.0f, reverse: false);
-                        yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-                    }
-
-                    while (!HasReachedTarget())
-                    {
-                        _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
-                        yield return WaitForCondition.WaitForLogicTicks(1);
-                    }
-
-                    // Invalidate the old path.
-                    _currentPath.Clear();
-                }
-
-                yield return WaitForCondition.ContinueUpdateLogic();
-            }
-        }
-
-        public virtual IEnumerable<WaitForCondition> UpdateLogic()
-        {
-            TargetVertex = GetClosestVertex();
-            while (!HasReachedTarget())
-            {
-                // Do normal astar pathing
-                _controller.PathAndMoveTo(TargetVertex.Position, dependOnBrokenBehaviour: false);
-
-                yield return WaitForCondition.WaitForLogicTicks(1);
-            }
-
-            while (true)
-            {
-                SetNextVertex();
-
-                // Go to the start of the first step.
-                var initialPathStep = _currentPath.Peek();
-                foreach (var condition in MoveToPosition(initialPathStep.Start))
-                {
-                    yield return condition;
-                }
-
-                // Go to the end of each path step.
-                while (_currentPath.Count > 0)
-                {
-                    var target = _currentPath.Dequeue();
-                    foreach (var condition in MoveToPosition(target.End))
-                    {
-                        yield return condition;
+                        break;
                     }
                 }
-            }
-        }
 
-        private const float _closeness = 0.25f;
-
-        private IEnumerable<WaitForCondition> MoveToPosition(Vector2Int target)
-        {
-            while (true)
-            {
-                yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
-
-                var relativePosition = GetRelativePositionTo(target);
-                if (relativePosition.Distance <= _closeness)
+                // If we should continue run UpdateLogic
+                // Otherwise don't run it and run PreUpdateLogic after 1 tick
+                if (shouldContinue)
                 {
-                    yield break;
-                }
-
-                if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
-                {
-                    _controller.Rotate(relativePosition.RelativeAngle);
+                    yield return WaitForCondition.ContinueUpdateLogic();
                 }
                 else
                 {
-                    _controller.Move(relativePosition.Distance);
+                    yield return WaitForCondition.WaitForLogicTicks(1);
                 }
             }
         }
 
-        private RelativePosition GetRelativePositionTo(Vector2Int position)
+        public IEnumerable<WaitForCondition> UpdateLogic()
         {
-            return _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(position, dependOnBrokenBehaviour: false);
+            while (true)
+            {
+                // Run components' PostUpdateLogic
+                // Stops if one has ShouldContinue = false
+                foreach (var component in _componentPostUpdates)
+                {
+                    var shouldContinue = HandleComponent(component, _componentPostUpdateStates[component]);
+                    if (!shouldContinue)
+                    {
+                        break;
+                    }
+                }
+
+                yield return WaitForCondition.WaitForLogicTicks(1);
+            }
         }
 
-        private void SetNextVertex()
+        private bool HandleComponent(IEnumerator<ComponentWaitForCondition> updateMethod,
+            ComponentWaitForConditionState componentWaitForConditionState)
         {
-            var currentVertex = TargetVertex;
-            OnReachTargetVertex(currentVertex);
-            TargetVertex = NextVertex(currentVertex);
-            _currentPath = new Queue<PathStep>(_paths[(currentVertex.Id, TargetVertex.Id)]);
+            // Handle the current state
+            switch (componentWaitForConditionState.ComponentWaitForCondition.Condition.Type)
+            {
+                case WaitForCondition.ConditionType.LogicTicks:
+                    if (--componentWaitForConditionState.LogicTicksToWaitFor == 0)
+                    {
+                        UpdateComponent(updateMethod, componentWaitForConditionState);
+                    }
+                    break;
+                case WaitForCondition.ConditionType.RobotStatus:
+                    if (componentWaitForConditionState.ComponentWaitForCondition.Condition.RobotStatus ==
+                        _controller.GetStatus())
+                    {
+                        UpdateComponent(updateMethod, componentWaitForConditionState);
+                    }
+                    break;
+                // Should only be this one in the beginning
+                // Indicates that the component should run.
+                case WaitForCondition.ConditionType.ContinueUpdateLogic:
+                    UpdateComponent(updateMethod, componentWaitForConditionState);
+                    break;
+            }
+
+            return componentWaitForConditionState.ComponentWaitForCondition.ShouldContinue;
         }
 
-        protected abstract Vertex NextVertex(Vertex currentVertex);
+        private static void UpdateComponent(IEnumerator<ComponentWaitForCondition> updateMethod, ComponentWaitForConditionState componentWaitForConditionState)
+        {
+            updateMethod.MoveNext();
+            componentWaitForConditionState.ComponentWaitForCondition = updateMethod.Current;
+
+            if (componentWaitForConditionState.ComponentWaitForCondition.Condition.Type ==
+                WaitForCondition.ConditionType.LogicTicks)
+            {
+                componentWaitForConditionState.LogicTicksToWaitFor = componentWaitForConditionState
+                    .ComponentWaitForCondition.Condition.LogicTicks;
+            }
+        }
 
         public string GetDebugInfo()
         {
             _stringBuilder.Clear();
             _stringBuilder
-                .AppendLine(AlgorithmName)
-                .AppendFormat("Target vertex: {0}\n", TargetVertex);
+                .AppendLine(AlgorithmName);
             GetDebugInfo(_stringBuilder);
             return _stringBuilder.ToString();
         }
 
         protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
 
-        private Vertex GetClosestVertex()
+        private sealed class ComponentWaitForConditionState
         {
-            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
-            var closestVertex = _vertices[0];
-            var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
-            foreach (var vertex in _vertices.AsSpan(1))
-            {
-                var distance = Vector2Int.Distance(position, vertex.Position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestVertex = vertex;
-                }
-            }
+            public ComponentWaitForCondition ComponentWaitForCondition = new(WaitForCondition.ContinueUpdateLogic(), shouldContinue: true);
 
-            return closestVertex;
+            public int LogicTicksToWaitFor = 0;
         }
     }
 }
