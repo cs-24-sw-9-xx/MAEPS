@@ -44,7 +44,7 @@ namespace Maes.Map.MapPatrollingGen
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertecies with connections(edges) to other vertecies.</returns>
-        public static Vertex[] ConnectVerticesByRNN(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVerticesByReverseNearestNeighbor(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 

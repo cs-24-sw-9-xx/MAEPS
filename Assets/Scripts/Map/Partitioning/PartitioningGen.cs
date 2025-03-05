@@ -48,7 +48,7 @@ namespace Maes.Map.Partitioning
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVerticesByRNN(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
@@ -67,7 +67,7 @@ namespace Maes.Map.Partitioning
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVerticesByRNN(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
