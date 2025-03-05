@@ -20,7 +20,6 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -79,7 +78,7 @@ namespace Maes.Map.Partitioning
         public static Matrix<double> AdjacencyMatrix(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int amountOfVertices)
         {
             var adjacencyMatrix = Matrix<double>.Build.Dense(amountOfVertices, amountOfVertices);
-            var sd = StandardDeviation(distanceMatrix);
+            var sd = MathUtilities.StandardDeviation(distanceMatrix);
 
             for (var i = 0; i < amountOfVertices; i++)
             {
@@ -88,7 +87,7 @@ namespace Maes.Map.Partitioning
                     if (i != j)
                     {
                         var distance = distanceMatrix[(vertexPositions[i], vertexPositions[j])];
-                        adjacencyMatrix[i, j] = GaussianKernel(distance, sd);
+                        adjacencyMatrix[i, j] = MathUtilities.GaussianKernel(distance, sd);
                     }
                 }
             }
@@ -104,17 +103,6 @@ namespace Maes.Map.Partitioning
             }
 
             return degreeMatrix;
-        }
-
-        public static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
-        {
-            var distances = distanceMatrix.Values.ToList();
-            return Math.Sqrt(distances.Average(d => Math.Pow(d - distances.Average(), 2)));
-        }
-
-        public static double GaussianKernel(double distance, double sigma)
-        {
-            return Math.Exp(-Math.Pow(distance, 2) / (2 * Math.Pow(sigma, 2)));
         }
     }
 }

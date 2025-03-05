@@ -20,6 +20,10 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using UnityEngine;
 
 namespace Maes.Utilities
 {
@@ -38,6 +42,17 @@ namespace Maes.Utilities
             }
 
             return val;
+        }
+
+        public static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
+        {
+            var distances = distanceMatrix.Values.ToList();
+            return Math.Sqrt(distances.Average(d => Math.Pow(d - distances.Average(), 2)));
+        }
+
+        public static double GaussianKernel(double distance, double sigma)
+        {
+            return Math.Exp(-Math.Pow(distance, 2) / (2 * Math.Pow(sigma, 2)));
         }
     }
 }
