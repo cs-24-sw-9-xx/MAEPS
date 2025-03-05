@@ -48,7 +48,9 @@ namespace Maes.Map.Partitioning
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVertices(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                var vertices = WaypointConnection.ConnectVertices(cluster.Value
+                    .ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                Array.ForEach(vertices, vertex => vertex.Partition = cluster.Key);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
@@ -106,13 +108,13 @@ namespace Maes.Map.Partitioning
             return degreeMatrix;
         }
 
-        public static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
+        private static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             var distances = distanceMatrix.Values.ToList();
             return Math.Sqrt(distances.Average(d => Math.Pow(d - distances.Average(), 2)));
         }
 
-        public static double GaussianKernel(double distance, double sigma)
+        private static double GaussianKernel(double distance, double sigma)
         {
             return Math.Exp(-Math.Pow(distance, 2) / (2 * Math.Pow(sigma, 2)));
         }

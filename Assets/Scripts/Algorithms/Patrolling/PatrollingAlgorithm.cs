@@ -211,7 +211,8 @@ namespace Maes.Algorithms.Patrolling
             _stringBuilder.Clear();
             _stringBuilder
                 .AppendLine(AlgorithmName)
-                .AppendFormat("Target vertex: {0}\n", TargetVertex);
+                .AppendFormat("Target vertex: {0}\n", TargetVertex)
+                .AppendFormat("Neighbours: {0}\n", TargetVertex.Neighbors.Select(x => x.ToString()).Aggregate((x, y) => $"{x}, {y}"));
             GetDebugInfo(_stringBuilder);
             return _stringBuilder.ToString();
         }
@@ -221,9 +222,11 @@ namespace Maes.Algorithms.Patrolling
         private Vertex GetClosestVertex()
         {
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
-            var closestVertex = _vertices[0];
+            var robotPartition = _controller.GetRobot().AssignedPartition;
+            var verticesInPartition = _vertices.Where(x => x.Partition == robotPartition).ToArray();
+            var closestVertex = verticesInPartition[0];
             var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
-            foreach (var vertex in _vertices.AsSpan(1))
+            foreach (var vertex in verticesInPartition.AsSpan(1))
             {
                 var distance = Vector2Int.Distance(position, vertex.Position);
                 if (distance < closestDistance)
