@@ -47,7 +47,8 @@ namespace Maes.Utilities
         public static double StandardDeviation(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             var distances = distanceMatrix.Values.ToList();
-            return Math.Sqrt(distances.Average(d => Math.Pow(d - distances.Average(), 2)));
+            var meanDistance = distances.Average();
+            return Math.Sqrt(distances.Average(d => Math.Pow(d - meanDistance, 2)));
         }
 
         public static double GaussianKernel(double distance, double sigma)
