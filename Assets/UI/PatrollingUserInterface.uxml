@@ -21,7 +21,7 @@
             </engine:VisualElement>
         </engine:GroupBox>
         <engine:GroupBox name="VisualizationGroupBox" text="Visualization">
-            <engine:VisualElement style="flex-direction: colum">
+            <engine:VisualElement style="flex-direction: column">
                 <engine:VisualElement style="flex-direction: row;">
                     <engine:GroupBox text="All Robots" class="visualization-groupbox">
                         <engine:Button text="None" name="AllRobotsNoneButton" />

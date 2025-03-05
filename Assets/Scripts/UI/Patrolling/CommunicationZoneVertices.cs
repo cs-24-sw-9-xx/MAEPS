@@ -33,8 +33,8 @@ namespace Maes.UI.Patrolling
 {
     public class CommunicationZoneVertices
     {
-        public Dictionary<int, HashSet<int>> ComunicationZoneTiles { get; }
-        public HashSet<int> AllComunicationZoneTiles { get; } = new();
+        public Dictionary<int, HashSet<int>> CommunicationZoneTiles { get; }
+        public HashSet<int> AllCommunicationZoneTiles { get; } = new();
         private readonly SimulationMap<Tile> _simulationMap;
         private readonly PatrollingMap _patrollingMap;
         private readonly CommunicationManager _communicationManager;
@@ -43,30 +43,34 @@ namespace Maes.UI.Patrolling
         {
             _simulationMap = simulationMap;
             _patrollingMap = patrollingMap;
-            ComunicationZoneTiles = _patrollingMap.Vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
+            CommunicationZoneTiles = _patrollingMap.Vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
             _communicationManager = communicationManager;
         }
 
         public void CreateComunicationZoneTiles()
         {
-            var postions = new List<Vector2Int>();
+            var positions = new List<Vector2Int>();
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                postions.Add(vertex.Position);
+                positions.Add(vertex.Position);
             }
-            var communicationszones = _communicationManager.CalculateCommunicationZone(postions, _simulationMap.WidthInTiles, _simulationMap.HeightInTiles);
+            var communicationZones = _communicationManager.CalculateCommunicationZone(positions, _simulationMap.WidthInTiles, _simulationMap.HeightInTiles);
             var cellIndexToTriangleIndexes = CellIndexToTriangleIndexes(_simulationMap);
             using var bitmap = MapUtilities.MapToBitMap(_simulationMap);
 
             foreach (var vertex in _patrollingMap.Vertices)
             {
-                var tiles = communicationszones[vertex.Position];
+                var tiles = communicationZones[vertex.Position];
+                if (tiles == null)
+                {
+                    continue;
+                }
                 foreach (var tile in tiles)
                 {
                     var index = tile.x + tile.y * bitmap.Width;
-                    ComunicationZoneTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
+                    CommunicationZoneTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
                 }
-                AllComunicationZoneTiles.UnionWith(ComunicationZoneTiles[vertex.Id]);
+                AllCommunicationZoneTiles.UnionWith(CommunicationZoneTiles[vertex.Id]);
             }
         }
 

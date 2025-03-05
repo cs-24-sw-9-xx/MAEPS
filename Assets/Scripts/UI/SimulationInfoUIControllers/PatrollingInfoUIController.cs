@@ -238,7 +238,7 @@ namespace Maes.UI.SimulationInfoUIControllers
                     Debug.Log("No vertex selected, selecting first vertex");
                 }
 
-                sim.PatrollingTracker.ShowCommuncationZone();
+                sim.PatrollingTracker.ShowCommunicationZone();
             });
         }
     }

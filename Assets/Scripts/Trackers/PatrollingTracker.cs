@@ -273,9 +273,14 @@ namespace Maes.Trackers
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
-        public void ShowCommuncationZone()
+        public void ShowCommunicationZone()
         {
             _visualizer.meshRenderer.enabled = true;
+            if (_selectedVertex == null)
+            {
+                Debug.Log("Cannot show communication zone when no vertex is selected");
+                return;
+            }
             SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
