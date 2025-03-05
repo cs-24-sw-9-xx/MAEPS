@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using Maes.Map;
 using Maes.Map.MapGen;
 using UnityEngine;
@@ -7,6 +6,7 @@ using Maes;
 using System.Collections.Generic;
 using System;
 using Maes.Utilities;
+using NUnit.Framework;
 namespace EditTests
 {
     public class CommunicationZoneVerticesTests
