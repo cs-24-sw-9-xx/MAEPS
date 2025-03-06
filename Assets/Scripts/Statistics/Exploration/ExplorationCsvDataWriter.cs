@@ -1,4 +1,4 @@
-using Maes.Simulation;
+using Maes.Simulation.Exploration;
 using Maes.Statistics.Communication;
 
 namespace Maes.Statistics.Exploration

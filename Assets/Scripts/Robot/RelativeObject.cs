@@ -26,7 +26,6 @@ namespace Maes.Robot
     // Represents a relative position to some object of type T
     public readonly struct RelativeObject<T>
     {
-
         public readonly float Distance;
         public readonly float RelativeAngle;
         public readonly T Item;

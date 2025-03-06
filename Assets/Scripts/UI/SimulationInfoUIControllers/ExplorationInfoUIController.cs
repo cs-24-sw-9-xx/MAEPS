@@ -1,9 +1,8 @@
 using System;
 
-using Maes.Algorithms;
-using Maes.Map.Visualization.Exploration;
-using Maes.Simulation;
-using Maes.Simulation.SimulationScenarios;
+using Maes.Algorithms.Exploration;
+using Maes.Simulation.Exploration;
+using Maes.UI.Visualizers.Exploration.VisualizationModes;
 
 using UnityEngine.UIElements;
 
@@ -189,22 +188,22 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             switch (mode)
             {
-                case AllRobotsExplorationVisualization:
+                case AllRobotsExplorationVisualizationMode:
                     SelectVisualizationButton(_allRobotsExplorationButton);
                     break;
-                case AllRobotsCoverageVisualization:
+                case AllRobotsCoverageVisualizationMode:
                     SelectVisualizationButton(_allRobotsCoverageButton);
                     break;
-                case ExplorationHeatMapVisualization:
+                case ExplorationHeatMapVisualizationMode:
                     SelectVisualizationButton(_allRobotsExplorationHeatMapButton);
                     break;
-                case CoverageHeatMapVisualization:
+                case CoverageHeatMapVisualizationMode:
                     SelectVisualizationButton(_allRobotsCoverageHeatMapButton);
                     break;
-                case CurrentlyVisibleAreaVisualizationExploration:
+                case ExplorationCurrentlyVisibleAreaVisualizationMode:
                     SelectVisualizationButton(_selectedRobotCurrentlyVisibleButton);
                     break;
-                case SelectedRobotSlamMapVisualization:
+                case SelectedRobotSlamMapVisualizationMode:
                     SelectVisualizationButton(_selectedRobotSlamMapButton);
                     break;
                 default:

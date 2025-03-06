@@ -147,7 +147,7 @@ namespace Maes.Algorithms.Exploration.Greed
 
                 if (_controller.IsCurrentlyColliding)
                 {
-                    if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
+                    if (_controller.GetStatus() != Robot.Tasks.RobotStatus.Idle)
                     {
                         _controller.StopCurrentTask();
                     }
@@ -220,7 +220,7 @@ namespace Maes.Algorithms.Exploration.Greed
                         _currentState = AlgorithmState.ExploreRoom;
                         break;
                     case AlgorithmState.ExploreRoom:
-                        if (_controller.GetStatus() == Robot.Task.RobotStatus.Idle)
+                        if (_controller.GetStatus() == Robot.Tasks.RobotStatus.Idle)
                         {
                             if (!MoveToNearestUnseen())
                             {

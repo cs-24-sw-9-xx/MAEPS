@@ -19,7 +19,7 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using Maes.Simulation;
+using Maes.Simulation.Exploration;
 using Maes.UI;
 
 using QuickOutline;

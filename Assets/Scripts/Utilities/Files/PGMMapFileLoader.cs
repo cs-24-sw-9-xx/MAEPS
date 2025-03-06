@@ -21,13 +21,12 @@
 
 using System.IO;
 
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 
 namespace Maes.Utilities.Files
 {
     public static class PgmMapFileLoader
     {
-
         public static Tile[,] LoadMapFromFileIfPresent(string fileName)
         {
             var stream = InputFileLoader.ReadInputFile(fileName);

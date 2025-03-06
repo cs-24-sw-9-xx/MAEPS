@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms;
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.TransformToNav2;
 

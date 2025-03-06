@@ -29,7 +29,6 @@ namespace Maes.Robot
 {
     public interface ISlamAlgorithm
     {
-
         /// <summary>
         /// The approximate position of the robot contains inaccuracy in both x and y coordinate.
         /// The maximum inaccuracy in each axis is defined the <see cref="RobotConstraints"/> of the simulation.

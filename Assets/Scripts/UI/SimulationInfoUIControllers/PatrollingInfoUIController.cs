@@ -1,9 +1,8 @@
 using System;
 
-using Maes.Algorithms;
-using Maes.Map.Visualization.Patrolling;
-using Maes.Simulation;
-using Maes.Simulation.SimulationScenarios;
+using Maes.Algorithms.Patrolling;
+using Maes.Simulation.Patrolling;
+using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 
 using UnityEngine;
 using UnityEngine.UIElements;

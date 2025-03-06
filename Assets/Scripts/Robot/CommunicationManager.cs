@@ -36,8 +36,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Maes.Map;
-using Maes.Map.MapGen;
-using Maes.Statistics;
+using Maes.Map.Generators;
+using Maes.Statistics.Trackers;
+using Maes.UI;
 using Maes.Utilities;
 
 using UnityEngine;

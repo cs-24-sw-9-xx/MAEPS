@@ -1,4 +1,4 @@
-using Maes.Algorithms;
+using Maes.Algorithms.Exploration;
 
 namespace Maes.Map.RobotSpawners
 {

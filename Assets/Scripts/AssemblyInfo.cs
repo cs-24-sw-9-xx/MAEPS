@@ -1,2 +1,2 @@
 using System.Runtime.CompilerServices;
-[assembly: InternalsVisibleTo("EditTests"), InternalsVisibleTo("PlayModeTests")]
+[assembly: InternalsVisibleTo("EditModeTests"), InternalsVisibleTo("PlayModeTests")]

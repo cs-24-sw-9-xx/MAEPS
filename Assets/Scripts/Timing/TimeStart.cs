@@ -1,10 +1,10 @@
 using UnityEngine;
 
-namespace Maes
+namespace Maes.Timing
 {
     public class TimeStart : MonoBehaviour
     {
-        private int _update = 0;
+        private int _updates;
 
         private float _awakeTime;
         private float _startTime;
@@ -25,15 +25,11 @@ namespace Maes
         // Update is called once per frame
         private void Update()
         {
-            if (_update == 2)
+            if (_updates++ == 2)
             {
                 var endTime = Time.realtimeSinceStartup;
                 Debug.LogFormat("Start to second update took {0}s", endTime - _startTime);
-                _update = 3; // Stop spamming
-            }
-            else if (_update < 2)
-            {
-                _update++;
+                Destroy(this);
             }
         }
     }

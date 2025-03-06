@@ -242,7 +242,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
                     else if (MoveToNearestUnseen(OtherRobotDestinations)) { }
                     if (waypoint.HasValue && waypoint.Equals(_waypoint))
                     {
-                        if (_controller.GetStatus() != Robot.Task.RobotStatus.Idle)
+                        if (_controller.GetStatus() != Robot.Tasks.RobotStatus.Idle)
                         {
                             _controller.StopCurrentTask();
                         }
@@ -387,7 +387,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
                         }
                         break;
                     case AlgorithmState.ExploreRoom:
-                        if (_controller.GetStatus() == Robot.Task.RobotStatus.Idle)
+                        if (_controller.GetStatus() == Robot.Tasks.RobotStatus.Idle)
                         {
                             if (!IsAroundExplorable(2))
                             {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 
 using Maes.Map;
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 
 using UnityEngine;
 
@@ -32,30 +32,30 @@ namespace Maes.Utilities
         }
 
         /// <summary>
-        /// Calculate the distance matrix between all verticies
+        /// Calculate the distance matrix between all vertices
         /// </summary>
         /// <param name="map"></param>
-        /// <param name="verticies"></param>
+        /// <param name="vertices"></param>
         /// <returns></returns>
-        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, Dictionary<Vector2Int, Bitmap> verticies)
+        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, Dictionary<Vector2Int, Bitmap> vertices)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
-            foreach (var (vertex, _) in verticies)
+            foreach (var (vertex, _) in vertices)
             {
-                BreathFirstSearch(vertex, shortestGridPath, verticies, map);
+                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
             }
 
             return shortestGridPath;
         }
 
-        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, List<Vector2Int> verticies)
+        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, List<Vector2Int> vertices)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
-            foreach (var vertex in verticies)
+            foreach (var vertex in vertices)
             {
-                BreathFirstSearch(vertex, shortestGridPath, verticies, map);
+                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
             }
 
             return shortestGridPath;
@@ -77,8 +77,8 @@ namespace Maes.Utilities
             new(-1, 0)
         };
 
-        // BFS to find the shortest path from the start position to all other vertices
-        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, Dictionary<Vector2Int, Bitmap> vertexPositions, Bitmap map)
+        // BFS to find the distance of the shortest path from the start position to all other vertices
+        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, Dictionary<Vector2Int, Bitmap> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();
@@ -112,7 +112,7 @@ namespace Maes.Utilities
             }
         }
 
-        private static void BreathFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> vertexPositions, Bitmap map)
+        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();
