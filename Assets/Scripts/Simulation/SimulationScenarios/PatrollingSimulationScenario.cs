@@ -2,7 +2,6 @@ using Maes.Algorithms;
 using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
-using Maes.Map.MapPatrollingGen;
 using Maes.Map.Partitioning;
 using Maes.Robot;
 
