@@ -206,7 +206,9 @@ namespace Maes.Algorithms.Patrolling
         {
             _stringBuilder.Clear();
             _stringBuilder
-                .AppendLine(AlgorithmName);
+                .AppendLine(AlgorithmName)
+                .AppendFormat("Target vertex: {0}\n", TargetVertex)
+                .AppendFormat("Neighbours: {0}\n", string.Join(", ", TargetVertex.Neighbors.Select(x => x.ToString())));
             GetDebugInfo(_stringBuilder);
             return _stringBuilder.ToString();
         }

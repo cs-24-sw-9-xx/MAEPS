@@ -121,6 +121,11 @@ namespace Maes.Simulation
             CommunicationManager.SetRobotRelativeSize(scenario.RobotConstraints.AgentRelativeSize);
             foreach (var robot in Robots)
             {
+                if (scenario is PatrollingSimulationScenario simulationScenario)
+                {
+                    // Assign robots to partitions, distributed evenly.
+                    robot.AssignedPartition = (((robot.id) % simulationScenario.Partitions) + 1);
+                }
                 robot.OnRobotSelected = SetSelectedRobot;
             }
 

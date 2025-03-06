@@ -27,6 +27,10 @@ using UnityEngine;
 
 namespace Maes.Map.Partitioning
 {
+    /// <summary>
+    /// This was algorithm was implemented based on part of a masters thesis,
+    /// "Graph Partitioning Using Spectral Methods" by Pavla Kabelikova - page 16.
+    /// </summary>
     public static class SpectralBisectionPartitions
     {
         /// <summary>

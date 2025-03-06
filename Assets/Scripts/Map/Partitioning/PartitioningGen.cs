@@ -20,6 +20,7 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,6 +31,8 @@ using Maes.Utilities;
 using MathNet.Numerics.LinearAlgebra;
 
 using UnityEngine;
+
+using Random = UnityEngine.Random;
 
 namespace Maes.Map.Partitioning
 {
@@ -49,6 +52,7 @@ namespace Maes.Map.Partitioning
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
                 var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, clusterColor, nextId);
+                Array.ForEach(vertices, vertex => vertex.Partition = cluster.Key);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
