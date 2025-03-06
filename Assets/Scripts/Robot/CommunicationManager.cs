@@ -1,6 +1,6 @@
-// Copyright 2024 MAES
+// Copyright 2025 MAEPS
 // 
-// This file is part of MAES
+// This file is part of MAEPS
 // 
 // MAES is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the
@@ -15,13 +15,25 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: 
+// Rasmus Borrisholt Schmidt, 
+// Andreas Sebastian Sørensen, 
+// Thor Beregaard, 
+// Malte Z. Andreasen, 
+// Philip I. Holler,
+// Magnus K. Jensen, 
+//
+// In 2025:
+// Casper Nyvang Sørensen,
+// Christian Ziegler Sejersen,
+// Jakob Meyer Olsen,
 // 
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Maes.Map;
 using Maes.Map.MapGen;
@@ -81,6 +93,7 @@ namespace Maes.Robot
         private List<HashSet<int>>? _communicationGroups;
 
         private float _robotRelativeSize;
+        private readonly Vector2 _offset;
 
         public readonly CommunicationTracker CommunicationTracker;
 
@@ -127,6 +140,7 @@ namespace Maes.Robot
             _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
             _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
+            _offset = collisionMap.ScaledOffset;
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize)
@@ -207,6 +221,12 @@ namespace Maes.Robot
         {
             var distance = Vector2.Distance(pos1, pos2);
             var angle = Vector2.Angle(Vector2.right, pos2 - pos1);
+            // If the distance is greater than the max communication range then the transmission is not successful
+            if (_robotConstraints.MaxCommunicationRange < distance)
+            {
+                return new CommunicationInfo(distance, angle, 0, 0, false, _robotConstraints.TransmitPower);
+
+            }
             // If p1.y > p2.y then angle should be 360 minus the angle difference between the vectors
             // to make the angle relative to the x axis. (Moving from oregon along the x axis is 0 degrees in out system)
             if (pos1.y > pos2.y)
@@ -215,6 +235,11 @@ namespace Maes.Robot
             }
 
             var angleMod = angle % 90f;
+            if (angleMod == 0)
+            {
+                angle += 0.005f;
+            }
+
             if (angleMod <= 45.05f && angleMod >= 45f)
             {
                 angle += 0.005f;
@@ -259,7 +284,6 @@ namespace Maes.Robot
             {
                 transmissionSuccessful = _robotConstraints.ReceiverSensitivity <= signalStrength;
             }
-            //Debug.Log($"strength: {signalStrength}, success: {transmissionSuccessful}");
             return new CommunicationInfo(distance, angle, wallsCellsPassedThrough, regularCellsPassedThrough, transmissionSuccessful, signalStrength);
         }
 
@@ -486,5 +510,35 @@ namespace Maes.Robot
             return closestWall;
         }
 
+        public Dictionary<Vector2Int, Bitmap> CalculateCommunicationZone(List<Vector2Int> vertices, int width, int height)
+        {
+            var startTimeMultiThread = Time.realtimeSinceStartup;
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new();
+            Parallel.ForEach(vertices, vertex =>
+            {
+                var bitmap = new Bitmap(0, 0, width, height);
+                var center = new Vector2(vertex.x + 0.5f, vertex.y + 0.5f) + _offset;
+                var maxRange = _robotConstraints.MaxCommunicationRange;
+                for (var x = 0; x < width; x++)
+                {
+                    for (var y = 0; y < height; y++)
+                    {
+                        var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
+                        var distance = Vector2.Distance(center, p);
+                        if (distance == 0 || (distance <= maxRange && RayTraceCommunication(center, p).TransmissionSuccessful))
+                        {
+                            bitmap.Set(x, y);
+                        }
+                    }
+                }
+                lock (vertexPositionsMultiThread)
+                {
+                    vertexPositionsMultiThread.Add(vertex, bitmap);
+                }
+            });
+            Debug.Log($"Time taken to calculate communication zones: {Time.realtimeSinceStartup - startTimeMultiThread}");
+
+            return vertexPositionsMultiThread;
+        }
     }
 }

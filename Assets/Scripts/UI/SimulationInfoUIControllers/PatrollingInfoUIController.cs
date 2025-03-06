@@ -5,6 +5,7 @@ using Maes.Map.Visualization.Patrolling;
 using Maes.Simulation;
 using Maes.Simulation.SimulationScenarios;
 
+using UnityEngine;
 using UnityEngine.UIElements;
 
 using XCharts.Runtime;
@@ -32,6 +33,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private Button _selectedRobotStickyCameraButton = null!;
         private Button _selectedRobotTargetWaypointButton = null!;
+        private Button _selectedVertexCommunicationZoneButton = null!;
 
         private Toggle _graphShowToggle = null!;
         private IntegerField _graphTicksPerUpdateField = null!;
@@ -42,7 +44,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsCoverageHeatMapButton,
             _allRobotsWaypointLineOfSightButton,
             _allRobotsHighlightRobotsButton,
-            _selectedRobotTargetWaypointButton
+            _selectedRobotTargetWaypointButton,
+            _selectedVertexCommunicationZoneButton
         };
 
         protected override void AfterStart()
@@ -62,6 +65,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
             _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
+            _selectedVertexCommunicationZoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedVertexCommunicationZoneButton");
 
             _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
             _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
@@ -78,6 +82,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsHighlightRobotsButton.RegisterCallback<ClickEvent>(AllRobotsHighlightRobotsButtonClicked);
 
             _selectedRobotTargetWaypointButton.RegisterCallback<ClickEvent>(SelectedRobotTargetWaypointButtonClicked);
+
+            _selectedVertexCommunicationZoneButton.RegisterCallback<ClickEvent>(SelectedVertexCommunicationZoneButtonClicked);
 
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
 
@@ -110,6 +116,9 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case LineOfSightVertexVisualizationMode:
                     UnHighlightVisualizationButtons();
+                    break;
+                case CommunicationZoneVisualizationMode:
+                    SelectVisualizationButton(_selectedVertexCommunicationZoneButton);
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
@@ -218,6 +227,19 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 Simulation!.PatrollingTracker.PlottingFrequency = changeEvent.newValue;
             }
+        }
+
+        private void SelectedVertexCommunicationZoneButtonClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim =>
+            {
+                if (!sim.HasSelectedVertex())
+                {
+                    Debug.Log("No vertex selected, selecting first vertex");
+                }
+
+                sim.PatrollingTracker.ShowCommunicationZone();
+            });
         }
     }
 }

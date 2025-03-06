@@ -206,7 +206,7 @@ namespace Maes.Map
                 if (traceCount > maxTraces)
                 { // Safety measure for avoiding infinite loops 
                     Debug.LogError($"Equation: {a}x + {b}");
-                    throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}");
+                    throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}. Angle: {angleDegrees}");
                 }
 
                 // Invoke the given function on the cell, and only continue if it returns true

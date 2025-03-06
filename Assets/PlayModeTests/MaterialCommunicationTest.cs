@@ -108,7 +108,7 @@ namespace PlayModeTests
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(materialCommunication: true, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc, attenuationDictionary: attenuationDictionary),
+                robotConstraints: new RobotConstraints(materialCommunication: true, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc, attenuationDictionary: attenuationDictionary, maxCommunicationRange: 100f),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 2,
                     _ =>
                     {

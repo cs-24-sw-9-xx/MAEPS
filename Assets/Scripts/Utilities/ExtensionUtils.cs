@@ -30,6 +30,8 @@ namespace Maes.Utilities
 {
     public static class ExtensionUtils
     {
+        private const int TrianglesPerCell = 8;
+
         /// <summary>
         /// Extension method for converting a SLAM tile to a TNF cell
         /// </summary>
@@ -74,5 +76,24 @@ namespace Maes.Utilities
             var point1 = map.TileToWorld(tile);
             Debug.DrawLine(robot, point1, color, duration);
         }
+
+        public static List<List<int>> CellIndexToTriangleIndexes<TCell>(this SimulationMap<TCell> simulationMap)
+        {
+            var cellIndexTriangleIndexes = new List<List<int>>();
+
+            var list = new List<int>();
+            foreach (var (index, _) in simulationMap)
+            {
+                list.Add(index);
+                if ((index + 1) % TrianglesPerCell == 0)
+                {
+                    cellIndexTriangleIndexes.Add(list);
+                    list = new List<int>();
+                }
+            }
+
+            return cellIndexTriangleIndexes;
+        }
+
     }
 }
