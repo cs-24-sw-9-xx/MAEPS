@@ -19,7 +19,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using Maes.ExperimentSimulations;
+using Maes.Experiments.Exploration;
 
 namespace Maes
 {

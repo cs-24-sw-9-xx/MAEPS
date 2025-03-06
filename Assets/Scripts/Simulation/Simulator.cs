@@ -23,7 +23,6 @@ using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms;
-using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
 
 using UnityEngine;

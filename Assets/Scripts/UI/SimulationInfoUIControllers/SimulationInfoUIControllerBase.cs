@@ -23,7 +23,6 @@ using System;
 
 using Maes.Algorithms;
 using Maes.Simulation;
-using Maes.Simulation.SimulationScenarios;
 
 using UnityEngine;
 using UnityEngine.UIElements;

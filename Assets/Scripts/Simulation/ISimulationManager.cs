@@ -1,4 +1,3 @@
-using Maes.Simulation.SimulationScenarios;
 using Maes.UI;
 using Maes.UI.SimulationInfoUIControllers;
 

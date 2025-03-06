@@ -25,7 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Utilities;
@@ -274,15 +274,14 @@ namespace Maes.Map
             var sign = _random.Next(2) == 1 ? -1 : 1;
             var multiplier = _random.NextDouble() * sign;
             var newInaccuracy = _lastInaccuracyX + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
-            newInaccuracy = MathUtilities.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
-                _robotConstraints.SlamPositionInaccuracy);
+            newInaccuracy = Math.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy, _robotConstraints.SlamPositionInaccuracy);
             var newXAprox = (float)newInaccuracy + worldPosition.x;
             _lastInaccuracyX = (float)newInaccuracy;
 
             sign = _random.Next(2) == 1 ? -1 : 1;
             multiplier = _random.NextDouble() * sign;
             newInaccuracy = _lastInaccuracyY + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
-            newInaccuracy = MathUtilities.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
+            newInaccuracy = Math.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
                 _robotConstraints.SlamPositionInaccuracy);
             var newYAprox = (float)newInaccuracy + worldPosition.y;
             _lastInaccuracyY = (float)newInaccuracy;

@@ -1,6 +1,5 @@
-using Maes.Algorithms;
-using Maes.Simulation;
-using Maes.Simulation.SimulationScenarios;
+using Maes.Algorithms.Exploration;
+using Maes.Simulation.Exploration;
 
 namespace Maes.UI.RestartRemakeControllers
 {

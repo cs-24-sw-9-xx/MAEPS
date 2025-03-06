@@ -1,4 +1,4 @@
-using Maes.Robot.Task;
+using Maes.Robot.Tasks;
 
 namespace Maes.Algorithms
 {

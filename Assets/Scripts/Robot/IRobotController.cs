@@ -22,7 +22,7 @@
 using System.Collections.Generic;
 
 using Maes.Map;
-using Maes.Robot.Task;
+using Maes.Robot.Tasks;
 
 using UnityEngine;
 

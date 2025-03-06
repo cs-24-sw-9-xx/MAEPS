@@ -31,8 +31,6 @@ using Roy_T.AStar.Primitives;
 
 using UnityEngine;
 
-using Utils;
-
 using static Maes.Map.SlamMap;
 
 using Grid = Roy_T.AStar.Grids.Grid;
@@ -40,7 +38,7 @@ using Size = Roy_T.AStar.Primitives.Size;
 
 namespace Maes.Map.PathFinding
 {
-    public class MyAStar : IPathFinder
+    public sealed class MyAStar : IPathFinder
     {
         private sealed class AStarTile
         {

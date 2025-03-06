@@ -22,6 +22,7 @@
 using System.Collections.Generic;
 
 using Maes.Simulation;
+using Maes.Simulation.Patrolling;
 using Maes.Utilities;
 
 using UnityEngine;

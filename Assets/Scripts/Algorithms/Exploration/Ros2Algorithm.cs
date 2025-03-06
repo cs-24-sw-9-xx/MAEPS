@@ -25,7 +25,7 @@ using System.Linq;
 using System.Text;
 
 using Maes.Robot;
-using Maes.Robot.Task;
+using Maes.Robot.Tasks;
 using Maes.Utilities;
 
 using RosMessageTypes.Geometry;

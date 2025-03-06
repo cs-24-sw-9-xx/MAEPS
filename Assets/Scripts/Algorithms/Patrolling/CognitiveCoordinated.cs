@@ -15,7 +15,7 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private List<Vertex> _currentPath = new();
-        private int _pathStep = 0;
+        private int _pathStep;
         private bool _initialVertex = true;
 
         private readonly Dictionary<(int, int), Vertex[]> _pathsCache = new();

@@ -24,13 +24,14 @@ using System.Collections.Generic;
 using Maes.Algorithms;
 using Maes.FaultInjections;
 using Maes.Map;
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;
-using Maes.Simulation.SimulationScenarios;
-using Maes.Trackers;
+using Maes.Simulation.Patrolling;
+using Maes.Statistics.Trackers;
+using Maes.UI;
 using Maes.UI.SimulationInfoUIControllers;
-using Maes.Visualizers;
+using Maes.UI.Visualizers;
 
 using UnityEngine;
 

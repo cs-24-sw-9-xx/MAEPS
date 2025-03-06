@@ -22,7 +22,7 @@
 
 using System.Collections.Generic;
 
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 
 namespace Maes.Robot
 {

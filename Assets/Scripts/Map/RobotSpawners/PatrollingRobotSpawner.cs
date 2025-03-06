@@ -1,7 +1,7 @@
-using Maes.Algorithms;
-using Maes.Map.MapGen;
+using Maes.Algorithms.Patrolling;
+using Maes.Map.Generators;
 using Maes.Robot;
-using Maes.Trackers;
+using Maes.Statistics.Trackers;
 
 namespace Maes.Map.RobotSpawners
 {

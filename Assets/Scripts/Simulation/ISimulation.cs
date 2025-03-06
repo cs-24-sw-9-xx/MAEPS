@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using Maes.Algorithms;
 using Maes.Map;
 using Maes.Robot;
-using Maes.Simulation.SimulationScenarios;
-using Maes.Trackers;
+using Maes.Statistics.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 
 namespace Maes.Simulation

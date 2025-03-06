@@ -34,7 +34,5 @@ namespace Maes.Utilities.Files
         {
             return new StreamReader(Path.Join(GetDefaultInputPath(), fileName));
         }
-
-
     }
 }

@@ -23,16 +23,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms;
 using Maes.Algorithms.Exploration;
 using Maes.Algorithms.Exploration.RandomBallisticWalk;
 using Maes.Algorithms.Exploration.TheNextFrontier;
 using Maes.Algorithms.Exploration.Voronoi;
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 using Maes.Map.RobotSpawners;
 using Maes.Robot;
 using Maes.Simulation;
-using Maes.Simulation.SimulationScenarios;
+using Maes.Simulation.Exploration;
 using Maes.Utilities.Files;
 
 using UnityEngine;

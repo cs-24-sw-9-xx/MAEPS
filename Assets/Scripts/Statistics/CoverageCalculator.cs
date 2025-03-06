@@ -22,7 +22,7 @@
 using System;
 
 using Maes.Map;
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 
 using UnityEngine;
 

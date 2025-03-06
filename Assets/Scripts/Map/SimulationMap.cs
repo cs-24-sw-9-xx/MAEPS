@@ -24,7 +24,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-using Maes.Map.MapGen;
+using Maes.Map.Generators;
 
 using UnityEngine;
 

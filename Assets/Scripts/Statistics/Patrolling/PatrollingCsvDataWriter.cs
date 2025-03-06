@@ -1,4 +1,4 @@
-using Maes.Simulation;
+using Maes.Simulation.Patrolling;
 using Maes.Statistics.Communication;
 
 namespace Maes.Statistics.Patrolling
