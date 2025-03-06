@@ -33,7 +33,7 @@ using UnityEngine;
 
 namespace Maes.Map.MapPatrollingGen
 {
-    public static class PatrollingWaypointGenerator
+    public static class DelaunatorWaypointGenerator
     {
         /// <summary>
         /// Generates a list of possible waypoints for the patrolling agents
