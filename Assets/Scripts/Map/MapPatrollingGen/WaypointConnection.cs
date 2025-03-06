@@ -44,14 +44,13 @@ namespace Maes.Map.MapPatrollingGen
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertecies with connections(edges) to other vertecies.</returns>
-        public static Vertex[] ConnectVerticesByReverseNearestNeighbor(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVerticesByReverseNearestNeighbor(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, Color defaultColor, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 
             var reverseNearestNeighbors = MapUtilities.FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
             var vertices = vertexPositions.Select(pos => new Vertex(nextId++, 0, pos.Key)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
-            var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : Color.green;
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
             {
@@ -59,7 +58,7 @@ namespace Maes.Map.MapPatrollingGen
                 {
                     continue;
                 }
-
+                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : defaultColor;
                 vertex.Color = color;
                 foreach (var neighborPos in neighbors)
                 {

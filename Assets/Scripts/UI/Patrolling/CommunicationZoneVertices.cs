@@ -46,11 +46,8 @@ namespace Maes.UI.Patrolling
             _patrollingMap = patrollingMap;
             CommunicationZoneTiles = _patrollingMap.Vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
             _communicationManager = communicationManager;
-        }
 
-        public void CreateCommunicationZoneTiles()
-        {
-            var positions = GetWaypointPositions();
+            var positions = _patrollingMap.Vertices.Select(v => v.Position).ToList();
             var communicationZones = _communicationManager.CalculateCommunicationZone(positions, _simulationMap.WidthInTiles, _simulationMap.HeightInTiles);
             var cellIndexToTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
             using var bitmap = MapUtilities.MapToBitMap(_simulationMap);
@@ -73,17 +70,6 @@ namespace Maes.UI.Patrolling
                 }
                 AllCommunicationZoneTiles.UnionWith(CommunicationZoneTiles[vertex.Id]);
             }
-        }
-
-        private List<Vector2Int> GetWaypointPositions()
-        {
-            var positions = new List<Vector2Int>();
-            foreach (var vertex in _patrollingMap.Vertices)
-            {
-                positions.Add(vertex.Position);
-            }
-
-            return positions;
         }
     }
 }

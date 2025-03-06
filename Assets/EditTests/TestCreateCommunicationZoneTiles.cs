@@ -90,7 +90,7 @@ namespace EditTests
             "  XXXXXXXX  ;" +
             "  XXXXXXXX  ;" +
             "  XXXXXXXX  ;" +
-            " XXXXX XXXX ;" +
+            " XXXXXXXXXX ;" +
             "  XXXXXXXX  ;" +
             "  XXXXXXXX  ;" +
             "  XXXXXXXX  ;" +
@@ -104,24 +104,6 @@ namespace EditTests
             var result = communicationManager.CalculateCommunicationZone(vector2Ints, width, height)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
-        }
-        public static string StringFromBitmap(Bitmap bitmap)
-        {
-            var width = bitmap.Width;
-            var height = bitmap.Height;
-            var lines = new List<string>();
-
-            for (var y = 0; y < height; y++)
-            {
-                var line = new char[width];
-                for (var x = 0; x < width; x++)
-                {
-                    line[x] = bitmap.Get(x, y) ? ' ' : 'X';
-                }
-                lines.Add(new string(line));
-            }
-
-            return string.Join(";", lines);
         }
     }
 }
