@@ -30,12 +30,14 @@ namespace Maes.Algorithms.Patrolling
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
+        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
 
         protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
-            return new IComponent[] { _goToNextVertexComponent };
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)

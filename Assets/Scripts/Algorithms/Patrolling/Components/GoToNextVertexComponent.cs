@@ -34,7 +34,7 @@ namespace Maes.Algorithms.Patrolling.Components
     /// This component moves the robot to the vertex specified by the algorithm.
     /// When the vertex has been reached it gets the next vertex from the algorithm.
     /// </summary>
-    public sealed class GoToNextVertexComponent : IComponent
+    public sealed class GoToNextVertexComponent : IMovementComponent
     {
         // How close the robot has to get to a point before it has arrived.
         private const float MinDistance = 0.25f;
@@ -46,6 +46,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingAlgorithm _patrollingAlgorithm;
         private readonly Robot2DController _controller;
         private readonly PatrollingMap _patrollingMap;
+        public Vector2Int TargetPosition { get; private set; }
 
         /// <summary>
         /// Delegate that specifies the next vertex to travel to.
@@ -78,6 +79,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             // Go to the initial vertex.
             var vertex = GetClosestVertex();
+            TargetPosition = vertex.Position;
             while (GetRelativePositionTo(vertex.Position).Distance > MinDistance)
             {
                 _controller.PathAndMoveTo(vertex.Position, dependOnBrokenBehaviour: false);
@@ -155,6 +157,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private IEnumerable<ComponentWaitForCondition> MoveToPosition(Vector2Int target)
         {
+            TargetPosition = target;
             while (true)
             {
                 yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: false);
