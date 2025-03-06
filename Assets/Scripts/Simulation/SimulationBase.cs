@@ -112,8 +112,8 @@ namespace Maes.Simulation
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
-            AfterCollisionMapGenerated(scenario);
             CommunicationManager = new CommunicationManager(_collisionMap, scenario.RobotConstraints, _debugVisualizer);
+            AfterCollisionMapGenerated(scenario);
             RobotSpawner.CommunicationManager = CommunicationManager;
             RobotSpawner.RobotConstraints = scenario.RobotConstraints;
 

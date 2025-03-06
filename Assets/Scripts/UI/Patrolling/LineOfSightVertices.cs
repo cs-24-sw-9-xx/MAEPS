@@ -23,7 +23,7 @@ namespace Maes.UI.Patrolling
 
         public void CreateLineOfSightVertices()
         {
-            var cellIndexToTriangleIndexes = CellIndexToTriangleIndexes(_simulationMap);
+            var cellIndexToTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
 
             using var bitmap = MapUtilities.MapToBitMap(_simulationMap);
 
@@ -40,24 +40,5 @@ namespace Maes.UI.Patrolling
                 AllVerticesVisibleTiles.UnionWith(VerticesVisibleTiles[vertex.Id]);
             }
         }
-
-        private static List<List<int>> CellIndexToTriangleIndexes(SimulationMap<Tile> simulationMap)
-        {
-            var cellIndexTriangleIndexes = new List<List<int>>();
-
-            var list = new List<int>();
-            foreach (var (index, _) in simulationMap)
-            {
-                list.Add(index);
-                if ((index + 1) % 8 == 0)
-                {
-                    cellIndexTriangleIndexes.Add(list);
-                    list = new List<int>();
-                }
-            }
-
-            return cellIndexTriangleIndexes;
-        }
-
     }
 }

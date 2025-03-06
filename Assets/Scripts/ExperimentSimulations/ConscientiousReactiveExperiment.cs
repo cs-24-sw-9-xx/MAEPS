@@ -66,7 +66,9 @@ namespace Maes.ExperimentSimulations
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, _) => true);
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
+                materialCommunication: false,
+                maxCommunicationRange: 25f);
 
             //var constraintsMaterials = new RobotConstraints(
             constraintsDict["Material"] = new RobotConstraints(

@@ -47,7 +47,8 @@ namespace Maes.Map.Partitioning
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, clusterColor, nextId);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
@@ -66,7 +67,8 @@ namespace Maes.Map.Partitioning
             foreach (var cluster in clusters)
             {
                 var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
-                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, nextId);
+                var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, clusterColor, nextId);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
