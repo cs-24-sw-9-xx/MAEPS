@@ -50,15 +50,15 @@ namespace Maes.UI.Patrolling
 
         public void CreateCommunicationZoneTiles()
         {
-            var positions = new List<Vector2Int>();
-            foreach (var vertex in _patrollingMap.Vertices)
-            {
-                positions.Add(vertex.Position);
-            }
+            var positions = GetWaypointPositions();
             var communicationZones = _communicationManager.CalculateCommunicationZone(positions, _simulationMap.WidthInTiles, _simulationMap.HeightInTiles);
-            var cellIndexToTriangleIndexes = CellIndexToTriangleIndexes(_simulationMap);
+            var cellIndexToTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
             using var bitmap = MapUtilities.MapToBitMap(_simulationMap);
+            SetCommunicationZoneTiles(communicationZones, cellIndexToTriangleIndexes, bitmap);
+        }
 
+        private void SetCommunicationZoneTiles(Dictionary<Vector2Int, Bitmap> communicationZones, List<List<int>> cellIndexToTriangleIndexes, Bitmap bitmap)
+        {
             foreach (var vertex in _patrollingMap.Vertices)
             {
                 var tiles = communicationZones[vertex.Position];
@@ -75,23 +75,15 @@ namespace Maes.UI.Patrolling
             }
         }
 
-        private static List<List<int>> CellIndexToTriangleIndexes(SimulationMap<Tile> simulationMap)
+        private List<Vector2Int> GetWaypointPositions()
         {
-            var cellIndexTriangleIndexes = new List<List<int>>();
-
-            var list = new List<int>();
-            foreach (var (index, _) in simulationMap)
+            var positions = new List<Vector2Int>();
+            foreach (var vertex in _patrollingMap.Vertices)
             {
-                list.Add(index);
-                if ((index + 1) % TrianglesPerCell == 0)
-                {
-                    cellIndexTriangleIndexes.Add(list);
-                    list = new List<int>();
-                }
+                positions.Add(vertex.Position);
             }
 
-            return cellIndexTriangleIndexes;
+            return positions;
         }
-
     }
 }

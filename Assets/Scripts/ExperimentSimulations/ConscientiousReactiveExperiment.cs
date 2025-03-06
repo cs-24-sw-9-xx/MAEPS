@@ -66,8 +66,9 @@ namespace Maes.ExperimentSimulations
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
-                materialCommunication: false);
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
+                materialCommunication: false,
+                maxCommunicationRange: 25f);
 
             //var constraintsMaterials = new RobotConstraints(
             constraintsDict["Material"] = new RobotConstraints(
@@ -111,7 +112,7 @@ namespace Maes.ExperimentSimulations
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
-            const int robotCount = 5;
+            const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
@@ -132,7 +133,7 @@ namespace Maes.ExperimentSimulations
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    showIslands: true)
+                    showIslands: false)
             );
 
             simulator.EnqueueScenario(
