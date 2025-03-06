@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Map.PathFinding;
@@ -132,7 +133,8 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <returns>The closest vertex.</returns>
         private Vertex GetClosestVertex()
         {
-            var vertices = _patrollingMap.Vertices;
+            var robotPartition = _controller.GetRobot().AssignedPartition;
+            var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
 
             var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
             var closestVertex = vertices[0];

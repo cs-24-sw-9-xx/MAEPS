@@ -3,6 +3,7 @@ using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.MapGen;
 using Maes.Map.MapPatrollingGen;
+using Maes.Map.Partitioning;
 using Maes.Robot;
 
 namespace Maes.Simulation.SimulationScenarios
@@ -14,8 +15,7 @@ namespace Maes.Simulation.SimulationScenarios
         public PatrollingMapFactory PatrollingMapFactory { get; }
         public int TotalCycles { get; }
         public bool StopAfterDiff { get; }
-
-        public int Partitions { get; set; }
+        public int Partitions { get; }
 
         public PatrollingSimulationScenario(int seed,
             int totalCycles,
@@ -39,7 +39,7 @@ namespace Maes.Simulation.SimulationScenarios
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyWaypointGenerator.MakePatrollingMap(map, showIslands));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => PartitioningGen.MakePatrollingMapWithSpectralBisectionPartitions(map, showIslands, Partitions));
         }
     }
 }
