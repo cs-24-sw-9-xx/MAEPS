@@ -518,19 +518,14 @@ namespace Maes.Robot
             {
                 var bitmap = new Bitmap(0, 0, width, height);
                 var center = new Vector2(vertex.x + 0.5f, vertex.y + 0.5f) + _offset;
+                var maxRange = _robotConstraints.MaxCommunicationRange;
                 for (var x = 0; x < width; x++)
                 {
                     for (var y = 0; y < height; y++)
                     {
                         var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
                         var distance = Vector2.Distance(center, p);
-
-                        if (distance == 0 || _robotConstraints.MaxCommunicationRange < distance)
-                        {
-                            continue;
-                        }
-                        var result = RayTraceCommunication(center, p);
-                        if (result.TransmissionSuccessful)
+                        if (distance == 0 || (distance <= maxRange && RayTraceCommunication(center, p).TransmissionSuccessful))
                         {
                             bitmap.Set(x, y);
                         }

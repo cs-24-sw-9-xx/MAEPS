@@ -231,12 +231,6 @@ namespace Maes.Utilities
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Get(int x, int y)
-        {
-            return Contains((x - XStart) * Height + (y - YStart));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Unset(int index)
         {
             var bitIndex = 1ul << (index % 64);

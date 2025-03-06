@@ -42,7 +42,8 @@ namespace Maes.Map.MapPatrollingGen
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = ArtGalleryProblemHeuresticSolver(map);
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-            var connectVertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(vertexPositions, distanceMatrix, colorIslands);
+            var color = Color.green;
+            var connectVertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(vertexPositions, distanceMatrix, colorIslands, color);
             return new PatrollingMap(connectVertices, simulationMap, vertexPositions);
         }
 

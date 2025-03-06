@@ -34,7 +34,6 @@ namespace Maes.Statistics
         public void SetCommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
             CommunicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
-            CommunicationZoneVertices.CreateCommunicationZoneTiles();
         }
 
         public override void SetSimulationMap(SimulationMap<Cell> newMap)
