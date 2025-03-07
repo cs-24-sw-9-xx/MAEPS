@@ -17,7 +17,8 @@ namespace PlayModeTests
     public class PatrollingAlgorithmTest : MonoBehaviour
     {
         private MySimulator _maes;
-        private const int Seed = 12345;
+        private const int Seed = 1;
+        private const int MaxSimulatedLogicTicks = 250000;
 
         private PatrollingSimulation EnqueueCaveMapScenario(PatrollingAlgorithm algorithm, int seed = Seed)
         {
@@ -41,7 +42,7 @@ namespace PlayModeTests
                         seed: seed,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
+                        createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
             );
@@ -70,7 +71,7 @@ namespace PlayModeTests
                         seed: seed,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
+                        createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
             );
@@ -94,11 +95,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new ConscientiousReactiveAlgorithm());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -106,11 +107,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new ConscientiousReactiveAlgorithm());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -118,11 +119,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new RandomReactive(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -130,11 +131,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new RandomReactive(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -142,11 +143,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueCaveMapScenario(new CognitiveCoordinated());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
 
         [Test(ExpectedResult = null)]
@@ -154,11 +155,11 @@ namespace PlayModeTests
         {
             var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinated());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
-            while (!simulation.HasFinishedSim())
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
                 yield return null;
             }
-            Assert.True(simulation.HasFinishedSim());
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
     }
 }
