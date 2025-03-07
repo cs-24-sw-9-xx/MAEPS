@@ -20,7 +20,7 @@
 using System.Collections.Generic;
 
 using Maes.Robot;
-using Maes.Robot.Task;
+using Maes.Robot.Tasks;
 
 using UnityEngine;
 
