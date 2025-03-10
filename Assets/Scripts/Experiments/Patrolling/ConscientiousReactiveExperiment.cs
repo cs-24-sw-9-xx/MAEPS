@@ -111,7 +111,7 @@ namespace Maes.Experiments.Patrolling
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
-            const int robotCount = 1;
+            const int robotCount = 6;
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
@@ -132,7 +132,8 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    showIslands: false)
+                    showIslands: false,
+                    partitions: 3)
             );
 
             simulator.EnqueueScenario(
