@@ -183,7 +183,7 @@ namespace Tests.EditModeTests
             partition1.CalculateIntersectionAndRatio(partition2);
 
             // Assert
-            var key = (1, 2); // (partition1.PartitionId, partition2.PartitionId)
+            var key = 2; // (partition1.PartitionId, partition2.PartitionId)
 
             // Verify intersection zones dictionary contains the key
             Assert.IsTrue(partition1.IntersectionZones.ContainsKey(key));
@@ -227,7 +227,7 @@ namespace Tests.EditModeTests
             partition1.CalculateIntersectionAndRatio(partition2);
 
             // Assert
-            var key = (1, 2);
+            var key = 2;
 
             // Verify dictionaries contain the key
             Assert.IsTrue(partition1.IntersectionZones.ContainsKey(key));
@@ -242,45 +242,6 @@ namespace Tests.EditModeTests
             // Clean up
             bitmap4.Dispose();
             partition1.IntersectionZones[key].Dispose();
-        }
-
-        [Test]
-        public void CalculateIntersectionAndRatio_SkipsCalculation_WhenAlreadyCalculated()
-        {
-            // Arrange
-            var partition1 = new Partition(1, _vertices, _communicationZones);
-            var partition2 = new Partition(2, _vertices, _communicationZones);
-
-            // Set up the intersection zones and communication ratio dictionaries manually
-            var intersectionBitmap = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
-            intersectionBitmap.Set(5, 5); // Just a sample intersection
-
-            // Initialize the properties through reflection since they are private
-            var intersectionZonesField = typeof(Partition).GetProperty("IntersectionZones");
-            var communicationRatioField = typeof(Partition).GetProperty("CommunicationRatio");
-
-            // Create dictionaries with pre-calculated values
-            var preCalculatedIntersections = new Dictionary<(int, int), Bitmap>
-            {
-                { (1, 2), intersectionBitmap }
-            };
-            var preCalculatedRatios = new Dictionary<(int, int), float>
-            {
-                { (1, 2), 0.5f }
-            };
-
-            intersectionZonesField.SetValue(partition1, preCalculatedIntersections);
-            communicationRatioField.SetValue(partition1, preCalculatedRatios);
-
-            // Act - This should skip calculation since the key (1, 2) already exists
-            partition1.CalculateIntersectionAndRatio(partition2);
-
-            // Assert - Values should remain unchanged
-            Assert.AreEqual(0.5f, partition1.CommunicationRatio[(1, 2)]);
-            Assert.AreEqual(intersectionBitmap, partition1.IntersectionZones[(1, 2)]);
-
-            // Clean up
-            intersectionBitmap.Dispose();
         }
     }
 }

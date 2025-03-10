@@ -35,8 +35,8 @@ namespace Maes.Map
         public List<Vertex> Vertices { get; }
         public Bitmap CommunicationZone { get; }
         public int PartitionId { get; }
-        public Dictionary<(int, int), float> CommunicationRatio { get; }
-        public Dictionary<(int, int), Bitmap> IntersectionZones { get; }
+        public Dictionary<int, float> CommunicationRatio { get; }
+        public Dictionary<int, Bitmap> IntersectionZones { get; }
         public Dictionary<Vector2Int, Bitmap> CommunicationZones { get; }
 
         public Partition(int partitionId, List<Vertex> vertices, Dictionary<Vector2Int, Bitmap> communicationZones)
@@ -45,17 +45,17 @@ namespace Maes.Map
             Vertices = vertices;
             CommunicationZones = communicationZones;
             CommunicationZone = CreatePartitionCommunicationZone(communicationZones);
-            IntersectionZones = new Dictionary<(int, int), Bitmap>();
-            CommunicationRatio = new Dictionary<(int, int), float>();
+            IntersectionZones = new Dictionary<int, Bitmap>();
+            CommunicationRatio = new Dictionary<int, float>();
         }
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
-            var key = (PartitionId, otherPartition.PartitionId);
+            var key = otherPartition.PartitionId;
 
             if (AlreadyCalculated(key))
             {
-                return;
+                throw new ArgumentException($"Intersection and ratio already calculated for partitions {PartitionId} and {otherPartition.PartitionId}");
             }
             var otherPartitionCommuncationZoneSubset = new Bitmap(0, 0, otherPartition.CommunicationZone.Width, otherPartition.CommunicationZone.Height);
             foreach (var otherPartitionVertex in otherPartition.Vertices)
@@ -106,7 +106,7 @@ namespace Maes.Map
             return partitionCommunicationZone;
         }
 
-        private bool AlreadyCalculated((int, int) key)
+        private bool AlreadyCalculated(int key)
         {
             return IntersectionZones.ContainsKey(key);
         }
