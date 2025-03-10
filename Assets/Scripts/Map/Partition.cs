@@ -33,7 +33,7 @@ namespace Maes.Map
     public class Partition
     {
         public List<Vertex> Vertices { get; private set; }
-        public Bitmap CommuncationZone { get; private set; }
+        public Bitmap CommunicationZone { get; private set; }
         public int PartitionId { get; }
         public Dictionary<(int, int), float> CommunicationRatio { get; private set; }
         public Dictionary<(int, int), Bitmap> IntersectionZones { get; private set; }
@@ -44,7 +44,9 @@ namespace Maes.Map
             PartitionId = partitionId;
             Vertices = vertices;
             CommunicationZones = communicationZones;
-            CommuncationZone = CreatePartitionCommunicationZone(communicationZones);
+            CommunicationZone = CreatePartitionCommunicationZone(communicationZones);
+            IntersectionZones = new Dictionary<(int, int), Bitmap>();
+            CommunicationRatio = new Dictionary<(int, int), float>();
         }
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
@@ -55,7 +57,7 @@ namespace Maes.Map
             {
                 return;
             }
-            var otherPartitionCommuncationZoneSubset = new Bitmap(0, 0, otherPartition.CommuncationZone.Width, otherPartition.CommuncationZone.Height);
+            var otherPartitionCommuncationZoneSubset = new Bitmap(0, 0, otherPartition.CommunicationZone.Width, otherPartition.CommunicationZone.Height);
             foreach (var otherPartitionVertex in otherPartition.Vertices)
             {
                 otherPartition.CommunicationZones.TryGetValue(otherPartitionVertex.Position, out var zoneBitmap);
@@ -72,10 +74,10 @@ namespace Maes.Map
                 }
             }
 
-            var intersection = Bitmap.Intersection(CommuncationZone, otherPartitionCommuncationZoneSubset);
+            var intersection = Bitmap.Intersection(CommunicationZone, otherPartitionCommuncationZoneSubset);
             IntersectionZones[key] = intersection;
 
-            var ratio = CalculateRatio(intersection.Count, otherPartition.CommuncationZone.Count);
+            var ratio = CalculateRatio(intersection.Count, otherPartition.CommunicationZone.Count);
             CommunicationRatio[key] = ratio;
         }
 

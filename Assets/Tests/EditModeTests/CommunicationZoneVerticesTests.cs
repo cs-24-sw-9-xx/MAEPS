@@ -27,6 +27,8 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.UI;
+using Maes.UI.Visualizers.Patrolling;
+using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -103,6 +105,309 @@ namespace Tests.EditModeTests
             var result = communicationManager.CalculateCommunicationZone(vector2Ints, width, height)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
+        }
+
+        private PatrollingMap CreatePatrollingMap(SimulationMap<Tile> simulationMap, IEnumerable<Vector2Int> vertexPositions)
+        {
+            var vertices = new List<Vertex>();
+            var id = 0;
+            foreach (var position in vertexPositions)
+            {
+                vertices.Add(new Vertex(id++, 1, position));
+            }
+            // give me a mock of the Dictionary<Vector2Int, Bitmap> vertexPositions that i can use for the patrolling map
+            var vertexPositionsDictionary = new Dictionary<Vector2Int, Bitmap>();
+            return new PatrollingMap(vertices.ToArray(), simulationMap, vertexPositionsDictionary);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_SingleVertex()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "            ;" +
+                " XXXXXXXXXX ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " X        X ;" +
+                " XXXXXXXXXX ;" +
+                "            ";
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var vertexPositions = new List<Vector2Int> { new Vector2Int(6, 6) };
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
+            Assert.AreEqual(1, communicationZoneVertices.CommunicationZoneTiles.Count);
+            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[0].Count, 0);
+            Assert.AreEqual(communicationZoneVertices.CommunicationZoneTiles[0].Count, communicationZoneVertices.AllCommunicationZoneTiles.Count);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_MultipleVertices_NoIntersection()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 3 && distanceThroughWalls <= 0,
+                maxCommunicationRange: 3,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ";
+
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            // Place vertices far apart - at least 10 tiles separation to ensure no overlap with maxCommunicationRange of 3
+            var vertexPositions = new List<Vector2Int> { new Vector2Int(5, 5), new Vector2Int(15, 15) };
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
+            Assert.AreEqual(2, communicationZoneVertices.CommunicationZoneTiles.Count);
+
+            // Verify each vertex has its own zone
+            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[0].Count, 0);
+            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[1].Count, 0);
+
+            // Verify total tiles equals sum of individual zones (since no intersection)
+            Assert.AreEqual(
+                communicationZoneVertices.CommunicationZoneTiles[0].Count + communicationZoneVertices.CommunicationZoneTiles[1].Count,
+                communicationZoneVertices.AllCommunicationZoneTiles.Count);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_MultipleVertices_WithIntersection()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 5 && distanceThroughWalls <= 0,
+                maxCommunicationRange: 5,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ";
+
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            // Place vertices close enough to have overlapping communication zones
+            var vertexPositions = new List<Vector2Int> { new Vector2Int(8, 10), new Vector2Int(12, 10) };
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
+            Assert.AreEqual(2, communicationZoneVertices.CommunicationZoneTiles.Count);
+
+            // Verify each vertex has its own zone
+            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[0].Count, 0);
+            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[1].Count, 0);
+
+            // Verify total tiles is less than sum of individual zones (indicating intersection)
+            Assert.Less(
+                communicationZoneVertices.AllCommunicationZoneTiles.Count,
+                communicationZoneVertices.CommunicationZoneTiles[0].Count + communicationZoneVertices.CommunicationZoneTiles[1].Count);
+
+            // Calculate intersection size
+            var intersection = new HashSet<int>(communicationZoneVertices.CommunicationZoneTiles[0]);
+            intersection.IntersectWith(communicationZoneVertices.CommunicationZoneTiles[1]);
+
+            // Verify intersection is not empty
+            Assert.Greater(intersection.Count, 0);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_WithWalls_BlockingCommunication()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 10 && distanceThroughWalls <= 0,
+                maxCommunicationRange: 10,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "         XXXXXXXXXX ;" +  // Wall between the two vertices
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ";
+
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            // Place vertices on opposite sides of the wall
+            var vertexPositions = new List<Vector2Int> { new Vector2Int(5, 9), new Vector2Int(15, 9) };
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            // Calculate intersection size
+            var intersection = new HashSet<int>(communicationZoneVertices.CommunicationZoneTiles[0]);
+            intersection.IntersectWith(communicationZoneVertices.CommunicationZoneTiles[1]);
+
+            // Verify communication zones don't intersect because of the wall
+            Assert.AreEqual(0, intersection.Count);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_EmptyMap()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "     ;" +
+                "     ;" +
+                "     ;" +
+                "     ;" +
+                "     ";
+
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var vertexPositions = new List<Vector2Int>();  // Empty list of vertices
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
+            Assert.AreEqual(0, communicationZoneVertices.CommunicationZoneTiles.Count);
+            Assert.AreEqual(0, communicationZoneVertices.AllCommunicationZoneTiles.Count);
+        }
+
+        [Test]
+        public void TestCommunicationZoneVertices_AllCommunicationZonesUnion()
+        {
+            // Arrange
+            var robotConstraints = new RobotConstraints(
+                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 3 && distanceThroughWalls <= 0,
+                maxCommunicationRange: 3,
+                materialCommunication: false);
+
+            const string mapString = "" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ;" +
+                "                    ";
+
+            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            // Create several vertices to test union functionality
+            var vertexPositions = new List<Vector2Int> {
+                new Vector2Int(5, 5),
+                new Vector2Int(15, 5),
+                new Vector2Int(5, 15),
+                new Vector2Int(15, 15)
+            };
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+
+            // Act
+            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
+
+            // Assert
+            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
+            Assert.AreEqual(4, communicationZoneVertices.CommunicationZoneTiles.Count);
+
+            // Create manual union to compare with AllCommunicationZoneTiles
+            var manualUnion = new HashSet<int>();
+            for (var i = 0; i < 4; i++)
+            {
+                manualUnion.UnionWith(communicationZoneVertices.CommunicationZoneTiles[i]);
+            }
+
+            // Compare manual union with AllCommunicationZoneTiles
+            Assert.AreEqual(manualUnion.Count, communicationZoneVertices.AllCommunicationZoneTiles.Count);
+            Assert.IsTrue(manualUnion.SetEquals(communicationZoneVertices.AllCommunicationZoneTiles));
         }
     }
 }
