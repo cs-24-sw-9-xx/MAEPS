@@ -32,12 +32,12 @@ namespace Maes.Map
 {
     public class Partition
     {
-        public List<Vertex> Vertices { get; private set; }
-        public Bitmap CommunicationZone { get; private set; }
+        public List<Vertex> Vertices { get; }
+        public Bitmap CommunicationZone { get; }
         public int PartitionId { get; }
-        public Dictionary<(int, int), float> CommunicationRatio { get; private set; }
-        public Dictionary<(int, int), Bitmap> IntersectionZones { get; private set; }
-        public Dictionary<Vector2Int, Bitmap> CommunicationZones { get; private set; }
+        public Dictionary<(int, int), float> CommunicationRatio { get; }
+        public Dictionary<(int, int), Bitmap> IntersectionZones { get; }
+        public Dictionary<Vector2Int, Bitmap> CommunicationZones { get; }
 
         public Partition(int partitionId, List<Vertex> vertices, Dictionary<Vector2Int, Bitmap> communicationZones)
         {
@@ -60,8 +60,7 @@ namespace Maes.Map
             var otherPartitionCommuncationZoneSubset = new Bitmap(0, 0, otherPartition.CommunicationZone.Width, otherPartition.CommunicationZone.Height);
             foreach (var otherPartitionVertex in otherPartition.Vertices)
             {
-                otherPartition.CommunicationZones.TryGetValue(otherPartitionVertex.Position, out var zoneBitmap);
-                if (zoneBitmap == null)
+                if (!otherPartition.CommunicationZones.TryGetValue(otherPartitionVertex.Position, out var zoneBitmap))
                 {
                     throw new ArgumentException($"No communication zone found for vertex at position {otherPartitionVertex.Position}");
                 }
