@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen, Mads Beyer Mogensen
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -53,7 +53,7 @@ namespace Maes.Map.RobotSpawners
             _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
 
-        public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
 
@@ -95,24 +95,35 @@ namespace Maes.Map.RobotSpawners
             possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
 
             // Offset suggested starting points
-            spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x - (int)collisionMap.ScaledOffset.x,
-                                                pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
+            if (dependOnBrokenBehavior)
+            {
+                spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x - (int)collisionMap.ScaledOffset.x,
+                                                    pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
+            }
+            else
+            {
+                spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x,
+                                                    pos.y)).ToList();
+            }
 
             var robotId = 0;
             foreach (var spawn in spawnPositions)
             {
-                possibleSpawnTiles = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).ToList();
+                var spawnTile = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).First();
 
+                var robotSeed = seed + robotId;
                 var robot = CreateRobot(
-                    x: possibleSpawnTiles.First().x,
-                    y: possibleSpawnTiles.First().y,
+                    x: spawnTile.x,
+                    y: spawnTile.y,
                     relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId++,
-                    algorithm: createAlgorithmDelegate(seed + robotId),
+                    robotId: robotId,
+                    algorithm: createAlgorithmDelegate(robotSeed),
                     collisionMap: collisionMap,
-                    seed: seed + robotId
+                    seed: robotSeed
                 );
                 robots.Add(robot);
+
+                robotId++;
             }
 
 
