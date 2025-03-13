@@ -27,7 +27,7 @@ namespace Maes.Map.Generators
 
             return new SimulationMap<Tile>(tiles, Vector2.zero);
         }
-        
+
         public SimulationMap<Tile> BlankMap()
         {
             const string bitmapString = "" +
@@ -162,11 +162,11 @@ namespace Maes.Map.Generators
                                         " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;" +
-                                        " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;"+
                                         " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;" +
-                                        " XXX                       XXXXXXXXXXXXXXXXXXXXXXXX ;" +
-                                        " XXX                       XXXXXXXXXXXXXXXXXXXXXXXX ;" +
-                                        " XXX                       XXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXX   XX   XX   XX   XX   XXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXX   XX        XX        XXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXX   XX        XX        XXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXX   XX        XX        XXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
@@ -176,7 +176,7 @@ namespace Maes.Map.Generators
             return GenerateSimulationMapFromBitmap(bitmapString);
 
         }
-        
+
         public SimulationMap<Tile> IslandsMap()
         {
             const string bitmapString = "" +
@@ -221,6 +221,159 @@ namespace Maes.Map.Generators
                                         " X         XXXXXXXXXX        XXXXXXXXXX          XX ;" +
                                         " X         XXXXXXXXXX        XXXXXXXXXXX         XX ;" +
                                         " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        "                                                     ";
+            return GenerateSimulationMapFromBitmap(bitmapString);
+
+        }
+        
+        public SimulationMap<Tile> MapAMap()
+        {
+            const string bitmapString = "" +
+                                        "                                                      ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " X                                                  X ;" +
+                                        " X                                                  X ;" +
+                                        " X                        XXX                       X ;" +
+                                        " X   XXX   XXX          XXXXXXX                     X ;" +
+                                        " X   XXX   XXX         XXXXXXXXX                    X ;" +
+                                        " X   XXX   XXX         XXXXXXXXX                    X ;" +
+                                        " X   XXX   XXX          XXXXXXX                     X ;" +
+                                        " X   XXX   XXX            XXX          XXXXX   XXXXXX ;" +
+                                        " X   XXX   XXX                         XXXXX   XXXXXX ;" +
+                                        " X                                                  X ;" +
+                                        " X                                                  X ;" +
+                                        " X       XX                                         X ;" +
+                                        " X      XXXX                XXX                     X ;" +
+                                        " X     XXXXXX             XXXXXXX               XXXXX ;" +
+                                        " X      XXXX           XXXXXXXXXXXXX            XXXXX ;" +
+                                        " X       XX                                     XXXXX ;" +
+                                        " X                                              XXXXX ;" +
+                                        " X                                                  X ;" +
+                                        " X   XXXXXXX                                        X ;" +
+                                        " X   XXXXXXX                                        X ;" +
+                                        " X       XXXXXX                             XXXXX   X ;" +
+                                        " X       XXXXXX                             XXXXX   X ;" +
+                                        " X   XXXXXXX                                        X ;" +
+                                        " X   XXXXXXX                               XXXXXX   X ;" +
+                                        " X                        X                 XXXXX   X ;" +
+                                        " X                       XXX                XXXXX   X ;" +
+                                        " X                      XXXXX                XXXX   X ;" +
+                                        " X   XXXXXX            XXXXXXX                 XX   X ;" +
+                                        " X   XXXXX            XXXXXXXXX                     X ;" +
+                                        " X   XXXX                                           X ;" +
+                                        " X   XXX                                            X ;" +
+                                        " X   XX                                             X ;" +
+                                        " X   X           XXXXXX         XXX                 X ;" +
+                                        " X               XXXXXX       XXXXXXX               X ;" +
+                                        " X               XXXXXX      XXXXXXXXXXX            X ;" +
+                                        " X               XXXXXX     XXXXXXXXXXXXX           X ;" +
+                                        " X          X              XXXXXXXXXXXXXXXXX        X ;" +
+                                        " X          XXX            XXXXXXXXXXXXXXXXX        X ;" +
+                                        " X          XXXXXXXXXXX                             X ;" +
+                                        " X                                                  X ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        "                                                       ";
+            return GenerateSimulationMapFromBitmap(bitmapString);
+
+        }
+        
+        public SimulationMap<Tile> MapBMap()
+        {
+            const string bitmapString = "" +
+                                        "                                                      ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " X                X                    XXXXXX       X ;" +
+                                        " X                X                     XXXXX       X ;" +
+                                        " X                X       XXX            XXXX       X ;" +
+                                        " X   XXX   XXX    X     XXXXXXX    XXX    XXX       X ;" +
+                                        " X   XXX   XXX    X    XXXXXXXXX   XXXX    XX       X ;" +
+                                        " X   XXX   XXX    X    XXXXXXXXX   XXXXXXXXXX       X ;" +
+                                        " X   XXX   XXX    X     XXXXXXX    X                X ;" +
+                                        " X   XXX   XXX    X       XXX      X   XXXXX   XXXXXX ;" +
+                                        " X   XXX   XXX    X                X   XXXXX   XXXXXX ;" +
+                                        " X                X                X                X ;" +
+                                        " X                X                XXXXXXX          X ;" +
+                                        " X       XX       X                      X          X ;" +
+                                        " X      XXXX      X         XXX          X          X ;" +
+                                        " X     XXXXXX     X       XXXXXXX        X      XXXXX ;" +
+                                        " X      XXXX      X    XXXXXXXXXXXXX     X      XXXXX ;" +
+                                        " X       XX       X                      X      XXXXX ;" +
+                                        " X                X                      X      XXXXX ;" +
+                                        " X                X                      X          X ;" +
+                                        " X   XXXXXXX      XXXXXX     XXXXXXXXXXXXX          X ;" +
+                                        " X   XXXXXXX                                        X ;" +
+                                        " X       XXXXXX                             XXXXX   X ;" +
+                                        " X       XXXXXX                             XXXXX   X ;" +
+                                        " X   XXXXXXX       XXXXX     XXXXXXXX               X ;" +
+                                        " X   XXXXXXX      X                  X     XXXXXX   X ;" +
+                                        " X               X        X           X     XXXXX   X ;" +
+                                        " X              X        XXX           X    XXXXX   X ;" +
+                                        " X             X        XXXXX           X    XXXX   X ;" +
+                                        " X   XXXXXX   X        XXXXXXX           X     XX   X ;" +
+                                        " X   XXXXX   X        XXXXXXXXX           X         X ;" +
+                                        " X   XXXX   X                              X        X ;" +
+                                        " X   XXX   X                                X       X ;" +
+                                        " X   XX   X                                  X      X ;" +
+                                        " X   X   X       XXXXXX         XXX          XXXXXXXX ;" +
+                                        " X      X        XXXXXX       XXXXXXX               X ;" +
+                                        " X     X         XXXXXX      XXXXXXXXXXX            X ;" +
+                                        " X    X          XXXXXX     XXXXXXXXXXXXX           X ;" +
+                                        " X   X      X              XXXXXXXXXXXXXXXXX        X ;" +
+                                        " X  X       XXX            XXXXXXXXXXXXXXXXX        X ;" +
+                                        " X X        XXXXXXXXXXX                             X ;" +
+                                        " XX                                                 X ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        "                                                       ";
+            return GenerateSimulationMapFromBitmap(bitmapString);
+
+        }
+        
+        public SimulationMap<Tile> CircularMap()
+        {
+            const string bitmapString = "" +
+                                        "                                                    ;" +
+                                        " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
+                                        " XXXXXXXXXXXXXXXXXX                             XXX ;" +
+                                        " XXXXXXXXXXXXXX                                 XXX ;" +
+                                        " XXXXXXXXXX               X                      XX ;" +
+                                        " XXXXXX               XXXXXXX    XXXXXXXXXXXX    XX ;" +
+                                        " XXXX             XXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XXX          XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XX ;" +
+                                        " XX       XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXX ;" +
+                                        " XX     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X ;" +
+                                        " XX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X ;" +
+                                        " XX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   X ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   X ;" +
+                                        " XXX     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   X ;" +
+                                        " XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   X ;" +
+                                        " XXXXX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   X ;" +
+                                        " XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X ;" +
+                                        " XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    X ;" +
+                                        " XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     X ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XX ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XX ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXX ;" +
+                                        " XXX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXX ;" +
+                                        " XXX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXX ;" +
+                                        " XXX   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXX ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXXX ;" +
+                                        " XXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    XXXXXX ;" +
+                                        " XXXX    XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX     XXXXXX ;" +
+                                        " XXXX     XXXXXXXXXXXXXXXXXXXXXXXXXXXX      XXXXXXX ;" +
+                                        " XXXXX      XXXXXXXXXXXXXXXXXXXXXXX         XXXXXXX ;" +
+                                        " XXXXXX       XXXXXXXXXXXXXXXXXX           XXXXXXXX ;" +
+                                        " XXXXXXX                                 XXXXXXXXXX ;" +
+                                        " XXXXXXXX                             XXXXXXXXXXXXX ;" +
+                                        " XXXXXXXXXX                        XXXXXXXXXXXXXXXX ;" +
                                         " XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ;" +
                                         "                                                     ";
             return GenerateSimulationMapFromBitmap(bitmapString);
