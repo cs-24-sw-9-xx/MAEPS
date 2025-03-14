@@ -73,6 +73,8 @@ namespace Maes.Robot
         public float AgentRelativeSize { get; }
 
 
+        public bool RobotCollsisions { get; }
+
         public RobotConstraints(
             float senseNearbyAgentsRange = 20f,
             bool senseNearbyAgentsBlockedByWalls = true,
@@ -93,7 +95,8 @@ namespace Maes.Robot
             float transmitPower = 15,
             float receiverSensitivity = -82,
             Dictionary<uint, Dictionary<TileType, float>>? attenuationDictionary = null,
-            float maxCommunicationRange = 15f)
+            float maxCommunicationRange = 15f,
+            bool robotCollisions = true)
         {
 
             SenseNearbyAgentsRange = senseNearbyAgentsRange;
@@ -154,6 +157,8 @@ namespace Maes.Robot
             IsTransmissionSuccessful = calculateSignalTransmissionProbability ?? ((_, _) => true);
             // Maximal communication range in tiles
             MaxCommunicationRange = maxCommunicationRange;
+
+            RobotCollsisions = robotCollisions;
         }
     }
 }

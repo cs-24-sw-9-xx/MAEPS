@@ -53,7 +53,7 @@ namespace Maes.Map.RobotSpawners
             _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
 
-        public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool robotCollision = true)
+        public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
             var robots = new List<MonaRobot>();
 
@@ -110,8 +110,7 @@ namespace Maes.Map.RobotSpawners
                     robotId: robotId++,
                     algorithm: createAlgorithmDelegate(seed + robotId),
                     collisionMap: collisionMap,
-                    seed: seed + robotId,
-                    robotCollision: robotCollision
+                    seed: seed + robotId
                 );
                 robots.Add(robot);
             }
@@ -129,7 +128,7 @@ namespace Maes.Map.RobotSpawners
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
-        public List<MonaRobot> SpawnRobotsInBiggestRoom(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool robotCollision = true)
+        public List<MonaRobot> SpawnRobotsInBiggestRoom(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
             var robots = new List<MonaRobot>();
 
@@ -176,8 +175,7 @@ namespace Maes.Map.RobotSpawners
                     robotId: robotId++,
                     algorithm: createAlgorithmDelegate(seed + robotId),
                     collisionMap: collisionMap,
-                    seed: seed + robotId,
-                    robotCollision: robotCollision
+                    seed: seed + robotId
                 ));
             }
 
@@ -194,7 +192,7 @@ namespace Maes.Map.RobotSpawners
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
-        public List<MonaRobot> SpawnRobotsTogether(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, Vector2Int? suggestedStartingPoint, CreateAlgorithmDelegate createAlgorithmDelegate, bool robotCollision = true)
+        public List<MonaRobot> SpawnRobotsTogether(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, Vector2Int? suggestedStartingPoint, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
             var robots = new List<MonaRobot>();
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
@@ -285,8 +283,7 @@ namespace Maes.Map.RobotSpawners
                     robotId: robotId++,
                     algorithm: createAlgorithmDelegate(seed + robotId),
                     collisionMap: collisionMap,
-                    seed: seed + robotId,
-                    robotCollision: robotCollision
+                    seed: seed + robotId
                 );
                 robots.Add(robot);
             }
@@ -303,7 +300,7 @@ namespace Maes.Map.RobotSpawners
         /// <param name="numberOfRobots">How many robots should be created. The map may not fit all robots, which would throw an exception</param>
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
-        public List<MonaRobot> SpawnAtHallWayEnds(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool robotCollision = true)
+        public List<MonaRobot> SpawnAtHallWayEnds(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
             var robots = new List<MonaRobot>();
 
@@ -349,8 +346,7 @@ namespace Maes.Map.RobotSpawners
                     robotId: robotId++,
                     algorithm: createAlgorithmDelegate(seed + robotId),
                     collisionMap: collisionMap,
-                    seed: seed + robotId,
-                    robotCollision: robotCollision
+                    seed: seed + robotId
                 ));
             }
 
@@ -359,11 +355,11 @@ namespace Maes.Map.RobotSpawners
         }
 
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
-            TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed, bool robotCollision = true)
+            TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
         {
             var robotGameObject = Instantiate(_robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
-            if (!robotCollision)
+            if (!RobotConstraints.RobotCollsisions)
             {
                 robotGameObject.GetComponent<CircleCollider2D>().excludeLayers = LayerMask.GetMask("Robots");
             }
