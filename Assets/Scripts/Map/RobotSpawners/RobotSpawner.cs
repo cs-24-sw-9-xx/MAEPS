@@ -359,7 +359,7 @@ namespace Maes.Map.RobotSpawners
         {
             var robotGameObject = Instantiate(_robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
-            if (!RobotConstraints.RobotCollsisions)
+            if (!RobotConstraints.RobotCollisions)
             {
                 robotGameObject.GetComponent<CircleCollider2D>().excludeLayers = LayerMask.GetMask("Robots");
             }

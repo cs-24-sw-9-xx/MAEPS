@@ -73,7 +73,7 @@ namespace Maes.Robot
         public float AgentRelativeSize { get; }
 
 
-        public bool RobotCollsisions { get; }
+        public bool RobotCollisions { get; }
 
         public RobotConstraints(
             float senseNearbyAgentsRange = 20f,
@@ -158,7 +158,7 @@ namespace Maes.Robot
             // Maximal communication range in tiles
             MaxCommunicationRange = maxCommunicationRange;
 
-            RobotCollsisions = robotCollisions;
+            RobotCollisions = robotCollisions;
         }
     }
 }
