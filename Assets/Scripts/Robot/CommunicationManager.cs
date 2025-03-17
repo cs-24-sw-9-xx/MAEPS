@@ -553,7 +553,7 @@ namespace Maes.Robot
                     {
                         for (var y = 0; y < height; y++)
                         {
-                            var signalStrength = CommuncationBetweenPoints(new Vector2(vertex.x, vertex.y), new Vector2(x, y), tileMap);
+                            var signalStrength = CommunicationBetweenPoints(new Vector2(vertex.x, vertex.y), new Vector2(x, y), tileMap);
                             if (signalStrength >= _robotConstraints.ReceiverSensitivity)
                             {
                                 bitmap.Set(x, y);
@@ -569,11 +569,11 @@ namespace Maes.Robot
             );
             return vertexPositionsMultiThread;
         }
-
+        
         // This method is an implementation of siddons algorithm which can be found in the following paper:
         // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
         // https://doi.org/10.1118/1.595715
-        public float CommuncationBetweenPoints(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
+        public float CommunicationBetweenPoints(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
         {
             var x1 = start.x;
             var y1 = start.y;
@@ -582,9 +582,14 @@ namespace Maes.Robot
             var xDiff = x2 - x1;
             var yDiff = y2 - y1;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
+            
+            if (lineLength > _robotConstraints.MaxCommunicationRange)
+            {
+                return float.MinValue;
+            }
 
             var signalStrength = _robotConstraints.TransmitPower;
-
+            
             if (lineLength == 0)
             {
                 return signalStrength;
@@ -642,7 +647,7 @@ namespace Maes.Robot
                     }
                 }
             }
-
+            
             // Remove duplicate values and sorting.
             xyAlphas = xyAlphas.Distinct().ToList();
             xyAlphas.Sort();
@@ -657,9 +662,9 @@ namespace Maes.Robot
 
                 var midPointX = x1 + aMid * xDiff;
                 var midPointY = y1 + aMid * yDiff;
-
+                
                 var distance = (aCurr - aPrev) * lineLength;
-
+                
                 var tile = tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
                 if (_robotConstraints.MaterialCommunication)
                 {

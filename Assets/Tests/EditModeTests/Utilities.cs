@@ -2,12 +2,38 @@ using System;
 
 using JetBrains.Annotations;
 
+using Maes.Map;
+using Maes.Map.Generators;
 using Maes.Utilities;
+
+using UnityEngine;
+
+using Random = System.Random;
 
 namespace Tests.EditModeTests
 {
     public static class Utilities
     {
+        public static SimulationMap<Tile> GenerateSimulationMapFromString(string map)
+        {
+            var lines = map.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var width = lines[0].Length;
+            var height = lines.Length;
+            var tiles = new SimulationMapTile<Tile>[width, height];
+
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    var tileChar = lines[y][x];
+                    var tile = tileChar == 'X' ? new Tile(TileType.Wall) : new Tile(TileType.Room);
+                    tiles[x, y] = new SimulationMapTile<Tile>(() => tile);
+                }
+            }
+
+            return new SimulationMap<Tile>(tiles, Vector2.zero);
+        }
+
         [MustDisposeResource]
         public static Bitmap CreateRandomBitmap(int width, int height, int seed)
         {

@@ -20,7 +20,6 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
-using System;
 using System.Collections.Generic;
 
 using Maes.Map;
@@ -40,34 +39,20 @@ namespace Tests.EditModeTests
     {
         private readonly DebuggingVisualizer _debugVisualizer = new();
 
-        private static SimulationMap<Tile> GenerateSimulationMapFromBitmap(string bitmapString)
-        {
-            var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
-            var width = lines[0].Length;
-            var height = lines.Length;
-            var tiles = new SimulationMapTile<Tile>[width, height];
-
-            for (var y = 0; y < height; y++)
-            {
-                for (var x = 0; x < width; x++)
-                {
-                    var tileChar = lines[y][x];
-                    var tile = tileChar == 'X' ? new Tile(TileType.Wall) : new Tile(TileType.Room);
-                    tiles[x, y] = new SimulationMapTile<Tile>(() => tile);
-                }
-            }
-
-            return new SimulationMap<Tile>(tiles, Vector2.zero);
-        }
-
         [Theory]
         public void TestCreateCommunicationZoneTiles()
         {
             var height = 12;
             var width = 12;
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
-                materialCommunication: false);
+                attenuationDictionary: new Dictionary<uint, Dictionary<TileType, float>>()
+                {
+                    {
+                        2400U,
+                        new Dictionary<TileType, float> { { TileType.Wall, float.MaxValue }, { TileType.Room, 0f } }
+                    }
+                },
+                materialCommunication: true);
             var vertex = new Vertex(0, 1, new Vector2Int(6, 6));
             const string bitmapString = "" +
                 "            ;" +
@@ -99,7 +84,7 @@ namespace Tests.EditModeTests
                 "            ";
 
             using var expectedBitmap = Utilities.BitmapFromString(expectedBitmapString);
-            var slamMap = GenerateSimulationMapFromBitmap(bitmapString);
+            var slamMap = Utilities.GenerateSimulationMapFromString(bitmapString);
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
             var vector2Ints = new List<Vector2Int> { vertex.Position };
             var result = communicationManager.CalculateCommunicationZone(vector2Ints, width, height)[vertex.Position];
@@ -125,7 +110,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
                 materialCommunication: false);
 
             const string mapString = "" +
@@ -141,7 +125,7 @@ namespace Tests.EditModeTests
                 " X        X ;" +
                 " XXXXXXXXXX ;" +
                 "            ";
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             var vertexPositions = new List<Vector2Int> { new Vector2Int(6, 6) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
@@ -161,7 +145,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 3 && distanceThroughWalls <= 0,
                 maxCommunicationRange: 3,
                 materialCommunication: false);
 
@@ -187,7 +170,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             // Place vertices far apart - at least 10 tiles separation to ensure no overlap with maxCommunicationRange of 3
             var vertexPositions = new List<Vector2Int> { new Vector2Int(5, 5), new Vector2Int(15, 15) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -215,7 +198,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 5 && distanceThroughWalls <= 0,
                 maxCommunicationRange: 5,
                 materialCommunication: false);
 
@@ -241,7 +223,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             // Place vertices close enough to have overlapping communication zones
             var vertexPositions = new List<Vector2Int> { new Vector2Int(8, 10), new Vector2Int(12, 10) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -276,9 +258,15 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 10 && distanceThroughWalls <= 0,
                 maxCommunicationRange: 10,
-                materialCommunication: false);
+                attenuationDictionary: new Dictionary<uint, Dictionary<TileType, float>>()
+                {
+                    {
+                        2400U,
+                        new Dictionary<TileType, float> { { TileType.Wall, float.MaxValue }, { TileType.Room, 0f } }
+                    }
+                },
+                materialCommunication: true);
 
             const string mapString = "" +
                 "                    ;" +
@@ -302,9 +290,9 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             // Place vertices on opposite sides of the wall
-            var vertexPositions = new List<Vector2Int> { new Vector2Int(5, 9), new Vector2Int(15, 9) };
+            var vertexPositions = new List<Vector2Int> { new Vector2Int(18, 9), new Vector2Int(18, 11) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
 
@@ -325,7 +313,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0,
                 materialCommunication: false);
 
             const string mapString = "" +
@@ -335,7 +322,7 @@ namespace Tests.EditModeTests
                 "     ;" +
                 "     ";
 
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             var vertexPositions = new List<Vector2Int>();  // Empty list of vertices
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
@@ -354,7 +341,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                calculateSignalTransmissionProbability: (distance, distanceThroughWalls) => distance <= 3 && distanceThroughWalls <= 0,
                 maxCommunicationRange: 3,
                 materialCommunication: false);
 
@@ -380,7 +366,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = GenerateSimulationMapFromBitmap(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
             // Create several vertices to test union functionality
             var vertexPositions = new List<Vector2Int> {
                 new Vector2Int(5, 5),
