@@ -569,7 +569,7 @@ namespace Maes.Robot
             );
             return vertexPositionsMultiThread;
         }
-        
+
         // This method is an implementation of siddons algorithm which can be found in the following paper:
         // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
         // https://doi.org/10.1118/1.595715
@@ -582,14 +582,14 @@ namespace Maes.Robot
             var xDiff = x2 - x1;
             var yDiff = y2 - y1;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
-            
+
             if (lineLength > _robotConstraints.MaxCommunicationRange)
             {
                 return float.MinValue;
             }
 
             var signalStrength = _robotConstraints.TransmitPower;
-            
+
             if (lineLength == 0)
             {
                 return signalStrength;
@@ -647,7 +647,7 @@ namespace Maes.Robot
                     }
                 }
             }
-            
+
             // Remove duplicate values and sorting.
             xyAlphas = xyAlphas.Distinct().ToList();
             xyAlphas.Sort();
@@ -662,9 +662,9 @@ namespace Maes.Robot
 
                 var midPointX = x1 + aMid * xDiff;
                 var midPointY = y1 + aMid * yDiff;
-                
+
                 var distance = (aCurr - aPrev) * lineLength;
-                
+
                 var tile = tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
                 if (_robotConstraints.MaterialCommunication)
                 {
