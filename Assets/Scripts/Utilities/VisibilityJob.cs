@@ -95,14 +95,8 @@ namespace Maes.Utilities
             var diffX = endX - X;
             var diffY = endY - outerY;
 
-            Hint.Assume(diffX != 0);
-            Hint.Assume(diffY != 0);
-
             var stepX = Math.Sign(diffX);
             var stepY = Math.Sign(diffY);
-
-            Hint.Assume(stepX != 0);
-            Hint.Assume(stepY != 0);
 
             var angle = Mathf.Atan2(-diffY, diffX);
 

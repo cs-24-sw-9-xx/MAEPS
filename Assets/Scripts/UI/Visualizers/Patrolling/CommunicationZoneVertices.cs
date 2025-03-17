@@ -40,7 +40,7 @@ namespace Maes.UI.Visualizers.Patrolling
             CommunicationZoneTiles = patrollingMap.Vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
 
             var positions = patrollingMap.Vertices.Select(v => v.Position).ToList();
-            var communicationZones = communicationManager.CalculateCommunicationZone(positions, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            var communicationZones = communicationManager.CalculateZones(positions, simulationMap.WidthInTiles, simulationMap.HeightInTiles, simulationMap);
             var cellIndexToTriangleIndexes = simulationMap.CellIndexToTriangleIndexes();
             using var bitmap = MapUtilities.MapToBitMap(simulationMap);
             foreach (var vertex in patrollingMap.Vertices)
