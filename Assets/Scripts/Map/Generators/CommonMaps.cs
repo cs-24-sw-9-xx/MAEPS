@@ -5,29 +5,29 @@ using UnityEngine;
 
 namespace Maes.Map.Generators
 {
-    public class CommonMaps
+    public static class CommonMaps
     {
-        private static SimulationMap<Tile> GenerateSimulationMapFromBitmap(string bitmapString)
+        private static Tile[,] GenerateBitmap(string bitmapString)
         {
             var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var width = lines[0].Length;
             var height = lines.Length;
-            var tiles = new SimulationMapTile<Tile>[width, height];
+            var tiles = new Tile[width, height];
 
             for (var y = 0; y < height; y++)
             {
                 for (var x = 0; x < width; x++)
                 {
                     var tileChar = lines[height - 1 - y][x]; // Reverse y index to flip vertically
-                    var tile = tileChar == 'X' ? new Tile(TileType.Wall) : new Tile(TileType.Room);
-                    tiles[x, y] = new SimulationMapTile<Tile>(() => tile);
+                    var tile = tileChar == 'X' ? TileType.Wall : TileType.Room;
+                    tiles[x, y] = new Tile(tile);
                 }
             }
 
-            return new SimulationMap<Tile>(tiles, Vector2.zero);
+            return tiles;
         }
-        
-        public SimulationMap<Tile> GridMap()
+
+        public static Tile[,] GridMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -71,10 +71,10 @@ namespace Maes.Map.Generators
                                         "XXXX                                       XXXXXXX;" +
                                         "XXXX                                       XXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
-        public SimulationMap<Tile> CorridorMap()
+        public static Tile[,] CorridorMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -118,11 +118,11 @@ namespace Maes.Map.Generators
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
 
-        public SimulationMap<Tile> IslandsMap()
+        public static Tile[,] IslandsMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -166,11 +166,11 @@ namespace Maes.Map.Generators
                                         "X         XXXXXXXXXX        XXXXXXXXXXX         XX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
-        
-        public SimulationMap<Tile> MapAMap()
+
+        public static Tile[,] MapAMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -215,11 +215,11 @@ namespace Maes.Map.Generators
                                         "X          XXXXXXXXXXX                             X;" +
                                         "X                                                  X;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
-        
-        public SimulationMap<Tile> MapBMap()
+
+        public static Tile[,] MapBMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -264,11 +264,11 @@ namespace Maes.Map.Generators
                                         "X X        XXXXXXXXXXX                             X;" +
                                         "XX                                                 X;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
-        
-        public SimulationMap<Tile> CircularMap()
+
+        public static Tile[,] CircularMap()
         {
             const string bitmapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -313,7 +313,7 @@ namespace Maes.Map.Generators
                                         "XXXXXXXX                             XXXXXXXXXXXXX;" +
                                         "XXXXXXXXXX                        XXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateSimulationMapFromBitmap(bitmapString);
+            return GenerateBitmap(bitmapString);
 
         }
     }
