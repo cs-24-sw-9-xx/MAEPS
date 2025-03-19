@@ -86,8 +86,6 @@ namespace Maes.Algorithms.Patrolling.Components
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
             }
 
-            
-
             while (true)
             {
 
