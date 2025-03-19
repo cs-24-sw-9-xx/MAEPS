@@ -85,9 +85,10 @@ namespace Maes.Experiments.Patrolling
 
             var i = 0;
 
+            var mapIndex = 0;
             foreach (var currentMap in maps)
             {
-                var mapName = mapNames[i];
+                var mapName = mapNames[mapIndex];
                 var val = random.Next(0, 1000000);
                 simulator.EnqueueScenario(
                     new MySimulationScenario(
@@ -105,7 +106,7 @@ namespace Maes.Experiments.Patrolling
                         statisticsFileName:
                         $"{algoName}-map-{mapName}-seed-{seed}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
                 );
-                i++;
+                mapIndex++;
             }
 
             var mapSizeX = 50;
