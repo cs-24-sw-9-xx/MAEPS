@@ -1,8 +1,6 @@
 
 using System;
 
-using UnityEngine;
-
 namespace Maes.Map.Generators
 {
     public static class CommonMaps
