@@ -86,6 +86,8 @@ namespace Maes.Algorithms.Patrolling.Components
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
             }
 
+            
+
             while (true)
             {
 
@@ -95,7 +97,6 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 // Tell PatrollingAlgorithm that we reached the vertex
                 _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
-
                 var path = GetPathStepsToVertex(vertex, targetVertex);
                 vertex = targetVertex;
 
