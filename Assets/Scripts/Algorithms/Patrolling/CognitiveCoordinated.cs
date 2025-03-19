@@ -16,8 +16,6 @@ namespace Maes.Algorithms.Patrolling
         public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private List<Vertex> _currentPath = new();
         private int _pathStep;
-        private bool _initialVertex = true;
-
         private readonly Dictionary<(int, int), Vertex[]> _pathsCache = new();
 
         protected override bool AllowForeignVertices => true;
@@ -34,7 +32,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
         {
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, Coordinator.GlobalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
@@ -66,19 +64,14 @@ namespace Maes.Algorithms.Patrolling
 
         private void CreatePath(Vertex currentVertex)
         {
-            // Initially we are on the local copy of patrolling map.
-            // Move onto the global map so we get global knowledge of idleness.
-            var currentVertexOnGlobalMap = currentVertex;
-            if (_initialVertex && !Coordinator.GlobalMap.Vertices.Contains(currentVertexOnGlobalMap))
-            {
-                currentVertexOnGlobalMap = Coordinator.GlobalMap.Vertices[currentVertexOnGlobalMap.Id];
-                _initialVertex = false;
-            }
-
             // Create a path to the vertex with the highest idleness
             _pathStep = 0;
-            _currentPath = AStar(currentVertexOnGlobalMap, HighestIdle(currentVertexOnGlobalMap));
-            _currentPath.Remove(_currentPath.First());
+            _currentPath = AStar(currentVertex, HighestIdle(currentVertex));
+            if (_currentPath.Count > 1)
+            {
+                _currentPath.Remove(_currentPath.First());
+            }
+
             var lastVertex = _currentPath.Last();
 
             Coordinator.OccupyVertex(_controller.GetRobotID(), lastVertex);
@@ -88,6 +81,7 @@ namespace Maes.Algorithms.Patrolling
         {
             // excluding the vertices other agents are pathing towards
             var availableVertices = Coordinator.GetUnoccupiedVertices(_controller.GetRobotID())
+                .Where(vertex => vertex != targetVertex)
                 .OrderBy(vertex => vertex.LastTimeVisitedTick)
                 .ToList();
 
