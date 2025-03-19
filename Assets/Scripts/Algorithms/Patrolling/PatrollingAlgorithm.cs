@@ -63,6 +63,8 @@ namespace Maes.Algorithms.Patrolling
             {
                 _componentPostUpdateStates.Add(component, new ComponentWaitForConditionState());
             }
+
+            _myUpdateLogicEnumerator = MyUpdateLogic().GetEnumerator();
         }
 
         public void SetController(Robot2DController controller)
@@ -155,9 +157,27 @@ namespace Maes.Algorithms.Patrolling
                     }
                 }
 
+                // Run the algorithm's update handler
+                HandleComponent(_myUpdateLogicEnumerator, _myUpdateLogicComponentUpdateState);
+
+
                 yield return WaitForCondition.WaitForLogicTicks(1);
             }
         }
+
+        private IEnumerator<ComponentWaitForCondition> _myUpdateLogicEnumerator = null!;
+
+        private readonly ComponentWaitForConditionState
+            _myUpdateLogicComponentUpdateState = new ComponentWaitForConditionState();
+
+        protected virtual IEnumerable<ComponentWaitForCondition> MyUpdateLogic()
+        {
+            while (true)
+            {
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
+        }
+
 
         private bool HandleComponent(IEnumerator<ComponentWaitForCondition> updateMethod,
             ComponentWaitForConditionState componentWaitForConditionState)

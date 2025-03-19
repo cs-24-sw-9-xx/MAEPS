@@ -41,7 +41,7 @@ namespace Maes.Robot
         public float TransmitPower { get; }
         public float ReceiverSensitivity { get; }
         // Dictionary with outer key being frequency in MHz and inner being the materials for the attenuation data
-        public Dictionary<uint, Dictionary<TileType, float>> AttenuationDictionary { get; set; }
+        public Dictionary<uint, Dictionary<TileType, float>> AttenuationDictionary { get; }
 
         // SLAM
         public bool AutomaticallyUpdateSlam { get; }
