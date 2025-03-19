@@ -3,18 +3,18 @@ using System;
 
 namespace Maes.Map.Generators
 {
-/// <summary>
-/// Provides static methods for generating common map layouts used in multi-agent patrolling research.
-/// Each method returns a 2D array of Tiles representing a specific map layout.
-/// </summary>
-public static class CommonMaps
-{
+    /// <summary>
+    /// Provides static methods for generating common map layouts used in multi-agent patrolling research.
+    /// Each method returns a 2D array of Tiles representing a specific map layout.
+    /// </summary>
+    public static class CommonMaps
+    {
         private static Tile[,] GenerateBitmap(string bitmapString)
         {
             var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var width = lines[0].Length;
             var height = lines.Length;
-            
+
             // Validate that all lines have the same length
             for (var i = 1; i < lines.Length; i++)
             {
@@ -23,7 +23,7 @@ public static class CommonMaps
                     throw new ArgumentException($"Line {i} has length {lines[i].Length}, expected {width}");
                 }
             }
-            
+
             var tiles = new Tile[width, height];
 
             for (var y = 0; y < height; y++)
