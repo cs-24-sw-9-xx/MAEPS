@@ -83,7 +83,6 @@ namespace Maes.Experiments.Patrolling
                 "CircularMap",
                 "GridMap"};
 
-            var i = 0;
 
             var mapIndex = 0;
             foreach (var currentMap in maps)
