@@ -541,5 +541,138 @@ namespace Maes.Robot
 
             return vertexPositionsMultiThread;
         }
+
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, int width, int height, SimulationMap<Tile> tileMap)
+        {
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new();
+            Parallel.ForEach(vertices, vertex =>
+                {
+                    var bitmap = new Bitmap(0, 0, width, height);
+
+                    for (var x = 0; x < width; x++)
+                    {
+                        for (var y = 0; y < height; y++)
+                        {
+                            var signalStrength = CommunicationBetweenPoints(new Vector2(vertex.x, vertex.y), new Vector2(x, y), tileMap);
+                            if (signalStrength >= _robotConstraints.ReceiverSensitivity)
+                            {
+                                bitmap.Set(x, y);
+                            }
+                        }
+                    }
+
+                    lock (vertexPositionsMultiThread)
+                    {
+                        vertexPositionsMultiThread.Add(vertex, bitmap);
+                    }
+                }
+            );
+            return vertexPositionsMultiThread;
+        }
+
+        // This method is an implementation of siddons algorithm which can be found in the following paper:
+        // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
+        // https://doi.org/10.1118/1.595715
+        public float CommunicationBetweenPoints(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
+        {
+            var x1 = start.x;
+            var y1 = start.y;
+            var x2 = end.x;
+            var y2 = end.y;
+            var xDiff = x2 - x1;
+            var yDiff = y2 - y1;
+            var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
+
+            if (lineLength > _robotConstraints.MaxCommunicationRange)
+            {
+                return float.MinValue;
+            }
+
+            var signalStrength = _robotConstraints.TransmitPower;
+
+            if (lineLength == 0)
+            {
+                return signalStrength;
+            }
+
+            // Collect intersections with grid lines
+            // Alpha is a normalized value representing a point along the line.
+            // 0 is the start point and 1 is the end point of the line.
+            var xyAlphas = new List<float>() { 0f, 1f };
+
+            // X-axis intersections (vertical lines)
+            if (xDiff != 0)
+            {
+                var xStart = Mathf.FloorToInt(x1);
+                var xEnd = Mathf.FloorToInt(x2);
+
+                if (xDiff > 0)
+                {
+                    for (var i = xStart + 1; i <= xEnd; i++)
+                    {
+                        var alpha = (i - x1) / xDiff;
+                        xyAlphas.Add(alpha);
+                    }
+                }
+                else
+                {
+                    for (var i = xStart; i > xEnd; i--)
+                    {
+                        var alpha = (i - x1) / xDiff;
+                        xyAlphas.Add(alpha);
+                    }
+                }
+            }
+
+            // Y-axis intersections (horizontal lines)
+            if (yDiff != 0)
+            {
+                var yStart = Mathf.FloorToInt(y1);
+                var yEnd = Mathf.FloorToInt(y2);
+
+                if (yDiff > 0)
+                {
+                    for (var j = yStart + 1; j <= yEnd; j++)
+                    {
+                        var alpha = (j - y1) / yDiff;
+                        xyAlphas.Add(alpha);
+                    }
+                }
+                else
+                {
+                    for (var j = yStart; j > yEnd; j--)
+                    {
+                        var alpha = (j - y1) / yDiff;
+                        xyAlphas.Add(alpha);
+                    }
+                }
+            }
+
+            // Remove duplicate values and sorting.
+            xyAlphas = xyAlphas.Distinct().ToList();
+            xyAlphas.Sort();
+
+
+            // Calculate line segemnts
+            for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
+            {
+                var aPrev = xyAlphas[alphaIndex - 1];
+                var aCurr = xyAlphas[alphaIndex];
+                var aMid = (aPrev + aCurr) / 2f;
+
+                var midPointX = x1 + aMid * xDiff;
+                var midPointY = y1 + aMid * yDiff;
+
+                var distance = (aCurr - aPrev) * lineLength;
+
+                var tile = tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
+                if (_robotConstraints.MaterialCommunication)
+                {
+                    signalStrength -= (distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tile.GetTriangles()[0].Type]);
+                }
+            }
+
+            return signalStrength;
+        }
     }
 }
