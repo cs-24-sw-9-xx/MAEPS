@@ -3,8 +3,12 @@ using System;
 
 namespace Maes.Map.Generators
 {
-    public static class CommonMaps
-    {
+/// <summary>
+/// Provides static methods for generating common map layouts used in multi-agent patrolling research.
+/// Each method returns a 2D array of Tiles representing a specific map layout.
+/// </summary>
+public static class CommonMaps
+{
         private static Tile[,] GenerateBitmap(string bitmapString)
         {
             var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
