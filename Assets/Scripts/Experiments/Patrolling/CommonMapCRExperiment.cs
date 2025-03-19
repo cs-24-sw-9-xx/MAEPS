@@ -114,7 +114,7 @@ namespace Maes.Experiments.Patrolling
 
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
-                spawningPosList.Add(new Vector2Int(random.Next(-mapSizeX / 2, mapSizeY / 2), random.Next(-mapSizeY / 2, mapSizeX / 2)));
+                spawningPosList.Add(new Vector2Int(random.Next(-mapSizeX / 2, mapSizeX / 2), random.Next(-mapSizeY / 2, mapSizeY / 2)));
             }
 
             simulator.PressPlayButton(); // Instantly enter play mode
