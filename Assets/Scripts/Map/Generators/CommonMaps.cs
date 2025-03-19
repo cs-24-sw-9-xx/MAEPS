@@ -10,13 +10,24 @@ namespace Maes.Map.Generators
             var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var width = lines[0].Length;
             var height = lines.Length;
+            
+            // Validate that all lines have the same length
+            for (var i = 1; i < lines.Length; i++)
+            {
+                if (lines[i].Length != width)
+                {
+                    throw new ArgumentException($"Line {i} has length {lines[i].Length}, expected {width}");
+                }
+            }
+            
             var tiles = new Tile[width, height];
 
             for (var y = 0; y < height; y++)
             {
                 for (var x = 0; x < width; x++)
                 {
-                    var tileChar = lines[height - 1 - y][x]; // Reverse y index to flip vertically
+                    // Reverse y index to flip vertically (making the bitmap read from bottom to top)
+                    var tileChar = lines[height - 1 - y][x];
                     var tile = tileChar == 'X' ? TileType.Wall : TileType.Room;
                     tiles[x, y] = new Tile(tile);
                 }
