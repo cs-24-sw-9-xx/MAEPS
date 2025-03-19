@@ -1,3 +1,29 @@
+// Copyright 2025 MAES
+// 
+// This file is part of MAES
+// 
+// MAES is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAES is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAES. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: 
+// Casper Nyvang Sørensen,
+// Christian Ziegler Sejersen,
+// Henrik van Peet,
+// Jakob Meyer Olsen,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
+// 
+// Original repository: https://github.com/Molitany/MAES
 
 using System;
 
@@ -9,9 +35,9 @@ namespace Maes.Map.Generators
     /// </summary>
     public static class CommonMaps
     {
-        private static Tile[,] GenerateBitmap(string bitmapString)
+        private static Tile[,] GenerateTilemapFromString(string tilemapString)
         {
-            var lines = bitmapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var lines = tilemapString.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var width = lines[0].Length;
             var height = lines.Length;
 
@@ -42,7 +68,7 @@ namespace Maes.Map.Generators
 
         public static Tile[,] GridMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXX                                       XXXXXXX;" +
                                         "XXXX                                       XXXXXXX;" +
@@ -84,12 +110,12 @@ namespace Maes.Map.Generators
                                         "XXXX                                       XXXXXXX;" +
                                         "XXXX                                       XXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
         public static Tile[,] CorridorMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXX        XX        XX                       XXXX;" +
                                         "XXX        XX        XX                       XXXX;" +
@@ -131,13 +157,13 @@ namespace Maes.Map.Generators
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
 
         public static Tile[,] IslandsMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "X         XXXXXXX              XXXXXXX          XX;" +
                                         "X          XXXX                     X           XX;" +
@@ -179,13 +205,13 @@ namespace Maes.Map.Generators
                                         "X         XXXXXXXXXX        XXXXXXXXXXX         XX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
 
         public static Tile[,] MapAMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "X                                                  X;" +
                                         "X                                                  X;" +
@@ -228,13 +254,13 @@ namespace Maes.Map.Generators
                                         "X          XXXXXXXXXXX                             X;" +
                                         "X                                                  X;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
 
         public static Tile[,] MapBMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "X                X                    XXXXXX       X;" +
                                         "X                X                     XXXXX       X;" +
@@ -277,13 +303,13 @@ namespace Maes.Map.Generators
                                         "X X        XXXXXXXXXXX                             X;" +
                                         "XX                                                 X;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
 
         public static Tile[,] CircularMap()
         {
-            const string bitmapString = "" +
+            const string tilemapString = "" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXX                             XXX;" +
                                         "XXXXXXXXXXXXXX                                 XXX;" +
@@ -326,7 +352,7 @@ namespace Maes.Map.Generators
                                         "XXXXXXXX                             XXXXXXXXXXXXX;" +
                                         "XXXXXXXXXX                        XXXXXXXXXXXXXXXX;" +
                                         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
-            return GenerateBitmap(bitmapString);
+            return GenerateTilemapFromString(tilemapString);
 
         }
     }
