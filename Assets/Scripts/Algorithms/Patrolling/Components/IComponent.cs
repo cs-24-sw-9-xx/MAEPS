@@ -18,6 +18,7 @@
 // Contributors: Mads Beyer Mogensen
 
 using System.Collections.Generic;
+using System.Text;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
@@ -29,6 +30,12 @@ namespace Maes.Algorithms.Patrolling.Components
         IEnumerable<ComponentWaitForCondition> PreUpdateLogic();
 
         IEnumerable<ComponentWaitForCondition> PostUpdateLogic();
+
+        void DebugInfo(StringBuilder stringBuilder)
+        {
+            // Intentionally left blank.
+            // Don't force components to implement this.
+        }
 
         /// <summary>
         /// The order the component's <see cref="PreUpdateLogic"/> method is executed in comparison to the other components.

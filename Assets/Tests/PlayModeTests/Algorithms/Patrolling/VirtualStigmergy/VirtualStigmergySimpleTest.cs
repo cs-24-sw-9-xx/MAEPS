@@ -71,11 +71,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
 
             algorithm1.VirtualStigmergyComponent.Put("test", "ayo");
 
-            Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm1.VirtualStigmergyComponent.GetNonSending("test"));
 
             // Make sure we have no keys
-            Assert.AreEqual(0, algorithm2.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(0, algorithm2.VirtualStigmergyComponent.Size);
 
             // This waits an unknown amount of ticks
             while (ticks == _simulator.SimulationManager.CurrentSimulation.SimulatedLogicTicks)
@@ -84,7 +84,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
             }
 
             // Make sure we have the key
-            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
 
             ticks = _simulator.SimulationManager.CurrentSimulation.SimulatedLogicTicks;
@@ -96,10 +96,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
                 yield return null;
             }
 
-            Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm1.VirtualStigmergyComponent.GetNonSending("test"));
 
-            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
         }
 
@@ -125,10 +125,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
                 yield return null;
             }
 
-            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
 
-            Assert.AreEqual(1, algorithm3.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(1, algorithm3.VirtualStigmergyComponent.Size);
             Assert.AreEqual("ayo", algorithm3.VirtualStigmergyComponent.GetNonSending("test"));
         }
 
@@ -166,7 +166,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
             }
 
             // Should not have any info yet
-            Assert.AreEqual(0, algorithm2.VirtualStigmergyComponent.Size());
+            Assert.AreEqual(0, algorithm2.VirtualStigmergyComponent.Size);
 
 
             // Should be null, but should send a get message so that we can get the info after some ticks

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,8 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly StringBuilder _stringBuilder = new();
 
+        private Action<StringBuilder>[] _componentDebugInfos = null!;
+
         private IEnumerator<ComponentWaitForCondition>[] _componentPreUpdates = null!;
         private IEnumerator<ComponentWaitForCondition>[] _componentPostUpdates = null!;
 
@@ -50,6 +53,8 @@ namespace Maes.Algorithms.Patrolling
         {
             var preUpdateSortedComponents = components.OrderBy(component => component.PreUpdateOrder).Select(component => component.PreUpdateLogic().GetEnumerator()).ToArray();
             var postUpdateSortedComponents = components.OrderBy(component => component.PostUpdateOrder).Select(component => component.PostUpdateLogic().GetEnumerator()).ToArray();
+
+            _componentDebugInfos = components.Select(c => (Action<StringBuilder>)c.DebugInfo).ToArray();
 
             _componentPreUpdates = preUpdateSortedComponents;
             _componentPostUpdates = postUpdateSortedComponents;
@@ -229,6 +234,13 @@ namespace Maes.Algorithms.Patrolling
                 .AppendFormat("Target vertex: {0}\n", TargetVertex)
                 .AppendFormat("Neighbours: {0}\n", string.Join(", ", TargetVertex.Neighbors.Select(x => x.ToString())));
             GetDebugInfo(_stringBuilder);
+
+            // Append component's debug info
+            foreach (var componentDebugInfo in _componentDebugInfos)
+            {
+                componentDebugInfo(_stringBuilder);
+            }
+
             return _stringBuilder.ToString();
         }
 

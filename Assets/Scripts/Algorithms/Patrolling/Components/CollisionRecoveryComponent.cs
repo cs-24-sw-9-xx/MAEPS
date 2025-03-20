@@ -18,6 +18,7 @@
 // Contributors: Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Text;
 
 using Maes.Robot;
 using Maes.Robot.Tasks;
@@ -34,6 +35,8 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly Robot2DController _controller;
         private readonly IMovementComponent _movementComponent;
 
+        private bool _doingCollisionRecovery;
+
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
@@ -49,6 +52,8 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 if (_controller.IsCurrentlyColliding)
                 {
+                    _doingCollisionRecovery = true;
+
                     _controller.StopCurrentTask();
                     yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
 
@@ -69,6 +74,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 }
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, true);
+                _doingCollisionRecovery = false;
             }
         }
 
@@ -77,6 +83,14 @@ namespace Maes.Algorithms.Patrolling.Components
             while (true)
             {
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
+        }
+
+        public void DebugInfo(StringBuilder stringBuilder)
+        {
+            if (_doingCollisionRecovery)
+            {
+                stringBuilder.Append("Doing collision avoidance\n");
             }
         }
 

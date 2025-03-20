@@ -21,6 +21,7 @@
 // #define VIRTUAL_STIGMERGY_TRACING
 
 using System.Collections.Generic;
+using System.Text;
 
 using Maes.Robot;
 
@@ -60,6 +61,11 @@ namespace Maes.Algorithms.Patrolling.Components
         /// Gets a queue of messages that are not from virtual stigmergy.
         /// </summary>
         public Queue<object> NonVirtualStigmergyMessageQueue { get; } = new Queue<object>();
+
+        /// <summary>
+        /// Gets how many key-value pairs are in the local knowledge.
+        /// </summary>
+        public int Size => _localKnowledge.Count;
 
         /// <summary>
         /// Creates a new instance of <see cref="VirtualStigmergyComponent{TValue}"/>.
@@ -278,14 +284,16 @@ namespace Maes.Algorithms.Patrolling.Components
             return _localKnowledge.ContainsKey(key);
         }
 
-        /// <summary>
-        /// Gets how many key-value pairs are in the local knowledge.
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>This does not communicate with neighbors.</remarks>
-        public int Size()
+        public void DebugInfo(StringBuilder stringBuilder)
         {
-            return _localKnowledge.Count;
+            if (_localKnowledge.Count > 0)
+            {
+                stringBuilder.Append("Local Knowledge:\n");
+                foreach (var (key, valueInfo) in _localKnowledge)
+                {
+                    stringBuilder.AppendFormat("  \"{0}\": ({1}, {2}, \"{3}\"),\n", key, valueInfo.Timestamp, valueInfo.RobotId, valueInfo.Value);
+                }
+            }
         }
 
         private void BroadcastMessage(VirtualStigmergyMessage message)
