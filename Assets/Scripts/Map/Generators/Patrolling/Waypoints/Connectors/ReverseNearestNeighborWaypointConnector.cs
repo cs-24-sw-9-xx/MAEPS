@@ -30,26 +30,29 @@ using Maes.Utilities;
 
 using UnityEngine;
 
-namespace Maes.Map.Generators.Patrolling
+namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
 {
-    public static class WaypointConnection
+    public static class ReverseNearestNeighborWaypointConnector
     {
         /// <summary>
         /// Connect vertices by reverse nearest neighbors.
         /// Connect islands of vertices by connecting the closest vertices between islands, to ensure a connected graph. 
         /// </summary>
+        /// <param name="map"></param>
         /// <param name="vertexPositions"></param>
-        /// <param name="distanceMatrix"></param>
         /// <param name="colorIslands">Color the islands, to ease debugging.</param>
+        /// <param name="defaultColor"></param>
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertecies with connections(edges) to other vertecies.</returns>
-        public static Vertex[] ConnectVerticesByReverseNearestNeighbor(Dictionary<Vector2Int, Bitmap> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, bool colorIslands, Color defaultColor, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
+
             var reverseNearestNeighbors = MapUtilities.FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-            var vertices = vertexPositions.Select(pos => new Vertex(nextId++, 0, pos.Key)).ToArray();
+            var vertices = vertexPositions.Select(position => new Vertex(nextId++, 0, position)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
@@ -77,6 +80,7 @@ namespace Maes.Map.Generators.Patrolling
 
             return vertices;
         }
+
 
         private static void ConnectIslands(
                  Vertex[] vertices,

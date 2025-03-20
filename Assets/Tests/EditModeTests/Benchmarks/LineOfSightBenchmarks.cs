@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-using Maes.Map.Generators.Patrolling;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -29,7 +29,7 @@ namespace Tests.EditModeTests.Benchmarks
 
                 for (var i = 0; i < iterations; i++)
                 {
-                    result = GreedyWaypointGenerator.ComputeVisibility(bitmap);
+                    result = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
                 }
 
                 stopWatch.Stop();

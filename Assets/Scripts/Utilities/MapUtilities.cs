@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -37,19 +38,7 @@ namespace Maes.Utilities
         /// <param name="map"></param>
         /// <param name="vertices"></param>
         /// <returns></returns>
-        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, Dictionary<Vector2Int, Bitmap> vertices)
-        {
-            Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
-
-            foreach (var (vertex, _) in vertices)
-            {
-                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
-            }
-
-            return shortestGridPath;
-        }
-
-        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, List<Vector2Int> vertices)
+        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
 
@@ -78,41 +67,7 @@ namespace Maes.Utilities
         };
 
         // BFS to find the distance of the shortest path from the start position to all other vertices
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, Dictionary<Vector2Int, Bitmap> vertexPositions, Bitmap map)
-        {
-            var queue = new Queue<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
-            var distanceMap = new Dictionary<Vector2Int, int>();
-
-            queue.Enqueue(startPosition);
-            visited.Add(startPosition);
-            distanceMap[startPosition] = 0;
-
-            while (queue.Count > 0)
-            {
-                var current = queue.Dequeue();
-                var currentDistance = distanceMap[current];
-
-                foreach (var direction in Directions)
-                {
-                    var neighbor = current + direction;
-
-                    if (IsWalkable(neighbor, map) && !visited.Contains(neighbor))
-                    {
-                        queue.Enqueue(neighbor);
-                        visited.Add(neighbor);
-                        distanceMap[neighbor] = currentDistance + 1;
-
-                        if (vertexPositions.ContainsKey(neighbor))
-                        {
-                            shortestGridPath[(startPosition, neighbor)] = distanceMap[neighbor];
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, List<Vector2Int> vertexPositions, Bitmap map)
+        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, IReadOnlyCollection<Vector2Int> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             var visited = new HashSet<Vector2Int>();

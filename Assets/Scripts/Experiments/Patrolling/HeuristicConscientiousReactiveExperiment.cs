@@ -96,8 +96,7 @@ namespace Maes.Experiments.Patrolling
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new HeuristicConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints,
-                    showIslands: false
+                    robotConstraints: robotConstraints
                 )
             );
 
@@ -114,8 +113,7 @@ namespace Maes.Experiments.Patrolling
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new HeuristicConscientiousReactiveAlgorithm()),
                     statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    robotConstraints: robotConstraints,
-                    showIslands: false
+                    robotConstraints: robotConstraints
                 )
             );
 

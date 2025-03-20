@@ -26,6 +26,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Utilities;
 
 using Unity.Collections;
@@ -33,18 +34,16 @@ using Unity.Jobs;
 
 using UnityEngine;
 
-namespace Maes.Map.Generators.Patrolling
+namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 {
-    public static class GreedyWaypointGenerator
+    public static class GreedyMostVisibilityWaypointGenerator
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, float maxDistance = 0f)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, WaypointConnector.WaypointConnectorDelegate waypointConnector, float maxDistance = 0f)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = ArtGalleryProblemHeuresticSolver(map, maxDistance);
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-            var color = Color.green;
-            var connectVertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(vertexPositions, distanceMatrix, colorIslands, color);
-            return new PatrollingMap(connectVertices, simulationMap, vertexPositions);
+            var vertexPositions = VertexPositionsFromMap(map, maxDistance);
+            var connectedVertices = waypointConnector(map, vertexPositions.Keys);
+            return new PatrollingMap(connectedVertices, simulationMap, vertexPositions);
         }
 
         /// <summary>
@@ -53,11 +52,10 @@ namespace Maes.Map.Generators.Patrolling
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public static Dictionary<Vector2Int, Bitmap> ArtGalleryProblemHeuresticSolver(Bitmap map, float maxDistance = 0f)
+        public static Dictionary<Vector2Int, Bitmap> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
         {
             var precomputedVisibility = ComputeVisibility(map, maxDistance);
-            var guardPositions = ComputeVertexCoordinates(map, precomputedVisibility);
-            return guardPositions;
+            return ComputeVertexCoordinates(map, precomputedVisibility);
         }
 
         private static Dictionary<Vector2Int, Bitmap> ComputeVertexCoordinates(Bitmap map, Dictionary<Vector2Int, Bitmap> precomputedVisibility)

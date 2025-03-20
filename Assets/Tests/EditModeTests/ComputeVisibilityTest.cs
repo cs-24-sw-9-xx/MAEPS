@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-using Maes.Map.Generators.Patrolling;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -279,7 +279,7 @@ namespace Tests.EditModeTests
         {
             using (var bitmap = Utilities.BitmapFromString(Map))
             {
-                var waypoints = GreedyWaypointGenerator.ComputeVisibility(bitmap);
+                var waypoints = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
 
                 // Check that there are no waypoints inside the wall
                 foreach (var (waypoint, _) in waypoints)

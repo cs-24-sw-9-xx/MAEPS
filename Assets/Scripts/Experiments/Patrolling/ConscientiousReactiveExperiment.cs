@@ -131,8 +131,7 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    showIslands: false)
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
             );
 
             simulator.EnqueueScenario(
@@ -148,8 +147,7 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig2),
                     robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    showIslands: true)
+                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
             );
 
 
