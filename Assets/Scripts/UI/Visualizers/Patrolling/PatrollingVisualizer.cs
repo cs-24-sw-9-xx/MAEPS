@@ -76,7 +76,8 @@ namespace Maes.UI.Visualizers.Patrolling
                     {
                         lineRenderer.SetPosition(i + 1, ((Vector3)(Vector2)paths[i].End) + transform.position + Vector3.back);
                     }
-                    lineRenderer.material.color = vertex.Color;
+                    lineRenderer.startColor = vertex.Color;
+                    lineRenderer.endColor = otherVertex.Color;
 
                     _visualizerObjects.Add(edgeVisualizer);
                 }
