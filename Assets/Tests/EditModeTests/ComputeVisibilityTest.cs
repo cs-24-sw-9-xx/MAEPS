@@ -29,6 +29,7 @@ namespace Tests.EditModeTests
             public readonly string Name;
             public readonly string MapData;
             public readonly Vector2Int Point;
+            public readonly float MaxVisiblityRange;
 
             public Bitmap Map
             {
@@ -37,22 +38,18 @@ namespace Tests.EditModeTests
             }
 
             public readonly int ExpectedVisible;
-            public TestCase(string name, string map, int expectedVisible, Vector2Int point)
+            public TestCase(string name, string map, int expectedVisible, float maxVisibilityRange, Vector2Int point)
             {
                 Name = name;
                 MapData = map;
                 ExpectedVisible = expectedVisible;
                 Point = point;
+                MaxVisiblityRange = maxVisibilityRange;
             }
 
-            public TestCase(string name, string map, int expectedVisible)
-            : this(name, map, expectedVisible, Vector2Int.zero)
-            {
-                Name = name;
-                MapData = map;
-                ExpectedVisible = expectedVisible;
-            }
-
+            public TestCase(string name, string map, int expectedVisible, float maxVisibilityRange = 0)
+            : this(name, map, expectedVisible, maxVisibilityRange, Vector2Int.zero)
+            { }
         }
 
         public static TestCase[] ComputeVisibilityTestCases = new TestCase[] {
@@ -65,7 +62,7 @@ namespace Tests.EditModeTests
             new TestCase("2x2, diagonal (1,1)",
                 "" +
                 " X;" +
-                "X ;", 1, new Vector2Int(1, 1)),
+                "X ;", 1, 0, new Vector2Int(1, 1)),
             new TestCase("2x2 all floor",
                 "" +
                 "  ;" +
@@ -73,15 +70,15 @@ namespace Tests.EditModeTests
             new TestCase("2x2 all floor (1,0)",
                 "" +
                 "  ;" +
-                "  ;", 4, new Vector2Int(1,0)),
+                "  ;", 4, 0, new Vector2Int(1,0)),
             new TestCase("2x2 all floor (1,1)",
                 "" +
                 "  ;" +
-                "  ;", 4, new Vector2Int(1,1)),
+                "  ;", 4, 0, new Vector2Int(1,1)),
             new TestCase("2x2 all floor (0,1)",
                 "" +
                 "  ;" +
-                "  ;", 4, new Vector2Int(0,1)),
+                "  ;", 4, 0, new Vector2Int(0,1)),
             new TestCase("2x2 can view horizontal and vertical",
                 "" +
                 "  ;" +
@@ -132,7 +129,14 @@ namespace Tests.EditModeTests
                 " X;" +
                 " X;" +
                 "  ;"
-            , 4)
+            , 4),
+            new TestCase("1x4 cannot see further than max range",
+                "" +
+                " ;" +
+                " ;" +
+                " ;" +
+                " ;"
+            , 3, 2),
             };
 
         private const string Map = "" +
@@ -254,7 +258,7 @@ namespace Tests.EditModeTests
                 Map = nativeMap,
                 X = testCase.Point.x,
                 Visibility = nativeVisibility,
-                MaxDistance = 0,
+                MaxDistance = testCase.MaxVisiblityRange,
             };
 
             job.Schedule().Complete();
