@@ -2,8 +2,11 @@ using Maes.Algorithms.Patrolling;
 using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.Generators;
-using Maes.Map.Generators.Patrolling;
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
+
+using UnityEngine;
 
 namespace Maes.Simulation.Patrolling
 {
@@ -25,7 +28,6 @@ namespace Maes.Simulation.Patrolling
             string? statisticsFileName = null,
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
-            bool showIslands = false,
             int partitions = 1)
             : base(seed,
                 robotSpawner,
@@ -38,7 +40,7 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyWaypointGenerator.MakePatrollingMap(map, showIslands));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyMostVisibilityWaypointGenerator.MakePatrollingMap(map, (bitmap, positions) => ReverseNearestNeighborWaypointConnector.ConnectVertices(bitmap, positions, true, Color.green)));
         }
     }
 }

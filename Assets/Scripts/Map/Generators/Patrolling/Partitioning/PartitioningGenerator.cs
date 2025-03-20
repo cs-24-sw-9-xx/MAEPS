@@ -24,6 +24,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Utilities;
 
 using MathNet.Numerics.LinearAlgebra;
@@ -39,7 +41,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyWaypointGenerator.ArtGalleryProblemHeuresticSolver(map);
+            var vertexPositionsDictionary = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
             var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
@@ -47,9 +49,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var nextId = 0;
             foreach (var cluster in clusters)
             {
-                var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, clusterColor, nextId);
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, colorIslands, clusterColor, nextId);
                 Array.ForEach(vertices, vertex => vertex.Partition = cluster.Key);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
@@ -60,7 +61,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyWaypointGenerator.ArtGalleryProblemHeuresticSolver(map);
+            var vertexPositionsDictionary = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
             var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = KMeansPartitioningGenerator.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
@@ -68,9 +69,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var nextId = 0;
             foreach (var cluster in clusters)
             {
-                var localDistanceMatrix = MapUtilities.CalculateDistanceMatrix(map, cluster.Value);
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-                var vertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(cluster.Value.ToDictionary(p => p, p => vertexPositionsDictionary[p]), localDistanceMatrix, colorIslands, clusterColor, nextId);
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, colorIslands, clusterColor, nextId);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
