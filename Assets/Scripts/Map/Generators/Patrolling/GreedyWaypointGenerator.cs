@@ -37,10 +37,10 @@ namespace Maes.Map.Generators.Patrolling
 {
     public static class GreedyWaypointGenerator
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, bool colorIslands, float maxDistance = 0f)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = ArtGalleryProblemHeuresticSolver(map);
+            var vertexPositions = ArtGalleryProblemHeuresticSolver(map, maxDistance);
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var color = Color.green;
             var connectVertices = WaypointConnection.ConnectVerticesByReverseNearestNeighbor(vertexPositions, distanceMatrix, colorIslands, color);
@@ -53,9 +53,9 @@ namespace Maes.Map.Generators.Patrolling
         /// </summary>
         /// <param name="map"></param>
         /// <returns></returns>
-        public static Dictionary<Vector2Int, Bitmap> ArtGalleryProblemHeuresticSolver(Bitmap map)
+        public static Dictionary<Vector2Int, Bitmap> ArtGalleryProblemHeuresticSolver(Bitmap map, float maxDistance = 0f)
         {
-            var precomputedVisibility = ComputeVisibility(map);
+            var precomputedVisibility = ComputeVisibility(map, maxDistance);
             var guardPositions = ComputeVertexCoordinates(map, precomputedVisibility);
             return guardPositions;
         }
@@ -124,7 +124,7 @@ namespace Maes.Map.Generators.Patrolling
             return guardPositions;
         }
 
-        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map)
+        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)
         {
             var startTime = Time.realtimeSinceStartup;
 
@@ -147,7 +147,8 @@ namespace Maes.Map.Generators.Patrolling
                     Height = map.Height,
                     X = x,
                     Map = nativeMap,
-                    Visibility = nativeVisibilities[x]
+                    Visibility = nativeVisibilities[x],
+                    MaxDistance = maxDistance,
                 };
 
                 jobs[x] = job.Schedule();

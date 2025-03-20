@@ -253,7 +253,8 @@ namespace Tests.EditModeTests
                 Height = map.Height,
                 Map = nativeMap,
                 X = testCase.Point.x,
-                Visibility = nativeVisibility
+                Visibility = nativeVisibility,
+                MaxDistance = 0,
             };
 
             job.Schedule().Complete();
