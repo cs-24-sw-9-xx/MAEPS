@@ -55,7 +55,7 @@ namespace Maes.Utilities
         {
             return pos.x >= 0 && pos.x < map.Width &&
                    pos.y >= 0 && pos.y < map.Height &&
-                   !map[pos.x, pos.y]; // true if the position is not a wall
+                   !map.Contains(pos.x, pos.y); // true if the position is not a wall
         }
 
         private static readonly Vector2Int[] Directions = new Vector2Int[]

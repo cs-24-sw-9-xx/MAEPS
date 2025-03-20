@@ -13,7 +13,7 @@ namespace Maes.Utilities.Files
             {
                 for (var y = 0; y < map.Height; y++)
                 {
-                    if (map[x, y])
+                    if (map.Contains(x, y))
                     {
                         texture.SetPixel(x, y, Color.blue);
                     }

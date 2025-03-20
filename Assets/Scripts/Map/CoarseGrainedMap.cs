@@ -157,7 +157,7 @@ namespace Maes.Map
         public bool IsTileExplored(Vector2Int localCoordinate)
         {
             AssertWithinBounds(localCoordinate);
-            return _tilesCoveredStatus[localCoordinate.x, localCoordinate.y];
+            return _tilesCoveredStatus.Contains(localCoordinate.x, localCoordinate.y);
         }
 
         // Sets the data at the given tile, overwriting any existing data object if present
@@ -557,7 +557,7 @@ namespace Maes.Map
                 return true;
             }
 
-            return (!_tilesCoveredStatus[coordinate.x, coordinate.y]) && GetSlamTileStatuses(coordinate).All(status => status != SlamMap.SlamTileStatus.Solid);
+            return (!_tilesCoveredStatus.Contains(coordinate.x, coordinate.y)) && GetSlamTileStatuses(coordinate).All(status => status != SlamMap.SlamTileStatus.Solid);
         }
 
         private SlamMap.SlamTileStatus[] GetSlamTileStatuses(Vector2Int coordinate)
