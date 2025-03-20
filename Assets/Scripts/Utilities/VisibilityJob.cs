@@ -16,13 +16,14 @@ namespace Maes.Utilities
         [ReadOnly]
         public int Width;
 
-        [NoAlias]
         [ReadOnly]
         public int Height;
 
-        [NoAlias]
         [ReadOnly]
         public int X;
+
+        [ReadOnly]
+        public float MaxDistance;
 
         [NoAlias]
         [ReadOnly]
@@ -36,6 +37,7 @@ namespace Maes.Utilities
             Hint.Assume(Height > 0);
             Hint.Assume(Width > 0);
             Hint.Assume(X >= 0);
+            Hint.Assume(MaxDistance >= 0f);
 
             var heightIndex = X * Height;
 
@@ -126,6 +128,17 @@ namespace Maes.Utilities
                 {
                     tMaxY += tDeltaY;
                     y += stepY;
+                }
+
+                if (MaxDistance != 0f)
+                {
+                    // Exit if we are over MaxDistance
+                    var distX = X - x;
+                    var distY = outerY - y;
+                    if (distX * distX + distY * distY > MaxDistance * MaxDistance)
+                    {
+                        return;
+                    }
                 }
 
                 var mapIndex = GetMapIndex(x, y);
