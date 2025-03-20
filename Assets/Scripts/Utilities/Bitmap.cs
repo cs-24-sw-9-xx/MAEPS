@@ -197,13 +197,6 @@ namespace Maes.Utilities
             Unset((x - XStart) * Height + (y - YStart));
         }
 
-        public bool this[int x, int y]
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get =>
-                Contains(x, y);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Vector2Int point)
         {
