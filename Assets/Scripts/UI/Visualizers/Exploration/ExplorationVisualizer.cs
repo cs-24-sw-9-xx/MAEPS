@@ -21,6 +21,7 @@
 
 using System.Collections.Generic;
 
+using Maes.Map;
 using Maes.Statistics;
 
 using UnityEngine;
@@ -34,6 +35,14 @@ namespace Maes.UI.Visualizers.Exploration
         public static readonly Color32 SlamSeenColor = new(50, 120, 180, 255);
         public static readonly Color32 WarmColor = new(200, 60, 60, 255);
         public static readonly Color32 ColdColor = new(50, 120, 180, 255);
+
+        public override void SetSimulationMap(SimulationMap<Cell> newMap)
+        {
+            //fixing map offset, but can't find why it needs 0.5 on both axes (hack)
+            transform.position = newMap.ScaledOffset + new Vector2(0.5f, 0.5f);
+
+            base.SetSimulationMap(newMap);
+        }
 
         protected override Color32 InitializeCellColor(Cell cell)
         {
