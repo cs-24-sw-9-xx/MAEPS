@@ -114,6 +114,32 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         }
 
         [Test(ExpectedResult = null)]
+        public IEnumerator Test_HeuristicConscientiousReactive_CaveMap()
+        {
+            var simulation = EnqueueCaveMapScenario(new HeuristicConscientiousReactiveAlgorithm());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_HeuristicConscientiousReactive_BuildingMap()
+        {
+            var simulation = EnqueueBuildingMapScenario(new HeuristicConscientiousReactiveAlgorithm());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+
+
+        [Test(ExpectedResult = null)]
         public IEnumerator Test_RandomReactive_CaveMap()
         {
             var simulation = EnqueueCaveMapScenario(new RandomReactive(Seed));
