@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 2971627008234114267}
   - component: {fileID: 1752440152971184115}
+  - component: {fileID: 3780102128784727835}
   - component: {fileID: 7644190179184862860}
-  - component: {fileID: 7872778173643655648}
   - component: {fileID: 2558604275696812671}
   m_Layer: 5
   m_Name: VertexVisualizer
@@ -47,7 +47,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e834dabe01794c529546670befd8ce90, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meshRenderer: {fileID: 7644190179184862860}
+  meshFilter: {fileID: 3780102128784727835}
+--- !u!33 &3780102128784727835
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1182521778900794802}
+  m_Mesh: {fileID: 0}
 --- !u!23 &7644190179184862860
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -65,10 +73,13 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0c142b22a534b3f6ebe22126880e6f8c, type: 2}
+  - {fileID: 2100000, guid: 7855e6a50444d4f41a51dee4180844a7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -90,14 +101,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &7872778173643655648
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1182521778900794802}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!61 &2558604275696812671
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -106,6 +109,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1182521778900794802}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -129,7 +133,8 @@ BoxCollider2D:
     m_Bits: 4294967295
   m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_UsedByComposite: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,6 +145,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0.1

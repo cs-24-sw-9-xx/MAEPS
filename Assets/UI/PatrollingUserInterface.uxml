@@ -21,7 +21,7 @@
             </engine:VisualElement>
         </engine:GroupBox>
         <engine:GroupBox name="VisualizationGroupBox" text="Visualization">
-            <engine:VisualElement style="flex-direction: column">
+            <engine:VisualElement style="flex-direction: column;">
                 <engine:VisualElement style="flex-direction: row;">
                     <engine:GroupBox text="All Robots" class="visualization-groupbox">
                         <engine:Button text="None" name="AllRobotsNoneButton" />
@@ -29,13 +29,15 @@
                         <engine:Button text="Coverage&#10;Heatmap" name="AllRobotsCoverageHeatMapButton" />
                         <engine:Button text="Waypoint&#10;Line of Sight" name="AllRobotsWaypointLineOfSightButton" />
                         <engine:Button text="Highlight&#10;Robots" name="AllRobotsHighlightRobotsButton" />
+                        <engine:Button text="Partition" name="AllRobotsPartitioningHighlightingButton" />
                     </engine:GroupBox>
-                    <engine:GroupBox text="Selected Robot" class="visualization-groupbox">
+                    <engine:GroupBox text="Selected Robot" name="GroupBox" class="visualization-groupbox">
                         <engine:Button text="Sticky Camera" name="SelectedRobotStickyCameraButton" />
                         <engine:Button text="Target&#10;Waypoint" name="SelectedRobotTargetWaypointButton" />
+                        <engine:Button text="Partition" name="SelectedRobotPartitioningHighlightingButton" />
                     </engine:GroupBox>
                 </engine:VisualElement>
-            </engine:VisualElement>  
+            </engine:VisualElement>
             <engine:GroupBox text="Selected Vertex" class="visualization-groupbox">
                 <engine:Button text="Communication&#10;Zone" name="SelectedVertexCommunicationZoneButton" />
             </engine:GroupBox>

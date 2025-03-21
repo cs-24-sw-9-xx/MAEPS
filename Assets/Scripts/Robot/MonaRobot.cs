@@ -50,6 +50,7 @@ namespace Maes.Robot
         public delegate void OnRobotSelectedDelegate(MonaRobot robot);
 
         public OnRobotSelectedDelegate OnRobotSelected = _ => { };
+        public Color32 Color { get; set; }
 
         public int AssignedPartition { get; set; }
 
@@ -226,7 +227,7 @@ namespace Maes.Robot
 
         private void OnDrawGizmos()
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color = UnityEngine.Color.yellow;
             foreach (var (point, radius) in Controller.DebugCircle)
             {
                 Gizmos.DrawWireSphere(point, radius);

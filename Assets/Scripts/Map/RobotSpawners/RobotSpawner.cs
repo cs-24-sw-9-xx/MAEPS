@@ -27,6 +27,7 @@ using Maes.Algorithms;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.TransformToNav2;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -107,8 +108,10 @@ namespace Maes.Map.RobotSpawners
             }
 
             var robotId = 0;
-            foreach (var spawn in spawnPositions)
+            var colors = ColorGenerator.GenerateColors(spawnPositions.Count);
+            for (var i = 0; i < spawnPositions.Count; i++)
             {
+                var spawn = spawnPositions[i];
                 var spawnTile = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).First();
 
                 var robotSeed = seed + robotId;
@@ -119,7 +122,8 @@ namespace Maes.Map.RobotSpawners
                     robotId: robotId,
                     algorithm: createAlgorithmDelegate(robotSeed),
                     collisionMap: collisionMap,
-                    seed: robotSeed
+                    seed: robotSeed,
+                    color: colors[i]
                 );
                 robots.Add(robot);
 
@@ -171,22 +175,25 @@ namespace Maes.Map.RobotSpawners
             });
 
 
-            var robotId = 0;
-            foreach (var tile in possibleSpawnTiles)
+            var colors = ColorGenerator.GenerateColors(numberOfRobots);
+            for (var i = 0; i < possibleSpawnTiles.Count; i++)
             {
-                if (robotId == numberOfRobots)
+                if (i == numberOfRobots)
                 {
                     break;
                 }
+
+                var tile = possibleSpawnTiles[i];
 
                 robots.Add(CreateRobot(
                     x: tile.x,
                     y: tile.y,
                     relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId++,
-                    algorithm: createAlgorithmDelegate(seed + robotId),
+                    robotId: i,
+                    algorithm: createAlgorithmDelegate(seed + i),
                     collisionMap: collisionMap,
-                    seed: seed + robotId
+                    seed: seed + i,
+                    color: colors[i]
                 ));
             }
 
@@ -284,17 +291,19 @@ namespace Maes.Map.RobotSpawners
                 }
             }
 
-            var robotId = 0;
-            foreach (var spawnTile in spawnTilesSelected)
+            var colors = ColorGenerator.GenerateColors(spawnTilesSelected.Count);
+            for (var i = 0; i < spawnTilesSelected.Count; i++)
             {
+                var spawnTile = spawnTilesSelected[i];
                 var robot = CreateRobot(
                     x: spawnTile.x,
                     y: spawnTile.y,
                     relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId++,
-                    algorithm: createAlgorithmDelegate(seed + robotId),
+                    robotId: i,
+                    algorithm: createAlgorithmDelegate(seed + i),
                     collisionMap: collisionMap,
-                    seed: seed + robotId
+                    seed: seed + i,
+                    color: colors[i]
                 );
                 robots.Add(robot);
             }
@@ -342,22 +351,25 @@ namespace Maes.Map.RobotSpawners
             });
 
 
-            var robotId = 0;
-            foreach (var tile in possibleSpawnTiles)
+            var colors = ColorGenerator.GenerateColors(possibleSpawnTiles.Count);
+            for (var i = 0; i < possibleSpawnTiles.Count; i++)
             {
-                if (robotId == numberOfRobots)
+                if (i == numberOfRobots)
                 {
                     break;
                 }
+
+                var tile = possibleSpawnTiles[i];
 
                 robots.Add(CreateRobot(
                     x: tile.x,
                     y: tile.y,
                     relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId++,
-                    algorithm: createAlgorithmDelegate(seed + robotId),
+                    robotId: i,
+                    algorithm: createAlgorithmDelegate(seed + i),
                     collisionMap: collisionMap,
-                    seed: seed + robotId
+                    seed: seed + i,
+                    color: colors[i]
                 ));
             }
 
@@ -366,7 +378,7 @@ namespace Maes.Map.RobotSpawners
         }
 
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
-            TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed)
+            TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed, Color32 color)
         {
             var robotGameObject = Instantiate(_robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
@@ -407,6 +419,7 @@ namespace Maes.Map.RobotSpawners
             robot.Controller.SlamMap = new SlamMap(collisionMap, RobotConstraints, seed);
             robot.Controller.Constraints = RobotConstraints;
             algorithm.SetController(robot.Controller);
+            robot.Color = color;
 
             return robot;
         }

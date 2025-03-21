@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Maes.Map;
 
 namespace Maes.Algorithms.Patrolling
@@ -22,5 +24,10 @@ namespace Maes.Algorithms.Patrolling
         void SetGlobalPatrollingMap(PatrollingMap globalMap);
 
         void SubscribeOnReachVertex(OnReachVertex onReachVertex);
+    }
+
+    public interface IPartitionPatrollingAlgorithm : IPatrollingAlgorithm
+    {
+        HashSet<int> GetPartitionedVertices();
     }
 }
