@@ -95,10 +95,10 @@ namespace Maes.Utilities
         /// <summary>
         /// Creates a new instance of <see cref="Bitmap"/>.
         /// </summary>
-        /// <param name="xStart"></param>
-        /// <param name="yStart"></param>
-        /// <param name="xEnd"></param>
-        /// <param name="yEnd"></param>
+        /// <param name="xStart">The inclusive minimum x-coordinate of the bitmap.</param>
+        /// <param name="yStart">The inclusive minimum y-coordinate of the bitmap.</param>
+        /// <param name="xEnd">The exclusive maximum x-coordinate of the bitmap.</param>
+        /// <param name="yEnd">The exclusive maximum y-coordinate of the bitmap.</param>
         public Bitmap(int xStart, int yStart, int xEnd, int yEnd)
         {
             XStart = xStart;
