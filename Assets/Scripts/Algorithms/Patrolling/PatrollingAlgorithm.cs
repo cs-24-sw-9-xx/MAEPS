@@ -20,7 +20,7 @@ namespace Maes.Algorithms.Patrolling
         private PatrollingMap _globalMap = null!;
 
         // Set by SetPatrollingMap
-        private PatrollingMap _patrollingMap = null!;
+        protected PatrollingMap _patrollingMap = null!;
 
         // Set by SetController
         protected Robot2DController _controller = null!;
