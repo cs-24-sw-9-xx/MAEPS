@@ -21,11 +21,10 @@
 
 using System.Collections.Generic;
 
+using Maes.Map;
 using Maes.Statistics;
 
 using UnityEngine;
-
-using Maes.Map;
 
 namespace Maes.UI.Visualizers.Exploration
 {
@@ -36,10 +35,11 @@ namespace Maes.UI.Visualizers.Exploration
         public static readonly Color32 SlamSeenColor = new(50, 120, 180, 255);
         public static readonly Color32 WarmColor = new(200, 60, 60, 255);
         public static readonly Color32 ColdColor = new(50, 120, 180, 255);
-        
+
         public override void SetSimulationMap(SimulationMap<Cell> newMap)
         {
-            transform.position = newMap.ScaledOffset + new Vector2(0.5f, 0.5f); //fixing offset
+            //fixing map offset, but can't find why it needs 0.5 on both axes (hack)
+            transform.position = newMap.ScaledOffset + new Vector2(0.5f, 0.5f);
 
             base.SetSimulationMap(newMap);
         }
