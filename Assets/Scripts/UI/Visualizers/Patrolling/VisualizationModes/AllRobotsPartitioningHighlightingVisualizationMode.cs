@@ -72,7 +72,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 }
                 else
                 {
-                    vertexVisualizer.SetWaypointColor(Color.white);
+                    vertexVisualizer.SetWaypointColor(Color.black);
                 }
             }
 
