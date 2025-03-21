@@ -56,7 +56,7 @@ namespace Maes.Algorithms.Patrolling
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
-        public delegate float DistanceEstimator(Vertex vertex);
+        public delegate float DistanceEstimator(Vertex source, Vertex target);
 
         private Vertex NextVertex(Vertex currentVertex)
         {
@@ -65,15 +65,31 @@ namespace Maes.Algorithms.Patrolling
             var normalizedIdleness = CalculateNormalizedIdleness(currentVertex.Neighbors);
 
             // Calculate the normalized distance estimation of the neighbors
-            var normalizedDistances = CalculateNormalizedDistance(currentVertex.Neighbors, DistanceEstimatorMethod);
+            var normalizedDistances = CalculateNormalizedDistance(currentVertex, ActualDistanceMethod);
             var result = UtilityFunction(normalizedIdleness, normalizedDistances);
             Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ", result.First().Neighbors.Select(x => x.Id))}");
             return result.First();
         }
 
-        private float DistanceEstimatorMethod(Vertex vertex)
+        /// <summary>
+        /// Realistically, this method should be used, since the distance estimation is not always accurate.
+        /// Currently, we use the actual path distance as the distance estimation. 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        private float DistanceEstimatorMethod(Vertex source, Vertex target)
         {
-            return _controller.EstimateDistanceToTarget(vertex.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {vertex.Id}, x:{vertex.Position.x}, y:{vertex.Position.y}");
+            return _controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
+        }
+
+        private float ActualDistanceMethod(Vertex source, Vertex target)
+        {
+            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
+            {
+                return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
+            }
+            throw new Exception($"Path from {source.Id} to {target.Id} not found");
         }
 
         private IEnumerable<Vertex> UtilityFunction(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
@@ -132,9 +148,10 @@ namespace Maes.Algorithms.Patrolling
             return normalizedIdleness;
         }
 
-        private static IEnumerable<NormalizedValue> CalculateNormalizedDistance(IEnumerable<Vertex> verticies, DistanceEstimator distanceEstimator)
+        private static IEnumerable<NormalizedValue> CalculateNormalizedDistance(Vertex currentVertex, DistanceEstimator distanceEstimator)
         {
-            var distanceEstimations = verticies.Select(vertex => (Vertex: vertex, dist: distanceEstimator(vertex)));
+            var neighbours = currentVertex.Neighbors;
+            var distanceEstimations = neighbours.Select(vertex => (Vertex: vertex, dist: distanceEstimator(currentVertex, vertex)));
             if (distanceEstimations.Any(estimation => estimation.dist < 0))
             {
                 throw new Exception("Distance estimation must be positive");
