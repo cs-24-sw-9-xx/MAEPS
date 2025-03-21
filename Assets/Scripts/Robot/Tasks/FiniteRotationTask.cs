@@ -26,7 +26,7 @@ using UnityEngine;
 namespace Maes.Robot.Tasks
 {
     // Represents a task to rotate the robot by a given amount of degrees
-    internal class FiniteRotationTask : ITask
+    internal sealed class FiniteRotationTask : ITask
     {
         private readonly float _degreesToRotate;
         private readonly float _startingAngle;
@@ -34,11 +34,7 @@ namespace Maes.Robot.Tasks
         private readonly Transform _robotTransform;
         private float _previousRotation;
 
-        private bool _isCompleted;
-        public bool IsCompleted()
-        {
-            return _isCompleted;
-        }
+        public bool IsCompleted { get; private set; }
 
         public FiniteRotationTask(Transform robotTransform, float degreesToRotate)
         {
@@ -55,7 +51,7 @@ namespace Maes.Robot.Tasks
 
         public MovementDirective GetNextDirective()
         {
-            if (_isCompleted)
+            if (IsCompleted)
             {
                 return MovementDirective.NoMovement();
             }
@@ -91,7 +87,7 @@ namespace Maes.Robot.Tasks
                 // The robot will be within acceptable range when rotation has stopped by itself.
                 // Stop applying force and consider task completed
                 forceMultiplier = 0;
-                _isCompleted = true;
+                IsCompleted = true;
             }
 
             // Determine rotation direction
@@ -111,7 +107,7 @@ namespace Maes.Robot.Tasks
         }
 
         // Returns the degrees rotated over the given ticks when starting at the given rotation rate
-        private float GetDegreesRotated(float currentRotationRate, int ticks)
+        private static float GetDegreesRotated(float currentRotationRate, int ticks)
         {
             // Get offset by solving for C in:
             // 0 = -3.81*v0*e^(-t/3.81)+C

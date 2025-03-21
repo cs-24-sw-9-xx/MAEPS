@@ -27,11 +27,16 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class VisibleTilesCoarseMap : IPathFindingMap
+    public sealed class VisibleTilesCoarseMap : IPathFindingMap
     {
         private readonly SlamMap _slamMap;
         private readonly Vector2 _offset;
         private readonly MyAStar _aStar;
+
+        public bool BrokenCollisionMap => _slamMap.BrokenCollisionMap;
+        public int LastUpdateTick => _slamMap.LastUpdateTick;
+        public int Width { get; }
+        public int Height { get; }
 
 
         public VisibleTilesCoarseMap(SlamMap slamMap, int width, int height, Vector2 offset)
@@ -58,12 +63,6 @@ namespace Maes.Map
 
             return path;
         }
-
-        public bool BrokenCollisionMap => _slamMap.BrokenCollisionMap;
-        public int LastUpdateTick => _slamMap.LastUpdateTick;
-        public int Width { get; }
-
-        public int Height { get; }
 
         public bool IsSolid(Vector2Int coordinate)
         {
@@ -115,10 +114,7 @@ namespace Maes.Map
             return false;
         }
 
-        public float CellSize()
-        {
-            return 1.0f;
-        }
+        public float CellSize => 1.0f;
 
         public bool IsCoordWithinBounds(Vector2Int coordinate)
         {

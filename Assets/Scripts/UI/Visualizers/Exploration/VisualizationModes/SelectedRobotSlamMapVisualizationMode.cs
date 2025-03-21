@@ -63,8 +63,8 @@ namespace Maes.UI.Visualizers.Exploration.VisualizationModes
             return status switch
             {
                 SlamMap.SlamTileStatus.Open => ExplorationVisualizer.SlamSeenColor,
-                SlamMap.SlamTileStatus.Solid => ExplorationVisualizer.SolidColor,
-                _ => ExplorationVisualizer.StandardCellColor
+                SlamMap.SlamTileStatus.Solid => Visualizer.SolidColor,
+                _ => Visualizer.StandardCellColor
             };
         }
     }

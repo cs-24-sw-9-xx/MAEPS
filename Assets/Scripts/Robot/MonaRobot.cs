@@ -108,7 +108,7 @@ namespace Maes.Robot
 
                     break;
                 case WaitForCondition.ConditionType.RobotStatus:
-                    if (Controller.GetStatus() != _preUpdateLogicWaitForCondition.RobotStatus)
+                    if (Controller.Status != _preUpdateLogicWaitForCondition.RobotStatus)
                     {
                         Controller.UpdateLogic();
                         return;
@@ -148,7 +148,7 @@ namespace Maes.Robot
 
                     break;
                 case WaitForCondition.ConditionType.RobotStatus:
-                    if (Controller.GetStatus() != _updateLogicWaitForCondition.RobotStatus)
+                    if (Controller.Status != _updateLogicWaitForCondition.RobotStatus)
                     {
                         Controller.UpdateLogic();
                         return;

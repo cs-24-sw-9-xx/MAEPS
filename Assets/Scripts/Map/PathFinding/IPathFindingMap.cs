@@ -42,7 +42,7 @@ namespace Maes.Map.PathFinding
 
         public bool IsUnseenSemiOpen(Vector2Int nextCoordinate, Vector2Int currentCoordinate);
 
-        public float CellSize();
+        public float CellSize { get; }
 
         public bool IsWithinBounds(Vector2Int coordinate);
 

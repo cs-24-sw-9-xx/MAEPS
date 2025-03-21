@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Maes.Simulation.Patrolling
 {
-    public class PatrollingSimulator : Simulator<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
+    public sealed class PatrollingSimulator : Simulator<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
         protected override GameObject LoadSimulatorGameObject()
         {

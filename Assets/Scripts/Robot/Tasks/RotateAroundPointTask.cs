@@ -23,12 +23,14 @@ using UnityEngine;
 
 namespace Maes.Robot.Tasks
 {
-    internal class RotateAroundPointTask : ITask
+    internal sealed class RotateAroundPointTask : ITask
     {
         private readonly Vector2Int _point;
         private readonly float _radius;
         private readonly float _force;
         private readonly bool _counterClockwise;
+
+        public bool IsCompleted { get; } = false;
 
         // Radius in slam
         public RotateAroundPointTask(Vector2Int point, float radius, float force, bool counterClockwise)
@@ -53,11 +55,6 @@ namespace Maes.Robot.Tasks
             // Emperically found numbers dependent on a MonaRobot with 0.6 relative size
             // Data has been collated and can be found in Statistics/circle_data.xlsx
             return -1 / (0.940824360231996f * _radius + 0.502227229721352f) + 1;
-        }
-
-        public bool IsCompleted()
-        {
-            return false;
         }
     }
 }

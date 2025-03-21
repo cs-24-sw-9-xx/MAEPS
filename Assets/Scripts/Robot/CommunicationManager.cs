@@ -53,24 +53,25 @@ namespace Maes.Robot
         public readonly float Angle;
         public readonly T Item;
 
-        public SensedObject(float distance, float angle, T t)
+        public SensedObject(float distance, float angle, T item)
         {
             Distance = distance;
             Angle = angle;
-            Item = t;
+            Item = item;
         }
 
         public Vector2 GetRelativePosition(Vector2 myPosition, float globalAngle)
         {
-            var x = myPosition.x + (Distance * Mathf.Cos(Mathf.Deg2Rad * ((Angle + globalAngle) % 360)));
-            var y = myPosition.y + (Distance * Mathf.Sin(Mathf.Deg2Rad * ((Angle + globalAngle) % 360)));
+            var angle = Mathf.Deg2Rad * ((Angle - globalAngle) % 360);
+            var x = myPosition.x + (Distance * Mathf.Cos(angle));
+            var y = myPosition.y + (Distance * Mathf.Sin(angle));
             return new Vector2(x, y);
         }
     }
 
     // Messages sent through this class will be subject to communication range and line of sight.
     // Communication is non-instantaneous. Messages will be received by other robots after one logic tick. 
-    public class CommunicationManager : ISimulationUnit
+    public sealed class CommunicationManager : ISimulationUnit
     {
         private readonly RobotConstraints _robotConstraints;
         private readonly DebuggingVisualizer _visualizer;
@@ -82,7 +83,9 @@ namespace Maes.Robot
         private readonly List<Message> _readableMessages = new();
 
         private readonly RayTracingMap<Tile> _rayTracingMap;
-        private List<MonaRobot> _robots = new();
+
+        // Set by SetRobotReferences
+        private IReadOnlyList<MonaRobot> _robots = null!;
 
         // Map for storing and retrieving all tags deposited by robots
         private readonly EnvironmentTaggingMap _environmentTaggingMap;
@@ -462,7 +465,7 @@ namespace Maes.Robot
             return sensedObjects;
         }
 
-        public void SetRobotReferences(List<MonaRobot> robots)
+        public void SetRobotReferences(IReadOnlyList<MonaRobot> robots)
         {
             _robots = robots;
         }
@@ -544,7 +547,7 @@ namespace Maes.Robot
 
         public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, int width, int height, SimulationMap<Tile> tileMap)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new();
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
                 {
                     var bitmap = new Bitmap(0, 0, width, height);
@@ -653,7 +656,7 @@ namespace Maes.Robot
             xyAlphas.Sort();
 
 
-            // Calculate line segemnts
+            // Calculate line segments
             for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
             {
                 var aPrev = xyAlphas[alphaIndex - 1];

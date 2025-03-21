@@ -24,11 +24,13 @@ namespace Maes.Robot.Tasks
 
     /// Represents a task where the force application at each wheel may be controlled individually
     /// This allows for rotation while moving ahead 
-    internal class InfiniteDifferentialMovementTask : ITask
+    internal sealed class InfiniteDifferentialMovementTask : ITask
     {
-
         private float _leftWheelForce;
         private float _rightWheelForce;
+
+        // This is an infinite movement task that can only be terminated manually
+        public bool IsCompleted { get; } = false;
 
         public InfiniteDifferentialMovementTask(float leftWheelForce, float rightWheelForce)
         {
@@ -44,12 +46,6 @@ namespace Maes.Robot.Tasks
         public MovementDirective GetNextDirective()
         {
             return new MovementDirective(_leftWheelForce, _rightWheelForce);
-        }
-
-        public bool IsCompleted()
-        {
-            // This is an infinite movement task that can only be terminated manually
-            return false;
         }
     }
 }

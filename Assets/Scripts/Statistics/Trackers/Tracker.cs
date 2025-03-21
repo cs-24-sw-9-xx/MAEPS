@@ -23,7 +23,7 @@ namespace Maes.Statistics.Trackers
 
         protected MonaRobot? _selectedRobot;
 
-        public int CurrentTick { get; private set; } = 0;
+        public int CurrentTick { get; private set; }
 
         private bool _isFirstTick = true;
         protected RobotConstraints _constraints;

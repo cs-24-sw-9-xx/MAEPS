@@ -32,14 +32,32 @@ using UnityEngine;
 
 namespace Maes.Robot
 {
-    public class Robot2DController : IRobotController
+    public sealed class Robot2DController : IRobotController
     {
+        public int Id => _robot.id;
+
+        public RobotStatus Status
+        {
+            get
+            {
+                if (_currentStatus == RobotStatus.Idle && _currentTask != null)
+                {
+                    return RobotStatus.Moving;
+                }
+
+                return _currentStatus;
+            }
+        }
+
+
         private readonly Rigidbody2D _rigidbody;
         public Transform Transform { get; }
         public Transform LeftWheel { get; }
         public Transform RightWheel { get; }
 
         public float TotalDistanceTraveled { get; private set; }
+
+        public float GlobalAngle => GetForwardAngleRelativeToXAxis();
 
         private Vector2 _previousPosition;
 
@@ -81,7 +99,6 @@ namespace Maes.Robot
 
 
         // Indicates whether the robot has entered a new collision since the previous logic update
-        private bool _newCollisionSinceLastUpdate;
 
         // When the robot enters a collision (such as with a wall) Unity will only notify of the
         // collision upon initial impact. If the robot continues to drive into the wall,
@@ -112,29 +129,21 @@ namespace Maes.Robot
             return _robot;
         }
 
-        public int GetRobotID()
-        {
-            return _robot.id;
-        }
-
         public void UpdateLogic()
         {
             // Clear the collision flag
-            _newCollisionSinceLastUpdate = false;
+            HasCollidedSinceLastLogicTick = false;
             CalculateTravelDistance();
         }
 
-        public bool HasCollidedSinceLastLogicTick()
-        {
-            return _newCollisionSinceLastUpdate;
-        }
+        public bool HasCollidedSinceLastLogicTick { get; private set; }
 
         // Whether the rigidbody is currently colliding with something
         public bool IsCurrentlyColliding { get; private set; }
 
         public void NotifyCollided()
         {
-            _newCollisionSinceLastUpdate = true;
+            HasCollidedSinceLastLogicTick = true;
             IsCurrentlyColliding = true;
             StopCurrentTask();
         }
@@ -203,7 +212,7 @@ namespace Maes.Robot
             }
 
             // Delete task once completed
-            var isCurrentTaskCompleted = _currentTask?.IsCompleted() ?? false;
+            var isCurrentTaskCompleted = _currentTask?.IsCompleted ?? false;
             if (isCurrentTaskCompleted)
             {
                 _currentTask = null;
@@ -261,16 +270,6 @@ namespace Maes.Robot
             wheel.Rotate(new Vector3(rotationFactor * direction * magnitude, 0f, 0f));
         }
 
-        public RobotStatus GetStatus()
-        {
-            if (_currentStatus == RobotStatus.Idle && _currentTask != null)
-            {
-                return RobotStatus.Moving;
-            }
-
-            return _currentStatus;
-        }
-
         public void Rotate(float degrees)
         {
             if (_currentTask != null)
@@ -316,9 +315,9 @@ namespace Maes.Robot
         }
 
         // Asserts that the current status is idle, and throws an exception if not
-        protected void AssertRobotIsInIdleState(string attemptedActionName)
+        private void AssertRobotIsInIdleState(string attemptedActionName)
         {
-            var currentStatus = GetStatus();
+            var currentStatus = Status;
             if (currentStatus != RobotStatus.Idle)
             {
                 throw new InvalidOperationException(
@@ -414,11 +413,12 @@ namespace Maes.Robot
         /// If there is already a path, does not recompute
         /// </summary>
         /// <param name="tile">COARSEGRAINED tile as final target</param>
+        /// <param name="dependOnBrokenBehaviour"></param>
         public void PathAndMoveTo(Vector2Int tile, bool dependOnBrokenBehaviour = true)
         {
             var closeness = dependOnBrokenBehaviour ? 0.5f : 0.25f;
 
-            if (GetStatus() != RobotStatus.Idle)
+            if (Status != RobotStatus.Idle)
             {
                 return;
             }
@@ -565,7 +565,7 @@ namespace Maes.Robot
         public void MoveTo(Vector2Int target)
         {
             var relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(target);
-            if (GetStatus() != RobotStatus.Idle || relativePosition.Distance < 0.5f)
+            if (Status != RobotStatus.Idle || relativePosition.Distance < 0.5f)
             {
                 return;
             }
@@ -581,10 +581,6 @@ namespace Maes.Robot
         }
 
 
-        public float GetGlobalAngle()
-        {
-            return GetForwardAngleRelativeToXAxis();
-        }
 
         // Deposits an environment tag at the current position of the robot
         public void DepositTag(string content)
@@ -617,11 +613,6 @@ namespace Maes.Robot
                                                             Mathf.Sin(e.Angle * Mathf.Deg2Rad))),
                     e.Item))
                 .ToArray();
-        }
-
-        public SlamMap GetSlamMap()
-        {
-            return SlamMap;
         }
 
         public bool IsRotating()

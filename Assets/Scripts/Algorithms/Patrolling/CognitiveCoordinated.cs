@@ -74,13 +74,13 @@ namespace Maes.Algorithms.Patrolling
 
             var lastVertex = _currentPath.Last();
 
-            Coordinator.OccupyVertex(_controller.GetRobotID(), lastVertex);
+            Coordinator.OccupyVertex(_controller.Id, lastVertex);
         }
 
         private Vertex HighestIdle(Vertex targetVertex)
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = Coordinator.GetUnoccupiedVertices(_controller.GetRobotID())
+            var availableVertices = Coordinator.GetUnoccupiedVertices(_controller.Id)
                 .Where(vertex => vertex != targetVertex)
                 .OrderBy(vertex => vertex.LastTimeVisitedTick)
                 .ToList();

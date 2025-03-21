@@ -18,6 +18,7 @@
 // Contributors: Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 using Maes.Robot;
@@ -46,6 +47,7 @@ namespace Maes.Algorithms.Patrolling.Components
             _movementComponent = movementComponent;
         }
 
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             while (true)
@@ -75,14 +77,6 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, true);
                 _doingCollisionRecovery = false;
-            }
-        }
-
-        public IEnumerable<ComponentWaitForCondition> PostUpdateLogic()
-        {
-            while (true)
-            {
-                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
 

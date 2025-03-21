@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -17,7 +16,7 @@ using XCharts.Runtime;
 
 namespace Maes.Statistics.Trackers
 {
-    public class PatrollingTracker : Tracker<PatrollingVisualizer, IPatrollingVisualizationMode>
+    public sealed class PatrollingTracker : Tracker<PatrollingVisualizer, IPatrollingVisualizationMode>
     {
         private PatrollingSimulation Simulation { get; }
         public int WorstGraphIdleness { get; private set; }
@@ -55,15 +54,11 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
-        private readonly SimulationMap<Tile> _collisionMap;
-        private readonly PatrollingMap _patrollingMap;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
-            _patrollingMap = map;
-            _collisionMap = collisionMap;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetLineOfSightVertices(collisionMap, map);
@@ -87,7 +82,7 @@ namespace Maes.Statistics.Trackers
             vertexDetails.Vertex.VisitedAtTick(atTick);
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
-            SetCompletedCycles();
+            CurrentCycle = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
 
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
@@ -168,7 +163,6 @@ namespace Maes.Statistics.Trackers
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetTotalDistanceTraveled(List<MonaRobot> robots)
         {
             float sum = 0;
@@ -194,11 +188,6 @@ namespace Maes.Statistics.Trackers
             {
                 WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick, CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
-        }
-
-        private void SetCompletedCycles()
-        {
-            CurrentCycle = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
@@ -325,7 +314,7 @@ namespace Maes.Statistics.Trackers
             var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
             totalDistanceTraveledSeries.symbol.size = 2;
 
-            var legend = Chart.EnsureChartComponent<Legend>();
+            Chart.EnsureChartComponent<Legend>();
 
             Zoom.enable = true;
             Zoom.filterMode = DataZoom.FilterMode.Filter;

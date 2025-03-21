@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -76,6 +77,7 @@ namespace Maes.Algorithms.Patrolling
         {
             _controller = controller;
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_patrollingMap != null)
             {
                 SetComponents(CreateComponents(_controller, _patrollingMap));
@@ -89,6 +91,7 @@ namespace Maes.Algorithms.Patrolling
             // Just to ensure we get no null reference exceptions.
             TargetVertex = map.Vertices[0];
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_controller != null)
             {
                 SetComponents(CreateComponents(_controller, _patrollingMap));
@@ -119,6 +122,7 @@ namespace Maes.Algorithms.Patrolling
         }
 
         /// <inheritdoc />
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
             while (true)
@@ -148,6 +152,7 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
             while (true)
@@ -180,6 +185,7 @@ namespace Maes.Algorithms.Patrolling
         /// Allows algorithms to implement algorithm specific logic.
         /// </summary>
         /// <returns></returns>
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         protected virtual IEnumerable<ComponentWaitForCondition> MyUpdateLogic()
         {
             while (true)
@@ -209,7 +215,7 @@ namespace Maes.Algorithms.Patrolling
                     break;
                 case WaitForCondition.ConditionType.RobotStatus:
                     if (componentWaitForConditionState.ComponentWaitForCondition.Condition.RobotStatus ==
-                        _controller.GetStatus())
+                        _controller.Status)
                     {
                         RunUpdateMethod(updateMethod, componentWaitForConditionState);
                     }
@@ -261,7 +267,7 @@ namespace Maes.Algorithms.Patrolling
         {
             public ComponentWaitForCondition ComponentWaitForCondition = new(WaitForCondition.ContinueUpdateLogic(), shouldContinue: true);
 
-            public int LogicTicksToWaitFor = 0;
+            public int LogicTicksToWaitFor;
         }
     }
 }

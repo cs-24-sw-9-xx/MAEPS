@@ -36,7 +36,7 @@ using Random = System.Random;
 
 namespace Maes.Map
 {
-    public class SlamMap : ISlamAlgorithm, IPathFindingMap
+    public sealed class SlamMap : ISlamAlgorithm, IPathFindingMap
     {
         public bool BrokenCollisionMap => _collisionMap.BrokenCollisionMap;
         public int LastUpdateTick { get; private set; }
@@ -64,7 +64,7 @@ namespace Maes.Map
         private readonly Random _random;
 
         // Low resolution map
-        internal readonly CoarseGrainedMap CoarseMap;
+        public CoarseGrainedMap CoarseMap { get; }
         // Low resolution map only considering what is visible now
         private readonly VisibleTilesCoarseMap _visibleTilesCoarseMap;
 
@@ -167,7 +167,7 @@ namespace Maes.Map
 
         public Vector2Int GetCurrentPosition(bool dependOnBrokenPosition = true)
         {
-            var currentPosition = GetApproxPosition();
+            var currentPosition = ApproximatePosition;
             // Since the resolution of the slam map is double, we round to nearest half
             // This is done by multiplying by 2 and then rounding to nearest number.
             // Dividing by two then gives us number with a possible fraction of 0.5
@@ -187,9 +187,10 @@ namespace Maes.Map
             _currentlyVisibleTriangles?.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SlamTileStatus GetVisibleTileStatus(int x, int y)
         {
-            var visibleTile = _currentlyVisibleTiles[x, y];
+            ref var visibleTile = ref _currentlyVisibleTiles[x, y];
 
             if (visibleTile.Generation != _visibleTilesGeneration)
             {
@@ -206,7 +207,7 @@ namespace Maes.Map
             {
                 for (var y = 0; y < Height; y++)
                 {
-                    var tile = _currentlyVisibleTiles[x, y];
+                    ref var tile = ref _currentlyVisibleTiles[x, y];
                     if (tile.Generation == _visibleTilesGeneration && tile.TileStatus != SlamTileStatus.Unseen)
                     {
                         visibleTilesList.Add(new Vector2Int(x, y));
@@ -343,12 +344,7 @@ namespace Maes.Map
 
             target._tiles = (SlamTileStatus[,])globalMap.Clone();
             target.LastUpdateTick = tick;
-            CoarseGrainedMap.Combine(target.CoarseMap, others.Select(o => o.GetCoarseMap()).ToList(), globalMap);
-        }
-
-        public Vector2 GetApproxPosition()
-        {
-            return ApproximatePosition;
+            CoarseGrainedMap.Combine(target.CoarseMap, others.Select(o => o.CoarseMap).ToList(), globalMap);
         }
 
         public Dictionary<Vector2Int, SlamTileStatus> GetExploredTiles()
@@ -489,10 +485,7 @@ namespace Maes.Map
             return new RelativePosition(distance, angle);
         }
 
-        public float CellSize()
-        {
-            return 1f;
-        }
+        public float CellSize => 1f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false)
@@ -526,12 +519,6 @@ namespace Maes.Map
             path[^1] = coarseTileTo;
 
             return path;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CoarseGrainedMap GetCoarseMap()
-        {
-            return CoarseMap;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

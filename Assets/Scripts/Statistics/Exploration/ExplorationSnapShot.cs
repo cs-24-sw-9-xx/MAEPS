@@ -4,7 +4,7 @@ using Maes.Statistics.Communication;
 
 namespace Maes.Statistics.Exploration
 {
-    public class ExplorationSnapShot : CommunicationSnapShot
+    public sealed class ExplorationSnapShot : CommunicationSnapShot
     {
         [Index(1)]
         public float Explored { get; }

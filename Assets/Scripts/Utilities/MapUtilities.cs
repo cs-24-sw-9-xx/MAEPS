@@ -12,6 +12,13 @@ namespace Maes.Utilities
 {
     public static class MapUtilities
     {
+        private static readonly Vector2Int[] Directions = {
+            new(0, 1),
+            new(0, -1),
+            new(1, 0),
+            new(-1, 0)
+        };
+
         [MustDisposeResource]
         public static Bitmap MapToBitMap(SimulationMap<Tile> simulationMap)
         {
@@ -30,75 +37,6 @@ namespace Maes.Utilities
             }
 
             return map;
-        }
-
-        /// <summary>
-        /// Calculate the distance matrix between all vertices
-        /// </summary>
-        /// <param name="map"></param>
-        /// <param name="vertices"></param>
-        /// <returns></returns>
-        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
-        {
-            Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
-
-            foreach (var vertex in vertices)
-            {
-                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
-            }
-
-            return shortestGridPath;
-        }
-
-        // Function to check if a position is within bounds and walkable
-        private static bool IsWalkable(Vector2Int pos, Bitmap map)
-        {
-            return pos.x >= 0 && pos.x < map.Width &&
-                   pos.y >= 0 && pos.y < map.Height &&
-                   !map.Contains(pos.x, pos.y); // true if the position is not a wall
-        }
-
-        private static readonly Vector2Int[] Directions = new Vector2Int[]
-        {
-            new(0, 1),
-            new(0, -1),
-            new(1, 0),
-            new(-1, 0)
-        };
-
-        // BFS to find the distance of the shortest path from the start position to all other vertices
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, IReadOnlyCollection<Vector2Int> vertexPositions, Bitmap map)
-        {
-            var queue = new Queue<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
-            var distanceMap = new Dictionary<Vector2Int, int>();
-
-            queue.Enqueue(startPosition);
-            visited.Add(startPosition);
-            distanceMap[startPosition] = 0;
-
-            while (queue.Count > 0)
-            {
-                var current = queue.Dequeue();
-                var currentDistance = distanceMap[current];
-
-                foreach (var direction in Directions)
-                {
-                    var neighbor = current + direction;
-
-                    if (IsWalkable(neighbor, map) && !visited.Contains(neighbor))
-                    {
-                        queue.Enqueue(neighbor);
-                        visited.Add(neighbor);
-                        distanceMap[neighbor] = currentDistance + 1;
-
-                        if (vertexPositions.Contains(neighbor))
-                        {
-                            shortestGridPath[(startPosition, neighbor)] = distanceMap[neighbor];
-                        }
-                    }
-                }
-            }
         }
 
         // Find the k nearest neighbors for each point and return the reverse mapping
@@ -142,6 +80,67 @@ namespace Maes.Utilities
             }
 
             return reverseNearestNeighbors;
+        }
+
+        /// <summary>
+        /// Calculate the distance matrix between all vertices
+        /// </summary>
+        /// <param name="map"></param>
+        /// <param name="vertices"></param>
+        /// <returns></returns>
+        public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
+        {
+            Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
+
+            foreach (var vertex in vertices)
+            {
+                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
+            }
+
+            return shortestGridPath;
+        }
+
+        // BFS to find the distance of the shortest path from the start position to all other vertices
+        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, IReadOnlyCollection<Vector2Int> vertexPositions, Bitmap map)
+        {
+            var queue = new Queue<Vector2Int>();
+            var visited = new HashSet<Vector2Int>();
+            var distanceMap = new Dictionary<Vector2Int, int>();
+
+            queue.Enqueue(startPosition);
+            visited.Add(startPosition);
+            distanceMap[startPosition] = 0;
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                var currentDistance = distanceMap[current];
+
+                foreach (var direction in Directions)
+                {
+                    var neighbor = current + direction;
+
+                    if (IsWalkable(neighbor, map) && !visited.Contains(neighbor))
+                    {
+                        queue.Enqueue(neighbor);
+                        visited.Add(neighbor);
+                        distanceMap[neighbor] = currentDistance + 1;
+
+                        if (vertexPositions.Contains(neighbor))
+                        {
+                            shortestGridPath[(startPosition, neighbor)] = distanceMap[neighbor];
+                        }
+                    }
+                }
+            }
+        }
+
+        // Function to check if a position is within bounds and walkable
+        private static bool IsWalkable(Vector2Int pos, Bitmap map)
+        {
+            return pos.x >= map.XStart && pos.x < map.XEnd &&
+                   pos.y >= map.YStart && pos.y < map.YEnd &&
+                   !map.Contains(pos.x, pos.y);
         }
     }
 }

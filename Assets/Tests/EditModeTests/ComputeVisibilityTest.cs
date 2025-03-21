@@ -18,7 +18,7 @@ namespace Tests.EditModeTests
     /// These tests are for the ComputeVisibilityOfPoint and ComputeVisibilityOfPointFastBreakColumn methods.
     /// To get a better understanding of the the difference between the two algorithms please use
     /// the SaveAsImage.SaveVisibileTiles() debug method in the following method in WatchmanRouteSolver.cs: 
-    /// private static Dictionary<Vector2Int, HashSet<Vector2Int>> ComputeVisibility(bool[,] map)
+    /// private static Dictionary{Vector2Int, HashSet{Vector2Int}} ComputeVisibility(bool[,] map)
     /// In short, the ComputeVisibilityOfPointFastBreakColumn, will break the loop when it finds a column without any visible tiles.
     /// However, due to the way visibility is calculated, it is possible that there is a column with visible tiles after a column with no visible tiles.
     /// </summary>
@@ -27,24 +27,25 @@ namespace Tests.EditModeTests
         public sealed class TestCase
         {
             public readonly string Name;
-            public readonly string MapData;
+            public readonly int ExpectedVisible;
+            public readonly float MaxVisibilityRange;
             public readonly Vector2Int Point;
-            public readonly float MaxVisiblityRange;
 
-            public Bitmap Map
+            private readonly string _mapData;
+
+            public Bitmap Bitmap
             {
                 [MustDisposeResource]
-                get => Utilities.BitmapFromString(MapData);
+                get => Utilities.BitmapFromString(_mapData);
             }
 
-            public readonly int ExpectedVisible;
             public TestCase(string name, string map, int expectedVisible, float maxVisibilityRange, Vector2Int point)
             {
                 Name = name;
-                MapData = map;
+                _mapData = map;
                 ExpectedVisible = expectedVisible;
                 Point = point;
-                MaxVisiblityRange = maxVisibilityRange;
+                MaxVisibilityRange = maxVisibilityRange;
             }
 
             public TestCase(string name, string map, int expectedVisible, float maxVisibilityRange = 0)
@@ -243,13 +244,13 @@ namespace Tests.EditModeTests
            "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;";
 
         [Theory]
-        [TestCaseSource("ComputeVisibilityTestCases")]
+        [TestCaseSource(nameof(ComputeVisibilityTestCases))]
         public void ComputeVisibilityOfPointTests(TestCase testCase)
         {
-            using var map = testCase.Map;
+            using var map = testCase.Bitmap;
             var expected = testCase.ExpectedVisible;
             var nativeMap = map.ToNativeArray();
-            var nativeVisibility = new NativeArray<ulong>(nativeMap.Length * map.Height, Allocator.TempJob, NativeArrayOptions.ClearMemory);
+            var nativeVisibility = new NativeArray<ulong>(nativeMap.Length * map.Height, Allocator.TempJob);
 
             var job = new VisibilityJob()
             {
@@ -258,7 +259,7 @@ namespace Tests.EditModeTests
                 Map = nativeMap,
                 X = testCase.Point.x,
                 Visibility = nativeVisibility,
-                MaxDistance = testCase.MaxVisiblityRange,
+                MaxDistance = testCase.MaxVisibilityRange,
             };
 
             job.Schedule().Complete();

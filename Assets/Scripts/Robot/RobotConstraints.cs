@@ -26,7 +26,7 @@ using Maes.Map.Generators;
 
 namespace Maes.Robot
 {
-    public class RobotConstraints
+    public sealed class RobotConstraints
     {
         public delegate bool SignalTransmissionSuccessCalculator(float totalDistance, float distanceThroughWalls);
 

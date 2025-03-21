@@ -41,7 +41,7 @@ namespace Maes.Algorithms.Exploration
 
         public string GetDebugInfo()
         {
-            return _controller.GetStatus().ToString();
+            return _controller.Status.ToString();
         }
 
         public void SetController(Robot2DController controller)

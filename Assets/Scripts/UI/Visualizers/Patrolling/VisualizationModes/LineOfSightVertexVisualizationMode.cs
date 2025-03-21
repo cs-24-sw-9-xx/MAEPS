@@ -22,7 +22,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             return Visualizer.LineOfSightVertices.VerticesVisibleTiles[SelectedVertexId].Contains(cellIndex)
                 ? PatrollingVisualizer.PatrollingAreaColor
-                : PatrollingVisualizer.StandardCellColor;
+                : Visualizers.Visualizer.StandardCellColor;
         }
     }
 }

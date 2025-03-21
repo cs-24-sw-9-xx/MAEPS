@@ -44,7 +44,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             return Visualizer.CommunicationZoneVertices.CommunicationZoneTiles[SelectedVertexId].Contains(cellIndex)
                ? PatrollingVisualizer.CommunicationColor
-               : PatrollingVisualizer.StandardCellColor;
+               : Visualizers.Visualizer.StandardCellColor;
         }
     }
 }

@@ -131,7 +131,7 @@ namespace Maes.Algorithms.Exploration
             // ---- tick ---- //
             state.tick = _tick;
             // ---- Status ---- //
-            state.status = Enum.GetName(typeof(RobotStatus), _controller.GetStatus());
+            state.status = Enum.GetName(typeof(RobotStatus), _controller.Status);
 
             // ---- Collision ---- //
             state.colliding = _controller.IsCurrentlyColliding;
@@ -165,7 +165,7 @@ namespace Maes.Algorithms.Exploration
         private void ReactToCmdVel(float speedCommandValue, float rotationCommandValue)
         {
             // Debug.Log($"{this._robotRosId} command velocities: [{speedCommandValue}, {rotationCommandValue}]");
-            var robotStatus = _controller.GetStatus();
+            var robotStatus = _controller.Status;
 
             if (Math.Abs(speedCommandValue) < 0.01f && Math.Abs(rotationCommandValue) > 0.0)
             {
@@ -205,7 +205,7 @@ namespace Maes.Algorithms.Exploration
                     _controller.SetWheelForceFactors(leftWheelForce, rightWheelForce);
                 }
             }
-            else if (_controller.GetStatus() != RobotStatus.Idle)
+            else if (_controller.Status != RobotStatus.Idle)
             {
                 // If cmd_vel does not indicate any desired movement - then stop robot if currently moving 
                 // Debug.Log("Stopping movement!");
@@ -229,7 +229,7 @@ namespace Maes.Algorithms.Exploration
             info.AppendLine($"Robot ID: {_robotRosId}");
             info.AppendLine($"Namespace: {_topicPrefix}");
             info.AppendLine($"Position: ({robotPosition.x},{robotPosition.y})");
-            info.AppendLine($"Status: {Enum.GetName(typeof(RobotStatus), _controller.GetStatus())}");
+            info.AppendLine($"Status: {Enum.GetName(typeof(RobotStatus), _controller.Status)}");
             info.AppendLine($"Is Colliding: {_controller.IsCurrentlyColliding}");
             info.AppendLine($"Number of nearby robots: {_controller.SenseNearbyRobots().Length}");
             info.AppendLine($"Number Incoming broadcast msg: {_controller.ReceiveBroadcast().Count}");
@@ -244,10 +244,10 @@ namespace Maes.Algorithms.Exploration
         {
             _controller = controller;
             _ros = ROSConnection.GetOrCreateInstance();
-            _topicPrefix = $"/robot{_controller.GetRobotID()}";
-            _robotRosId = $"robot{_controller.GetRobotID()}";
+            _topicPrefix = $"/robot{_controller.Id}";
+            _robotRosId = $"robot{_controller.Id}";
 
-            _worldPosition = GameObject.Find($"robot{_controller.GetRobotID()}").transform;
+            _worldPosition = GameObject.Find($"robot{_controller.Id}").transform;
 
             // Register state publisher
             _ros.RegisterPublisher<StateMsg>(_topicPrefix + _stateTopic);

@@ -12,20 +12,20 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class PatrollingMap : ICloneable<PatrollingMap>
+    public sealed class PatrollingMap : ICloneable<PatrollingMap>
     {
-        public readonly Vertex[] Vertices;
+        public readonly IReadOnlyList<Vertex> Vertices;
 
-        public readonly IReadOnlyDictionary<(int, int), PathStep[]> Paths;
+        public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
-        public readonly Dictionary<Vector2Int, Bitmap> VertexPositions;
+        public readonly IReadOnlyDictionary<Vector2Int, Bitmap> VertexPositions;
 
-        public PatrollingMap(Vertex[] vertices, SimulationMap<Tile> simulationMap, Dictionary<Vector2Int, Bitmap> vertexPositions)
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, IReadOnlyDictionary<Vector2Int, Bitmap> vertexPositions)
         : this(vertices, CreatePaths(vertices, simulationMap), vertexPositions)
         {
         }
 
-        private PatrollingMap(Vertex[] vertices, IReadOnlyDictionary<(int, int), PathStep[]> paths, Dictionary<Vector2Int, Bitmap> vertexPositions)
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, IReadOnlyDictionary<Vector2Int, Bitmap> vertexPositions)
         {
             Vertices = vertices;
             Paths = paths;
@@ -34,7 +34,7 @@ namespace Maes.Map
 
         public PatrollingMap Clone()
         {
-            var originalToCloned = new Dictionary<Vertex, Vertex>();
+            var originalToCloned = new Dictionary<Vertex, Vertex>(Vertices.Count);
             foreach (var originalVertex in Vertices)
             {
                 var clonedVertex = new Vertex(originalVertex.Id, originalVertex.Position, originalVertex.Partition, originalVertex.Color);
@@ -53,7 +53,7 @@ namespace Maes.Map
             return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VertexPositions);
         }
 
-        private static IReadOnlyDictionary<(int, int), PathStep[]> CreatePaths(Vertex[] vertices, SimulationMap<Tile> simulationMap)
+        private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
         {
             // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
             // TODO: Of cause this requires specific code for that waypoint generation algorithm.
@@ -64,14 +64,13 @@ namespace Maes.Map
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;
             var aStar = new MyAStar();
-            var paths = new Dictionary<(int, int), PathStep[]>();
+            var paths = new Dictionary<(int, int), IReadOnlyList<PathStep>>();
             foreach (var vertex in vertices)
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    //var path = aStar.GetOptimisticPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
                     var path = aStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
-                    var pathSteps = MyAStar.PathToStepsCheap(path).ToArray();
+                    var pathSteps = MyAStar.PathToStepsCheap(path);
 
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
                 }

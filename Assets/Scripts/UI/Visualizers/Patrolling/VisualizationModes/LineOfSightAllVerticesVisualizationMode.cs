@@ -21,7 +21,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             return Visualizer.LineOfSightVertices.AllVerticesVisibleTiles.Contains(cellIndex)
                 ? PatrollingVisualizer.PatrollingAreaColor
-                : PatrollingVisualizer.StandardCellColor;
+                : Visualizers.Visualizer.StandardCellColor;
         }
     }
 }

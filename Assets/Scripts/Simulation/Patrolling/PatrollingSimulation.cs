@@ -109,20 +109,13 @@ namespace Maes.Simulation.Patrolling
             Tracker.Chart.RefreshAllComponent();
             Tracker.Chart.RefreshChart();
 
-            var path = Path.Join(folderPath, "chart-all-idleness.png");
-            SaveSeries(path, true, true, true, false);
+            SaveSeries("chart-all-idleness.png", true, true, true, false);
+            SaveSeries("worst-idleness.png", true, false, false, false);
+            SaveSeries("average-idleness.png", false, true, false, false);
+            SaveSeries("current-idleness.png", false, false, true, false);
+            SaveSeries("total-distance-idleness.png", false, false, false, true);
 
-            path = Path.Join(folderPath, "worst-idleness.png");
-            SaveSeries(path, true, false, false, false);
-
-            path = Path.Join(folderPath, "average-idleness.png");
-            SaveSeries(path, false, true, false, false);
-
-            path = Path.Join(folderPath, "current-idleness.png");
-            SaveSeries(path, false, false, true, false);
-
-            path = Path.Join(folderPath, "total-distance-idleness.png");
-            SaveSeries(path, false, false, false, true);
+            return;
 
             void SaveSeries(string path, bool saveWorstIdleness, bool saveAverageIdleness, bool saveCurrentIdleness, bool saveTotalDistance)
             {
@@ -133,7 +126,7 @@ namespace Maes.Simulation.Patrolling
                 copiedChart.series[3].show = saveTotalDistance;
                 copiedChart.RefreshGraph();
 
-                copiedChart.SaveAsImage("png", path);
+                copiedChart.SaveAsImage("png", Path.Join(folderPath, path));
             }
         }
 

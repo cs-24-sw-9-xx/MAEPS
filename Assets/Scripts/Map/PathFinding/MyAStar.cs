@@ -29,6 +29,8 @@ using Maes.Utilities;
 using Roy_T.AStar.Paths;
 using Roy_T.AStar.Primitives;
 
+using Unity.Mathematics;
+
 using UnityEngine;
 
 using static Maes.Map.SlamMap;
@@ -77,7 +79,6 @@ namespace Maes.Map.PathFinding
             }
         }
 
-        private static readonly float Sqrt2 = Mathf.Sqrt(2);
 
         private Grid? _cachedGrid = null;
         private Grid? _cachedOptimisticGrid = null;
@@ -309,7 +310,7 @@ namespace Maes.Map.PathFinding
             var minDif = Math.Min(xDif, yDif);
             var maxDif = Math.Max(xDif, yDif);
 
-            return maxDif - minDif + minDif * Sqrt2;
+            return maxDif - minDif + minDif * math.SQRT2;
         }
 
         // Converts the given A* path to PathSteps (containing a line and a list of all tiles intersected in this path)

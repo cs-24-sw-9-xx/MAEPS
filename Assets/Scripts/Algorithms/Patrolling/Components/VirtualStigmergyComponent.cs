@@ -21,6 +21,7 @@
 // #define VIRTUAL_STIGMERGY_TRACING
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 using Maes.Robot;
@@ -81,6 +82,7 @@ namespace Maes.Algorithms.Patrolling.Components
         }
 
         /// <inheritdoc />
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             while (true)
@@ -199,14 +201,6 @@ namespace Maes.Algorithms.Patrolling.Components
             }
 
             _localKnowledge[message.Key] = newValueInfo;
-        }
-
-        public IEnumerable<ComponentWaitForCondition> PostUpdateLogic()
-        {
-            while (true)
-            {
-                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-            }
         }
 
         /// <summary>

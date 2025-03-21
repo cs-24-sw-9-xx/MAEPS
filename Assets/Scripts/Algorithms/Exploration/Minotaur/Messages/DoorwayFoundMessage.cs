@@ -62,7 +62,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
                             return null;
                         }
                     }
-                    var bid = new Dictionary<int, int>() { { minotaur._controller.GetRobotID(), pathLengthToDoorway.Length } };
+                    var bid = new Dictionary<int, int>() { { minotaur._controller.Id, pathLengthToDoorway.Length } };
                     minotaur._doorways.Add(_doorway);
                     return new BiddingMessage(_requesterID, bid, _doorway);
                 }

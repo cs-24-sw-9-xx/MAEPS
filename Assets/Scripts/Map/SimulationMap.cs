@@ -32,7 +32,7 @@ namespace Maes.Map
 {
     // A SimulationMap represents a map of square tiles, where each tile is divided into 8 triangles
     // This matches the structure of the map exported by the MapGenerator
-    public class SimulationMap<TCell> : IEnumerable<(int, TCell)>
+    public sealed class SimulationMap<TCell> : IEnumerable<(int, TCell)>
     {
         // The width / height of the map measured in tiles
         public readonly int WidthInTiles, HeightInTiles;
@@ -42,7 +42,7 @@ namespace Maes.Map
 
         // These rooms do not include the passages between them.
         // They are used for robot spawning
-        public readonly List<Room> Rooms = new();
+        public readonly IReadOnlyList<Room> Rooms;
 
         public readonly bool BrokenCollisionMap;
 
@@ -50,7 +50,7 @@ namespace Maes.Map
         private readonly SimulationMapTile<TCell>[,] _tiles;
 
         public SimulationMap(Func<TCell> cellFactory, int widthInTiles, int heightInTiles,
-            Vector2 scaledOffset, List<Room> rooms, bool brokenCollisionMap)
+            Vector2 scaledOffset, IReadOnlyList<Room> rooms, bool brokenCollisionMap)
         {
             Rooms = rooms;
             ScaledOffset = scaledOffset;
@@ -70,6 +70,7 @@ namespace Maes.Map
         // Private constructor for a pre-specified set of tiles. This is used in the FMap function
         public SimulationMap(SimulationMapTile<TCell>[,] tiles, Vector2 scaledOffset)
         {
+            Rooms = Array.Empty<Room>();
             ScaledOffset = scaledOffset;
             _tiles = tiles;
             WidthInTiles = tiles.GetLength(0);

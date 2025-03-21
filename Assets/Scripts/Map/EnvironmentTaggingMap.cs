@@ -29,23 +29,21 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-
     /// This type holds all environment tags deposited by robots in the simulated environment 
     /// This map is represented as a 2D array of tiles to make lookup faster
-    internal class EnvironmentTaggingMap
+    internal sealed class EnvironmentTaggingMap
     {
-
         // Each tile in the map is a list of tags that are positioned within the bounds of that tile
         private readonly List<EnvironmentTag>[,] _tagLists;
 
         private readonly int _widthInTiles, _heightInTiles;
-        private Vector2 offset;
+        private readonly Vector2 _offset;
 
         public EnvironmentTaggingMap(SimulationMap<Tile> collisionMap)
         {
             _widthInTiles = collisionMap.WidthInTiles;
             _heightInTiles = collisionMap.HeightInTiles;
-            offset = collisionMap.ScaledOffset;
+            _offset = collisionMap.ScaledOffset;
             _tagLists = new List<EnvironmentTag>[_widthInTiles, _heightInTiles];
             for (var x = 0; x < _widthInTiles; x++)
             {
@@ -91,7 +89,7 @@ namespace Maes.Map
         // Takes a world coordinates and removes the offset and scale to translate it to a local map coordinate
         private Vector2Int ToLocalMapCoordinate(Vector2 worldCoordinate)
         {
-            var localFloatCoordinate = worldCoordinate - offset;
+            var localFloatCoordinate = worldCoordinate - _offset;
             var localCoordinate = new Vector2Int((int)localFloatCoordinate.x, (int)localFloatCoordinate.y);
             if (!IsWithinLocalMapBounds(localCoordinate))
             {

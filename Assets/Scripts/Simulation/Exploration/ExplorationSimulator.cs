@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Maes.Simulation.Exploration
 {
-    public class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
+    public sealed class ExplorationSimulator : Simulator<ExplorationSimulation, IExplorationAlgorithm, ExplorationSimulationScenario>
     {
         public ExplorationSimulator(bool autoMaxSpeedInBatchMode = true) : base(autoMaxSpeedInBatchMode) { }
         protected override GameObject LoadSimulatorGameObject()

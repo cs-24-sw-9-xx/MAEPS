@@ -25,7 +25,7 @@ using UnityEngine;
 
 namespace Maes.Robot.Tasks
 {
-    internal class FiniteMovementTask : ITask
+    internal sealed class FiniteMovementTask : ITask
     {
         private readonly float _targetDistance;
         private readonly Transform _robotTransform;
@@ -33,8 +33,9 @@ namespace Maes.Robot.Tasks
 
         private readonly Vector2 _startingPosition;
         private Vector2 _previousPosition;
-        private bool _isCompleted;
         private readonly float _force;
+
+        public bool IsCompleted { get; private set; }
 
         public FiniteMovementTask(Transform robotTransform, float targetDistance, float force, bool reverse = false)
         {
@@ -48,7 +49,7 @@ namespace Maes.Robot.Tasks
 
         public MovementDirective GetNextDirective()
         {
-            if (_isCompleted)
+            if (IsCompleted)
             {
                 return MovementDirective.NoMovement();
             }
@@ -68,7 +69,7 @@ namespace Maes.Robot.Tasks
                 return new MovementDirective(forceFactor, forceFactor);
             }
 
-            _isCompleted = true;
+            IsCompleted = true;
             return MovementDirective.NoMovement();
         }
 
@@ -96,14 +97,9 @@ namespace Maes.Robot.Tasks
         {
             // Get offset by solving for C in:
             // 0 = (-11/2)*v0*e^(-t*2/11)+C
+            // TODO: Wtf is this code doing? Multiplying with 0?????
             var offset = (float)((11f * currentVelocity * Math.Pow(Math.E, (-2 / 11) * 0)) / 2f);
             return (float)((11f * currentVelocity * Math.Pow(Math.E, (-2 / 11) * ticks)) / 2f) + offset;
-        }
-
-        public bool IsCompleted()
-        {
-            //Debug.Log($"Distance traveled: {Vector2.Distance(_startingPosition, _robotTransform.position)}");
-            return _isCompleted;
         }
     }
 }

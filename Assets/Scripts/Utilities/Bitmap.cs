@@ -183,11 +183,7 @@ namespace Maes.Utilities
         public NativeArray<ulong> ToNativeArray()
         {
             var nativeArray = new NativeArray<ulong>(_length, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-
-            for (var i = 0; i < _length; i++)
-            {
-                nativeArray[i] = _bits[i];
-            }
+            NativeArray<ulong>.Copy(_bits, nativeArray, _length);
 
             return nativeArray;
         }
@@ -202,11 +198,7 @@ namespace Maes.Utilities
                 var length = nativeArray.Length / bitmapAmount;
                 var bits = ArrayPool<ulong>.Shared.Rent(length);
 
-                for (var i = 0; i < length; i++)
-                {
-                    var nativeIndex = length * b + i;
-                    bits[i] = nativeArray[nativeIndex];
-                }
+                NativeArray<ulong>.Copy(nativeArray, length * b, bits, 0, length);
 
                 bitmaps[b] = new Bitmap(0, 0, width, height, bits);
             }
@@ -467,7 +459,7 @@ namespace Maes.Utilities
 
                     if (_bitmap.Contains(_index))
                     {
-                        Current = new Vector2Int(_index / _bitmap.Height + _bitmap.XStart, _index % _bitmap.Height + _bitmap.YStart);
+                        Current = new Vector2Int((_index / _bitmap.Height) + _bitmap.XStart, (_index % _bitmap.Height) + _bitmap.YStart);
                         return true;
                     }
                 }
@@ -533,10 +525,7 @@ namespace Maes.Utilities
         public Bitmap Clone()
         {
             var bits = ArrayPool<ulong>.Shared.Rent(_length);
-            for (var i = 0; i < _length; i++)
-            {
-                bits[i] = _bits[i];
-            }
+            Array.Copy(_bits, bits, _length);
 
             return new Bitmap(XStart, YStart, XEnd, YEnd, bits);
         }

@@ -60,12 +60,12 @@ namespace Maes.UI.Visualizers.Exploration.VisualizationModes
         {
             if (!cell.IsExplorable)
             {
-                return ExplorationVisualizer.SolidColor;
+                return Visualizer.SolidColor;
             }
 
             if (!cell.IsExplored)
             {
-                return ExplorationVisualizer.StandardCellColor;
+                return Visualizer.StandardCellColor;
             }
 
             // The color of every single cell is updated every tick (this is very slow on larger maps)

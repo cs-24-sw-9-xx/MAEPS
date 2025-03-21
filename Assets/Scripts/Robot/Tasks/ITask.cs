@@ -23,7 +23,7 @@ namespace Maes.Robot.Tasks
 {
     internal interface ITask
     {
+        bool IsCompleted { get; }
         MovementDirective GetNextDirective();
-        bool IsCompleted();
     }
 }
