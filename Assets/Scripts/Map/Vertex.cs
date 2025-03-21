@@ -6,32 +6,34 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class Vertex
+    public sealed class Vertex
     {
-        private readonly HashSet<Vertex> _neighbors;
+        private readonly HashSet<Vertex> _neighbors = new();
+
         public int Id { get; }
-        public float Weight { get; }
-        public int LastTimeVisitedTick { get; private set; }
+
+        public int Partition { get; }
+
         public Vector2Int Position { get; }
+
         public Color Color { get; set; }
+
+        public IReadOnlyCollection<Vertex> Neighbors => _neighbors;
+
+        public int LastTimeVisitedTick { get; private set; }
+
         public int NumberOfVisits { get; private set; }
 
-        public int Partition { get; set; }
 
-        public Vertex(int id, float weight, Vector2Int position, int partition = 1, Color? color = null)
+        public Vertex(int id, Vector2Int position, int partition = 1, Color? color = null)
         {
             Id = id;
-            Weight = weight;
+            Partition = partition;
             Position = position;
             Color = color ?? Color.green;
             LastTimeVisitedTick = 0;
             NumberOfVisits = 0;
-            Partition = partition;
-
-            _neighbors = new();
         }
-
-        public IReadOnlyCollection<Vertex> Neighbors => _neighbors;
 
         public void VisitedAtTick(int tick)
         {

@@ -53,7 +53,7 @@ namespace Tests.EditModeTests
                     }
                 },
                 materialCommunication: true);
-            var vertex = new Vertex(0, 1, new Vector2Int(6, 6));
+            var vertex = new Vertex(0, new Vector2Int(6, 6));
             const string bitmapString = "" +
                 "            ;" +
                 " XXXXXXXXXX ;" +
@@ -98,7 +98,7 @@ namespace Tests.EditModeTests
             var id = 0;
             foreach (var position in vertexPositions)
             {
-                vertices.Add(new Vertex(id++, 1, position));
+                vertices.Add(new Vertex(id++, position));
             }
             // give me a mock of the Dictionary<Vector2Int, Bitmap> vertexPositions that i can use for the patrolling map
             var vertexPositionsDictionary = new Dictionary<Vector2Int, Bitmap>();
