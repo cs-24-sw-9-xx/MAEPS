@@ -149,13 +149,13 @@ namespace Maes.Simulation
             // Disable outline on previously selected robot
             if (_selectedRobot != null)
             {
-                _selectedRobot.outLine.enabled = false;
+                _selectedRobot.HideOutline();
             }
 
             _selectedRobot = newSelectedRobot;
             if (newSelectedRobot != null)
             {
-                newSelectedRobot.outLine.enabled = true;
+                newSelectedRobot.ShowOutline();
             }
 
             Tracker.SetVisualizedRobot(newSelectedRobot);

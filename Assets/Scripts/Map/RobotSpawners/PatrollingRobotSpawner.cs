@@ -3,6 +3,8 @@ using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Statistics.Trackers;
 
+using UnityEngine;
+
 namespace Maes.Map.RobotSpawners
 {
     public class PatrollingRobotSpawner : RobotSpawner<IPatrollingAlgorithm>
@@ -18,9 +20,9 @@ namespace Maes.Map.RobotSpawners
         }
 
         protected override MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId, IPatrollingAlgorithm algorithm,
-            SimulationMap<Tile> collisionMap, int seed)
+            SimulationMap<Tile> collisionMap, int seed, Color32 color)
         {
-            var robot = base.CreateRobot(x, y, relativeSize, robotId, algorithm, collisionMap, seed);
+            var robot = base.CreateRobot(x, y, relativeSize, robotId, algorithm, collisionMap, seed, color);
 
             algorithm.SetGlobalPatrollingMap(_patrollingMap);
             algorithm.SetPatrollingMap(_patrollingMap.Clone());
