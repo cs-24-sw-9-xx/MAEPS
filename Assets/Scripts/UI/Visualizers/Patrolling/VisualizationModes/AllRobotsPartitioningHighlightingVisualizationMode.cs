@@ -76,6 +76,10 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 }
             }
 
+            foreach (var robot in _robots)
+            {
+                robot.ShowOutline();
+            }
         }
     }
 }

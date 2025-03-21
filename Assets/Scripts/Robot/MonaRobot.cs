@@ -238,5 +238,16 @@ namespace Maes.Robot
         {
             Destroy(gameObject);
         }
+
+        public void ShowOutline(Color? color = null)
+        {
+            outLine.enabled = true;
+            outLine.OutlineColor = color ?? Color;
+        }
+
+        public void HideOutline()
+        {
+            outLine.enabled = false;
+        }
     }
 }

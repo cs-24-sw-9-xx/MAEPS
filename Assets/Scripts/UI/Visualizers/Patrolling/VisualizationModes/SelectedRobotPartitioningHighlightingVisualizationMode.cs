@@ -48,6 +48,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
             }
 
             _partitionedVertices = partitionedVertices;
+            _robot.ShowOutline();
         }
     }
 }
