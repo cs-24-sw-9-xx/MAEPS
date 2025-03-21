@@ -35,7 +35,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 {
                     if (robot.Algorithm is not IPartitionPatrollingAlgorithm alg)
                     {
-                        Debug.Log("Must be a partitioning algorithm to able this feature");
+                        Debug.Log("Must be a partitioning algorithm to be able to use this feature");
                         continue;
                     }
 
