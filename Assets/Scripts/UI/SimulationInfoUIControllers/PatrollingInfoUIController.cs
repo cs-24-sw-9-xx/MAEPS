@@ -265,7 +265,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 if (!sim.HasSelectedRobot())
                 {
-                    Debug.Log("No robot selected, selecting first robot");
+                    Debug.Log("No robot selected, first select a robot");
                 }
 
                 sim.PatrollingTracker.ShowSelectedRobotPartitioningHighlighting();
