@@ -48,6 +48,8 @@ namespace Maes.Algorithms.Patrolling
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
 
+        private readonly System.Random _random = new(0);
+
         protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
@@ -67,8 +69,11 @@ namespace Maes.Algorithms.Patrolling
             // Calculate the normalized distance estimation of the neighbors
             var normalizedDistances = CalculateNormalizedDistance(currentVertex, ActualDistanceMethod);
             var result = UtilityFunction(normalizedIdleness, normalizedDistances);
-            Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ", result.First().Neighbors.Select(x => x.Id))}");
-            return result.First();
+            var maxUtilityValue = result.Select(i => i.Value).Min();
+            result = result.Where(i => i.Value == maxUtilityValue);
+            var nextVertex = result.ElementAt(_random.Next(result.Count())).Vertex;
+            Debug.Log($"Next vertex {nextVertex.Id}, with neighbours: {string.Join(", ", nextVertex.Neighbors.Select(x => x.Id))}");
+            return nextVertex;
         }
 
         /// <summary>
@@ -92,7 +97,7 @@ namespace Maes.Algorithms.Patrolling
             throw new Exception($"Path from {source.Id} to {target.Id} not found");
         }
 
-        private IEnumerable<Vertex> UtilityFunction(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
+        private IEnumerable<NormalizedValue> UtilityFunction(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
         {
             if (normalizedIdleness.Count() != normalizedDistances.Count())
             {
@@ -110,8 +115,7 @@ namespace Maes.Algorithms.Patrolling
 #endif
             var result = from idleness in normalizedIdleness
                          join distance in normalizedDistances on idleness.Vertex.Id equals distance.Vertex.Id
-                         orderby idleness.Value + distance.Value ascending
-                         select idleness.Vertex;
+                         select new NormalizedValue(idleness.Vertex, idleness.Value + distance.Value);
             return result;
         }
 
