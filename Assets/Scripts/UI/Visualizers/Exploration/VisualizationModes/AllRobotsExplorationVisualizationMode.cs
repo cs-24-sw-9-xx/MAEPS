@@ -74,10 +74,10 @@ namespace Maes.UI.Visualizers.Exploration.VisualizationModes
         {
             if (!cell.IsExplorable)
             {
-                return ExplorationVisualizer.SolidColor;
+                return Visualizer.SolidColor;
             }
 
-            return (cell.IsExplored) ? ExplorationVisualizer.ExploredColor : ExplorationVisualizer.StandardCellColor;
+            return (cell.IsExplored) ? ExplorationVisualizer.ExploredColor : Visualizer.StandardCellColor;
         }
     }
 }

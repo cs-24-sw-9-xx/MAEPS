@@ -114,7 +114,7 @@ namespace Tests.PlayModeTests
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
-            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
             {
                 yield return null;
             }
@@ -154,7 +154,7 @@ namespace Tests.PlayModeTests
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
-            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
             {
                 yield return null;
             }
@@ -186,14 +186,11 @@ namespace Tests.PlayModeTests
             queue.Enqueue(() => _robot.Controller.Rotate(90));
             queue.Enqueue(() => _robot.Controller.Move(movementDistance));
 
-            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            _testAlgorithm.UpdateFunction = (_, _) =>
             {
-                if (_testAlgorithm.Controller.GetStatus() == RobotStatus.Idle)
+                if (_testAlgorithm.Controller.Status == RobotStatus.Idle && queue.TryDequeue(out var action))
                 {
-                    if (queue.TryDequeue(out var action))
-                    {
-                        action();
-                    }
+                    action();
                 }
             };
 
@@ -206,7 +203,7 @@ namespace Tests.PlayModeTests
 
             var movementTaskEndTick = _simulationBase.SimulatedLogicTicks;
             const int ticksToWait = 30;
-            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            while (_simulationBase.SimulatedLogicTicks < movementTaskEndTick + ticksToWait || _testAlgorithm.Controller.Status != RobotStatus.Idle)
             {
                 yield return null;
             }
@@ -246,7 +243,7 @@ namespace Tests.PlayModeTests
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
-            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.GetStatus() != RobotStatus.Idle)
+            while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
             {
                 yield return null;
             }
@@ -274,7 +271,7 @@ namespace Tests.PlayModeTests
         public IEnumerator EstimateDistanceToTarget_IsDistanceCorrectTest(float actualDistance)
         {
             var coarseMapStartingPosition = Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
-            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize());
+            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
             var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
 
             var estimatedDistance = _robot.Controller.EstimateDistanceToTarget(coarseMapTargetPosition);
@@ -305,12 +302,12 @@ namespace Tests.PlayModeTests
         {
             var debug = false;
             var coarseMapStartingPosition = _currentCoarseTile;
-            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize());
+            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
             var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
             var estimatedTime = _robot.Controller.EstimateTimeToTarget(coarseMapTargetPosition).Value;
 
             // Make the robot move to target.
-            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            _testAlgorithm.UpdateFunction = (_, controller) =>
             {
                 controller.PathAndMoveTo(coarseMapTargetPosition);
             };

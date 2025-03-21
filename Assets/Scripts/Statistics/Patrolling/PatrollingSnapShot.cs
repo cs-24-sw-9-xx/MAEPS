@@ -4,7 +4,7 @@ using Maes.Statistics.Communication;
 
 namespace Maes.Statistics.Patrolling
 {
-    public class PatrollingSnapShot : CommunicationSnapShot
+    public sealed class PatrollingSnapShot : CommunicationSnapShot
     {
         [Index(1)]
         public float GraphIdleness { get; }
@@ -20,7 +20,7 @@ namespace Maes.Statistics.Patrolling
         public int NumberOfRobots { get; }
 
         public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
-            float averagWorstGraphIdleness, int completedCycles, int numberOfRobots,
+            float averageWorstGraphIdleness, int completedCycles, int numberOfRobots,
             bool? agentsInterconnected = null, float? biggestClusterPercentage = null) : base(tick,
             agentsInterconnected, biggestClusterPercentage)
         {
@@ -28,7 +28,7 @@ namespace Maes.Statistics.Patrolling
             WorstGraphIdleness = worstGraphIdleness;
             TotalDistanceTraveled = totalDistanceTraveled;
             CompletedCycles = completedCycles;
-            AverageGraphIdleness = averagWorstGraphIdleness;
+            AverageGraphIdleness = averageWorstGraphIdleness;
             NumberOfRobots = numberOfRobots;
         }
     }

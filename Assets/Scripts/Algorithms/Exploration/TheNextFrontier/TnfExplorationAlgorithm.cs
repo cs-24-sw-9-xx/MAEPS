@@ -213,11 +213,11 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
                         if (_path != null && _path.Count > 0)
                         {
                             var lastStep = _path.Last.Value;
-                            _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), (Vector2)lastStep.End));
+                            _robotController.Broadcast((_robotController.SlamMap, _robotController.Id, (Vector2)lastStep.End));
                         }
                         else
                         {
-                            _robotController.Broadcast((_robotController.GetSlamMap(), _robotController.GetRobotID(), _robotPos));
+                            _robotController.Broadcast((_robotController.SlamMap, _robotController.Id, _robotPos));
                         }
                     }
                     _logicTicksSinceLastCommunication++;
@@ -227,7 +227,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
                 _logicTicksSinceLastCommunication++;
                 _logicTicksSinceLastCommunication %= 20;
 
-                if (_robotController.HasCollidedSinceLastLogicTick())
+                if (_robotController.HasCollidedSinceLastLogicTick)
                 {
                     _robotController.StopCurrentTask();
                     _bonked = true;
@@ -291,7 +291,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         private void CollisionMitigation()
         {
-            if (_robotController.GetStatus() != RobotStatus.Idle)
+            if (_robotController.Status != RobotStatus.Idle)
             {
                 return;
             }
@@ -336,7 +336,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             {
                 return;
             }
-            var newMaps = new List<SlamMap> { _robotController.GetSlamMap() };
+            var newMaps = new List<SlamMap> { _robotController.SlamMap };
             foreach (var package in received)
             {
                 var pack = ((SlamMap, int, Vector2))package;
@@ -426,7 +426,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         private void DoMovement(LinkedList<PathStep>? path)
         {
-            if (_robotController.GetStatus() == RobotStatus.Idle)
+            if (_robotController.Status == RobotStatus.Idle)
             {
                 if (path != null && path.Count > 0)
                 {
@@ -460,7 +460,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         private void StartMoving()
         {
-            if (_robotController.GetStatus() != RobotStatus.Idle || _nextTileInPath == null)
+            if (_robotController.Status != RobotStatus.Idle || _nextTileInPath == null)
             {
                 return;
             }
@@ -555,8 +555,8 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
         public void SetController(Robot2DController controller)
         {
             _robotController = controller;
-            _map = _robotController.GetSlamMap().GetCoarseMap();
-            _robotId = _robotController.GetRobotID();
+            _map = _robotController.SlamMap.CoarseMap;
+            _robotId = _robotController.Id;
         }
 
         public string GetDebugInfo()

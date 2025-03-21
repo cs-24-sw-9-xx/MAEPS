@@ -25,12 +25,12 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             if (!cell.CanBeCovered)
             {
-                return ExplorationVisualizer.SolidColor;
+                return Visualizer.SolidColor;
             }
 
             if (!cell.IsCovered)
             {
-                return ExplorationVisualizer.StandardCellColor;
+                return Visualizer.StandardCellColor;
             }
 
             var ticksSinceLastCovered = currentTick - cell.LastCoverageTimeInTicks;

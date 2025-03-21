@@ -70,7 +70,7 @@ namespace Maes.Algorithms.Exploration.FollowWaypoints
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
-            _map = _controller.GetSlamMap().GetCoarseMap();
+            _map = _controller.SlamMap.CoarseMap;
         }
 
         public string GetDebugInfo()
@@ -87,7 +87,7 @@ namespace Maes.Algorithms.Exploration.FollowWaypoints
                     .Append("\nDestination: ")
                     .Append(Waypoints[_currentWaypointIndex].Destination)
                     .Append("\nStatus: ")
-                    .Append(_controller.GetStatus())
+                    .Append(_controller.Status)
                     .ToString();
         }
 

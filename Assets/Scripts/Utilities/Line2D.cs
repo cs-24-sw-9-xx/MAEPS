@@ -73,11 +73,6 @@ namespace Maes.Utilities
             }
         }
 
-        public Vector2[] GetPoints()
-        {
-            return new[] { Start, End };
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float SlopeIntercept(float x)
         {
@@ -86,6 +81,7 @@ namespace Maes.Utilities
 
 
         // Returns true if the y value of the line grows as x increases
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsGrowing()
         {
 #if DEBUG

@@ -122,7 +122,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
         public void SetController(Robot2DController controller)
         {
             _robotController = controller;
-            _heuristic = (VoronoiHeuristic)(_robotController.GetRobotID() % 4);
+            _heuristic = (VoronoiHeuristic)(_robotController.Id % 4);
             _unexploredTilesComparer = GetSortingFunction(_heuristic);
         }
 
@@ -142,7 +142,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
                 {
                     foreach (var tile in _currentRegion.Tiles)
                     {
-                        tile.DrawDebugLineFromRobot(_robotController.GetSlamMap().GetCoarseMap(), Color.black, 0.2f);
+                        tile.DrawDebugLineFromRobot(_robotController.SlamMap.CoarseMap, Color.black, 0.2f);
                     }
                 }
 
@@ -178,17 +178,17 @@ namespace Maes.Algorithms.Exploration.Voronoi
                 }
 
                 // Make the robot follow the current path.
-                if ((!IsDoneWithCurrentPath() && _robotController.GetStatus() == RobotStatus.Idle))
+                if ((!IsDoneWithCurrentPath() && _robotController.Status == RobotStatus.Idle))
                 {
                     var nextStep = GetNextStep();
                     if (nextStep != null)
                     {
                         // We move to partly unseen targets. If they turn out to be solid, find a new target
-                        if (_robotController.GetSlamMap().GetCoarseMap().GetTileStatus(nextStep.Value) !=
+                        if (_robotController.SlamMap.CoarseMap.GetTileStatus(nextStep.Value) !=
                             SlamMap.SlamTileStatus.Solid)
                         {
                             _currentPartialMovementTarget = nextStep.Value;
-                            var relativePosition = _robotController.GetSlamMap().GetCoarseMap()
+                            var relativePosition = _robotController.SlamMap.CoarseMap
                                 .GetTileCenterRelativePosition(_currentPartialMovementTarget.Value);
 
                             // Find delta
@@ -282,8 +282,8 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
         private void UpdateExploredStatusOfTiles()
         {
-            var currentPosition = _robotController.GetSlamMap().GetCoarseMap().GetApproximatePosition();
-            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var currentPosition = _robotController.SlamMap.CoarseMap.GetApproximatePosition();
+            var visibleTilesList = _robotController.SlamMap.GetVisibleTiles();
             var currentlyVisibleCoarseTiles = CoarseGrainedMap.FromSlamMapCoordinates(visibleTilesList);
 
             foreach (var visibleTile in currentlyVisibleCoarseTiles)
@@ -301,7 +301,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
                 if (_currentTargetPath != null && _currentPartialMovementTarget != null)
                 {
                     // Have we reached the next partial goal?
-                    var robotCoarseTile = _robotController.GetSlamMap().GetCoarseMap().GetCurrentTile();
+                    var robotCoarseTile = _robotController.SlamMap.CoarseMap.GetCurrentTile();
                     if (robotCoarseTile.Equals(_currentPartialMovementTarget.Value))
                     {
                         // Mark the current partial movement target as visited
@@ -355,7 +355,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
         private void EnterSearchMode()
         {
-            var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
+            var coarseMap = _robotController.SlamMap.CoarseMap;
             var coarseOcclusionPoints = FindClosestOcclusionPoints();
             _occlusionPointsWithinView = coarseOcclusionPoints.Count;
 
@@ -418,8 +418,8 @@ namespace Maes.Algorithms.Exploration.Voronoi
         private void SetCurrentMovementTarget(Vector2Int target)
         {
             // Find a the course coordinate and generate path
-            var robotCoarseTile = _robotController.GetSlamMap().GetCoarseMap().GetCurrentTile();
-            var path = _robotController.GetSlamMap().GetVisibleTilesCoarseMap().GetPathSteps(robotCoarseTile, target, true);
+            var robotCoarseTile = _robotController.SlamMap.CoarseMap.GetCurrentTile();
+            var path = _robotController.SlamMap.GetVisibleTilesCoarseMap().GetPathSteps(robotCoarseTile, target, true);
 
             if (path == null)
             {
@@ -429,7 +429,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
             {
                 _currentTargetPath = path.Select(e => (e.End, false)).ToArray(); // All points on path are not visited, i.e. false
                 if (_currentTargetPath[0].Item1.Equals(robotCoarseTile) &&
-                    !_robotController.HasCollidedSinceLastLogicTick())
+                    !_robotController.HasCollidedSinceLastLogicTick)
                 {
                     _currentTargetPath[0] = (_currentTargetPath[0].Item1, true);
                 }
@@ -438,7 +438,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
         private Vector2Int FindClosestVoronoiBoundary()
         {
-            var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
+            var coarseMap = _robotController.SlamMap.CoarseMap;
             // Should move to closest voronoi boundary, that is not a wall
             var coarseEdgeTiles = FindEdgeTiles(_currentRegion.Tiles);
             coarseEdgeTiles = coarseEdgeTiles.Distinct().ToList(); // Remove possible duplicate
@@ -509,8 +509,8 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
         private List<Vector2Int> FindClosestOcclusionPoints()
         {
-            var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
-            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var coarseMap = _robotController.SlamMap.CoarseMap;
+            var visibleTilesList = _robotController.SlamMap.GetVisibleTiles();
             var visibleCoarseTiles = CoarseGrainedMap.FromSlamMapCoordinates(visibleTilesList).ToList();
 
             var robotPosition = coarseMap.GetApproximatePosition();
@@ -662,7 +662,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
                 return Array.Empty<Vector2Int>();
             }
 
-            var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
+            var coarseMap = _robotController.SlamMap.CoarseMap;
 
             var unExploredInRegion = region.Tiles
                 .Where(e => !IsExploredMap.ContainsKey(e) || IsExploredMap[e] == false)
@@ -675,11 +675,11 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
         private void RecalculateVoronoiRegions()
         {
-            var coarseMap = _robotController.GetSlamMap().GetCoarseMap();
+            var coarseMap = _robotController.SlamMap.CoarseMap;
             _localVoronoiRegions = new List<VoronoiRegion>();
 
             var nearbyRobots = _robotController.SenseNearbyRobots();
-            var myPosition = _robotController.GetSlamMap().GetCoarseMap().GetCurrentTile();
+            var myPosition = _robotController.SlamMap.CoarseMap.GetCurrentTile();
 
             // If no near robots, all visible tiles are assigned to my own region
             //if (nearbyRobots.Count == 0)
@@ -698,7 +698,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
             var robotIdToClosestTilesMap = new Dictionary<int, List<Vector2Int>>();
 
             // Assign tiles to robots to create regions
-            var visibleTilesList = _robotController.GetSlamMap().GetVisibleTiles();
+            var visibleTilesList = _robotController.SlamMap.GetVisibleTiles();
             var currentlyVisibleCoarseTiles = CoarseGrainedMap.FromSlamMapCoordinates(visibleTilesList).ToHashSet();
             for (var x = myPosition.x - _voronoiRegionMaxDistance; x < myPosition.x + _voronoiRegionMaxDistance; x++)
             {
@@ -709,10 +709,10 @@ namespace Maes.Algorithms.Exploration.Voronoi
                     {
                         var tilePosition = new Vector2Int(x, y);
                         var bestDistance = Vector2.Distance(myPosition, tilePosition);
-                        var bestRobotId = _robotController.GetRobotID();
+                        var bestRobotId = _robotController.Id;
                         foreach (var robot in nearbyRobots)
                         {
-                            var otherPosition = robot.GetRelativePosition(myPosition, _robotController.GetSlamMap().GetRobotAngleDeg());
+                            var otherPosition = robot.GetRelativePosition(myPosition, _robotController.SlamMap.GetRobotAngleDeg());
                             var distance = Vector2.Distance(otherPosition, tilePosition);
                             if (distance < bestDistance)
                             {
@@ -738,7 +738,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
 
             _currentRegion = _localVoronoiRegions
                 .DefaultIfEmpty(new VoronoiRegion())
-                .First(k => k.RobotId == _robotController.GetRobotID());
+                .First(k => k.RobotId == _robotController.Id);
         }
 
         public string GetDebugInfo()

@@ -35,7 +35,7 @@ using UnityEngine;
 
 namespace Maes.Statistics.Trackers
 {
-    public class ExplorationTracker : Tracker<ExplorationVisualizer, IExplorationVisualizationMode>
+    public sealed class ExplorationTracker : Tracker<ExplorationVisualizer, IExplorationVisualizationMode>
     {
         private ExplorationSimulation Simulation { get; }
 

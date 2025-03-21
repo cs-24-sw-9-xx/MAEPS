@@ -18,6 +18,7 @@
 // Contributors: Mads Beyer Mogensen
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Maes.Algorithms.Patrolling.Components
@@ -27,9 +28,23 @@ namespace Maes.Algorithms.Patrolling.Components
     /// </summary>
     public interface IComponent
     {
-        IEnumerable<ComponentWaitForCondition> PreUpdateLogic();
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
+        IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
+        {
+            while (true)
+            {
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
+        }
 
-        IEnumerable<ComponentWaitForCondition> PostUpdateLogic();
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
+        IEnumerable<ComponentWaitForCondition> PostUpdateLogic()
+        {
+            while (true)
+            {
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
+        }
 
         void DebugInfo(StringBuilder stringBuilder)
         {

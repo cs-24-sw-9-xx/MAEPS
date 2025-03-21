@@ -144,7 +144,7 @@ namespace Maes.Utilities
             return new Vector2Int(xDir, yDir);
         }
 
-        public CardinalDirection GetRelativeDirection(RelativeDirection dir)
+        public CardinalDirection DirectionFromRelativeDirection(RelativeDirection dir)
         {
             return GetDirection(_index + (int)dir);
         }

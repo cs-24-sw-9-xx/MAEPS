@@ -18,7 +18,6 @@
 // Contributors 2025: 
 // Unit tests by S3JER
 
-using System;
 using System.Collections.Generic;
 
 using Maes.Map;
@@ -34,8 +33,8 @@ namespace Tests.EditModeTests
     {
         private List<Vertex> _vertices;
         private Dictionary<Vector2Int, Bitmap> _communicationZones;
-        private readonly int _bitmapWidth = 10;
-        private readonly int _bitmapHeight = 10;
+        private const int BitmapWidth = 10;
+        private const int BitmapHeight = 10;
 
         [SetUp]
         public void Setup()
@@ -52,7 +51,7 @@ namespace Tests.EditModeTests
             _communicationZones = new Dictionary<Vector2Int, Bitmap>();
 
             // Communication zone for vertex at (2,2)
-            var bitmap1 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap1 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             for (var x = 1; x <= 3; x++)
             {
                 for (var y = 1; y <= 3; y++)
@@ -63,7 +62,7 @@ namespace Tests.EditModeTests
             _communicationZones[new Vector2Int(2, 2)] = bitmap1;
 
             // Communication zone for vertex at (5,5)
-            var bitmap2 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap2 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             for (var x = 4; x <= 6; x++)
             {
                 for (var y = 4; y <= 6; y++)
@@ -74,7 +73,7 @@ namespace Tests.EditModeTests
             _communicationZones[new Vector2Int(5, 5)] = bitmap2;
 
             // Communication zone for vertex at (8,8)
-            var bitmap3 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap3 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             for (var x = 7; x <= 9; x++)
             {
                 for (var y = 7; y <= 9; y++)
@@ -117,30 +116,6 @@ namespace Tests.EditModeTests
         }
 
         [Test]
-        public void Constructor_ThrowsException_WhenCommunicationZonesEmpty()
-        {
-            // Arrange
-            var emptyZones = new Dictionary<Vector2Int, Bitmap>();
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new Partition(1, _vertices, emptyZones));
-        }
-
-        [Test]
-        public void Constructor_ThrowsException_WhenVertexMissingCommunicationZone()
-        {
-            // Arrange
-            var incompleteZones = new Dictionary<Vector2Int, Bitmap>
-            {
-                { new Vector2Int(2, 2), _communicationZones[new Vector2Int(2, 2)] },
-                // Missing communication zones for other vertices
-            };
-
-            // Act & Assert
-            Assert.Throws<ArgumentException>(() => new Partition(1, _vertices, incompleteZones));
-        }
-
-        [Test]
         public void CalculateIntersectionAndRatio_CalculatesCorrectly_WhenPartitionsIntersect()
         {
             // Arrange
@@ -156,7 +131,7 @@ namespace Tests.EditModeTests
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
 
             // Communication zone for vertex at (3,3)
-            var bitmap4 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap4 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             for (var x = 2; x <= 4; x++)
             {
                 for (var y = 2; y <= 4; y++)
@@ -167,7 +142,7 @@ namespace Tests.EditModeTests
             communicationZones2[new Vector2Int(3, 3)] = bitmap4;
 
             // Communication zone for vertex at (7,7)
-            var bitmap5 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap5 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             for (var x = 6; x <= 8; x++)
             {
                 for (var y = 6; y <= 8; y++)
@@ -217,7 +192,7 @@ namespace Tests.EditModeTests
             var vertices2 = new List<Vertex> { vertex };
 
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
-            var bitmap4 = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var bitmap4 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
             bitmap4.Set(9, 9);
             communicationZones2[new Vector2Int(9, 9)] = bitmap4;
 

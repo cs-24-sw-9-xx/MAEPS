@@ -94,6 +94,5 @@ namespace Maes.Utilities
 
             return cellIndexTriangleIndexes;
         }
-
     }
 }

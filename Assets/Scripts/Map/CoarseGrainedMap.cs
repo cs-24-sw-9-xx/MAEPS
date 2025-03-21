@@ -22,6 +22,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -35,7 +36,7 @@ namespace Maes.Map
 {
 
     // This represents a low-resolution map where the robot can comfortably fit inside a single cell
-    public class CoarseGrainedMap : IPathFindingMap
+    public sealed class CoarseGrainedMap : IPathFindingMap
     {
         private readonly SlamMap _slamMap;
         private Bitmap _tilesCoveredStatus;
@@ -100,6 +101,7 @@ namespace Maes.Map
         }
 
         /// <param name="tileCoord">The coarse-grained tile to get a relative position to</param>
+        /// <param name="dependOnBrokenBehaviour"></param>
         /// <returns>A <see cref="RelativePosition"/>, relative from the calling Robot to the target tileCoord.</returns>
         public RelativePosition GetTileCenterRelativePosition(Vector2Int tileCoord, bool dependOnBrokenBehaviour = true)
         {
@@ -184,6 +186,7 @@ namespace Maes.Map
         /// </summary>
         /// <param name="coordinate">the coordinate to test.</param>
         /// <exception cref="ArgumentException">raised when coordinate is out of bounds.</exception>
+        [Conditional("DEBUG")]
         private void AssertWithinBounds(Vector2Int coordinate)
         {
             if (!IsWithinBounds(coordinate))
@@ -333,7 +336,7 @@ namespace Maes.Map
         public CardinalDirection GetRelativeNeighbourDirection(CardinalDirection.RelativeDirection relativeDirection)
         {
             var currentCardinalDirection = CardinalDirection.DirectionFromDegrees(_slamMap.GetRobotAngleDeg());
-            return currentCardinalDirection.GetRelativeDirection(relativeDirection);
+            return currentCardinalDirection.DirectionFromRelativeDirection(relativeDirection);
         }
 
         /// <summary>
@@ -354,6 +357,8 @@ namespace Maes.Map
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        /// <param name="acceptPartialPaths"></param>
+        /// <param name="dependOnBrokenBehavior"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetPath(Vector2Int target, bool beOptimistic = false, bool acceptPartialPaths = false, bool dependOnBrokenBehavior = true)
         {
@@ -451,10 +456,7 @@ namespace Maes.Map
             return _optimisticTileStatuses[coordinate.x, coordinate.y] != SlamMap.SlamTileStatus.Open;
         }
 
-        public float CellSize()
-        {
-            return 1.0f;
-        }
+        public float CellSize => 1.0f;
 
         /// <summary>
         /// Converts the <see cref="Vector2"/> given by <see cref="GetApproximatePosition"/> to the tile in
@@ -560,6 +562,7 @@ namespace Maes.Map
             return (!_tilesCoveredStatus.Contains(coordinate.x, coordinate.y)) && GetSlamTileStatuses(coordinate).All(status => status != SlamMap.SlamTileStatus.Solid);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private SlamMap.SlamTileStatus[] GetSlamTileStatuses(Vector2Int coordinate)
         {
             var slamCoord = coordinate * 2;
@@ -616,6 +619,7 @@ namespace Maes.Map
         /// <summary>
         /// Updates the information in a tile with the new observed status. Does not change anything, if any of the SLAM tiles in the coarse-grained tile are 'solid'.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateTile(Vector2Int courseCoord, SlamMap.SlamTileStatus observedStatus)
         {
             var x = courseCoord.x;
@@ -636,6 +640,7 @@ namespace Maes.Map
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 TileToWorld(Vector2 tile)
         {
             return new Vector3(tile.x, tile.y, -0.01f) + (Vector3)_offset;

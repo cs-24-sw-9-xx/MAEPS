@@ -44,7 +44,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
         public EdgeDetector(SlamMap map, float visionRange)
         {
             _slamMap = map;
-            _coarseMap = map.GetCoarseMap();
+            _coarseMap = map.CoarseMap;
             _edgeSize = (int)visionRange + 1;
             _visionRange = (int)visionRange;
         }

@@ -65,7 +65,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
             }
             public IMinotaurMessage Process(MinotaurAlgorithm minotaur)
             {
-                if (minotaur._controller.GetRobotID() == _requestorRobotID)
+                if (minotaur._controller.Id == _requestorRobotID)
                 {
                     List<int> winnerIDList = new();
                     if ((_allBids.Count + 1) / 2 > 1)

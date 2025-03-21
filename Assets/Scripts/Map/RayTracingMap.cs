@@ -23,11 +23,13 @@ using System;
 
 using Maes.Utilities;
 
+using Unity.Mathematics;
+
 using UnityEngine;
 
 namespace Maes.Map
 {
-    public class RayTracingMap<TCell>
+    public sealed class RayTracingMap<TCell>
     {
         private readonly SimulationMap<TCell> _map;
         private readonly RayTracingTriangle[] _traceableTriangles;
@@ -36,7 +38,7 @@ namespace Maes.Map
         // The order in which edges are stored for each RayTracingTriangle
         private const int Diagonal = 0, Horizontal = 1, Vertical = 2;
 
-        private static readonly float MaxTraceLengthPerTriangle = Mathf.Sqrt(2.0f) / 4.0f;
+        private const float MaxTraceLengthPerTriangle = math.SQRT2 / 4.0f;
 
         public RayTracingMap(SimulationMap<TCell> map)
         {

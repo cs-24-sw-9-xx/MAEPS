@@ -38,7 +38,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 {
     public static class GreedyMostVisibilityWaypointGenerator
     {
-        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, WaypointConnector.WaypointConnectorDelegate waypointConnector, float maxDistance = 0f)
+        public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, WaypointConnectorDelegate waypointConnector, float maxDistance = 0f)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = VertexPositionsFromMap(map, maxDistance);
@@ -51,6 +51,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         /// The result is not the optimal solution, but a good approximation. 
         /// </summary>
         /// <param name="map"></param>
+        /// <param name="maxDistance">The maximum range of a waypoint.</param>
         /// <returns></returns>
         public static Dictionary<Vector2Int, Bitmap> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
         {
@@ -75,7 +76,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             {
                 var bestGuardPosition = Vector2Int.zero;
                 var bestCoverage = new Bitmap(0, 0, 0, 0);
-                var bestCandidate = new Bitmap(0, 0, 0, 0);
+                Bitmap bestCandidate = null!;
 
                 var foundCandidate = false;
 

@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
             public IMinotaurMessage? Process(MinotaurAlgorithm minotaur)
             {
                 // TODO: Should move to doorway that auction was won for, if in winner list
-                if (_winnerList.Contains(minotaur._controller.GetRobotID()))
+                if (_winnerList.Contains(minotaur._controller.Id))
                 {
                     minotaur._controller.StopCurrentTask();
                     minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), MinotaurAlgorithm.Waypoint.WaypointType.NearestDoor, true);

@@ -20,7 +20,9 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -92,14 +94,11 @@ namespace Tests.EditModeTests
 
         }
 
-        private PatrollingMap CreatePatrollingMap(SimulationMap<Tile> simulationMap, IEnumerable<Vector2Int> vertexPositions)
+        private static PatrollingMap CreatePatrollingMap(SimulationMap<Tile> simulationMap, IEnumerable<Vector2Int> vertexPositions)
         {
-            var vertices = new List<Vertex>();
             var id = 0;
-            foreach (var position in vertexPositions)
-            {
-                vertices.Add(new Vertex(id++, position));
-            }
+            var vertices = vertexPositions.Select(p => new Vertex(id++, p)).ToList();
+
             // give me a mock of the Dictionary<Vector2Int, Bitmap> vertexPositions that i can use for the patrolling map
             var vertexPositionsDictionary = new Dictionary<Vector2Int, Bitmap>();
             return new PatrollingMap(vertices.ToArray(), simulationMap, vertexPositionsDictionary);
@@ -323,8 +322,7 @@ namespace Tests.EditModeTests
                 "     ";
 
             var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
-            var vertexPositions = new List<Vector2Int>();  // Empty list of vertices
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
+            var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>());
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
 
             // Act

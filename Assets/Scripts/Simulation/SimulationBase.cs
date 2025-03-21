@@ -78,28 +78,17 @@ namespace Maes.Simulation
         // Set by SetScenario
         protected SimulationMap<Tile> _collisionMap = null!;
 
-        public SimulationMap<Tile> GetCollisionMap()
-        {
-            return _collisionMap;
-        }
-
         // Set by SetScenario
         public CommunicationManager CommunicationManager { get; private set; } = null!;
 
 
         private MonaRobot? _selectedRobot;
 
-        public bool HasSelectedRobot()
-        {
-            return _selectedRobot != null;
-        }
+        public bool HasSelectedRobot => _selectedRobot != null;
 
         private VisibleTagInfoHandler? _selectedTag;
 
-        public bool HasSelectedTag()
-        {
-            return _selectedTag != null;
-        }
+        public bool HasSelectedTag => _selectedTag != null;
 
         // The debugging visualizer provides 
         private readonly DebuggingVisualizer _debugVisualizer = new();
@@ -278,6 +267,7 @@ namespace Maes.Simulation
 
         private void OnDrawGizmos()
         {
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_collisionMap == null)
             {
                 return;

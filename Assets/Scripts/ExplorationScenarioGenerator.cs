@@ -45,9 +45,8 @@ namespace Maes
     using MySimulationScenario = ExplorationSimulationScenario;
     using RobotFactory = RobotFactory<IExplorationAlgorithm>;
 
-    public class ExplorationScenarioGenerator
+    public static class ExplorationScenarioGenerator
     {
-
         private const int Minute = 60;
 
         public static Queue<MySimulationScenario> GenerateROS2Scenario()

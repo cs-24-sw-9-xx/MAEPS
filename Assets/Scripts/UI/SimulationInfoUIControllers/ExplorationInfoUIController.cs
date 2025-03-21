@@ -77,7 +77,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void SelectedRobotVisualizeTagsButtonClicked(ClickEvent _)
         {
             var sim = Simulation ?? throw new InvalidOperationException("Simulation is null");
-            if (sim.HasSelectedRobot())
+            if (sim.HasSelectedRobot)
             {
                 ToggleVisualizeTagsButtons(false);
             }
@@ -92,7 +92,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
-                if (!sim.HasSelectedRobot())
+                if (!sim.HasSelectedRobot)
                 {
                     sim.SelectFirstRobot();
                 }
@@ -105,7 +105,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
-                if (!sim.HasSelectedRobot())
+                if (!sim.HasSelectedRobot)
                 {
                     sim.SelectFirstRobot();
                 }

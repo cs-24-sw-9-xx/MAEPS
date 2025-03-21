@@ -19,9 +19,12 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
-using System;
+// Mads Beyer Mogensen
+
 using System.Collections.Generic;
 using System.Linq;
+
+using JetBrains.Annotations;
 
 using Maes.Utilities;
 
@@ -30,90 +33,49 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class Partition
+    public sealed class Partition
     {
-        public List<Vertex> Vertices { get; }
-        public Bitmap CommunicationZone { get; }
         public int PartitionId { get; }
-        public Dictionary<int, float> CommunicationRatio { get; }
-        public Dictionary<int, Bitmap> IntersectionZones { get; }
-        public Dictionary<Vector2Int, Bitmap> CommunicationZones { get; }
+        public IReadOnlyList<Vertex> Vertices { get; }
+        public Bitmap CommunicationZone { get; }
+        public IReadOnlyDictionary<Vector2Int, Bitmap> CommunicationZones { get; }
+        public IReadOnlyDictionary<int, Bitmap> IntersectionZones => _intersectionZones;
+        public IReadOnlyDictionary<int, float> CommunicationRatio => _communicationRatio;
 
-        public Partition(int partitionId, List<Vertex> vertices, Dictionary<Vector2Int, Bitmap> communicationZones)
+        private readonly Dictionary<int, Bitmap> _intersectionZones = new();
+        private readonly Dictionary<int, float> _communicationRatio = new();
+
+        public Partition(int partitionId, IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
         {
             PartitionId = partitionId;
             Vertices = vertices;
             CommunicationZones = communicationZones;
-            CommunicationZone = CreatePartitionCommunicationZone(communicationZones);
-            IntersectionZones = new Dictionary<int, Bitmap>();
-            CommunicationRatio = new Dictionary<int, float>();
+            CommunicationZone = CreatePartitionCommunicationZone(vertices, communicationZones);
         }
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
-            var key = otherPartition.PartitionId;
+            var intersection = Bitmap.Intersection(CommunicationZone, otherPartition.CommunicationZone);
+            _intersectionZones[otherPartition.PartitionId] = intersection;
 
-            if (AlreadyCalculated(key))
-            {
-                throw new ArgumentException($"Intersection and ratio already calculated for partitions {PartitionId} and {otherPartition.PartitionId}");
-            }
-            var otherPartitionCommuncationZoneSubset = new Bitmap(0, 0, otherPartition.CommunicationZone.Width, otherPartition.CommunicationZone.Height);
-            foreach (var otherPartitionVertex in otherPartition.Vertices)
-            {
-                if (!otherPartition.CommunicationZones.TryGetValue(otherPartitionVertex.Position, out var zoneBitmap))
-                {
-                    throw new ArgumentException($"No communication zone found for vertex at position {otherPartitionVertex.Position}");
-                }
-                foreach (var currentPartitionVertex in Vertices)
-                {
-                    if (zoneBitmap.Contains(currentPartitionVertex.Position))
-                    {
-                        otherPartitionCommuncationZoneSubset.Union(zoneBitmap);
-                    }
-                }
-            }
-
-            var intersection = Bitmap.Intersection(CommunicationZone, otherPartitionCommuncationZoneSubset);
-            IntersectionZones[key] = intersection;
-
-            var ratio = CalculateRatio(intersection.Count, otherPartition.CommunicationZone.Count);
-            CommunicationRatio[key] = ratio;
+            var ratio = otherPartition.CommunicationZone.Count > 0 ? (float)intersection.Count / otherPartition.CommunicationZone.Count : 0f;
+            _communicationRatio[otherPartition.PartitionId] = ratio;
         }
 
-        private Bitmap CreatePartitionCommunicationZone(Dictionary<Vector2Int, Bitmap> communicationZones)
+        [MustDisposeResource]
+        private static Bitmap CreatePartitionCommunicationZone(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
         {
-            if (communicationZones.Count == 0)
-            {
-                throw new ArgumentException("Communication zones dictionary is empty.", nameof(communicationZones));
-            }
-
             // Extract dimensions from the first available Bitmap
             var firstBitmap = communicationZones.First().Value;
             var partitionCommunicationZone = new Bitmap(0, 0, firstBitmap.Width, firstBitmap.Height);
 
-            foreach (var vertex in Vertices)
+            foreach (var vertex in vertices)
             {
-                if (communicationZones.TryGetValue(vertex.Position, out var zoneBitmap))
-                {
-                    partitionCommunicationZone.Union(zoneBitmap);
-                }
-                else
-                {
-                    throw new ArgumentException($"No communication zone found for vertex at position {vertex.Position}");
-                }
+                var zoneBitmap = communicationZones[vertex.Position];
+                partitionCommunicationZone.Union(zoneBitmap);
             }
 
             return partitionCommunicationZone;
-        }
-
-        private bool AlreadyCalculated(int key)
-        {
-            return IntersectionZones.ContainsKey(key);
-        }
-
-        private float CalculateRatio(int intersectionCount, int totalCount)
-        {
-            return totalCount > 0 ? (float)intersectionCount / totalCount : 0f;
         }
     }
 }

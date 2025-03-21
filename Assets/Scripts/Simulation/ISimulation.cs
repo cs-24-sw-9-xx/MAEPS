@@ -39,7 +39,7 @@ namespace Maes.Simulation
 
         bool HasFinishedSim();
 
-        bool HasSelectedRobot();
+        bool HasSelectedRobot { get; }
 
         void ShowAllTags();
 

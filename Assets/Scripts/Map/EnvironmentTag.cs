@@ -25,9 +25,8 @@ using UnityEngine;
 
 namespace Maes.Map
 {
-    public class EnvironmentTag
+    public sealed class EnvironmentTag
     {
-
         public readonly int Sender;
         public readonly string Content;
         public readonly Vector3 WorldPosition; // Coord in Unity

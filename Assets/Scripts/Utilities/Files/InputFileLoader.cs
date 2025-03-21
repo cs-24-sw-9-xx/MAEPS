@@ -21,16 +21,18 @@
 
 using System.IO;
 
+using JetBrains.Annotations;
+
 namespace Maes.Utilities.Files
 {
     public static class InputFileLoader
     {
         public static string GetDefaultInputPath()
         {
-            return Path.Join(Path.Join(Directory.GetCurrentDirectory(), "Assets"), "Maps");
+            return Path.Join(Directory.GetCurrentDirectory(), "Assets", "Maps");
         }
 
-        public static StreamReader ReadInputFile(string fileName)
+        public static StreamReader ReadInputFile([PathReference] string fileName)
         {
             return new StreamReader(Path.Join(GetDefaultInputPath(), fileName));
         }

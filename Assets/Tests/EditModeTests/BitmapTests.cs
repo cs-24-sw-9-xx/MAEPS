@@ -41,7 +41,6 @@ namespace Tests.EditModeTests
             Assert.IsTrue(intersectedBitmap.Contains(2, 2));
         }
 
-
         [Test]
         public void VisibilityBitmapExceptWithTests()
         {
@@ -95,25 +94,6 @@ namespace Tests.EditModeTests
 
                 var tile = bitmap.Single();
                 Assert.AreEqual(new Vector2Int(1, 2), tile);
-            }
-        }
-
-
-        [Test]
-        public void ModuloBitTests()
-        {
-            for (var i = 0; i < 10000; i++)
-            {
-                Assert.AreEqual(i % 64, i & 63);
-            }
-        }
-
-        [Test]
-        public void DivisionBitTests()
-        {
-            for (var i = 0; i < 10000; i++)
-            {
-                Assert.AreEqual(i / 64, i >> 6);
             }
         }
     }

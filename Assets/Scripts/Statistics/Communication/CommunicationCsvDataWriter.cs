@@ -6,13 +6,13 @@ using Maes.Utilities;
 
 namespace Maes.Statistics.Communication
 {
-    public class CommunicationCsvDataWriter<TSnapShot> : CsvDataWriter<TSnapShot>
+    public abstract class CommunicationCsvDataWriter<TSnapShot> : CsvDataWriter<TSnapShot>
     where TSnapShot : CommunicationSnapShot
     {
         private readonly Dictionary<int, bool> _allAgentsConnectedSnapShots;
         private readonly Dictionary<int, float> _biggestClusterPercentageSnapShots;
 
-        public CommunicationCsvDataWriter(CommunicationManager communicationManager, List<TSnapShot> snapShots, string filename) : base(snapShots, filename)
+        protected CommunicationCsvDataWriter(CommunicationManager communicationManager, List<TSnapShot> snapShots, string filename) : base(snapShots, filename)
         {
             _allAgentsConnectedSnapShots = communicationManager.CommunicationTracker.InterconnectionSnapShot;
             _biggestClusterPercentageSnapShots = communicationManager.CommunicationTracker.BiggestClusterPercentageSnapshots;

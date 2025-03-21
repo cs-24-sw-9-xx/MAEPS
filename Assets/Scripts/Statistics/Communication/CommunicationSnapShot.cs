@@ -4,7 +4,7 @@ using Maes.Statistics.Writer.TypeConverter;
 
 namespace Maes.Statistics.Communication
 {
-    public class CommunicationSnapShot
+    public abstract class CommunicationSnapShot
     {
         [Index(0)]
         public int Tick { get; }
@@ -14,7 +14,7 @@ namespace Maes.Statistics.Communication
         [Name("Biggest Cluster %"), TypeConverter(typeof(NullableFloatToStringConverter))]
         public float? BiggestClusterPercentage { get; set; }
 
-        public CommunicationSnapShot(int tick, bool? agentsInterconnected = null, float? biggestClusterPercentage = null)
+        protected CommunicationSnapShot(int tick, bool? agentsInterconnected = null, float? biggestClusterPercentage = null)
         {
             Tick = tick;
             AgentsInterconnected = agentsInterconnected;

@@ -35,12 +35,11 @@ namespace Tests.EditModeTests
     [TestFixture]
     public class CommunicationManagerTests
     {
-
         private CommunicationManager _communicationManager;
         private RobotConstraints _robotConstraints;
         private SimulationMap<Tile> _simulationMap;
 
-        private const string testMap = "" +
+        private const string TestMap = "" +
                                     "            ;" +
                                     " XXXXXXXXXX ;" +
                                     " X        X ;" +
@@ -72,8 +71,8 @@ namespace Tests.EditModeTests
                 receiverSensitivity: 50f
             );
 
-            _simulationMap = Utilities.GenerateSimulationMapFromString(testMap);
-            _communicationManager = new CommunicationManager(_simulationMap, _robotConstraints, null);
+            _simulationMap = Utilities.GenerateSimulationMapFromString(TestMap);
+            _communicationManager = new CommunicationManager(_simulationMap, _robotConstraints, null!);
         }
 
         [TestCase(0, 0, 0, 0, 100)]

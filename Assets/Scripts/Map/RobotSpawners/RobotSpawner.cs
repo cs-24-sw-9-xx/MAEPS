@@ -148,10 +148,7 @@ namespace Maes.Map.RobotSpawners
             var robots = new List<MonaRobot>();
 
             // Sort by room size
-            collisionMap.Rooms.Sort((r1, r2) =>
-                r2.RoomSizeExcludingEdgeTiles() - r1.RoomSizeExcludingEdgeTiles());
-
-            var biggestRoom = collisionMap.Rooms[0];
+            var biggestRoom = collisionMap.Rooms.OrderByDescending(r => r.RoomSizeExcludingEdgeTiles()).First();
 
             // We need to peel off two layers of edges to make sure, that no robot is on a partly covered tile
             var roomWithoutEdgeTiles = biggestRoom.Tiles.Except(biggestRoom.EdgeTiles).ToList();
@@ -324,7 +321,7 @@ namespace Maes.Map.RobotSpawners
         {
             var robots = new List<MonaRobot>();
 
-            var hallWays = collisionMap.Rooms.FindAll(r => r.IsHallWay).ToList();
+            var hallWays = collisionMap.Rooms.Where(r => r.IsHallWay).ToArray();
             var possibleSpawnTiles = new List<Vector2Int>();
             foreach (var hallWay in hallWays)
             {

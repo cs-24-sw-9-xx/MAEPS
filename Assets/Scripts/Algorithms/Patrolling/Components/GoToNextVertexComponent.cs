@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using Maes.Map;
@@ -75,6 +76,7 @@ namespace Maes.Algorithms.Patrolling.Components
         }
 
         /// <inheritdoc />
+        [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             // Go to the initial vertex.
@@ -88,7 +90,6 @@ namespace Maes.Algorithms.Patrolling.Components
 
             while (true)
             {
-
                 // Follow the path.
                 // Go to the next vertex
                 var targetVertex = _nextVertexDelegate(vertex);
@@ -116,15 +117,6 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        /// <inheritdoc />
-        public IEnumerable<ComponentWaitForCondition> PostUpdateLogic()
-        {
-            while (true)
-            {
-                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-            }
-        }
-
         /// <summary>
         /// Gets the vertex closest to the robot.
         /// </summary>
@@ -137,7 +129,7 @@ namespace Maes.Algorithms.Patrolling.Components
             var robotPartition = _controller.GetRobot().AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
 
-            var position = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition(dependOnBrokenBehavior: false);
+            var position = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
             var closestVertex = vertices[0];
             var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
             foreach (var vertex in vertices.AsSpan(1))

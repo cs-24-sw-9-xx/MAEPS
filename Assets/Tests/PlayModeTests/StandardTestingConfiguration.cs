@@ -25,7 +25,7 @@ using Maes.Simulation;
 
 namespace Tests.PlayModeTests
 {
-    public class StandardTestingConfiguration
+    public static class StandardTestingConfiguration
     {
         public static MapFactory EmptyCaveMapSpawner(int randomSeed)
         {

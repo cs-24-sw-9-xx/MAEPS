@@ -70,9 +70,9 @@ namespace Maes.UI.Visualizers.Patrolling
                     var lineRenderer = edgeVisualizer.GetComponent<LineRenderer>();
 
                     var paths = patrollingMap.Paths[(vertex.Id, otherVertex.Id)];
-                    lineRenderer.positionCount = paths.Length + 1;
+                    lineRenderer.positionCount = paths.Count + 1;
                     lineRenderer.SetPosition(0, ((Vector3)(Vector2)paths[0].Start) + transform.position + Vector3.back);
-                    for (var i = 0; i < paths.Length; i++)
+                    for (var i = 0; i < paths.Count; i++)
                     {
                         lineRenderer.SetPosition(i + 1, ((Vector3)(Vector2)paths[i].End) + transform.position + Vector3.back);
                     }

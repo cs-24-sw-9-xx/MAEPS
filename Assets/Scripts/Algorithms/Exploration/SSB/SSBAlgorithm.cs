@@ -146,7 +146,7 @@ namespace Maes.Algorithms.Exploration.SSB
 
                 var tickCount = 0;
 
-                if (_controller.HasCollidedSinceLastLogicTick())
+                if (_controller.HasCollidedSinceLastLogicTick)
                 {
                     // In case of collision, perform full reset
                     _currentState = State.Backtracking;
@@ -156,9 +156,8 @@ namespace Maes.Algorithms.Exploration.SSB
                 }
 
                 ProcessIncomingCommunication();
-                while (_ticksToWait <= 0 && _controller.GetStatus() == RobotStatus.Idle && _currentState != State.Terminated)
+                while (_ticksToWait <= 0 && _controller.Status == RobotStatus.Idle && _currentState != State.Terminated)
                 {
-
                     if (_currentState == State.Backtracking)
                     {
                         PerformBackTrack();
@@ -269,7 +268,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 {
                     // Broadcast this robots bps now to match timing of other robots that has just received the request  
                     // Debug.Log($"[{_currentTick}] Auctioneer robot {_controller.GetRobotID()} broadcasting {_backTrackingPoints.Count} bps");
-                    _controller.Broadcast(new BackTrackingPointsMessage(_controller.GetRobotID(), new HashSet<Vector2Int>(_backTrackingPoints)));
+                    _controller.Broadcast(new BackTrackingPointsMessage(_controller.Id, new HashSet<Vector2Int>(_backTrackingPoints)));
                     _ticksToWait = 1;
                 }
                 else
@@ -395,7 +394,7 @@ namespace Maes.Algorithms.Exploration.SSB
         {
             // Debug.Log($"Backtracking request for backtracking points [Robot: {_controller.GetRobotID()}]");
             _lastBPRequestTick = _currentTick;
-            var request = new RequestMessage(_controller.GetRobotID(), this);
+            var request = new RequestMessage(_controller.Id, this);
             _controller.Broadcast(request);
         }
 
@@ -510,7 +509,7 @@ namespace Maes.Algorithms.Exploration.SSB
             var currentTile = _nextSpiralTarget!.Value;
             var path = new List<Vector2Int>() { currentTile };
             var direction = DirectionFromDegrees(_map.GetApproximateGlobalDegrees());
-            var rlsDir = direction.GetRelativeDirection(_referenceLateralSide);
+            var rlsDir = direction.DirectionFromRelativeDirection(_referenceLateralSide);
 
             // The spiral continues in a straight line as long as
             // the front tile is not blocked and the rls tile is blocked 
@@ -544,7 +543,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 }
 
                 // If this tile is open and the left neighbour is blocked, start spiraling along the left wall 
-                if (IsTileBlocked(_map.GetGlobalNeighbour(direction.GetRelativeDirection(Left))))
+                if (IsTileBlocked(_map.GetGlobalNeighbour(direction.DirectionFromRelativeDirection(Left))))
                 {
                     _referenceLateralSide = Left;
                     _oppositeLateralSide = Right;
@@ -553,7 +552,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 }
 
                 // If this tile is open and the right neighbour is blocked, start spiraling along the right wall
-                if (IsTileBlocked(_map.GetGlobalNeighbour(direction.GetRelativeDirection(Right))))
+                if (IsTileBlocked(_map.GetGlobalNeighbour(direction.DirectionFromRelativeDirection(Right))))
                 {
                     _referenceLateralSide = Right;
                     _oppositeLateralSide = Left;
@@ -811,8 +810,8 @@ namespace Maes.Algorithms.Exploration.SSB
             {
                 simulatedExplored.Add(simulatedSpiralTile);
                 var simulatedFront = simulatedSpiralTile + simulatedDirection.Vector;
-                var simulatedRls = simulatedSpiralTile + simulatedDirection.GetRelativeDirection(_referenceLateralSide).Vector;
-                var simulatedOls = simulatedSpiralTile + simulatedDirection.GetRelativeDirection(_oppositeLateralSide).Vector;
+                var simulatedRls = simulatedSpiralTile + simulatedDirection.DirectionFromRelativeDirection(_referenceLateralSide).Vector;
+                var simulatedOls = simulatedSpiralTile + simulatedDirection.DirectionFromRelativeDirection(_oppositeLateralSide).Vector;
 
                 var frontBlocked = !IsPotentiallyExplorable(simulatedFront) || simulatedExplored.Contains(simulatedFront);
                 var rlsBlocked = !IsPotentiallyExplorable(simulatedRls) || simulatedExplored.Contains(simulatedRls);
@@ -840,7 +839,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 }
 
                 // Step the simulation forward to the next tile in the spiral
-                simulatedDirection = simulatedDirection.GetRelativeDirection(nextDirection.Value);
+                simulatedDirection = simulatedDirection.DirectionFromRelativeDirection(nextDirection.Value);
                 simulatedSpiralTile += simulatedDirection.Vector;
                 cost++;
             }
@@ -863,12 +862,12 @@ namespace Maes.Algorithms.Exploration.SSB
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
-            _map = _controller.GetSlamMap().GetCoarseMap();
+            _map = _controller.SlamMap.CoarseMap;
         }
 
         private int RobotID()
         {
-            return _controller.GetRobotID();
+            return _controller.Id;
         }
 
         public string GetDebugInfo()
@@ -901,7 +900,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 {
                     // This case occurs when this robot has sent a bp request at the same time that another robot has
                     // sent one. Determine which one to discard based on the robots' ids
-                    if (_requestingRobot < algorithm._controller.GetRobotID())
+                    if (_requestingRobot < algorithm._controller.Id)
                     {
                         // Discard this request received by the other robot, as it has a lower id than this robot 
                         return null;
@@ -962,7 +961,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 {
                     // This case occurs when this robot has sent a bp request at the same time that another robot has
                     // sent one. Determine which one to discard based on the robots' ids
-                    if (RequestingRobot < algorithm._controller.GetRobotID())
+                    if (RequestingRobot < algorithm._controller.Id)
                     {
                         // Discard this request received by the other robot, as it has a lower id than this robot 
                         return null;
@@ -971,7 +970,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 }
 
                 // If this robot the one that requested the BPs then do not respond to this message
-                if (RequestingRobot == algorithm._controller.GetRobotID())
+                if (RequestingRobot == algorithm._controller.Id)
                 {
                     return null;
                 }
@@ -1027,7 +1026,7 @@ namespace Maes.Algorithms.Exploration.SSB
             foreach (var bp in backTrackingPoints)
             {
                 var distanceCost = Geometry.ManhattanDistance(robotPosInt, bp);
-                bids.Add(new Bid(bp, spiralFinishCost.Value + distanceCost, _controller.GetRobotID()));
+                bids.Add(new Bid(bp, spiralFinishCost.Value + distanceCost, _controller.Id));
                 // Debug.Log($"Robot: {_controller.GetRobotID()} added bid of cost {spiralFinishCost.Value + pathLength} for tile {bp}");
             }
 
@@ -1106,7 +1105,7 @@ namespace Maes.Algorithms.Exploration.SSB
             public ISsbBroadcastMessage? Process(SsbAlgorithm algorithm)
             {
                 // This message is ignored if this robot was not the one to start the auction
-                if (_requestingRobot != algorithm._controller.GetRobotID())
+                if (_requestingRobot != algorithm._controller.Id)
                 {
                     return null;
                 }
@@ -1193,7 +1192,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 if (other is BiddingMessage bidMessage)
                 {
                     // This message can be ignored if this robot was not the one to start the auction
-                    if (_requestingRobot != algorithm._controller.GetRobotID())
+                    if (_requestingRobot != algorithm._controller.Id)
                     {
                         return this;
                     }
@@ -1229,7 +1228,7 @@ namespace Maes.Algorithms.Exploration.SSB
 
             public ISsbBroadcastMessage? Process(SsbAlgorithm algorithm)
             {
-                var robot = algorithm._controller.GetRobotID();
+                var robot = algorithm._controller.Id;
                 if (_results.TryGetValue(robot, out var result))
                 {
                     // Debug.Log($"Auction resulted in reservation of bp {Results[robot].BP} for robot {robot}");

@@ -48,7 +48,7 @@ namespace Tests.PlayModeTests
         private ExplorationSimulation _explorationSimulation;
         private List<TestingAlgorithm> _robotTestAlgorithms;
 
-        private Tile[,] GenerateMapWithHorizontalWallInMiddle(int wallThicknessInTiles)
+        private static Tile[,] GenerateMapWithHorizontalWallInMiddle(int wallThicknessInTiles)
         {
             var bitmap = new Tile[MapWidth, MapHeight];
             var firstWallRowY = MapHeight / 2;

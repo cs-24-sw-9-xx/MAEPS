@@ -64,14 +64,14 @@ namespace Maes.Algorithms.Exploration.HenrikAlgo
             {
                 _logicTicks++;
                 ShareSlamMap();
-                if (_robotController.GetStatus() == RobotStatus.Idle)
+                if (_robotController.Status == RobotStatus.Idle)
                 {
-                    _targetTile = _robotController.GetSlamMap().CoarseMap.GetNearestTileFloodFill(_robotController.GetSlamMap().CoarseMap.GetCurrentPosition(), SlamMap.SlamTileStatus.Unseen);
+                    _targetTile = _robotController.SlamMap.CoarseMap.GetNearestTileFloodFill(_robotController.SlamMap.CoarseMap.GetCurrentPosition(), SlamMap.SlamTileStatus.Unseen);
                 }
                 if (_targetTile != null)
                 {
                     _robotController.PathAndMoveTo(_targetTile.Value);
-                    if (_robotController.GetSlamMap().CoarseMap.IsTileExplored(_targetTile.Value))
+                    if (_robotController.SlamMap.CoarseMap.IsTileExplored(_targetTile.Value))
                     {
                         _targetTile = null;
                         _robotController.StopCurrentTask();
@@ -87,7 +87,7 @@ namespace Maes.Algorithms.Exploration.HenrikAlgo
             if (_ticksSinceHeartbeat == 10)
             {
                 Debug.Log("Sent slam");
-                var ownHeartbeat = new HeartbeatMessage(_robotController.GetSlamMap());
+                var ownHeartbeat = new HeartbeatMessage(_robotController.SlamMap);
                 _ticksSinceHeartbeat = 0;
                 _robotController.Broadcast(ownHeartbeat);
             }
@@ -108,8 +108,8 @@ namespace Maes.Algorithms.Exploration.HenrikAlgo
         {
             var info = new StringBuilder();
             info.AppendLine($"Target: {_targetTile}.");
-            info.AppendLine($"Current position: {_robotController.GetSlamMap().CoarseMap.GetCurrentPosition()}");
-            info.AppendLine($"Status: {_robotController.GetStatus()}.");
+            info.AppendLine($"Current position: {_robotController.SlamMap.CoarseMap.GetCurrentPosition()}");
+            info.AppendLine($"Status: {_robotController.Status}.");
 
             return info.ToString();
         }

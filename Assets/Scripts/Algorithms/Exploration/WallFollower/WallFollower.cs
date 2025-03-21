@@ -18,7 +18,7 @@ namespace Maes.Algorithms.Exploration.WallFollower
 
         private const float GridSpacing = 1.8f;
 
-        private float Angle => _controller.GetGlobalAngle();
+        private float Angle => _controller.GlobalAngle;
 
         private bool _forwardWall;
         private bool _leftWall;
@@ -53,7 +53,7 @@ namespace Maes.Algorithms.Exploration.WallFollower
         {
             return
                 new StringBuilder().Append("Status: ")
-                    .Append(_controller.GetStatus())
+                    .Append(_controller.Status)
                     .Append("\nHasTurnedLeft: ")
                     .Append(_hasTurnedLeft)
                     .Append("\nWalls: ")
@@ -68,7 +68,7 @@ namespace Maes.Algorithms.Exploration.WallFollower
                     .Append("\nCollided: ")
                     .Append(_collided)
                     .Append("\nPos: ")
-                    .Append(_controller.GetSlamMap().GetCoarseMap().GetCurrentPosition())
+                    .Append(_controller.SlamMap.CoarseMap.GetCurrentPosition())
                     .Append("\"")
                     .ToString();
         }
@@ -80,13 +80,13 @@ namespace Maes.Algorithms.Exploration.WallFollower
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
-            _targetPosition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            _targetPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
 
             while (true)
             {
                 const float epsilon = 0.5f;
 
-                while (_targetPosition != _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition())
+                while (_targetPosition != _controller.SlamMap.CoarseMap.GetCurrentPosition())
                 {
                     _controller.MoveTo(_targetPosition);
                     yield return WaitForCondition.WaitForRobotStatus(RobotStatus.Idle);
@@ -105,7 +105,7 @@ namespace Maes.Algorithms.Exploration.WallFollower
 
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
-            _targetPosition = _controller.GetSlamMap().GetCoarseMap().GetCurrentPosition();
+            _targetPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
 
             // Before anything else find and hug the west wall
             while (true)
@@ -203,17 +203,17 @@ namespace Maes.Algorithms.Exploration.WallFollower
 
         private float GetLeftGlobalAngle()
         {
-            return ((_controller.GetGlobalAngle() + 90.0f) + 360.0f) % 360.0f;
+            return ((_controller.GlobalAngle + 90.0f) + 360.0f) % 360.0f;
         }
 
         private float GetRightGlobalAngle()
         {
-            return (_controller.GetGlobalAngle() - 90.0f + 360.0f) % 360.0f;
+            return (_controller.GlobalAngle - 90.0f + 360.0f) % 360.0f;
         }
 
         private float GetForwardGlobalAngle()
         {
-            return _controller.GetGlobalAngle();
+            return _controller.GlobalAngle;
         }
 
         private static float DirectionToAngle(Direction direction)

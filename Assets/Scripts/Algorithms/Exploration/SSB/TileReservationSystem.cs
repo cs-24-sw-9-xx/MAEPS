@@ -86,7 +86,7 @@ namespace Maes.Algorithms.Exploration.SSB
                 // Only perform reservation if this tile is not already reserved
                 if (_reservations.ContainsKey(tile))
                 {
-                    if (_reservations[tile].ReservingRobot != _algorithm._controller.GetRobotID())
+                    if (_reservations[tile].ReservingRobot != _algorithm._controller.Id)
                     {
                         throw new Exception("Attempted to reserve a tile that is already reserved by another robot");
                     }

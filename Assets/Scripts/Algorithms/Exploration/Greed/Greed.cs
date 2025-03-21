@@ -111,7 +111,7 @@ namespace Maes.Algorithms.Exploration.Greed
         public void SetController(Robot2DController controller)
         {
             _controller = controller;
-            _map = _controller.GetSlamMap().GetCoarseMap();
+            _map = _controller.SlamMap.CoarseMap;
             _previousPosition = _position;
         }
 
@@ -131,7 +131,7 @@ namespace Maes.Algorithms.Exploration.Greed
                 _ticksSinceHeartbeat++;
                 if (_ticksSinceHeartbeat == 10)
                 {
-                    var ownHeartbeat = new HeartbeatMessage(_controller.GetSlamMap());
+                    var ownHeartbeat = new HeartbeatMessage(_controller.SlamMap);
                     _ticksSinceHeartbeat = 0;
                     _controller.Broadcast(ownHeartbeat);
                 }
@@ -147,7 +147,7 @@ namespace Maes.Algorithms.Exploration.Greed
 
                 if (_controller.IsCurrentlyColliding)
                 {
-                    if (_controller.GetStatus() != Robot.Tasks.RobotStatus.Idle)
+                    if (_controller.Status != Robot.Tasks.RobotStatus.Idle)
                     {
                         _controller.StopCurrentTask();
                     }
@@ -220,7 +220,7 @@ namespace Maes.Algorithms.Exploration.Greed
                         _currentState = AlgorithmState.ExploreRoom;
                         break;
                     case AlgorithmState.ExploreRoom:
-                        if (_controller.GetStatus() == Robot.Tasks.RobotStatus.Idle)
+                        if (_controller.Status == Robot.Tasks.RobotStatus.Idle)
                         {
                             if (!MoveToNearestUnseen())
                             {

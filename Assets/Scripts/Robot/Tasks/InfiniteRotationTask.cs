@@ -23,9 +23,11 @@ using System;
 
 namespace Maes.Robot.Tasks
 {
-    internal class InfiniteRotationTask : ITask
+    internal sealed class InfiniteRotationTask : ITask
     {
-        public float ForceMultiplier;
+        public float ForceMultiplier { get; set; }
+
+        public bool IsCompleted { get; } = false;
 
         public InfiniteRotationTask(float forceMultiplier)
         {
@@ -36,11 +38,6 @@ namespace Maes.Robot.Tasks
         {
             var absMultiplier = Math.Abs(ForceMultiplier);
             return ForceMultiplier < 0 ? MovementDirective.Left(absMultiplier) : MovementDirective.Right(absMultiplier);
-        }
-
-        public bool IsCompleted()
-        {
-            return false;
         }
     }
 }

@@ -23,9 +23,11 @@ using UnityEngine;
 
 namespace Maes.Robot.Tasks
 {
-    internal class MovementTask : ITask
+    internal sealed class MovementTask : ITask
     {
-        public float ForceMultiplier;
+        public float ForceMultiplier { get; set; }
+
+        public bool IsCompleted { get; } = false;
 
         public MovementTask(float forceMultiplier)
         {
@@ -41,11 +43,6 @@ namespace Maes.Robot.Tasks
             }
 
             return MovementDirective.Forward(absForce);
-        }
-
-        public bool IsCompleted()
-        {
-            return false;
         }
     }
 }

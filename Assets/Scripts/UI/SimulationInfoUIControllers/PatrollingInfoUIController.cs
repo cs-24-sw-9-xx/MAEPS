@@ -224,7 +224,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
-                if (!sim.HasSelectedRobot())
+                if (!sim.HasSelectedRobot)
                 {
                     sim.SelectFirstRobot();
                 }
@@ -263,7 +263,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
-                if (!sim.HasSelectedRobot())
+                if (!sim.HasSelectedRobot)
                 {
                     Debug.Log("No robot selected, first select a robot");
                 }

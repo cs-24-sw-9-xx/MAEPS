@@ -29,11 +29,11 @@ using UnityEngine;
 namespace Maes.Statistics
 {
     // This class is responsible for calculating which tiles are covered by a robot
-    public class CoverageCalculator
+    public sealed class CoverageCalculator
     {
         public delegate void MiniTileConsumer(int index1, Cell cell1, int index2, Cell cell2);
 
-        public int CoveredMiniTiles;
+        public int CoveredMiniTiles { get; private set; }
 
         private int _coverableTiles;
 

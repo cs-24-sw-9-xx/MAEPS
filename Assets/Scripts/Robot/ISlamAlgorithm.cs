@@ -30,11 +30,16 @@ namespace Maes.Robot
     public interface ISlamAlgorithm
     {
         /// <summary>
-        /// The approximate position of the robot contains inaccuracy in both x and y coordinate.
+        /// Gets the coarse map is a map with half the resolution of the slam map.
+        /// </summary>
+        CoarseGrainedMap CoarseMap { get; }
+
+        /// <summary>
+        /// Gets the approximate position of the robot contains inaccuracy in both x and y coordinate.
         /// The maximum inaccuracy in each axis is defined the <see cref="RobotConstraints"/> of the simulation.
         /// </summary>
         /// <returns> The approximate position as a Vector2 of the robot measured in slam tiles</returns>
-        public Vector2 GetApproxPosition();
+        Vector2 ApproximatePosition { get; }
 
         /// <summary>
         /// Used to track all tiles that been explored (intersected by the lidar trace of this robot
@@ -42,12 +47,12 @@ namespace Maes.Robot
         /// </summary>
         /// <returns> a dictionary from a Vector2Int slam map coordinate to a tile status.
         /// If the key is not present in the dictionary the tile is not explored. </returns>
-        public Dictionary<Vector2Int, SlamMap.SlamTileStatus> GetExploredTiles();
+        Dictionary<Vector2Int, SlamMap.SlamTileStatus> GetExploredTiles();
 
-        public SlamMap.SlamTileStatus GetVisibleTileStatus(int x, int y);
+        SlamMap.SlamTileStatus GetVisibleTileStatus(int x, int y);
 
         /// <returns> The current position of the robot as a slam tile coordinate (rounded down) </returns>
-        public Vector2Int GetCurrentPosition(bool dependOnBrokenBehaviour = true);
+        Vector2Int GetCurrentPosition(bool dependOnBrokenBehaviour = true);
 
         /// <summary>
         /// Returns the perceived status of the given tile as a <see cref="SlamMap.SlamTileStatus"/>.
@@ -58,38 +63,32 @@ namespace Maes.Robot
         /// <param name="tile">The coordinate measured in slam tiles</param>
         /// <param name="optimistic"></param>
         /// <returns>The perceived <see cref="SlamMap.SlamTileStatus"/> of the given tile</returns>
-        public SlamMap.SlamTileStatus GetTileStatus(Vector2Int tile, bool optimistic = false);
+        SlamMap.SlamTileStatus GetTileStatus(Vector2Int tile, bool optimistic = false);
 
         /// <returns>The robots orientation in the slam map measured in degrees relative to the x-axis (counter-clockwise)</returns>
-        public float GetRobotAngleDeg();
+        float GetRobotAngleDeg();
 
         /// <param name="slamTileFrom"> The starting slam tile of the path</param>
         /// <param name="slamTileTo"> The target slam tile of the path </param>
         /// <param name="acceptPartialPaths"> if true the method will return the path to the closest available tile if a full path is not available</param>
         /// <returns>A path represented as a list of tiles that make up the path</returns>
-        public Vector2Int[]? GetPath(Vector2Int slamTileFrom, Vector2Int slamTileTo, bool acceptPartialPaths = false);
+        Vector2Int[]? GetPath(Vector2Int slamTileFrom, Vector2Int slamTileTo, bool acceptPartialPaths = false);
 
         /// <param name="coarseTileFrom"> The starting slam tile of the path</param>
         /// <param name="coarseTileTo"> The target slam tile of the path </param>
         /// <param name="acceptPartialPaths"> if true the method will return the path to the closest available tile if a full path is not available </param>
         /// <returns> An optimistic path (partially unknown tiles are considered to be open) path represented as a list of tiles that make up the path </returns>
-        public Vector2Int[]? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false);
+        Vector2Int[]? GetOptimisticPath(Vector2Int coarseTileFrom, Vector2Int coarseTileTo, bool acceptPartialPaths = false);
 
         /// <param name="slamTileTarget"> The slam tile to find the relative position of </param>
         /// <returns> Returns the relative position of the center of the given tiles </returns>
-        public RelativePosition GetRelativeSlamPosition(Vector2Int slamTileTarget);
-
-        /// <summary>
-        /// The coarse map is a map with half the resolution of the slam map.
-        /// </summary>
-        /// <returns> A reference to the <see cref="CoarseGrainedMap"/> created from this map</returns>
-        public CoarseGrainedMap GetCoarseMap();
+        RelativePosition GetRelativeSlamPosition(Vector2Int slamTileTarget);
 
         /// <summary>
         /// The current visible coarse map is a map with half the resolution of the slam map containing only the
         /// currently visible tiles.
         /// </summary>
         /// <returns> A reference to the <see cref="VisibleTilesCoarseMap"/> created from the currently visible tiles</returns>
-        public VisibleTilesCoarseMap GetVisibleTilesCoarseMap();
+        VisibleTilesCoarseMap GetVisibleTilesCoarseMap();
     }
 }
