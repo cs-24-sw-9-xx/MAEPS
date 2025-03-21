@@ -48,6 +48,8 @@ namespace Maes.Algorithms.Patrolling
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
 
+        private readonly System.Random _random = new(0);
+
         protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
@@ -56,7 +58,7 @@ namespace Maes.Algorithms.Patrolling
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
-        public delegate float DistanceEstimator(Vector2Int position);
+        public delegate float DistanceEstimator(Vertex source, Vertex target);
 
         private Vertex NextVertex(Vertex currentVertex)
         {
@@ -65,18 +67,37 @@ namespace Maes.Algorithms.Patrolling
             var normalizedIdleness = CalculateNormalizedIdleness(currentVertex.Neighbors);
 
             // Calculate the normalized distance estimation of the neighbors
-            var normalizedDistances = CalculateNormalizedDistance(currentVertex.Neighbors, DistanceEstimatorMethod);
-            var result = CalculateNextVertex(normalizedIdleness, normalizedDistances);
-            Debug.Log($"Next vertex {result.First().Id}, with neighbours: {string.Join(", ", result.First().Neighbors.Select(x => x.Id))}");
-            return result.First();
+            var normalizedDistances = CalculateNormalizedDistance(currentVertex, ActualDistanceMethod);
+            var result = UtilityFunction(normalizedIdleness, normalizedDistances);
+            var maxUtilityValue = result.Select(i => i.Value).Min();
+            result = result.Where(i => i.Value == maxUtilityValue);
+            var nextVertex = result.ElementAt(_random.Next(result.Count())).Vertex;
+            Debug.Log($"Next vertex {nextVertex.Id}, with neighbours: {string.Join(", ", nextVertex.Neighbors.Select(x => x.Id))}");
+            return nextVertex;
         }
 
-        private float DistanceEstimatorMethod(Vector2Int position)
+        /// <summary>
+        /// Realistically, this method should be used, since the distance estimation is not always accurate.
+        /// Currently, we use the actual path distance as the distance estimation. 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        private float DistanceEstimatorMethod(Vertex source, Vertex target)
         {
-            return _controller.EstimateDistanceToTarget(position) ?? throw new Exception("Distance estimation must not be null. Check if the target is reachable.");
+            return _controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
         }
 
-        private IEnumerable<Vertex> CalculateNextVertex(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
+        private float ActualDistanceMethod(Vertex source, Vertex target)
+        {
+            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
+            {
+                return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
+            }
+            throw new Exception($"Path from {source.Id} to {target.Id} not found");
+        }
+
+        private IEnumerable<NormalizedValue> UtilityFunction(IEnumerable<NormalizedValue> normalizedIdleness, IEnumerable<NormalizedValue> normalizedDistances)
         {
             if (normalizedIdleness.Count() != normalizedDistances.Count())
             {
@@ -84,22 +105,17 @@ namespace Maes.Algorithms.Patrolling
             }
 #if DEBUG
             var stringBuilder = new StringBuilder();
-            stringBuilder = stringBuilder.AppendLine("Normalized Idleness");
-            foreach (var item in normalizedIdleness.OrderBy(x => x.Vertex.Id))
+            stringBuilder = stringBuilder.AppendLine("Vertex Id | Normalized Idleness | Normalized Distance | Sum");
+            foreach (var idleness in normalizedIdleness.OrderBy(x => x.Vertex.Id))
             {
-                stringBuilder = stringBuilder.AppendLine(item.Vertex.Id + " " + item.Value);
-            }
-            stringBuilder = stringBuilder.AppendLine("Normalized Distance");
-            foreach (var item in normalizedDistances.OrderBy(x => x.Vertex.Id))
-            {
-                stringBuilder = stringBuilder.AppendLine(item.Vertex.Id + " " + item.Value);
+                var normalizedDistance = normalizedDistances.Single(x => x.Vertex.Id == idleness.Vertex.Id);
+                stringBuilder = stringBuilder.AppendLine(idleness.Vertex.Id + " | " + idleness.Value + " | " + normalizedDistance.Value + " | " + (idleness.Value + normalizedDistance.Value));
             }
             Debug.Log(stringBuilder.ToString());
 #endif
             var result = from idleness in normalizedIdleness
                          join distance in normalizedDistances on idleness.Vertex.Id equals distance.Vertex.Id
-                         orderby idleness.Value + distance.Value ascending
-                         select idleness.Vertex;
+                         select new NormalizedValue(idleness.Vertex, idleness.Value + distance.Value);
             return result;
         }
 
@@ -136,18 +152,18 @@ namespace Maes.Algorithms.Patrolling
             return normalizedIdleness;
         }
 
-        private static IEnumerable<NormalizedValue> CalculateNormalizedDistance(IEnumerable<Vertex> verticies, DistanceEstimator distanceEstimator)
+        private static IEnumerable<NormalizedValue> CalculateNormalizedDistance(Vertex currentVertex, DistanceEstimator distanceEstimator)
         {
-            var distanceEstimations = verticies.Select(x => (Vertex: x, dist: distanceEstimator(x.Position)));
-            if (distanceEstimations.Any(x => x.dist < 0))
+            var neighbours = currentVertex.Neighbors;
+            var distanceEstimations = neighbours.Select(vertex => (Vertex: vertex, dist: distanceEstimator(currentVertex, vertex)));
+            if (distanceEstimations.Any(estimation => estimation.dist < 0))
             {
                 throw new Exception("Distance estimation must be positive");
             }
-            var distances = distanceEstimations.Select(x => (x.Vertex, dist: x.dist));
-            var minDistance = distances.Min(x => x.dist);
-            var maxDistance = distances.Max(x => x.dist);
+            var minDistance = distanceEstimations.Min(x => x.dist);
+            var maxDistance = distanceEstimations.Max(x => x.dist);
             var normalizedDistance = new List<NormalizedValue>();
-            foreach (var (vertex, distanceValue) in distances)
+            foreach (var (vertex, distanceValue) in distanceEstimations)
             {
                 // Avoid division by zero
                 if (maxDistance - minDistance == 0)
