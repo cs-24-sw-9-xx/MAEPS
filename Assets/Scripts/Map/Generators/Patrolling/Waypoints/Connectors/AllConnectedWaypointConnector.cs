@@ -15,7 +15,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
             var id = 0;
             foreach (var (vertexPosition, _) in vertexPositions)
             {
-                vertices[id] = new Vertex(id, 1f, vertexPosition);
+                vertices[id] = new Vertex(id, vertexPosition);
                 id++;
             }
 

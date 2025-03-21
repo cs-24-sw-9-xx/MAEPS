@@ -50,8 +50,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             foreach (var cluster in clusters)
             {
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, colorIslands, clusterColor, nextId);
-                Array.ForEach(vertices, vertex => vertex.Partition = cluster.Key);
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, colorIslands, clusterColor, nextId, cluster.Key);
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }

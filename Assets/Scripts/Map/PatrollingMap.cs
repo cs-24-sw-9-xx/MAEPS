@@ -37,7 +37,7 @@ namespace Maes.Map
             var originalToCloned = new Dictionary<Vertex, Vertex>();
             foreach (var originalVertex in Vertices)
             {
-                var clonedVertex = new Vertex(originalVertex.Id, originalVertex.Weight, originalVertex.Position, originalVertex.Partition, originalVertex.Color);
+                var clonedVertex = new Vertex(originalVertex.Id, originalVertex.Position, originalVertex.Partition, originalVertex.Color);
                 originalToCloned.Add(originalVertex, clonedVertex);
             }
 

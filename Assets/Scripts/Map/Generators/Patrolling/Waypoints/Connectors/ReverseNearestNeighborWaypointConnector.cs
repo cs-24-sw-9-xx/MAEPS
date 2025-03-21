@@ -45,14 +45,14 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertecies with connections(edges) to other vertecies.</returns>
-        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId = 0, int partition = 1, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
 
             var reverseNearestNeighbors = MapUtilities.FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-            var vertices = vertexPositions.Select(position => new Vertex(nextId++, 0, position)).ToArray();
+            var vertices = vertexPositions.Select(position => new Vertex(nextId++, position, partition)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)

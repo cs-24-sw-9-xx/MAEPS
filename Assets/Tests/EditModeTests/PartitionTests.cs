@@ -43,9 +43,9 @@ namespace Tests.EditModeTests
             // Create vertices for testing
             _vertices = new List<Vertex>
             {
-                new Vertex(0, 1, new Vector2Int(2, 2)),
-                new Vertex(1, 1, new Vector2Int(5, 5)),
-                new Vertex(2, 1, new Vector2Int(8, 8))
+                new Vertex(0, new Vector2Int(2, 2)),
+                new Vertex(1, new Vector2Int(5, 5)),
+                new Vertex(2, new Vector2Int(8, 8))
             };
 
             // Create communication zones for testing
@@ -149,8 +149,8 @@ namespace Tests.EditModeTests
             // Create a second partition with vertices that intersect with the first
             var vertices2 = new List<Vertex>
             {
-                new Vertex(3, 1, new Vector2Int(3, 3)), // Intersects with vertex at (2,2)
-                new Vertex(4, 1, new Vector2Int(7, 7))  // Intersects with vertex at (8,8)
+                new Vertex(3, new Vector2Int(3, 3)), // Intersects with vertex at (2,2)
+                new Vertex(4, new Vector2Int(7, 7))  // Intersects with vertex at (8,8)
             };
 
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
@@ -213,7 +213,7 @@ namespace Tests.EditModeTests
                 new Dictionary<Vector2Int, Bitmap> { { new Vector2Int(2, 2), _communicationZones[new Vector2Int(2, 2)] } });
 
             // Create a second partition with no intersection
-            var vertex = new Vertex(3, 1, new Vector2Int(9, 9));
+            var vertex = new Vertex(3, new Vector2Int(9, 9));
             var vertices2 = new List<Vertex> { vertex };
 
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
