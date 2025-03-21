@@ -1,13 +1,15 @@
 using Maes.Statistics.Trackers;
+using Maes.Utilities;
 
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace Maes.UI.Visualizers.Patrolling
 {
+    [RequireComponent(typeof(MeshRenderer))]
     public class VertexVisualizer : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
-        public MeshRenderer meshRenderer = null!;
+        public MeshFilter meshFilter = null!;
         public VertexDetails VertexDetails { get; private set; } = null!;
 
         public delegate void OnVertexSelectedDelegate(VertexVisualizer vertex);
@@ -17,17 +19,27 @@ namespace Maes.UI.Visualizers.Patrolling
         public void SetVertexDetails(VertexDetails vertexDetails)
         {
             VertexDetails = vertexDetails;
-            meshRenderer.material.color = vertexDetails.Vertex.Color;
+            SetWaypointColor(vertexDetails.Vertex.Color);
         }
 
-        public void SetWaypointColor(Color color)
+        public void SetWaypointColor(Color32 color)
         {
-            meshRenderer.material.color = color;
+            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshSingleColor(color);
         }
 
         public void ShowDefaultWaypointColor()
         {
-            meshRenderer.material.color = VertexDetails.Vertex.Color;
+            SetWaypointColor(VertexDetails.Vertex.Color);
+        }
+
+        public void SetWaypointColor(Color32[] colors)
+        {
+            if (colors.Length == 1)
+            {
+                SetWaypointColor(colors[0]);
+            }
+
+            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshMultipleColor(colors);
         }
 
         public void OnPointerClick(PointerEventData eventData)

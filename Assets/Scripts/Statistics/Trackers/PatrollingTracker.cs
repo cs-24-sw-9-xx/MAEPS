@@ -205,6 +205,7 @@ namespace Maes.Statistics.Trackers
         {
             _visualizer.ResetWaypointsColor();
             _visualizer.ResetRobotHighlighting(Simulation.Robots, _selectedRobot);
+            _visualizer.ResetCellColor();
             base.SetVisualizationMode(newMode);
         }
 
@@ -279,6 +280,23 @@ namespace Maes.Statistics.Trackers
             }
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+        }
+
+        public void ShowSelectedRobotPartitioningHighlighting()
+        {
+            _visualizer.meshRenderer.enabled = true;
+            if (_selectedRobot == null)
+            {
+                Debug.Log("Cannot show partitioning highlighting when no robot is selected");
+                return;
+            }
+            SetVisualizationMode(new SelectedRobotPartitioningHighlightingVisualizationMode(_selectedRobot));
+        }
+
+        public void ShowAllRobotsPartitioningHighlighting()
+        {
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new AllRobotsPartitioningHighlightingVisualizationMode(Simulation.Robots));
         }
 
         public void InitIdleGraph()

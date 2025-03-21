@@ -202,5 +202,13 @@ namespace Maes.UI.Visualizers
             _colors[vertexIndex + 1] = color;
             _colors[vertexIndex + 2] = color;
         }
+
+        public void ResetCellColor()
+        {
+            foreach (var (index, _) in _map)
+            {
+                SetCellColor(index, StandardCellColor);
+            }
+        }
     }
 }
