@@ -1,3 +1,22 @@
+// Copyright 2025 MAEPS
+// 
+// This file is part of MAEPS
+// 
+// MAEPS is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: Mads Beyer Mogensen
+
 using System;
 using System.Buffers;
 using System.Collections;
@@ -8,11 +27,15 @@ using System.Text;
 using JetBrains.Annotations;
 
 using Unity.Collections;
+using Unity.Mathematics;
 
 using UnityEngine;
 
 namespace Maes.Utilities
 {
+    /// <summary>
+    /// An efficient 2D array of tightly packed booleans.
+    /// </summary>
     [MustDisposeResource]
     public sealed class Bitmap : IEnumerable<Vector2Int>, IDisposable, ICloneable<Bitmap>, IEquatable<Bitmap>
     {
@@ -69,6 +92,13 @@ namespace Maes.Utilities
         }
 #endif
 
+        /// <summary>
+        /// Creates a new instance of <see cref="Bitmap"/>.
+        /// </summary>
+        /// <param name="xStart">The inclusive minimum x-coordinate of the bitmap.</param>
+        /// <param name="yStart">The inclusive minimum y-coordinate of the bitmap.</param>
+        /// <param name="xEnd">The exclusive maximum x-coordinate of the bitmap.</param>
+        /// <param name="yEnd">The exclusive maximum y-coordinate of the bitmap.</param>
         public Bitmap(int xStart, int yStart, int xEnd, int yEnd)
         {
             XStart = xStart;
@@ -184,25 +214,40 @@ namespace Maes.Utilities
             return bitmaps;
         }
 
-
+        /// <summary>
+        /// Set the bit at position (x,y) to true.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int x, int y)
         {
             Set((x - XStart) * Height + (y - YStart));
         }
 
+        /// <summary>
+        /// Set the bit at position (x,y) to false.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unset(int x, int y)
         {
             Unset((x - XStart) * Height + (y - YStart));
         }
 
+        /// <summary>
+        /// Whether the bit at <paramref name="point"/> is set.
+        /// </summary>
+        /// <returns><see langword="true"/> if the bit is set otherwise <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(Vector2Int point)
         {
             return Contains(point.x, point.y);
         }
 
+        /// <summary>
+        /// Whether the bit at (x,y) is set.
+        /// </summary>
+        /// <returns><see langword="true"/> if the bit is set otherwise <see langword="false"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x, int y)
         {
@@ -290,6 +335,10 @@ namespace Maes.Utilities
             }
         }
 
+        /// <summary>
+        /// Unset all bits where they are set in <paramref name="other"/>.
+        /// </summary>
+        /// <param name="other"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ExceptWith(Bitmap other)
         {
@@ -340,18 +389,23 @@ namespace Maes.Utilities
             return new VisibilityBitmapEnumerator(this);
         }
 
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         IEnumerator<Vector2Int> IEnumerable<Vector2Int>.GetEnumerator()
         {
             return GetEnumerator();
         }
 
+        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Gets how many bits are set.
+        /// </summary>
         public int Count
         {
             get
@@ -359,27 +413,23 @@ namespace Maes.Utilities
                 var count = 0;
                 for (var i = 0; i < _length; i++)
                 {
-                    var value = _bits[i];
-                    var result = value - ((value >> 1) & 0x5555555555555555UL);
-                    result = (result & 0x3333333333333333UL) + ((result >> 2) & 0x3333333333333333UL);
-                    count += (byte)(unchecked(((result + (result >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
+                    count += math.countbits(_bits[i]);
                 }
 
                 return count;
             }
         }
 
+        /// <summary>
+        /// Whether any bit is set.
+        /// </summary>
         public bool Any
         {
             get
             {
                 for (var i = 0; i < _length; i++)
                 {
-                    var value = _bits[i];
-                    var result = value - ((value >> 1) & 0x5555555555555555UL);
-                    result = (result & 0x3333333333333333UL) + ((result >> 2) & 0x3333333333333333UL);
-                    if ((byte)(unchecked(((result + (result >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >>
-                               56) != 0)
+                    if (math.countbits(_bits[i]) > 0)
                     {
                         return true;
                     }
@@ -389,6 +439,9 @@ namespace Maes.Utilities
             }
         }
 
+        /// <summary>
+        /// Enumerates a Bitmap returning a <see cref="Vector2Int"/> for each bit set.
+        /// </summary>
         public struct VisibilityBitmapEnumerator : IEnumerator<Vector2Int>
         {
             private readonly Bitmap _bitmap;
@@ -425,8 +478,10 @@ namespace Maes.Utilities
                 throw new NotImplementedException();
             }
 
+            /// <inheritdoc />
             public Vector2Int Current { get; private set; }
 
+            /// <inheritdoc />
             object IEnumerator.Current => Current;
 
             public void Dispose()
@@ -437,6 +492,7 @@ namespace Maes.Utilities
 
         public void Dispose()
         {
+            // Return the borrowed array to the pool
             ArrayPool<ulong>.Shared.Return(_bits, clearArray: false);
 #if DEBUG
             // Catch usage after dispose.
@@ -444,9 +500,16 @@ namespace Maes.Utilities
             // and now we have a reference to the array of another bitmap.
             _bits = null!;
 #endif
+            // The destructor (finalizer) runs dispose so tell the runtime to not run the destructor, as we have already done that.
             GC.SuppressFinalize(this);
         }
 
+        ~Bitmap()
+        {
+            Dispose();
+        }
+
+        /// <inheritdoc />
         public bool Equals(Bitmap other)
         {
             if (XStart != other.XStart || YStart != other.YStart || XEnd != other.XEnd || YEnd != other.YEnd)
@@ -465,11 +528,7 @@ namespace Maes.Utilities
             return true;
         }
 
-        ~Bitmap()
-        {
-            Dispose();
-        }
-
+        /// <inheritdoc />
         [MustDisposeResource]
         public Bitmap Clone()
         {

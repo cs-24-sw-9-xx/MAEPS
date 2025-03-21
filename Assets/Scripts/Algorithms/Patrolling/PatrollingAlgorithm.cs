@@ -118,6 +118,7 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
+        /// <inheritdoc />
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
             while (true)
@@ -127,7 +128,7 @@ namespace Maes.Algorithms.Patrolling
                 var shouldContinue = true;
                 foreach (var component in _componentPreUpdates)
                 {
-                    shouldContinue = HandleComponent(component, _componentPreUpdateStates[component]);
+                    shouldContinue = HandleUpdateMethod(component, _componentPreUpdateStates[component]);
                     if (!shouldContinue)
                     {
                         break;
@@ -155,7 +156,7 @@ namespace Maes.Algorithms.Patrolling
                 // Stops if one has ShouldContinue = false
                 foreach (var component in _componentPostUpdates)
                 {
-                    var shouldContinue = HandleComponent(component, _componentPostUpdateStates[component]);
+                    var shouldContinue = HandleUpdateMethod(component, _componentPostUpdateStates[component]);
                     if (!shouldContinue)
                     {
                         break;
@@ -163,7 +164,7 @@ namespace Maes.Algorithms.Patrolling
                 }
 
                 // Run the algorithm's update handler
-                HandleComponent(_myUpdateLogicEnumerator, _myUpdateLogicComponentUpdateState);
+                HandleUpdateMethod(_myUpdateLogicEnumerator, _myUpdateLogicComponentUpdateState);
 
 
                 yield return WaitForCondition.WaitForLogicTicks(1);
@@ -175,6 +176,10 @@ namespace Maes.Algorithms.Patrolling
         private readonly ComponentWaitForConditionState
             _myUpdateLogicComponentUpdateState = new ComponentWaitForConditionState();
 
+        /// <summary>
+        /// Allows algorithms to implement algorithm specific logic.
+        /// </summary>
+        /// <returns></returns>
         protected virtual IEnumerable<ComponentWaitForCondition> MyUpdateLogic()
         {
             while (true)
@@ -183,8 +188,14 @@ namespace Maes.Algorithms.Patrolling
             }
         }
 
-
-        private bool HandleComponent(IEnumerator<ComponentWaitForCondition> updateMethod,
+        /// <summary>
+        /// Checks and updates the component wait for condition and state.
+        /// Runs the update method if it should.
+        /// </summary>
+        /// <param name="updateMethod"></param>
+        /// <param name="componentWaitForConditionState"></param>
+        /// <returns>Whether the next update method should be called.</returns>
+        private bool HandleUpdateMethod(IEnumerator<ComponentWaitForCondition> updateMethod,
             ComponentWaitForConditionState componentWaitForConditionState)
         {
             // Handle the current state
@@ -193,27 +204,27 @@ namespace Maes.Algorithms.Patrolling
                 case WaitForCondition.ConditionType.LogicTicks:
                     if (--componentWaitForConditionState.LogicTicksToWaitFor == 0)
                     {
-                        UpdateComponent(updateMethod, componentWaitForConditionState);
+                        RunUpdateMethod(updateMethod, componentWaitForConditionState);
                     }
                     break;
                 case WaitForCondition.ConditionType.RobotStatus:
                     if (componentWaitForConditionState.ComponentWaitForCondition.Condition.RobotStatus ==
                         _controller.GetStatus())
                     {
-                        UpdateComponent(updateMethod, componentWaitForConditionState);
+                        RunUpdateMethod(updateMethod, componentWaitForConditionState);
                     }
                     break;
                 // Should only be this one in the beginning
                 // Indicates that the component should run.
                 case WaitForCondition.ConditionType.ContinueUpdateLogic:
-                    UpdateComponent(updateMethod, componentWaitForConditionState);
+                    RunUpdateMethod(updateMethod, componentWaitForConditionState);
                     break;
             }
 
             return componentWaitForConditionState.ComponentWaitForCondition.ShouldContinue;
         }
 
-        private static void UpdateComponent(IEnumerator<ComponentWaitForCondition> updateMethod, ComponentWaitForConditionState componentWaitForConditionState)
+        private static void RunUpdateMethod(IEnumerator<ComponentWaitForCondition> updateMethod, ComponentWaitForConditionState componentWaitForConditionState)
         {
             updateMethod.MoveNext();
             componentWaitForConditionState.ComponentWaitForCondition = updateMethod.Current;
@@ -235,7 +246,7 @@ namespace Maes.Algorithms.Patrolling
                 .AppendFormat("Neighbours: {0}\n", string.Join(", ", TargetVertex.Neighbors.Select(x => x.ToString())));
             GetDebugInfo(_stringBuilder);
 
-            // Append component's debug info
+            // Append components' debug info
             foreach (var componentDebugInfo in _componentDebugInfos)
             {
                 componentDebugInfo(_stringBuilder);

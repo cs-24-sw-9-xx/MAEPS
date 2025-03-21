@@ -257,7 +257,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 // Ask neighbors for this information.
                 // It won't be immediately available, so we won't be able to return it here.
                 // NOTE: It is unclear what the timestamp should be if we have nothing in our local knowledge.
-                // So i will give it 0, it should always be smaller than any timestamp of any existing entries.
+                // So I will give it 0, it should always be smaller than any timestamp of any existing entries.
                 BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, null, 0, _monaRobot.id));
 
                 return null;
