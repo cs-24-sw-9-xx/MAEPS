@@ -96,11 +96,11 @@ namespace Maes.UI.Visualizers.Patrolling
         {
             foreach (var robot in robots)
             {
-                robot.outLine.enabled = false;
+                robot.HideOutline();
             }
             if (selectedRobot != null)
             {
-                selectedRobot.outLine.enabled = true;
+                selectedRobot.ShowOutline();
             }
         }
 
@@ -132,7 +132,7 @@ namespace Maes.UI.Visualizers.Patrolling
         {
             foreach (var robot in robots)
             {
-                robot.outLine.enabled = true;
+                robot.ShowOutline();
             }
         }
 
