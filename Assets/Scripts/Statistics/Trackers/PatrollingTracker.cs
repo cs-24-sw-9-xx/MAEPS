@@ -265,7 +265,7 @@ namespace Maes.Statistics.Trackers
 
             if (_selectedVertex == null)
             {
-                throw new Exception("Cannot show line of side when no vertex is selected");
+                throw new Exception("Cannot show line of sight when no vertex is selected");
             }
 
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
