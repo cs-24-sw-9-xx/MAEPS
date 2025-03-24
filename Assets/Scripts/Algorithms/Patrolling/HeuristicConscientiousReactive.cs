@@ -68,10 +68,10 @@ namespace Maes.Algorithms.Patrolling
 
             // Calculate the normalized distance estimation of the neighbors
             var normalizedDistances = CalculateNormalizedDistance(currentVertex, ActualDistanceMethod);
-            var result = UtilityFunction(normalizedIdleness, normalizedDistances);
-            var maxUtilityValue = result.Select(i => i.Value).Min();
-            result = result.Where(i => i.Value == maxUtilityValue);
-            var nextVertex = result.ElementAt(_random.Next(result.Count())).Vertex;
+            var bestVertices = UtilityFunction(normalizedIdleness, normalizedDistances);
+            var minUtilityValue = bestVertices.Select(i => i.Value).Min();
+            bestVertices = bestVertices.Where(i => i.Value == minUtilityValue);
+            var nextVertex = bestVertices.ElementAt(_random.Next(bestVertices.Count())).Vertex;
             Debug.Log($"Next vertex {nextVertex.Id}, with neighbours: {string.Join(", ", nextVertex.Neighbors.Select(x => x.Id))}");
             return nextVertex;
         }
