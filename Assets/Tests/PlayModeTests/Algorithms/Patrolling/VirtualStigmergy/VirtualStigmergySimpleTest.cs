@@ -203,8 +203,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
                     }, dependOnBrokenBehavior: false),
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
                 CreateRobotConstraints(communicationRange),
-                patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map,
-                    new Dictionary<Vector2Int, Bitmap>() { { new Vector2Int(4, 4), bitmap } })
+                patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
             ));
         }
 
