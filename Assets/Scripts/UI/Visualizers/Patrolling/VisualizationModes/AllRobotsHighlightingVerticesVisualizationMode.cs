@@ -17,6 +17,7 @@
 // 
 // Contributors: Puvikaran Santhirasegaram
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,9 +28,9 @@ using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
-    public class AllRobotsPartitioningHighlightingVisualizationMode : IPatrollingVisualizationMode
+    public class AllRobotsHighlightingVerticesVisualizationMode : IPatrollingVisualizationMode
     {
-        public AllRobotsPartitioningHighlightingVisualizationMode(List<MonaRobot> robots)
+        public AllRobotsHighlightingVerticesVisualizationMode(List<MonaRobot> robots)
         {
             _robots = robots;
             _robotsPartitionVertexId = robots.ToDictionary(r => r, _ => new HashSet<int>());
@@ -45,20 +46,19 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 
             if (_robots.Count != _robotsPartitionVertexId.Keys.Count)
             {
-                _robotsPartitionVertexId = _robots.ToDictionary(r => r, r => r.Algorithm is IPartitionPatrollingAlgorithm alg ? alg.GetPartitionedVertices() : new HashSet<int>());
+                _robotsPartitionVertexId = _robots.ToDictionary(r => r, r => r.Algorithm is IPatrollingAlgorithm alg ? alg.ColorVertices : new HashSet<int>());
                 changedSinceLastUpdate = true;
             }
             else
             {
                 foreach (var robot in _robots)
                 {
-                    if (robot.Algorithm is not IPartitionPatrollingAlgorithm alg)
+                    if (robot.Algorithm is not IPatrollingAlgorithm alg)
                     {
-                        Debug.Log("Must be a partitioning algorithm to be able to use this feature");
-                        continue;
+                        throw new InvalidOperationException("This visualization mode can only be applied in a patrolling mode.");
                     }
 
-                    var verticesId = alg.GetPartitionedVertices();
+                    var verticesId = alg.ColorVertices;
                     if (verticesId.SetEquals(_robotsPartitionVertexId[robot]))
                     {
                         continue;

@@ -26,9 +26,9 @@ using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
-    public class SelectedRobotPartitioningHighlightingVisualizationMode : IPatrollingVisualizationMode
+    public class SelectedRobotHighlightingVerticesVisualizationMode : IPatrollingVisualizationMode
     {
-        public SelectedRobotPartitioningHighlightingVisualizationMode(MonaRobot robot)
+        public SelectedRobotHighlightingVerticesVisualizationMode(MonaRobot robot)
         {
             _robot = robot;
             _color = robot.Color;
@@ -41,13 +41,13 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
-            if (_robot.Algorithm is not IPartitionPatrollingAlgorithm alg)
+            if (_robot.Algorithm is not IPatrollingAlgorithm alg)
             {
                 Debug.Log("Selected robot does not have a partitioning algorithm.");
                 return;
             }
 
-            var partitionedVertices = alg.GetPartitionedVertices();
+            var partitionedVertices = alg.ColorVertices;
 
             if (partitionedVertices.SetEquals(_partitionedVertices))
             {

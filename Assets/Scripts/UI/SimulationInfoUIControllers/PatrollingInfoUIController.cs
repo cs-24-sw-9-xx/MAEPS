@@ -131,10 +131,10 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case CommunicationZoneVisualizationMode:
                     SelectVisualizationButton(_selectedVertexCommunicationZoneButton);
                     break;
-                case AllRobotsPartitioningHighlightingVisualizationMode:
+                case AllRobotsHighlightingVerticesVisualizationMode:
                     SelectVisualizationButton(_allRobotsPartitioningHighlightingButton);
                     break;
-                case SelectedRobotPartitioningHighlightingVisualizationMode:
+                case SelectedRobotHighlightingVerticesVisualizationMode:
                     SelectVisualizationButton(_selectedRobotPartitioningHighlightingButton);
                     break;
                 default:
