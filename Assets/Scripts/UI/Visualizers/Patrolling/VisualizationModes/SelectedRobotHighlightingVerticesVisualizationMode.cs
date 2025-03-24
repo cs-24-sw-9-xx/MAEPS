@@ -19,6 +19,8 @@
 
 using System.Collections.Generic;
 
+using Accord.Math;
+
 using Maes.Algorithms.Patrolling;
 using Maes.Robot;
 
@@ -31,23 +33,17 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         public SelectedRobotHighlightingVerticesVisualizationMode(MonaRobot robot)
         {
             _robot = robot;
-            _color = robot.Color;
         }
 
         private readonly MonaRobot _robot;
-        private readonly Color32 _color;
 
-        private HashSet<int> _partitionedVertices = new();
+        private Dictionary<int, Color32[]> _partitionedVertices = new();
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
-            if (_robot.Algorithm is not IPatrollingAlgorithm alg)
-            {
-                Debug.Log("Selected robot does not have a partitioning algorithm.");
-                return;
-            }
+            var alg = (IPatrollingAlgorithm)_robot.Algorithm;
 
-            var partitionedVertices = alg.ColorVertices;
+            var partitionedVertices = alg.ColorsByVertexId;
 
             if (partitionedVertices.SetEquals(_partitionedVertices))
             {
@@ -56,9 +52,9 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 
             foreach (var (id, vertexVisualizer) in visualizer.VertexVisualizers)
             {
-                if (partitionedVertices.Contains(id))
+                if (partitionedVertices.TryGetValue(id, out var colors))
                 {
-                    vertexVisualizer.SetWaypointColor(_color);
+                    vertexVisualizer.SetWaypointColor(colors);
                 }
                 else
                 {
