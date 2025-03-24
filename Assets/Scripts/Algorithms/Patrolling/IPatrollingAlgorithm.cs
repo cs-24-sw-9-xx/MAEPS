@@ -2,6 +2,8 @@ using System.Collections.Generic;
 
 using Maes.Map;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling
 {
     public delegate void OnReachVertex(int vertexId, int atTick);
@@ -16,9 +18,9 @@ namespace Maes.Algorithms.Patrolling
         Vertex TargetVertex { get; }
 
         /// <summary>
-        /// Specifies vertices that should be colored using the robot's color.
+        /// Specifies vertices that should be colored with the option of multiple coloring.
         /// </summary>
-        HashSet<int> ColorVertices { get; }
+        Dictionary<int, Color32[]> ColorsByVertexId => new();
 
         void SetPatrollingMap(PatrollingMap map);
 

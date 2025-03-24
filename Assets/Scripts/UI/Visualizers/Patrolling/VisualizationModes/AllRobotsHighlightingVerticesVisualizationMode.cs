@@ -17,9 +17,10 @@
 // 
 // Contributors: Puvikaran Santhirasegaram
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Accord.Math;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Robot;
@@ -33,39 +34,46 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         public AllRobotsHighlightingVerticesVisualizationMode(List<MonaRobot> robots)
         {
             _robots = robots;
-            _robotsPartitionVertexId = robots.ToDictionary(r => r, _ => new HashSet<int>());
+            _vertexColorsByRobotId = robots.ToDictionary(robot => robot.id, _ => new Dictionary<int, Color32[]>());
         }
 
         private readonly List<MonaRobot> _robots;
 
-        private Dictionary<MonaRobot, HashSet<int>> _robotsPartitionVertexId;
+        private Dictionary<int, Dictionary<int, Color32[]>> _vertexColorsByRobotId;
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             var changedSinceLastUpdate = false;
 
-            if (_robots.Count != _robotsPartitionVertexId.Keys.Count)
+            if (_robots.Count != _vertexColorsByRobotId.Keys.Count)
             {
-                _robotsPartitionVertexId = _robots.ToDictionary(r => r, r => r.Algorithm is IPatrollingAlgorithm alg ? alg.ColorVertices : new HashSet<int>());
+                _vertexColorsByRobotId = _robots.ToDictionary(robot => robot.id,
+                                                              robot => robot.Algorithm is IPatrollingAlgorithm alg ? alg.ColorsByVertexId
+                                                                                                                   : new Dictionary<int, Color32[]>());
                 changedSinceLastUpdate = true;
             }
             else
             {
                 foreach (var robot in _robots)
                 {
-                    if (robot.Algorithm is not IPatrollingAlgorithm alg)
-                    {
-                        throw new InvalidOperationException("This visualization mode can only be applied in a patrolling mode.");
-                    }
+                    var alg = (IPatrollingAlgorithm)robot.Algorithm;
 
-                    var verticesId = alg.ColorVertices;
-                    if (verticesId.SetEquals(_robotsPartitionVertexId[robot]))
+                    var vertexColors = alg.ColorsByVertexId;
+                    if (_vertexColorsByRobotId.TryGetValue(robot.id, out var colors))
                     {
-                        continue;
+                        if (vertexColors.SetEquals(colors))
+                        {
+                            continue;
+                        }
+
+                        _vertexColorsByRobotId[robot.id] = vertexColors;
+                    }
+                    else
+                    {
+                        _vertexColorsByRobotId.Add(robot.id, vertexColors);
                     }
 
                     changedSinceLastUpdate = true;
-                    _robotsPartitionVertexId[robot] = verticesId;
                 }
             }
 
@@ -74,18 +82,15 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 return;
             }
 
-            var verticesColors = _robotsPartitionVertexId
-                .SelectMany(robotPartition =>
-                {
-                    var (robot, partitionVertex) = robotPartition;
-                    return partitionVertex.Select(id => (vertexId: id, color: robot.Color));
-                }).Distinct()
-                .GroupBy(vertexColor => vertexColor.vertexId, vertexColor => vertexColor.color)
-                .ToDictionary(group => group.Key, group => group.ToArray());
+            var colorsByVertexId = _vertexColorsByRobotId
+                .SelectMany(robotVertexColorsPair => robotVertexColorsPair.Value)
+                .GroupBy(vertexIdColorsPair => vertexIdColorsPair.Key, vertexIdColorsPair => vertexIdColorsPair.Value)
+                .ToDictionary(colorsByVertexIdGroup => colorsByVertexIdGroup.Key,
+                    colorsByVertexIdGroup => colorsByVertexIdGroup.SelectMany(colors => colors).ToArray());
 
             foreach (var (vertexId, vertexVisualizer) in visualizer.VertexVisualizers)
             {
-                if (verticesColors.TryGetValue(vertexId, out var colors))
+                if (colorsByVertexId.TryGetValue(vertexId, out var colors))
                 {
                     vertexVisualizer.SetWaypointColor(colors);
                 }
