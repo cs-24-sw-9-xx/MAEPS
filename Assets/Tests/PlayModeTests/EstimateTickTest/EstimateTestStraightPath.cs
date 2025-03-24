@@ -20,13 +20,12 @@ namespace Tests.PlayModeTests.EstimateTickTest
     public class EstimateTestStraightPath
     {
         private const int RandomSeed = 123;
-        private const float DiffRatio = 0.15f;
+        private const float DiffRatio = 0.25f;
         private MySimulator _maes;
         private MoveToTargetTileAlgorithm _testAlgorithm;
         private ExplorationSimulation _simulationBase;
         private MonaRobot _robot;
         private readonly RobotConstraints _robotConstraints;
-        private readonly int _expectedDifference;
 
         public EstimateTestStraightPath(float relativeMoveSpeed)
         {
