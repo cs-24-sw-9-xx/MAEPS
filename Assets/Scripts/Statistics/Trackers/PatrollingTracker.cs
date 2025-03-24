@@ -261,13 +261,12 @@ namespace Maes.Statistics.Trackers
 
         private void ShowSelectedLineOfSight()
         {
-            _visualizer.meshRenderer.enabled = true;
-
             if (_selectedVertex == null)
             {
                 throw new Exception("Cannot show line of sight when no vertex is selected");
             }
 
+            _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
