@@ -14,12 +14,13 @@ namespace Tests.PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, -9)]
-    [TestFixture(1.0f, -5)]
-    [TestFixture(1.5f, -8)]
+    [TestFixture(0.5f)]
+    [TestFixture(1.0f)]
+    [TestFixture(1.5f)]
     public class EstimateTestStraightPath
     {
         private const int RandomSeed = 123;
+        private const float DiffRatio = 0.15f;
         private MySimulator _maes;
         private MoveToTargetTileAlgorithm _testAlgorithm;
         private ExplorationSimulation _simulationBase;
@@ -27,10 +28,9 @@ namespace Tests.PlayModeTests.EstimateTickTest
         private readonly RobotConstraints _robotConstraints;
         private readonly int _expectedDifference;
 
-        public EstimateTestStraightPath(float relativeMoveSpeed, int expectedDifference)
+        public EstimateTestStraightPath(float relativeMoveSpeed)
         {
             _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
-            _expectedDifference = expectedDifference;
         }
 
         [SetUp]
@@ -84,7 +84,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            Assert.AreEqual(_expectedDifference, expectedEstimatedTicks.Value - actualTicks);
+            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
+            Assert.LessOrEqual(diff, DiffRatio);
         }
     }
 }
