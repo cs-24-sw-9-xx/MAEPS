@@ -273,12 +273,12 @@ namespace Maes.Statistics.Trackers
 
         public void ShowCommunicationZone()
         {
-            _visualizer.meshRenderer.enabled = true;
             if (_selectedVertex == null)
             {
                 Debug.Log("Cannot show communication zone when no vertex is selected");
                 return;
             }
+            _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
