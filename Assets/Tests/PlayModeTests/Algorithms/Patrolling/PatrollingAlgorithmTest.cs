@@ -116,7 +116,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_HeuristicConscientiousReactive_CaveMap()
         {
-            var simulation = EnqueueCaveMapScenario(new HeuristicConscientiousReactiveAlgorithm());
+            var simulation = EnqueueCaveMapScenario(new HeuristicConscientiousReactiveAlgorithm(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
@@ -128,7 +128,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_HeuristicConscientiousReactive_BuildingMap()
         {
-            var simulation = EnqueueBuildingMapScenario(new HeuristicConscientiousReactiveAlgorithm());
+            var simulation = EnqueueBuildingMapScenario(new HeuristicConscientiousReactiveAlgorithm(Seed));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {

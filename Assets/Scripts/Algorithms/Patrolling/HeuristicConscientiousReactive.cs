@@ -42,13 +42,18 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
+        public HeuristicConscientiousReactiveAlgorithm(int randomSeed = 0)
+        {
+            _random = new(randomSeed);
+        }
+        private readonly int _randomSeed;
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
 
-        private readonly System.Random _random = new(0);
+        private readonly System.Random _random;
 
         protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
         {
