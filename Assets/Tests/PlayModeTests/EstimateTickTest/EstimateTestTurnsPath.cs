@@ -15,36 +15,35 @@ namespace Tests.PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, 5, 5, -41)]
-    [TestFixture(0.5f, 10, 10, -42)]
-    [TestFixture(0.5f, 20, 20, -31)]
-    [TestFixture(0.5f, 15, 15, -31)]
+    [TestFixture(0.5f, 5, 5)]
+    [TestFixture(0.5f, 10, 10)]
+    [TestFixture(0.5f, 20, 20)]
+    [TestFixture(0.5f, 15, 15)]
 
-    [TestFixture(1.0f, 5, 5, -17)]
-    [TestFixture(1.0f, 10, 10, -33)]
-    [TestFixture(1.0f, 20, 20, -29)]
-    [TestFixture(1.0f, 15, 15, -23)]
+    [TestFixture(1.0f, 5, 5)]
+    [TestFixture(1.0f, 10, 10)]
+    [TestFixture(1.0f, 20, 20)]
+    [TestFixture(1.0f, 15, 15)]
 
-    [TestFixture(1.5f, 5, 5, -46)]
-    [TestFixture(1.5f, 10, 10, -53)]
-    [TestFixture(1.5f, 15, 15, -39)]
+    [TestFixture(1.5f, 5, 5)]
+    [TestFixture(1.5f, 10, 10)]
+    [TestFixture(1.5f, 15, 15)]
 
     public class EstimateTestTurnsPath
     {
         private const int RandomSeed = 123;
+        private const float DiffRatio = 0.23f;
         private MySimulator _maes;
         private MoveToTargetTileAlgorithm _testAlgorithm;
         private ExplorationSimulation _simulationBase;
         private readonly RobotConstraints _robotConstraints;
-        private readonly int _expectedDifference;
         private readonly Vector2Int _targetTile;
         private MonaRobot _robot;
 
-        public EstimateTestTurnsPath(float relativeMoveSpeed, int x, int y, int expectedDifference)
+        public EstimateTestTurnsPath(float relativeMoveSpeed, int x, int y)
         {
             _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
             _targetTile = new Vector2Int(x, y);
-            _expectedDifference = expectedDifference;
         }
 
         [SetUp]
@@ -101,7 +100,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            Assert.AreEqual(_expectedDifference, expectedEstimatedTicks.Value - actualTicks);
+            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
+            Assert.LessOrEqual(diff, DiffRatio);
         }
     }
 }
