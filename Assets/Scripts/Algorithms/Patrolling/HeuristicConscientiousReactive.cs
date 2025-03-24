@@ -46,7 +46,6 @@ namespace Maes.Algorithms.Patrolling
         {
             _random = new(randomSeed);
         }
-        private readonly int _randomSeed;
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
 
         // Set by CreateComponents
