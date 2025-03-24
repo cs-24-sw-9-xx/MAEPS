@@ -15,6 +15,11 @@ namespace Maes.Algorithms.Patrolling
         /// </summary>
         Vertex TargetVertex { get; }
 
+        /// <summary>
+        /// Specifies vertices that should be colored using the robot's color.
+        /// </summary>
+        HashSet<int> ColorVertices { get; }
+
         void SetPatrollingMap(PatrollingMap map);
 
         /// <summary>
@@ -24,10 +29,5 @@ namespace Maes.Algorithms.Patrolling
         void SetGlobalPatrollingMap(PatrollingMap globalMap);
 
         void SubscribeOnReachVertex(OnReachVertex onReachVertex);
-    }
-
-    public interface IPartitionPatrollingAlgorithm : IPatrollingAlgorithm
-    {
-        HashSet<int> GetPartitionedVertices();
     }
 }

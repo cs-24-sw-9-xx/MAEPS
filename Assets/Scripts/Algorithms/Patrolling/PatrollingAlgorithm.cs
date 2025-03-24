@@ -16,6 +16,8 @@ namespace Maes.Algorithms.Patrolling
         /// <inheritdoc/>
         public Vertex TargetVertex { get; private set; } = null!;
 
+        public virtual HashSet<int> ColorVertices => new() { TargetVertex.Id };
+
         // Do not change visibility of this!
         private PatrollingMap _globalMap = null!;
 

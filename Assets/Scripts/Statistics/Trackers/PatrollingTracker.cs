@@ -290,13 +290,13 @@ namespace Maes.Statistics.Trackers
                 Debug.Log("Cannot show partitioning highlighting when no robot is selected");
                 return;
             }
-            SetVisualizationMode(new SelectedRobotPartitioningHighlightingVisualizationMode(_selectedRobot));
+            SetVisualizationMode(new SelectedRobotHighlightingVerticesVisualizationMode(_selectedRobot));
         }
 
         public void ShowAllRobotsPartitioningHighlighting()
         {
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new AllRobotsPartitioningHighlightingVisualizationMode(Simulation.Robots));
+            SetVisualizationMode(new AllRobotsHighlightingVerticesVisualizationMode(Simulation.Robots));
         }
 
         public void InitIdleGraph()
