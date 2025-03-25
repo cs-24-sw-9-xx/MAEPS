@@ -38,29 +38,56 @@ namespace Maes.Map
         public int PartitionId { get; }
         public IReadOnlyList<Vertex> Vertices { get; }
         public Bitmap CommunicationZone { get; }
-        public IReadOnlyDictionary<Vector2Int, Bitmap> CommunicationZones { get; }
+        public IReadOnlyDictionary<Vector2Int, Bitmap> WaypointsCommunicationZones { get; }
         public IReadOnlyDictionary<int, Bitmap> IntersectionZones => _intersectionZones;
         public IReadOnlyDictionary<int, float> CommunicationRatio => _communicationRatio;
+        public List<Partition> NeigborPartitions { get; } = new();
 
         private readonly Dictionary<int, Bitmap> _intersectionZones = new();
         private readonly Dictionary<int, float> _communicationRatio = new();
+        private readonly int _bitmapWidth;
+        private readonly int _bitmapHeight;
 
         public Partition(int partitionId, IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
         {
             PartitionId = partitionId;
             Vertices = vertices;
-            CommunicationZones = communicationZones;
+            WaypointsCommunicationZones = communicationZones;
             CommunicationZone = CreatePartitionCommunicationZone(vertices, communicationZones);
+            _bitmapWidth = CommunicationZone.Width;
+            _bitmapHeight = CommunicationZone.Height;
         }
 
-        public void CalculateIntersectionAndRatio(Partition otherPartition)
+        public void AddNeighborPartition(Partition partition)
         {
-            var intersection = Bitmap.Intersection(CommunicationZone, otherPartition.CommunicationZone);
-            _intersectionZones[otherPartition.PartitionId] = intersection;
+            if (NeigborPartitions.Contains(partition))
+            {
+                return;
+            }
+            NeigborPartitions.Add(partition);
+            CalculateIntersectionAndRatio(partition);
+            partition.AddNeighborPartition(this);
+        }
 
-            var ratio = otherPartition.CommunicationZone.Count > 0 ? (float)intersection.Count / otherPartition.CommunicationZone.Count : 0f;
+        private void CalculateIntersectionAndRatio(Partition otherPartition)
+        {
+            var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+
+            foreach ((var position, var vertexComZone) in otherPartition.WaypointsCommunicationZones)
+            {
+                var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
+                if (intersection.Contains(position))
+                {
+                    communicationZoneIntersection.Union(intersection);
+                }
+            }
+            _intersectionZones[otherPartition.PartitionId] = communicationZoneIntersection;
+
+            var ratio = otherPartition.CommunicationZone.Count > 0 ? (float)communicationZoneIntersection.Count / otherPartition.CommunicationZone.Count : 0f;
             _communicationRatio[otherPartition.PartitionId] = ratio;
         }
+
+
 
         [MustDisposeResource]
         private static Bitmap CreatePartitionCommunicationZone(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
