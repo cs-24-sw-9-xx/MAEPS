@@ -69,7 +69,7 @@ namespace Maes.Map
             partition.AddNeighborPartition(this);
         }
 
-        private void CalculateIntersectionAndRatio(Partition otherPartition)
+        public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
             var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
 
