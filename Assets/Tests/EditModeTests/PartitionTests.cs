@@ -103,7 +103,7 @@ namespace Tests.EditModeTests
             // Assert
             Assert.AreEqual(1, partition.PartitionId);
             Assert.AreEqual(_vertices, partition.Vertices);
-            Assert.AreEqual(_communicationZones, partition.CommunicationZones);
+            Assert.AreEqual(_communicationZones, partition.WaypointsCommunicationZones);
             Assert.IsNotNull(partition.CommunicationZone);
 
             // Check communication zone contains all expected tiles
