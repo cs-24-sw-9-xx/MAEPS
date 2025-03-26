@@ -97,7 +97,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             _selectedRobotPartitioningHighlightingButton.RegisterCallback<ClickEvent>(SelectedRobotPartitioningHighlightingClicked);
 
-            _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedVertexCommunicationZoneButtonClicked);
+            _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedRobotCommunicationRangeClicked);
 
 
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
