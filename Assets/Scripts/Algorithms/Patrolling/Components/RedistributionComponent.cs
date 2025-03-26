@@ -31,7 +31,7 @@ namespace Maes.Algorithms.Patrolling.Components
 {
     public sealed class RedistributionComponent : IComponent
     {
-        // The value is the Id of the Partition and the float is the properbility of the robot to redistribute to that partition.
+        // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
         private readonly List<Partition> _partitions;
         private readonly Partition _currentPartition;
@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => 1;
 
-        public Dictionary<int, bool> RecivedCommunication { get; set; }
+        public Dictionary<int, bool> ReceivedCommunication { get; set; }
 
         public RedistributionComponent(List<Partition> partitions, Robot2DController controller)
         {
@@ -55,7 +55,7 @@ namespace Maes.Algorithms.Patrolling.Components
             _communicationManager = controller.CommunicationManager;
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new List<int>();
-            RecivedCommunication = new Dictionary<int, bool>();
+            ReceivedCommunication = new Dictionary<int, bool>();
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -66,7 +66,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 {
                     if (objectMessage is RedistributionMessage message)
                     {
-                        RecivedCommunication[message.Sender.AssignedPartition] = true;
+                        ReceivedCommunication[message.Sender.AssignedPartition] = true;
                     }
                 }
                 CalculateRedistribution();
@@ -94,10 +94,10 @@ namespace Maes.Algorithms.Patrolling.Components
                 {
                     if (_currentPartitionIntersection.Contains(partitionId))
                     {
-                        if (RecivedCommunication[partitionId])
+                        if (ReceivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
                         {
                             _redistributionTracker[partitionId] = -_currentPartition.CommunicationRatio[partitionId];
-                            RecivedCommunication[partitionId] = false;
+                            ReceivedCommunication[partitionId] = false;
                         }
                         else
                         {
