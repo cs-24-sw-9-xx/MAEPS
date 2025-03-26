@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Maes.Statistics.Trackers;
 using Maes.Utilities;
 
@@ -39,7 +41,7 @@ namespace Maes.UI.Visualizers.Patrolling
                 SetWaypointColor(colors[0]);
             }
 
-            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshMultipleColor(colors);
+            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshMultipleColor(colors.Distinct().ToArray());
         }
 
         public void OnPointerClick(PointerEventData eventData)
