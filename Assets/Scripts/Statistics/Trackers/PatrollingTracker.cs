@@ -254,7 +254,7 @@ namespace Maes.Statistics.Trackers
             }
 
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new RobotCommunicationRangeVisualizer(_selectedRobot, _collisionMap));
+            SetVisualizationMode(new SelectedRobotCommunicationRangeVisualizationMode(_selectedRobot, _collisionMap));
         }
 
         public void ShowAllVerticesLineOfSight()

@@ -48,7 +48,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsPartitioningHighlightingButton,
             _selectedRobotTargetWaypointButton,
             _selectedVertexCommunicationZoneButton,
-            _selectedRobotPartitioningHighlightingButton
+            _selectedRobotPartitioningHighlightingButton,
+            _selectedRobotCommunicationRangeButton
         };
 
         protected override void AfterStart()
@@ -140,6 +141,9 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case SelectedRobotHighlightingVerticesVisualizationMode:
                     SelectVisualizationButton(_selectedRobotPartitioningHighlightingButton);
+                    break;
+                case SelectedRobotCommunicationRangeVisualizationMode:
+                    SelectVisualizationButton(_selectedRobotCommunicationRangeButton);
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
