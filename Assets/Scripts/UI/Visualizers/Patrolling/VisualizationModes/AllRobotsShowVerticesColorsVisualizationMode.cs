@@ -29,23 +29,22 @@ using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
-    public class AllRobotsHighlightingVerticesVisualizationMode : IPatrollingVisualizationMode
+    public class AllRobotsShowVerticesColorsVisualizationMode : IPatrollingVisualizationMode
     {
-        public AllRobotsHighlightingVerticesVisualizationMode(List<MonaRobot> robots)
+        public AllRobotsShowVerticesColorsVisualizationMode(List<MonaRobot> robots)
         {
             _robots = robots;
-            _vertexColorsByRobotId = robots.ToDictionary(robot => robot.id, _ => new Dictionary<int, Color32[]>());
         }
 
         private readonly List<MonaRobot> _robots;
 
-        private Dictionary<int, Dictionary<int, Color32[]>> _vertexColorsByRobotId;
+        private Dictionary<int, Dictionary<int, Color32[]>> _vertexColorsByRobotId = new();
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             var changedSinceLastUpdate = false;
 
-            if (_robots.Count != _vertexColorsByRobotId.Keys.Count)
+            if (_robots.Count != _vertexColorsByRobotId.Keys.Count) // If the number of robots has changed, we need to update the colors
             {
                 _vertexColorsByRobotId = _robots.ToDictionary(robot => robot.id,
                                                               robot => robot.Algorithm is IPatrollingAlgorithm alg ? alg.ColorsByVertexId
