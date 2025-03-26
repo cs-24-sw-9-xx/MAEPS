@@ -33,18 +33,17 @@ namespace Maes.Algorithms.Patrolling.Components
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
         private readonly List<Partition> _partitions;
-        private readonly Partition _currentPartition;
+        private Partition _currentPartition;
         private readonly MonaRobot _monaRobot;
         private readonly CommunicationManager _communicationManager;
         private readonly List<int> _currentPartitionIntersection;
+        private Dictionary<int, bool> ReceivedCommunication { get; }
 
         /// <inheritdoc />
         public int PreUpdateOrder => 1;
 
         /// <inheritdoc />
         public int PostUpdateOrder => 1;
-
-        public Dictionary<int, bool> ReceivedCommunication { get; }
 
         public RedistributionComponent(List<Partition> partitions, Robot2DController controller)
         {
@@ -61,20 +60,23 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             while (true)
             {
-                foreach (var objectMessage in _communicationManager.ReadMessages(_monaRobot))
-                {
-                    if (objectMessage is RedistributionMessage message)
-                    {
-                        ReceivedCommunication[message.Sender.AssignedPartition] = true;
-                    }
-                }
+                UpdateMessagesReceived();
                 CalculateRedistribution();
-
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
 
             }
         }
 
+        private void UpdateMessagesReceived()
+        {
+            foreach (var objectMessage in _communicationManager.ReadMessages(_monaRobot))
+            {
+                if (objectMessage is RedistributionMessage message)
+                {
+                    ReceivedCommunication[message.Sender.AssignedPartition] = true;
+                }
+            }
+        }
 
         private void CalculateRedistribution()
         {
@@ -100,11 +102,31 @@ namespace Maes.Algorithms.Patrolling.Components
                         else
                         {
                             _redistributionTracker[partitionId] = +_currentPartition.CommunicationRatio[partitionId];
+                            if (SwitchPartition(partitionId))
+                            {
+                                return;
+                            }
                         }
                         _currentPartitionIntersection.Remove(partitionId);
                     }
                 }
             }
+        }
+
+        private bool SwitchPartition(int partitionId)
+        {
+            var randomValue = UnityEngine.Random.value;
+            if (randomValue <= _redistributionTracker[partitionId])
+            {
+                var partition = _partitions[partitionId];
+                _monaRobot.AssignedPartition = partition.PartitionId;
+                _currentPartition = partition;
+                _redistributionTracker.Clear();
+                _currentPartitionIntersection.Clear();
+                return true;
+            }
+
+            return false;
         }
 
         private sealed class RedistributionMessage
