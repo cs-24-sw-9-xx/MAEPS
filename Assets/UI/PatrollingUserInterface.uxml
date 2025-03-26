@@ -35,7 +35,7 @@
                         <engine:Button text="Sticky Camera" name="SelectedRobotStickyCameraButton" />
                         <engine:Button text="Target&#10;Waypoint" name="SelectedRobotTargetWaypointButton" />
                         <engine:Button text="Partition" name="SelectedRobotPartitioningHighlightingButton" />
-                        <engine:Button text="Partition" name="SelectedRobotCommunicationRangeButton" />
+                        <engine:Button text="Communication&#10;Range" name="SelectedRobotCommunicationRangeButton" />
                     </engine:GroupBox>
                 </engine:VisualElement>
             </engine:VisualElement>
