@@ -41,7 +41,7 @@ namespace Maes.Map
         public IReadOnlyDictionary<Vector2Int, Bitmap> WaypointsCommunicationZones { get; }
         public IReadOnlyDictionary<int, Bitmap> IntersectionZones => _intersectionZones;
         public IReadOnlyDictionary<int, float> CommunicationRatio => _communicationRatio;
-        public List<Partition> NeigborPartitions { get; } = new();
+        public List<Partition> NeighborPartitions { get; } = new();
 
         private readonly Dictionary<int, Bitmap> _intersectionZones = new();
         private readonly Dictionary<int, float> _communicationRatio = new();
@@ -60,11 +60,11 @@ namespace Maes.Map
 
         public void AddNeighborPartition(Partition partition)
         {
-            if (NeigborPartitions.Contains(partition))
+            if (NeighborPartitions.Contains(partition))
             {
                 return;
             }
-            NeigborPartitions.Add(partition);
+            NeighborPartitions.Add(partition);
             CalculateIntersectionAndRatio(partition);
             partition.AddNeighborPartition(this);
         }
