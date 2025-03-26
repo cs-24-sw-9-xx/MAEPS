@@ -243,7 +243,7 @@ namespace Maes.Statistics.Trackers
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
-        public void ShowRobotCommunicationRange()
+        public void ShowSelectedRobotCommunicationRange()
         {
             if (_selectedRobot == null)
             {
