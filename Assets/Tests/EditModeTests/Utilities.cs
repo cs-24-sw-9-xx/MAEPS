@@ -14,24 +14,39 @@ namespace Tests.EditModeTests
 {
     public static class Utilities
     {
-        public static SimulationMap<Tile> GenerateSimulationMapFromString(string map)
+        public static ((Vector2 start, Vector2 end), SimulationMap<Tile> map) GenerateSimulationMapFromString(string map)
         {
             var lines = map.Split(';', StringSplitOptions.RemoveEmptyEntries);
             var width = lines[0].Length;
             var height = lines.Length;
             var tiles = new SimulationMapTile<Tile>[width, height];
 
+            var start = Vector2.zero;
+            var end = Vector2.zero;
+
+
             for (var y = 0; y < height; y++)
             {
                 for (var x = 0; x < width; x++)
                 {
                     var tileChar = lines[y][x];
+                    if (tileChar is 'S' or 's')
+                    {
+                        start = new Vector2(x, y);
+                        tileChar = tileChar == 'S' ? 'X' : ' ';
+                    }
+                    else if (tileChar is 'E' or 'e')
+                    {
+                        end = new Vector2(x, y);
+                        tileChar = tileChar == 'E' ? 'X' : ' ';
+                    }
+
                     var tile = tileChar == 'X' ? new Tile(TileType.Wall) : new Tile(TileType.Room);
                     tiles[x, y] = new SimulationMapTile<Tile>(() => tile);
                 }
             }
 
-            return new SimulationMap<Tile>(tiles, Vector2.zero);
+            return ((start + Vector2.one / 2f, end + Vector2.one / 2f), new SimulationMap<Tile>(tiles, Vector2.zero));
         }
 
         [MustDisposeResource]

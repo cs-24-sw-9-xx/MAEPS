@@ -95,7 +95,7 @@ namespace Maes.Robot
             float transmitPower = 15,
             float receiverSensitivity = -82,
             Dictionary<uint, Dictionary<TileType, float>>? attenuationDictionary = null,
-            float maxCommunicationRange = 15f,
+            float maxCommunicationRange = float.MaxValue,
             bool robotCollisions = true)
         {
 

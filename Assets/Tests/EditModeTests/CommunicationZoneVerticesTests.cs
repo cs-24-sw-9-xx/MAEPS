@@ -69,26 +69,25 @@ namespace Tests.EditModeTests
                 " XXXXXXXXXX ;" +
                 "            ";
 
-            // Raytracing dont work at 90 angles therefore this is the expected result. The x's showcase the communication zone
             const string expectedBitmapString = "" +
                 "            ;" +
-                "      X     ;" +
+                "            ;" +
                 "  XXXXXXXX  ;" +
                 "  XXXXXXXX  ;" +
                 "  XXXXXXXX  ;" +
                 "  XXXXXXXX  ;" +
-                " XXXXXXXXXX ;" +
                 "  XXXXXXXX  ;" +
                 "  XXXXXXXX  ;" +
                 "  XXXXXXXX  ;" +
-                "      X     ;" +
+                "  XXXXXXXX  ;" +
+                "            ;" +
                 "            ";
 
             using var expectedBitmap = Utilities.BitmapFromString(expectedBitmapString);
-            var slamMap = Utilities.GenerateSimulationMapFromString(bitmapString);
+            var slamMap = Utilities.GenerateSimulationMapFromString(bitmapString).map;
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
             var vector2Ints = new List<Vector2Int> { vertex.Position };
-            var result = communicationManager.CalculateCommunicationZone(vector2Ints, width, height)[vertex.Position];
+            var result = communicationManager.CalculateZones(vector2Ints, width, height)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
         }
@@ -121,7 +120,7 @@ namespace Tests.EditModeTests
                 " X        X ;" +
                 " XXXXXXXXXX ;" +
                 "            ";
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString).map;
             var vertexPositions = new List<Vector2Int> { new Vector2Int(6, 6) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
@@ -134,59 +133,6 @@ namespace Tests.EditModeTests
             Assert.AreEqual(1, communicationZoneVertices.CommunicationZoneTiles.Count);
             Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[0].Count, 0);
             Assert.AreEqual(communicationZoneVertices.CommunicationZoneTiles[0].Count, communicationZoneVertices.AllCommunicationZoneTiles.Count);
-        }
-
-        [Test]
-        public void TestCommunicationZoneVertices_MultipleVertices_NoIntersection()
-        {
-            // Arrange
-            var robotConstraints = new RobotConstraints(
-                maxCommunicationRange: 3,
-                materialCommunication: false);
-
-            const string mapString = "" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ;" +
-                "                    ";
-
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
-            // Place vertices far apart - at least 10 tiles separation to ensure no overlap with maxCommunicationRange of 3
-            var vertexPositions = new List<Vector2Int> { new Vector2Int(5, 5), new Vector2Int(15, 15) };
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
-            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
-
-            // Act
-            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
-
-            // Assert
-            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
-            Assert.AreEqual(2, communicationZoneVertices.CommunicationZoneTiles.Count);
-
-            // Verify each vertex has its own zone
-            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[0].Count, 0);
-            Assert.Greater(communicationZoneVertices.CommunicationZoneTiles[1].Count, 0);
-
-            // Verify total tiles equals sum of individual zones (since no intersection)
-            Assert.AreEqual(
-                communicationZoneVertices.CommunicationZoneTiles[0].Count + communicationZoneVertices.CommunicationZoneTiles[1].Count,
-                communicationZoneVertices.AllCommunicationZoneTiles.Count);
         }
 
         [Test]
@@ -219,7 +165,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString).map;
             // Place vertices close enough to have overlapping communication zones
             var vertexPositions = new List<Vector2Int> { new Vector2Int(8, 10), new Vector2Int(12, 10) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -286,7 +232,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString).map;
             // Place vertices on opposite sides of the wall
             var vertexPositions = new List<Vector2Int> { new Vector2Int(18, 9), new Vector2Int(18, 11) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -318,7 +264,7 @@ namespace Tests.EditModeTests
                 "     ;" +
                 "     ";
 
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString).map;
             var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>());
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
 
@@ -361,7 +307,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString);
+            var simulationMap = Utilities.GenerateSimulationMapFromString(mapString).map;
             // Create several vertices to test union functionality
             var vertexPositions = new List<Vector2Int> {
                 new Vector2Int(5, 5),

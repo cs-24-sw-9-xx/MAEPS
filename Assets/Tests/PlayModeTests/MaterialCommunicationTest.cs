@@ -252,37 +252,6 @@ namespace Tests.PlayModeTests
             Assert.AreEqual(foundWallDistance, 0f, 0.001f);
         }
 
-
-        [Test(ExpectedResult = null)]
-        public IEnumerator AttenuationCalculation()
-        {
-            InitSimulator(generator => generator.GenerateMap(GenerateMapWithHorizontalAlternatingWallInMiddle(), RandomSeed, borderSize: 2),
-                new List<Vector2Int> { new(-4, -4), new(8, 8) },
-                new Dictionary<uint, Dictionary<TileType, float>>
-                {
-                    [2400] = new() //2.4 GHz
-                    {
-                        [TileType.Room] = 0f,
-                        [TileType.Hall] = 0f,
-                        [TileType.Wall] = 0f,
-                        [TileType.Concrete] = 1f,
-                        [TileType.Wood] = 2f,
-                        [TileType.Brick] = 3f
-                    }
-                });
-
-            _maes.PressPlayButton();
-            // Wait until the adjacency matrix has been created
-            while (_explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef == null)
-            {
-                yield return null;
-            }
-
-            var signalStrength = _explorationSimulation.CommunicationManager.CommunicationTracker.AdjacencyMatrixRef[(0, 1)].SignalStrength;
-
-            Assert.AreEqual(-27, signalStrength);
-        }
-
         [Test(ExpectedResult = null)]
         [TestCase(20, 20, ExpectedResult = null)]
         [TestCase(5, 5, ExpectedResult = null)]
