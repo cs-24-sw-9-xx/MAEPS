@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => 1;
 
-        public Dictionary<int, bool> ReceivedCommunication { get; set; }
+        public Dictionary<int, bool> ReceivedCommunication { get; }
 
         public RedistributionComponent(List<Partition> partitions, Robot2DController controller)
         {
