@@ -209,6 +209,7 @@ namespace Maes.UI.Visualizers
             {
                 SetCellColor(index, StandardCellColor);
             }
+            _mesh.colors32 = _colors;
         }
     }
 }
