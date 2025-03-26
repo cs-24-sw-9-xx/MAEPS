@@ -545,38 +545,51 @@ namespace Maes.Robot
             return vertexPositionsMultiThread;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, int width, int height, SimulationMap<Tile> tileMap)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, SimulationMap<Tile> tileMap)
         {
             Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
+            {
+                var bitmap = CalculateCommunicationZone(tileMap, vertex);
+
+                lock (vertexPositionsMultiThread)
                 {
-                    var bitmap = new Bitmap(0, 0, width, height);
-
-                    for (var x = 0; x < width; x++)
-                    {
-                        for (var y = 0; y < height; y++)
-                        {
-                            var signalStrength = CommunicationBetweenPoints(new Vector2(vertex.x, vertex.y), new Vector2(x, y), tileMap);
-                            if (signalStrength >= _robotConstraints.ReceiverSensitivity)
-                            {
-                                bitmap.Set(x, y);
-                            }
-                        }
-                    }
-
-                    lock (vertexPositionsMultiThread)
-                    {
-                        vertexPositionsMultiThread.Add(vertex, bitmap);
-                    }
+                    vertexPositionsMultiThread.Add(vertex, bitmap);
                 }
+            }
             );
             return vertexPositionsMultiThread;
         }
 
-        // This method is an implementation of siddons algorithm which can be found in the following paper:
-        // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
-        // https://doi.org/10.1118/1.595715
-        public float CommunicationBetweenPoints(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
+        public Bitmap CalculateCommunicationZone(SimulationMap<Tile> tileMap, Vector2Int position)
+        {
+            var width = tileMap.WidthInTiles;
+            var height = tileMap.HeightInTiles;
+            var bitmap = new Bitmap(0, 0, width, height);
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    var signalStrength = CommunicationSignalStrength(new Vector2(position.x, position.y), new Vector2(x, y), tileMap);
+                    if (signalStrength >= _robotConstraints.ReceiverSensitivity)
+                    {
+                        bitmap.Set(x, y);
+                    }
+                }
+            }
+
+            return bitmap;
+        }
+
+        /// <summary>
+        /// Calculates the signal strength between two points in the map.
+        /// This method is an implementation of siddons algorithm which can be found in the following paper:
+        /// Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
+        /// https://doi.org/10.1118/1.595715
+        /// </summary>
+        /// <returns>Signal strength</returns>
+        public float CommunicationSignalStrength(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
         {
             var x1 = start.x;
             var y1 = start.y;

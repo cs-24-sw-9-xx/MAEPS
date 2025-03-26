@@ -83,7 +83,7 @@ namespace Tests.EditModeTests
             var start = new Vector2(startX, startY);
             var end = new Vector2(endX, endY);
 
-            var result = _communicationManager.CommunicationBetweenPoints(start, end, _simulationMap);
+            var result = _communicationManager.CommunicationSignalStrength(start, end, _simulationMap);
 
             Assert.AreEqual(expectedSignal, result, 0.01f);
         }
