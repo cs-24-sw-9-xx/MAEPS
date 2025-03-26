@@ -13,9 +13,10 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         private readonly SimulationMap<Tile> _simulationMap;
         private Bitmap _communicationRangeBitmap;
 
-        public RobotCommunicationRangeVisualizer(MonaRobot robot)
+        public RobotCommunicationRangeVisualizer(MonaRobot robot, SimulationMap<Tile> simulationMap)
         {
             _robot = robot;
+            _simulationMap = simulationMap;
         }
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)

@@ -54,6 +54,7 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
+        private readonly SimulationMap<Tile> _collisionMap;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
@@ -68,6 +69,7 @@ namespace Maes.Statistics.Trackers
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
+            _collisionMap = collisionMap;
         }
 
         public void OnReachedVertex(int vertexId, int atTick)
@@ -252,7 +254,7 @@ namespace Maes.Statistics.Trackers
             }
 
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new RobotCommunicationRangeVisualizer(_selectedRobot));
+            SetVisualizationMode(new RobotCommunicationRangeVisualizer(_selectedRobot, _collisionMap));
         }
 
         public void ShowAllVerticesLineOfSight()
