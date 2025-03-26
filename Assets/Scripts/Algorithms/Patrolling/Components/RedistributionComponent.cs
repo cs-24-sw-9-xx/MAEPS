@@ -24,7 +24,6 @@ using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Robot;
-using Maes.Utilities;
 
 
 namespace Maes.Algorithms.Patrolling.Components
@@ -79,8 +78,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void CalculateRedistribution()
         {
-            // Im not sure if this is the correct way to get the robot position
-            var robotPosition = _monaRobot.transform.position.ToVector2Int();
+            var robotPosition = _monaRobot.Controller.SlamMap.GetCurrentPosition();
             foreach ((var partitionId, var intersectionZone) in _currentPartition.IntersectionZones)
             {
                 if (intersectionZone.Contains(robotPosition))
