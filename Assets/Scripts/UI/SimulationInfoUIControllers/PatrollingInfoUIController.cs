@@ -35,7 +35,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _selectedRobotTargetWaypointButton = null!;
         private Button _selectedVertexCommunicationZoneButton = null!;
         private Button _selectedRobotPartitioningHighlightingButton = null!;
-
+        private Button _selectedRobotCommunicationRangeButton = null!;
         private Toggle _graphShowToggle = null!;
         private IntegerField _graphTicksPerUpdateField = null!;
 
@@ -71,6 +71,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
             _selectedVertexCommunicationZoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedVertexCommunicationZoneButton");
             _selectedRobotPartitioningHighlightingButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotPartitioningHighlightingButton");
+            _selectedRobotCommunicationRangeButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotCommunicationRangeButton");
+
 
             _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
             _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
@@ -94,6 +96,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedVertexCommunicationZoneButton.RegisterCallback<ClickEvent>(SelectedVertexCommunicationZoneButtonClicked);
 
             _selectedRobotPartitioningHighlightingButton.RegisterCallback<ClickEvent>(SelectedRobotPartitioningHighlightingClicked);
+
+            _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedVertexCommunicationZoneButtonClicked);
 
 
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
@@ -269,6 +273,19 @@ namespace Maes.UI.SimulationInfoUIControllers
                 }
 
                 sim.PatrollingTracker.ShowSelectedRobotPartitioningHighlighting();
+            });
+        }
+
+        private void SelectedRobotCommunicationRangeClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim =>
+            {
+                if (!sim.HasSelectedRobot)
+                {
+                    Debug.Log("No robot selected, first select a robot");
+                }
+
+                sim.PatrollingTracker.ShowSelectedRobotCommunicationRange();
             });
         }
 
