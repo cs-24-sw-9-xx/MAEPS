@@ -243,6 +243,18 @@ namespace Maes.Statistics.Trackers
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
+        public void ShowRobotCommunicationRange()
+        {
+            if (_selectedRobot == null)
+            {
+                Debug.Log("Cannot show robot communication range when no robot is selected");
+                return;
+            }
+
+            _visualizer.meshRenderer.enabled = true;
+            SetVisualizationMode(new RobotCommunicationRangeVisualizer(_selectedRobot));
+        }
+
         public void ShowAllVerticesLineOfSight()
         {
             _visualizer.meshRenderer.enabled = true;
