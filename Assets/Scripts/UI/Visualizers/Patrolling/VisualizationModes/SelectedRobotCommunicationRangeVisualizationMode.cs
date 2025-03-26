@@ -7,13 +7,13 @@ using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
-    internal class RobotCommunicationRangeVisualizer : IPatrollingVisualizationMode
+    public class SelectedRobotCommunicationRangeVisualizationMode : IPatrollingVisualizationMode
     {
         private readonly MonaRobot _robot;
         private readonly SimulationMap<Tile> _simulationMap;
         private Bitmap _communicationRangeBitmap;
 
-        public RobotCommunicationRangeVisualizer(MonaRobot robot, SimulationMap<Tile> simulationMap)
+        public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot, SimulationMap<Tile> simulationMap)
         {
             _robot = robot;
             _simulationMap = simulationMap;
