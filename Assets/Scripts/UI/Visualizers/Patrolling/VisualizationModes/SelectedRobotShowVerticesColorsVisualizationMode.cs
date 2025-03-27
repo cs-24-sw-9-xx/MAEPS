@@ -28,31 +28,32 @@ using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
-    public class SelectedRobotHighlightingVerticesVisualizationMode : IPatrollingVisualizationMode
+    public class SelectedRobotShowVerticesColorsVisualizationMode : IPatrollingVisualizationMode
     {
-        public SelectedRobotHighlightingVerticesVisualizationMode(MonaRobot robot)
+        public SelectedRobotShowVerticesColorsVisualizationMode(MonaRobot robot)
         {
             _robot = robot;
+
         }
 
         private readonly MonaRobot _robot;
 
-        private Dictionary<int, Color32[]> _partitionedVertices = new();
+        private Dictionary<int, Color32[]>? _currentColorsByVertexId;
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             var alg = (IPatrollingAlgorithm)_robot.Algorithm;
 
-            var partitionedVertices = alg.ColorsByVertexId;
+            var colorsByVertexId = alg.ColorsByVertexId;
 
-            if (partitionedVertices.SetEquals(_partitionedVertices))
+            if (_currentColorsByVertexId is not null && colorsByVertexId.SetEquals(_currentColorsByVertexId))
             {
                 return;
             }
 
             foreach (var (id, vertexVisualizer) in visualizer.VertexVisualizers)
             {
-                if (partitionedVertices.TryGetValue(id, out var colors))
+                if (colorsByVertexId.TryGetValue(id, out var colors))
                 {
                     vertexVisualizer.SetWaypointColor(colors);
                 }
@@ -62,7 +63,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 }
             }
 
-            _partitionedVertices = partitionedVertices;
+            _currentColorsByVertexId = colorsByVertexId;
             _robot.ShowOutline();
         }
     }

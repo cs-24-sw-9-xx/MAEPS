@@ -276,7 +276,7 @@ namespace Maes.Statistics.Trackers
                 new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
-        public void ShowSelectedRobotPartitioningHighlighting()
+        public void ShowSelectedRobotVerticesColors()
         {
             if (_selectedRobot == null)
             {
@@ -284,14 +284,14 @@ namespace Maes.Statistics.Trackers
                 return;
             }
 
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new SelectedRobotHighlightingVerticesVisualizationMode(_selectedRobot));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new SelectedRobotShowVerticesColorsVisualizationMode(_selectedRobot));
         }
 
-        public void ShowAllRobotsPartitioningHighlighting()
+        public void ShowAllRobotsVerticesColors()
         {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new AllRobotsHighlightingVerticesVisualizationMode(Simulation.Robots));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(Simulation.Robots));
         }
 
         public void InitIdleGraph()
