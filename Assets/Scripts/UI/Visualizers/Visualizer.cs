@@ -2,7 +2,6 @@ using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Statistics;
-using Maes.Utilities;
 
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -167,19 +166,6 @@ namespace Maes.UI.Visualizers
                 _colors[vertexIndex + 2] = color;
             }
 
-            _mesh.colors32 = _colors;
-        }
-
-        public void SetAllColors(Bitmap map, BooleanToColor isContainedInMap)
-        {
-            for (var width = 0; width < map.Width; width++)
-            {
-                for (var height = 0; height < map.Height; height++)
-                {
-                    var index = width * map.Height + height;
-                    SetCellColor(index, isContainedInMap(map.Contains(width, height)));
-                }
-            }
             _mesh.colors32 = _colors;
         }
 
