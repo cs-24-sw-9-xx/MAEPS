@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -12,6 +14,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         private readonly MonaRobot _robot;
         private readonly SimulationMap<Tile> _simulationMap;
         private Bitmap _communicationRangeBitmap;
+        private HashSet<int> _triangleIndexes;
 
         public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot, SimulationMap<Tile> simulationMap)
         {
@@ -24,16 +27,24 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
             UpdateMapColor(visualizer);
         }
 
+        // Todo: Only color the cells that changes since last update. 
         private void UpdateMapColor(PatrollingVisualizer visualizer)
         {
-            var position = _robot.Controller.SlamMap.GetCurrentPosition();
+            _triangleIndexes = new HashSet<int>();
+            var position = _robot.Controller.SlamMap.CoarseMap.GetCurrentPosition();
             _communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(_simulationMap, position);
-            visualizer.SetAllColors(_communicationRangeBitmap, BooleanToColor);
+            var cellIndexTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
+            foreach (var tile in _communicationRangeBitmap)
+            {
+                var index = tile.x + tile.y * _communicationRangeBitmap.Width;
+                _triangleIndexes.UnionWith(cellIndexTriangleIndexes[index]);
+            }
+            visualizer.SetAllColors(CellIndexToColor);
         }
 
-        private Color32 BooleanToColor(bool isContainedInMap)
+        private Color32 CellIndexToColor(int cellIndex)
         {
-            return isContainedInMap
+            return _triangleIndexes.Contains(cellIndex)
                ? PatrollingVisualizer.CommunicationColor
                : Visualizer.StandardCellColor;
         }
