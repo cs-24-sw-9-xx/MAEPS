@@ -42,8 +42,8 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = VertexPositionsFromMap(map, maxDistance);
-            var connectedVertices = waypointConnector(map, vertexPositions.Keys);
-            return new PatrollingMap(connectedVertices, simulationMap, vertexPositions);
+            var connectedVertices = waypointConnector(map, vertexPositions);
+            return new PatrollingMap(connectedVertices, simulationMap);
         }
 
         /// <summary>
@@ -53,17 +53,17 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         /// <param name="map"></param>
         /// <param name="maxDistance">The maximum range of a waypoint.</param>
         /// <returns></returns>
-        public static Dictionary<Vector2Int, Bitmap> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
+        public static HashSet<Vector2Int> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
         {
             var precomputedVisibility = ComputeVisibility(map, maxDistance);
             return ComputeVertexCoordinates(map, precomputedVisibility);
         }
 
-        private static Dictionary<Vector2Int, Bitmap> ComputeVertexCoordinates(Bitmap map, Dictionary<Vector2Int, Bitmap> precomputedVisibility)
+        private static HashSet<Vector2Int> ComputeVertexCoordinates(Bitmap map, Dictionary<Vector2Int, Bitmap> precomputedVisibility)
         {
             var startTime = Time.realtimeSinceStartup;
 
-            var guardPositions = new Dictionary<Vector2Int, Bitmap>();
+            var guardPositions = new HashSet<Vector2Int>();
 
             using var uncoveredTiles = new Bitmap(0, 0, map.Width, map.Height);
             var uncoveredTilesSet = precomputedVisibility.Keys.ToHashSet();
@@ -76,7 +76,6 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             {
                 var bestGuardPosition = Vector2Int.zero;
                 var bestCoverage = new Bitmap(0, 0, 0, 0);
-                Bitmap bestCandidate = null!;
 
                 var foundCandidate = false;
 
@@ -95,7 +94,6 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
                         bestGuardPosition = uncoveredTile;
                         bestCoverage.Dispose();
                         bestCoverage = coverage;
-                        bestCandidate = candidate;
                         foundCandidate = true;
                     }
                     else
@@ -111,11 +109,16 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
                     break;
                 }
 
-                guardPositions.Add(bestGuardPosition, bestCandidate);
+                guardPositions.Add(bestGuardPosition);
                 uncoveredTiles.ExceptWith(bestCoverage);
                 uncoveredTilesSet.ExceptWith(bestCoverage);
 
                 bestCoverage.Dispose();
+            }
+
+            foreach (var bitmap in precomputedVisibility.Values)
+            {
+                bitmap.Dispose();
             }
 
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);

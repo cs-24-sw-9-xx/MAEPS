@@ -56,16 +56,18 @@ namespace Maes.Statistics.Trackers
         private int _lastCycle;
         private readonly SimulationMap<Tile> _collisionMap;
 
-        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
+        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
+            PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
+            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints,
+            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
-            _visualizer.SetLineOfSightVertices(collisionMap, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
             TotalCycles = scenario.TotalCycles;
-            WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
+            WaypointSnapShots =
+                _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
@@ -154,10 +156,12 @@ namespace Maes.Statistics.Trackers
 
                 if (CurrentCycle > 1)
                 {
-                    var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) / _lastCycleAverageGraphIdleness;
+                    var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) /
+                                   _lastCycleAverageGraphIdleness;
                     Debug.Log($"Average Graph Diff Last Two Cycles Proportion: {cycleAvg}");
                     AverageGraphDiffLastTwoCyclesProportion = cycleAvg;
                 }
+
                 _lastCycle = CurrentCycle;
                 _lastCyclesTotalGraphIdleness = _totalGraphIdleness;
                 _lastAmountOfTicksSinceLastCycle = CurrentTick;
@@ -188,7 +192,8 @@ namespace Maes.Statistics.Trackers
 
             foreach (var vertex in _vertices.Values)
             {
-                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick, CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick,
+                    CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
         }
 
@@ -239,7 +244,8 @@ namespace Maes.Statistics.Trackers
             _visualizer.meshRenderer.enabled = false;
             if (_selectedRobot == null)
             {
-                throw new Exception("Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
+                throw new Exception(
+                    "Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
             }
 
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
@@ -281,8 +287,10 @@ namespace Maes.Statistics.Trackers
                 Debug.Log("Cannot show communication zone when no vertex is selected");
                 return;
             }
+
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+            SetVisualizationMode(
+                new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void ShowSelectedRobotPartitioningHighlighting()
@@ -343,7 +351,7 @@ namespace Maes.Statistics.Trackers
             _selectedVertex = newSelectedVertex;
             if (_selectedVertex != null)
             {
-                ShowSelectedLineOfSight();
+                ShowCommunicationZone();
             }
             else
             {

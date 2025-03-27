@@ -23,14 +23,7 @@ namespace Maes.UI.Visualizers.Patrolling
 
         public Dictionary<int, VertexVisualizer> VertexVisualizers { get; } = new();
 
-        public LineOfSightVertices LineOfSightVertices { get; private set; } = null!;
         public CommunicationZoneVertices CommunicationZoneVertices { get; private set; } = null!;
-
-        public void SetLineOfSightVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap)
-        {
-            LineOfSightVertices = new LineOfSightVertices(simulationMap, patrollingMap);
-            LineOfSightVertices.CreateLineOfSightVertices();
-        }
 
         public void SetCommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {

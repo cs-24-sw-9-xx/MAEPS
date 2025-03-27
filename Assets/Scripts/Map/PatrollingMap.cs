@@ -18,18 +18,15 @@ namespace Maes.Map
 
         public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
-        public readonly IReadOnlyDictionary<Vector2Int, Bitmap> VertexPositions;
-
-        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, IReadOnlyDictionary<Vector2Int, Bitmap> vertexPositions)
-        : this(vertices, CreatePaths(vertices, simulationMap), vertexPositions)
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
+        : this(vertices, CreatePaths(vertices, simulationMap))
         {
         }
 
-        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, IReadOnlyDictionary<Vector2Int, Bitmap> vertexPositions)
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths)
         {
             Vertices = vertices;
             Paths = paths;
-            VertexPositions = vertexPositions;
         }
 
         public PatrollingMap Clone()
@@ -50,7 +47,7 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VertexPositions);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths);
         }
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
