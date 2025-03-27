@@ -117,8 +117,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 frequency: robotConstraints.Frequency,
                 transmitPower: robotConstraints.TransmitPower,
                 receiverSensitivity: robotConstraints.ReceiverSensitivity,
-                attenuationDictionary: robotConstraints.AttenuationDictionary,
-                maxCommunicationRange: 100);
+                attenuationDictionary: robotConstraints.AttenuationDictionary);
         }
 
         private class TestingAlgorithm : PatrollingAlgorithm

@@ -520,6 +520,16 @@ namespace Maes.Utilities
             return true;
         }
 
+        public override bool Equals(object? obj)
+        {
+            if (obj is Bitmap other)
+            {
+                return Equals(other);
+            }
+
+            return false;
+        }
+
         /// <inheritdoc />
         [MustDisposeResource]
         public Bitmap Clone()

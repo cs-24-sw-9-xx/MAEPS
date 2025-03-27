@@ -30,10 +30,11 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
+using JetBrains.Annotations;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -90,6 +91,8 @@ namespace Maes.Robot
         // Map for storing and retrieving all tags deposited by robots
         private readonly EnvironmentTaggingMap _environmentTaggingMap;
 
+        private readonly SimulationMap<Tile> _tileMap;
+
         private int _localTickCounter;
 
         private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix;
@@ -119,17 +122,17 @@ namespace Maes.Robot
         {
             public readonly float Distance;
             public readonly float Angle;
-            public readonly int WallsCellsPassedThrough;
-            public readonly int RegularCellsPassedThrough;
+            public readonly float WallCellsDistance;
+            public readonly float RegularCellsDistance;
             public readonly bool TransmissionSuccessful;
             public readonly float SignalStrength;
 
-            public CommunicationInfo(float distance, float angle, int wallsCellsPassedThrough, int regularCellsPassedThrough, bool transmissionSuccess, float signalStrength)
+            public CommunicationInfo(float distance, float angle, float wallCellDistance, float regularCellDistance, bool transmissionSuccess, float signalStrength)
             {
                 Distance = distance;
                 Angle = angle;
-                WallsCellsPassedThrough = wallsCellsPassedThrough;
-                RegularCellsPassedThrough = regularCellsPassedThrough;
+                WallCellsDistance = wallCellDistance;
+                RegularCellsDistance = regularCellDistance;
                 TransmissionSuccessful = transmissionSuccess;
                 SignalStrength = signalStrength;
             }
@@ -141,6 +144,7 @@ namespace Maes.Robot
         {
             _robotConstraints = robotConstraints;
             _visualizer = visualizer;
+            _tileMap = collisionMap;
             _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
             _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
@@ -221,74 +225,16 @@ namespace Maes.Robot
             return messages;
         }
 
-        private CommunicationInfo RayTraceCommunication(Vector2 pos1, Vector2 pos2)
+        private CommunicationInfo CreateCommunicationInfo(float angle, float wallCellsDistance, float regularCellsDistance, float signalStrength)
         {
-            var distance = Vector2.Distance(pos1, pos2);
-            var angle = Vector2.Angle(Vector2.right, pos2 - pos1);
-            // If the distance is greater than the max communication range then the transmission is not successful
-            if (_robotConstraints.MaxCommunicationRange < distance)
-            {
-                return new CommunicationInfo(distance, angle, 0, 0, false, _robotConstraints.TransmitPower);
-
-            }
-            // If p1.y > p2.y then angle should be 360 minus the angle difference between the vectors
-            // to make the angle relative to the x axis. (Moving from oregon along the x axis is 0 degrees in out system)
-            if (pos1.y > pos2.y)
-            {
-                angle = 360f - angle;
-            }
-
-            var angleMod = angle % 90f;
-            if (angleMod == 0)
-            {
-                angle += 0.005f;
-            }
-
-            if (angleMod <= 45.05f && angleMod >= 45f)
-            {
-                angle += 0.005f;
-            }
-            else if (angleMod >= 44.95f && angleMod <= 45f)
-            {
-                angle -= 0.005f;
-            }
-
-            var wallsTraveledThrough = 0;
-            var regularCellsTraveledThrough = 0;
-            var signalStrength = _robotConstraints.TransmitPower;
-
-            _rayTracingMap.Raytrace(pos1, angle, distance, (_, tile) =>
-            {
-                if (Tile.IsWall(tile.Type))
-                {
-                    wallsTraveledThrough++;
-                }
-                else
-                {
-                    regularCellsTraveledThrough++;
-                }
-
-                if (_robotConstraints.MaterialCommunication)
-                {
-                    signalStrength -= _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tile.Type];
-                }
-
-                return true;
-            });
-            return CreateCommunicationInfo(angle, wallsTraveledThrough, regularCellsTraveledThrough, distance, signalStrength);
-        }
-
-        private CommunicationInfo CreateCommunicationInfo(float angle, int wallsCellsPassedThrough, int regularCellsPassedThrough, float distance, float signalStrength)
-        {
-            var totalCells = wallsCellsPassedThrough + regularCellsPassedThrough;
-            var distanceTraveledThroughWalls = ((float)wallsCellsPassedThrough / (float)totalCells) * distance;
+            var totalDistance = regularCellsDistance + wallCellsDistance;
             var transmissionSuccessful = _robotConstraints
-                .IsTransmissionSuccessful(distance, distanceTraveledThroughWalls);
+                .IsTransmissionSuccessful(totalDistance, wallCellsDistance);
             if (_robotConstraints.MaterialCommunication)
             {
                 transmissionSuccessful = _robotConstraints.ReceiverSensitivity <= signalStrength;
             }
-            return new CommunicationInfo(distance, angle, wallsCellsPassedThrough, regularCellsPassedThrough, transmissionSuccessful, signalStrength);
+            return new CommunicationInfo(totalDistance, angle, wallCellsDistance, regularCellsDistance, transmissionSuccessful, signalStrength);
         }
 
         public void LogicUpdate()
@@ -360,25 +306,7 @@ namespace Maes.Robot
                 {
                     if (r1.id != r2.id)
                     {
-                        var r1Position = r1.transform.position;
-                        var r2Position = r2.transform.position;
-                        var r1Vector2 = new Vector2(r1Position.x, r1Position.y);
-                        var r2Vector2 = new Vector2(r2Position.x, r2Position.y);
-                        // TODO: This fails 2 / 40.000.000.000 times. We need unit tests to eliminate the problems.
-                        // TODO: Can't we improve performance by only going through half the matrix? - Philip
-                        // They are caused by rays with angles of 45 or 90 degrees.
-                        try
-                        {
-                            _adjacencyMatrix[(r1.id, r2.id)] = RayTraceCommunication(r1Vector2, r2Vector2);
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.Log(e);
-                            Debug.Log("Raytracing failed - Execution continued by providing a fake trace" +
-                                      " with zero transmission probability");
-                            _adjacencyMatrix[(r1.id, r2.id)] = new CommunicationInfo(float.MaxValue, 90, 1, 1, false, -int.MaxValue);
-                        }
-
+                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
                     }
                 }
             }
@@ -453,7 +381,7 @@ namespace Maes.Robot
 
                 var comInfo = _adjacencyMatrix![(id, robot.id)];
                 if ((comInfo.Distance > _robotConstraints.SenseNearbyAgentsRange && !_robotConstraints.MaterialCommunication) ||
-                   (comInfo.WallsCellsPassedThrough > 0 && _robotConstraints.SenseNearbyAgentsBlockedByWalls) ||
+                   (comInfo.WallCellsDistance > 0 && _robotConstraints.SenseNearbyAgentsBlockedByWalls) ||
                    (!comInfo.TransmissionSuccessful && _robotConstraints.MaterialCommunication))
                 {
                     continue;
@@ -514,65 +442,35 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateCommunicationZone(List<Vector2Int> vertices, int width, int height)
-        {
-            var startTimeMultiThread = Time.realtimeSinceStartup;
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new();
-            Parallel.ForEach(vertices, vertex =>
-            {
-                var bitmap = new Bitmap(0, 0, width, height);
-                var center = new Vector2(vertex.x + 0.5f, vertex.y + 0.5f) + _offset;
-                var maxRange = _robotConstraints.MaxCommunicationRange;
-                for (var x = 0; x < width; x++)
-                {
-                    for (var y = 0; y < height; y++)
-                    {
-                        var p = new Vector2(x + 0.5f, y + 0.5f) + _offset;
-                        var distance = Vector2.Distance(center, p);
-                        if (distance == 0 || (distance <= maxRange && RayTraceCommunication(center, p).TransmissionSuccessful))
-                        {
-                            bitmap.Set(x, y);
-                        }
-                    }
-                }
-                lock (vertexPositionsMultiThread)
-                {
-                    vertexPositionsMultiThread.Add(vertex, bitmap);
-                }
-            });
-            Debug.Log($"Time taken to calculate communication zones: {Time.realtimeSinceStartup - startTimeMultiThread}");
-
-            return vertexPositionsMultiThread;
-        }
-
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, SimulationMap<Tile> tileMap)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices)
         {
             Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
-            {
-                var bitmap = CalculateCommunicationZone(tileMap, vertex);
-
-                lock (vertexPositionsMultiThread)
                 {
-                    vertexPositionsMultiThread.Add(vertex, bitmap);
+                    var bitmap = CalculateCommunicationZone(vertex);
+                    lock (vertexPositionsMultiThread)
+                    {
+                        vertexPositionsMultiThread.Add(vertex, bitmap);
+                    }
                 }
-            }
             );
             return vertexPositionsMultiThread;
         }
 
-        public Bitmap CalculateCommunicationZone(SimulationMap<Tile> tileMap, Vector2Int position)
+
+        [MustDisposeResource]
+        public Bitmap CalculateCommunicationZone(Vector2Int position)
         {
-            var width = tileMap.WidthInTiles;
-            var height = tileMap.HeightInTiles;
+            var width = _tileMap.WidthInTiles;
+            var height = _tileMap.HeightInTiles;
             var bitmap = new Bitmap(0, 0, width, height);
 
             for (var x = 0; x < width; x++)
             {
                 for (var y = 0; y < height; y++)
                 {
-                    var signalStrength = CommunicationSignalStrength(new Vector2(position.x, position.y), new Vector2(x, y), tileMap);
-                    if (signalStrength >= _robotConstraints.ReceiverSensitivity)
+                    var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f));
+                    if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
                     {
                         bitmap.Set(x, y);
                     }
@@ -582,14 +480,10 @@ namespace Maes.Robot
             return bitmap;
         }
 
-        /// <summary>
-        /// Calculates the signal strength between two points in the map.
-        /// This method is an implementation of siddons algorithm which can be found in the following paper:
-        /// Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
-        /// https://doi.org/10.1118/1.595715
-        /// </summary>
-        /// <returns>Signal strength</returns>
-        public float CommunicationSignalStrength(Vector2 start, Vector2 end, SimulationMap<Tile> tileMap)
+        // This method is an implementation of siddons algorithm which can be found in the following paper:
+        // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
+        // https://doi.org/10.1118/1.595715
+        public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end)
         {
             var x1 = start.x;
             var y1 = start.y;
@@ -599,16 +493,11 @@ namespace Maes.Robot
             var yDiff = y2 - y1;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
 
-            if (lineLength > _robotConstraints.MaxCommunicationRange)
-            {
-                return float.MinValue;
-            }
-
             var signalStrength = _robotConstraints.TransmitPower;
 
             if (lineLength == 0)
             {
-                return signalStrength;
+                return CreateCommunicationInfo(0, 0, 0, signalStrength);
             }
 
             // Collect intersections with grid lines
@@ -669,6 +558,9 @@ namespace Maes.Robot
             xyAlphas.Sort();
 
 
+            var wallTileDistance = 0f;
+            var otherTileDistance = 0f;
+
             // Calculate line segments
             for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
             {
@@ -681,14 +573,27 @@ namespace Maes.Robot
 
                 var distance = (aCurr - aPrev) * lineLength;
 
-                var tile = tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
+                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
+                var tileType = tile.GetTriangles()[0].Type;
+                if (tileType >= TileType.Wall)
+                {
+                    wallTileDistance += distance;
+                }
+                else
+                {
+                    otherTileDistance += distance;
+                }
+
                 if (_robotConstraints.MaterialCommunication)
                 {
-                    signalStrength -= (distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tile.GetTriangles()[0].Type]);
+                    // Multiplier on distance to replicate old signal attenuation
+                    signalStrength -= (4 * distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tileType]);
                 }
             }
 
-            return signalStrength;
+            var angle = Vector2.Angle(Vector2.right, end - start);
+
+            return CreateCommunicationInfo(angle, wallTileDistance, otherTileDistance, signalStrength);
         }
     }
 }

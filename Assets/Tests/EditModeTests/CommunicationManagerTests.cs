@@ -21,13 +21,12 @@
 // Jakob Meyer Olsen
 using System.Collections.Generic;
 
-using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 
 using NUnit.Framework;
 
-using UnityEngine;
+using Unity.Mathematics;
 
 
 namespace Tests.EditModeTests
@@ -35,23 +34,7 @@ namespace Tests.EditModeTests
     [TestFixture]
     public class CommunicationManagerTests
     {
-        private CommunicationManager _communicationManager;
         private RobotConstraints _robotConstraints;
-        private SimulationMap<Tile> _simulationMap;
-
-        private const string TestMap = "" +
-                                    "            ;" +
-                                    " XXXXXXXXXX ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " X        X ;" +
-                                    " XXXXXXXXXX ;" +
-                                    "            ";
 
         [SetUp]
         public void SetUp()
@@ -71,21 +54,29 @@ namespace Tests.EditModeTests
                 receiverSensitivity: 50f
             );
 
-            _simulationMap = Utilities.GenerateSimulationMapFromString(TestMap);
-            _communicationManager = new CommunicationManager(_simulationMap, _robotConstraints, null!);
+
         }
 
-        [TestCase(0, 0, 0, 0, 100)]
-        [TestCase(0, 0, 1, 0, 99)]
-        [TestCase(1, 1, 2, 2, 85.85f)]
-        public void CommunicationBetweenPointsTest(float startX, float startY, float endX, float endY, float expectedSignal)
+        [TestCase("sXe;", 1)]
+        [TestCase("" +
+                  "s;" +
+                  "X;" +
+                  "e;", 1)]
+        [TestCase("" +
+                  "sX;" +
+                  "Xe", 0)]
+        [TestCase("" +
+                  "sXX;" +
+                  "XXX;" +
+                  "XXe", math.SQRT2)]
+        public void WallDistanceBetweenPointsTest(string stringMap, float distance)
         {
-            var start = new Vector2(startX, startY);
-            var end = new Vector2(endX, endY);
+            var ((start, end), map) = Utilities.GenerateSimulationMapFromString(stringMap);
+            var communicationManager = new CommunicationManager(map, _robotConstraints, null);
 
-            var result = _communicationManager.CommunicationSignalStrength(start, end, _simulationMap);
+            var result = communicationManager.CommunicationBetweenPoints(start, end);
 
-            Assert.AreEqual(expectedSignal, result, 0.01f);
+            Assert.AreEqual(distance, result.WallCellsDistance, 0.01f);
         }
     }
 }
