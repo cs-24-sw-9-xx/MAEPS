@@ -33,9 +33,9 @@ using NUnit.Framework;
 
 using UnityEngine;
 
-namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
+namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 {
-    public class VirtualStigmergySimpleTest : MonoBehaviour
+    public class VirtualStigmergyTests : MonoBehaviour
     {
         private PatrollingSimulator _simulator;
 
@@ -236,7 +236,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
 
         private class TestingAlgorithm : PatrollingAlgorithm
         {
-            public override string AlgorithmName { get; } = "VirtualStigmergySimpleTest";
+            public override string AlgorithmName { get; } = "VirtualStigmergyTests";
 
             public VirtualStigmergyComponent<string> VirtualStigmergyComponent { get; private set; }
 
