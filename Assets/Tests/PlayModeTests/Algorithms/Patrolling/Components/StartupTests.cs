@@ -136,7 +136,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 return new IComponent[] { StartupComponent };
             }
 
-            private static string MessageFactory()
+            private static string MessageFactory(HashSet<int> _)
             {
                 return "42";
             }

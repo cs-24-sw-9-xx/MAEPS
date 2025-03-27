@@ -8,6 +8,8 @@ using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling
 {
     public abstract class PatrollingAlgorithm : IPatrollingAlgorithm
@@ -16,6 +18,8 @@ namespace Maes.Algorithms.Patrolling
 
         /// <inheritdoc/>
         public Vertex TargetVertex { get; private set; } = null!;
+
+        public virtual Dictionary<int, Color32[]> ColorsByVertexId => new();
 
         // Do not change visibility of this!
         private PatrollingMap _globalMap = null!;

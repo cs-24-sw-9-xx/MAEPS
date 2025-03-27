@@ -20,7 +20,7 @@ namespace Maes.Algorithms.Patrolling
         /// <summary>
         /// Specifies vertices that should be colored with the option of multiple coloring.
         /// </summary>
-        Dictionary<int, Color32[]> ColorsByVertexId => new();
+        Dictionary<int, Color32[]> ColorsByVertexId { get; }
 
         void SetPatrollingMap(PatrollingMap map);
 
