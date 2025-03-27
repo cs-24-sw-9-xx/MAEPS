@@ -33,9 +33,9 @@ using NUnit.Framework;
 
 using UnityEngine;
 
-namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
+namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 {
-    public class VirtualStigmergySimpleTest : MonoBehaviour
+    public class VirtualStigmergyTests : MonoBehaviour
     {
         private PatrollingSimulator _simulator;
 
@@ -203,8 +203,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
                     }, dependOnBrokenBehavior: false),
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
                 CreateRobotConstraints(communicationRange),
-                patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map,
-                    new Dictionary<Vector2Int, Bitmap>() { { new Vector2Int(4, 4), bitmap } })
+                patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
             ));
         }
 
@@ -237,7 +236,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.VirtualStigmergy
 
         private class TestingAlgorithm : PatrollingAlgorithm
         {
-            public override string AlgorithmName { get; } = "VirtualStigmergySimpleTest";
+            public override string AlgorithmName { get; } = "VirtualStigmergyTests";
 
             public VirtualStigmergyComponent<string> VirtualStigmergyComponent { get; private set; }
 

@@ -54,20 +54,24 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
+        private readonly SimulationMap<Tile> _collisionMap;
 
-        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap, PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
+        public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
+            PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
+            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints,
+            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
-            _visualizer.SetLineOfSightVertices(collisionMap, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
             TotalCycles = scenario.TotalCycles;
-            WaypointSnapShots = _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
+            WaypointSnapShots =
+                _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
+            _collisionMap = collisionMap;
         }
 
         public void OnReachedVertex(int vertexId, int atTick)
@@ -152,10 +156,12 @@ namespace Maes.Statistics.Trackers
 
                 if (CurrentCycle > 1)
                 {
-                    var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) / _lastCycleAverageGraphIdleness;
+                    var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) /
+                                   _lastCycleAverageGraphIdleness;
                     Debug.Log($"Average Graph Diff Last Two Cycles Proportion: {cycleAvg}");
                     AverageGraphDiffLastTwoCyclesProportion = cycleAvg;
                 }
+
                 _lastCycle = CurrentCycle;
                 _lastCyclesTotalGraphIdleness = _totalGraphIdleness;
                 _lastAmountOfTicksSinceLastCycle = CurrentTick;
@@ -186,7 +192,8 @@ namespace Maes.Statistics.Trackers
 
             foreach (var vertex in _vertices.Values)
             {
-                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick, CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick,
+                    CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
         }
 
@@ -237,27 +244,23 @@ namespace Maes.Statistics.Trackers
             _visualizer.meshRenderer.enabled = false;
             if (_selectedRobot == null)
             {
-                throw new Exception("Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
+                throw new Exception(
+                    "Cannot change to 'ShowTargetWaypointSelected' Visualization mode when no robot is selected");
             }
 
             SetVisualizationMode(new PatrollingTargetWaypointVisualizationMode(_selectedRobot));
         }
 
-        public void ShowAllVerticesLineOfSight()
+        public void ShowSelectedRobotCommunicationRange()
         {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new LineOfSightAllVerticesVisualizationMode(_visualizer));
-        }
-
-        private void ShowSelectedLineOfSight()
-        {
-            if (_selectedVertex == null)
+            if (_selectedRobot == null)
             {
-                throw new Exception("Cannot show line of sight when no vertex is selected");
+                Debug.Log("Cannot show robot communication range when no robot is selected");
+                return;
             }
 
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+            SetVisualizationMode(new SelectedRobotCommunicationRangeVisualizationMode(_selectedRobot, _collisionMap));
         }
 
         public void ShowCommunicationZone()
@@ -267,11 +270,13 @@ namespace Maes.Statistics.Trackers
                 Debug.Log("Cannot show communication zone when no vertex is selected");
                 return;
             }
+
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+            SetVisualizationMode(
+                new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
         }
 
-        public void ShowSelectedRobotPartitioningHighlighting()
+        public void ShowSelectedRobotVerticesColors()
         {
             if (_selectedRobot == null)
             {
@@ -279,14 +284,14 @@ namespace Maes.Statistics.Trackers
                 return;
             }
 
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new SelectedRobotHighlightingVerticesVisualizationMode(_selectedRobot));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new SelectedRobotShowVerticesColorsVisualizationMode(_selectedRobot));
         }
 
-        public void ShowAllRobotsPartitioningHighlighting()
+        public void ShowAllRobotsVerticesColors()
         {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new AllRobotsHighlightingVerticesVisualizationMode(Simulation.Robots));
+            _visualizer.meshRenderer.enabled = false;
+            SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(Simulation.Robots));
         }
 
         public void InitIdleGraph()
@@ -329,7 +334,7 @@ namespace Maes.Statistics.Trackers
             _selectedVertex = newSelectedVertex;
             if (_selectedVertex != null)
             {
-                ShowSelectedLineOfSight();
+                ShowCommunicationZone();
             }
             else
             {

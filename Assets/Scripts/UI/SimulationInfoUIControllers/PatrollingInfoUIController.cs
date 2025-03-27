@@ -27,14 +27,13 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _allRobotsNoneButton = null!;
         private Button _allRobotsWaypointHeatMapButton = null!;
         private Button _allRobotsCoverageHeatMapButton = null!;
-        private Button _allRobotsWaypointLineOfSightButton = null!;
         private Button _allRobotsHighlightRobotsButton = null!;
-        private Button _allRobotsPartitioningHighlightingButton = null!;
+        private Button _allRobotsShowVerticesColorsButton = null!;
 
         private Button _selectedRobotStickyCameraButton = null!;
         private Button _selectedRobotTargetWaypointButton = null!;
-        private Button _selectedVertexCommunicationZoneButton = null!;
-        private Button _selectedRobotPartitioningHighlightingButton = null!;
+        private Button _selectedRobotShowVerticesColorsButton = null!;
+        private Button _selectedRobotCommunicationRangeButton = null!;
 
         private Toggle _graphShowToggle = null!;
         private IntegerField _graphTicksPerUpdateField = null!;
@@ -43,12 +42,11 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsNoneButton,
             _allRobotsWaypointHeatMapButton,
             _allRobotsCoverageHeatMapButton,
-            _allRobotsWaypointLineOfSightButton,
             _allRobotsHighlightRobotsButton,
-            _allRobotsPartitioningHighlightingButton,
+            _allRobotsShowVerticesColorsButton,
             _selectedRobotTargetWaypointButton,
-            _selectedVertexCommunicationZoneButton,
-            _selectedRobotPartitioningHighlightingButton
+            _selectedRobotShowVerticesColorsButton,
+            _selectedRobotCommunicationRangeButton
         };
 
         protected override void AfterStart()
@@ -63,14 +61,13 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsNoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsNoneButton");
             _allRobotsWaypointHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointHeatMapButton");
             _allRobotsCoverageHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageHeatMapButton");
-            _allRobotsWaypointLineOfSightButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointLineOfSightButton");
             _allRobotsHighlightRobotsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsHighlightRobotsButton");
-            _allRobotsPartitioningHighlightingButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsPartitioningHighlightingButton");
+            _allRobotsShowVerticesColorsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsShowVerticesColorsButton");
 
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
             _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
-            _selectedVertexCommunicationZoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedVertexCommunicationZoneButton");
-            _selectedRobotPartitioningHighlightingButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotPartitioningHighlightingButton");
+            _selectedRobotShowVerticesColorsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotShowVerticesColorsButton");
+            _selectedRobotCommunicationRangeButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotCommunicationRangeButton");
 
             _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
             _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
@@ -82,18 +79,16 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
 
-            _allRobotsWaypointLineOfSightButton.RegisterCallback<ClickEvent>(AllRobotsWaypointLineOfSightButtonClicked);
-
             _allRobotsHighlightRobotsButton.RegisterCallback<ClickEvent>(AllRobotsHighlightRobotsButtonClicked);
 
-            _allRobotsPartitioningHighlightingButton.RegisterCallback<ClickEvent>(AllRobotPartitioningHighlightingClicked);
+            _allRobotsShowVerticesColorsButton.RegisterCallback<ClickEvent>(AllRobotShowVerticesColorsClicked);
 
 
             _selectedRobotTargetWaypointButton.RegisterCallback<ClickEvent>(SelectedRobotTargetWaypointButtonClicked);
 
-            _selectedVertexCommunicationZoneButton.RegisterCallback<ClickEvent>(SelectedVertexCommunicationZoneButtonClicked);
+            _selectedRobotShowVerticesColorsButton.RegisterCallback<ClickEvent>(SelectedRobotShowVerticesColorsClicked);
 
-            _selectedRobotPartitioningHighlightingButton.RegisterCallback<ClickEvent>(SelectedRobotPartitioningHighlightingClicked);
+            _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedRobotCommunicationRangeClicked);
 
 
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
@@ -122,20 +117,17 @@ namespace Maes.UI.SimulationInfoUIControllers
                 case PatrollingTargetWaypointVisualizationMode:
                     SelectVisualizationButton(_selectedRobotTargetWaypointButton);
                     break;
-                case LineOfSightAllVerticesVisualizationMode:
-                    SelectVisualizationButton(_allRobotsWaypointLineOfSightButton);
-                    break;
-                case LineOfSightVertexVisualizationMode:
-                    UnHighlightVisualizationButtons();
-                    break;
                 case CommunicationZoneVisualizationMode:
-                    SelectVisualizationButton(_selectedVertexCommunicationZoneButton);
+                    // Do nothing. We don't have a button for this.
                     break;
-                case AllRobotsHighlightingVerticesVisualizationMode:
-                    SelectVisualizationButton(_allRobotsPartitioningHighlightingButton);
+                case AllRobotsShowVerticesColorsVisualizationMode:
+                    SelectVisualizationButton(_allRobotsShowVerticesColorsButton);
                     break;
-                case SelectedRobotHighlightingVerticesVisualizationMode:
-                    SelectVisualizationButton(_selectedRobotPartitioningHighlightingButton);
+                case SelectedRobotShowVerticesColorsVisualizationMode:
+                    SelectVisualizationButton(_selectedRobotShowVerticesColorsButton);
+                    break;
+                case SelectedRobotCommunicationRangeVisualizationMode:
+                    SelectVisualizationButton(_selectedRobotCommunicationRangeButton);
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
@@ -210,11 +202,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowAllRobotCoverageHeatMap());
         }
 
-        private void AllRobotsWaypointLineOfSightButtonClicked(ClickEvent _)
-        {
-            ExecuteAndRememberMapVisualizationModification(sim => { sim.PatrollingTracker.ShowAllVerticesLineOfSight(); });
-        }
-
         private void AllRobotsHighlightRobotsButtonClicked(ClickEvent _)
         {
             ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowAllRobotsHighlighting());
@@ -246,20 +233,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             }
         }
 
-        private void SelectedVertexCommunicationZoneButtonClicked(ClickEvent _)
-        {
-            ExecuteAndRememberMapVisualizationModification(sim =>
-            {
-                if (!sim.HasSelectedVertex())
-                {
-                    Debug.Log("No vertex selected, selecting first vertex");
-                }
-
-                sim.PatrollingTracker.ShowCommunicationZone();
-            });
-        }
-
-        private void SelectedRobotPartitioningHighlightingClicked(ClickEvent _)
+        private void SelectedRobotShowVerticesColorsClicked(ClickEvent _)
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
@@ -268,15 +242,28 @@ namespace Maes.UI.SimulationInfoUIControllers
                     Debug.Log("No robot selected, first select a robot");
                 }
 
-                sim.PatrollingTracker.ShowSelectedRobotPartitioningHighlighting();
+                sim.PatrollingTracker.ShowSelectedRobotVerticesColors();
             });
         }
 
-        private void AllRobotPartitioningHighlightingClicked(ClickEvent _)
+        private void SelectedRobotCommunicationRangeClicked(ClickEvent _)
         {
             ExecuteAndRememberMapVisualizationModification(sim =>
             {
-                sim.PatrollingTracker.ShowAllRobotsPartitioningHighlighting();
+                if (!sim.HasSelectedRobot)
+                {
+                    Debug.Log("No robot selected, first select a robot");
+                }
+
+                sim.PatrollingTracker.ShowSelectedRobotCommunicationRange();
+            });
+        }
+
+        private void AllRobotShowVerticesColorsClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim =>
+            {
+                sim.PatrollingTracker.ShowAllRobotsVerticesColors();
             });
         }
     }

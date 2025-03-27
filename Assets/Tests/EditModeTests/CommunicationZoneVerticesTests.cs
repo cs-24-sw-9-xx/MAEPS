@@ -29,7 +29,6 @@ using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.UI;
 using Maes.UI.Visualizers.Patrolling;
-using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -99,9 +98,7 @@ namespace Tests.EditModeTests
             var id = 0;
             var vertices = vertexPositions.Select(p => new Vertex(id++, p)).ToList();
 
-            // give me a mock of the Dictionary<Vector2Int, Bitmap> vertexPositions that i can use for the patrolling map
-            var vertexPositionsDictionary = new Dictionary<Vector2Int, Bitmap>();
-            return new PatrollingMap(vertices.ToArray(), simulationMap, vertexPositionsDictionary);
+            return new PatrollingMap(vertices, simulationMap);
         }
 
         [Test]

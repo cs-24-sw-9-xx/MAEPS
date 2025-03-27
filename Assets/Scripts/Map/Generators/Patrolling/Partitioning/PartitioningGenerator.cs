@@ -41,10 +41,10 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
-            var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-            var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
+            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
+            var vertexPositionsList = vertexPositions.ToList();
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
+            var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
             foreach (var cluster in clusters)
@@ -54,16 +54,16 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
-            return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
+            return new PatrollingMap(allVertices, simulationMap);
         }
 
         public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions, bool useOptimizedLOS = true)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositionsDictionary = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
-            var vertexPositions = vertexPositionsDictionary.Select(kv => kv.Key).ToList();
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-            var clusters = KMeansPartitioningGenerator.Generator(distanceMatrix, vertexPositions, amountOfPartitions);
+            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
+            var vertexPositionsList = vertexPositions.ToList();
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
+            var clusters = KMeansPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
             foreach (var cluster in clusters)
@@ -73,7 +73,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
-            return new PatrollingMap(allVertices.ToArray(), simulationMap, vertexPositionsDictionary);
+            return new PatrollingMap(allVertices, simulationMap);
         }
 
 
