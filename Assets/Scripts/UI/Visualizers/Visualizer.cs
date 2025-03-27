@@ -34,7 +34,6 @@ namespace Maes.UI.Visualizers
 
         public delegate Color32 CellToColor(Cell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
-        public delegate Color32 BooleanToColor(bool value);
 
         public virtual void SetSimulationMap(SimulationMap<Cell> newMap)
         {
