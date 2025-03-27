@@ -32,7 +32,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             _triangleIndexes = new HashSet<int>();
             var position = _robot.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            _communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(_simulationMap, position);
+            _communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(position);
             var cellIndexTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
             foreach (var tile in _communicationRangeBitmap)
             {

@@ -43,8 +43,6 @@ namespace Tests.EditModeTests
         [Theory]
         public void TestCreateCommunicationZoneTiles()
         {
-            var height = 12;
-            var width = 12;
             var robotConstraints = new RobotConstraints(
                 attenuationDictionary: new Dictionary<uint, Dictionary<TileType, float>>()
                 {
@@ -87,7 +85,7 @@ namespace Tests.EditModeTests
             var slamMap = Utilities.GenerateSimulationMapFromString(bitmapString).map;
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
             var vector2Ints = new List<Vector2Int> { vertex.Position };
-            var result = communicationManager.CalculateZones(vector2Ints, width, height)[vertex.Position];
+            var result = communicationManager.CalculateZones(vector2Ints)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
         }
@@ -140,7 +138,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                maxCommunicationRange: 5,
                 materialCommunication: false);
 
             const string mapString = "" +
@@ -200,7 +197,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                maxCommunicationRange: 10,
                 attenuationDictionary: new Dictionary<uint, Dictionary<TileType, float>>()
                 {
                     {
@@ -282,7 +278,6 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var robotConstraints = new RobotConstraints(
-                maxCommunicationRange: 3,
                 materialCommunication: false);
 
             const string mapString = "" +

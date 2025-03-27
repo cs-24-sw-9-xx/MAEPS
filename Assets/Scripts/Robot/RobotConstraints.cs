@@ -50,7 +50,6 @@ namespace Maes.Robot
         public float SlamPositionInaccuracy { get; }
         public bool MapKnown { get; }
         public bool DistributeSlam { get; }
-        public float MaxCommunicationRange { get; }
 
 
         // *** Ray cast range and count affects both exploration progress and the slam map ***
@@ -95,7 +94,6 @@ namespace Maes.Robot
             float transmitPower = 15,
             float receiverSensitivity = -82,
             Dictionary<uint, Dictionary<TileType, float>>? attenuationDictionary = null,
-            float maxCommunicationRange = float.MaxValue,
             bool robotCollisions = true)
         {
 
@@ -155,8 +153,6 @@ namespace Maes.Robot
 
             // Communication/Broadcasting
             IsTransmissionSuccessful = calculateSignalTransmissionProbability ?? ((_, _) => true);
-            // Maximal communication range in tiles
-            MaxCommunicationRange = maxCommunicationRange;
 
             RobotCollisions = robotCollisions;
         }

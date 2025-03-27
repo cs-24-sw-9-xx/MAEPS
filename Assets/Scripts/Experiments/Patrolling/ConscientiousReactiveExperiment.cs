@@ -66,8 +66,7 @@ namespace Maes.Experiments.Patrolling
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
-                materialCommunication: true,
-                maxCommunicationRange: 25f);
+                materialCommunication: true);
 
             //var constraintsMaterials = new RobotConstraints(
             constraintsDict["Material"] = new RobotConstraints(

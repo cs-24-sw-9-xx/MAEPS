@@ -26,6 +26,8 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
+using Unity.Mathematics;
+
 
 namespace Tests.EditModeTests
 {
@@ -33,8 +35,6 @@ namespace Tests.EditModeTests
     public class CommunicationManagerTests
     {
         private RobotConstraints _robotConstraints;
-
-        private const string testMap = "sXe;";
 
         [SetUp]
         public void SetUp()
@@ -57,8 +57,19 @@ namespace Tests.EditModeTests
 
         }
 
-        [TestCase(testMap, 1)]
-        public void DistanceBetweenPointsTest(string stringMap, float distance)
+        [TestCase("sXe;", 1)]
+        [TestCase("" +
+                  "s;" +
+                  "X;" +
+                  "e;", 1)]
+        [TestCase("" +
+                  "sX;" +
+                  "Xe", 0)]
+        [TestCase("" +
+                  "sXX;" +
+                  "XXX;" +
+                  "XXe", math.SQRT2)]
+        public void WallDistanceBetweenPointsTest(string stringMap, float distance)
         {
             var ((start, end), map) = Utilities.GenerateSimulationMapFromString(stringMap);
             var communicationManager = new CommunicationManager(map, _robotConstraints, null);

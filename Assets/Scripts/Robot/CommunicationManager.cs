@@ -34,6 +34,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using JetBrains.Annotations;
+
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Statistics.Trackers;
@@ -440,25 +442,12 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices, int width, int height)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices)
         {
             Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
                 {
-                    var bitmap = new Bitmap(0, 0, width, height);
-
-                    for (var x = 0; x < width; x++)
-                    {
-                        for (var y = 0; y < height; y++)
-                        {
-                            var communicationInfo = CommunicationBetweenPoints(new Vector2(vertex.x + 0.5f, vertex.y + 0.5f), new Vector2(x + 0.5f, y + 0.5f));
-                            if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
-                            {
-                                bitmap.Set(x, y);
-                            }
-                        }
-                    }
-
+                    var bitmap = CalculateCommunicationZone(vertex);
                     lock (vertexPositionsMultiThread)
                     {
                         vertexPositionsMultiThread.Add(vertex, bitmap);
@@ -466,6 +455,29 @@ namespace Maes.Robot
                 }
             );
             return vertexPositionsMultiThread;
+        }
+
+
+        [MustDisposeResource]
+        public Bitmap CalculateCommunicationZone(Vector2Int position)
+        {
+            var width = _tileMap.WidthInTiles;
+            var height = _tileMap.HeightInTiles;
+            var bitmap = new Bitmap(0, 0, width, height);
+
+            for (var x = 0; x < width; x++)
+            {
+                for (var y = 0; y < height; y++)
+                {
+                    var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f));
+                    if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
+                    {
+                        bitmap.Set(x, y);
+                    }
+                }
+            }
+
+            return bitmap;
         }
 
         // This method is an implementation of siddons algorithm which can be found in the following paper:
