@@ -225,13 +225,14 @@ namespace Maes.Robot
 
         private CommunicationInfo CreateCommunicationInfo(float angle, float wallCellsDistance, float regularCellsDistance, float signalStrength)
         {
+            var totalDistance = regularCellsDistance + wallCellsDistance;
             var transmissionSuccessful = _robotConstraints
-                .IsTransmissionSuccessful(regularCellsDistance + wallCellsDistance, wallCellsDistance);
+                .IsTransmissionSuccessful(totalDistance, wallCellsDistance);
             if (_robotConstraints.MaterialCommunication)
             {
                 transmissionSuccessful = _robotConstraints.ReceiverSensitivity <= signalStrength;
             }
-            return new CommunicationInfo(regularCellsDistance + wallCellsDistance, angle, wallCellsDistance, regularCellsDistance, transmissionSuccessful, signalStrength);
+            return new CommunicationInfo(totalDistance, angle, wallCellsDistance, regularCellsDistance, transmissionSuccessful, signalStrength);
         }
 
         public void LogicUpdate()
@@ -547,7 +548,7 @@ namespace Maes.Robot
 
             var wallTileDistance = 0f;
             var otherTileDistance = 0f;
-            
+
             // Calculate line segments
             for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
             {
