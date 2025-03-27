@@ -34,6 +34,7 @@
                         <engine:Button text="Sticky Camera" name="SelectedRobotStickyCameraButton" />
                         <engine:Button text="Target&#10;Waypoint" name="SelectedRobotTargetWaypointButton" />
                         <engine:Button text="Vertices&apos; colors" name="SelectedRobotShowVerticesColorsButton" />
+                        <engine:Button text="Communication&#10;Range" name="SelectedRobotCommunicationRangeButton" />
                     </engine:GroupBox>
                 </engine:VisualElement>
             </engine:VisualElement>

@@ -33,6 +33,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _selectedRobotStickyCameraButton = null!;
         private Button _selectedRobotTargetWaypointButton = null!;
         private Button _selectedRobotShowVerticesColorsButton = null!;
+        private Button _selectedRobotCommunicationRangeButton = null!;
 
         private Toggle _graphShowToggle = null!;
         private IntegerField _graphTicksPerUpdateField = null!;
@@ -44,7 +45,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsHighlightRobotsButton,
             _allRobotsShowVerticesColorsButton,
             _selectedRobotTargetWaypointButton,
-            _selectedRobotShowVerticesColorsButton
+            _selectedRobotShowVerticesColorsButton,
+            _selectedRobotCommunicationRangeButton
         };
 
         protected override void AfterStart()
@@ -65,6 +67,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
             _selectedRobotTargetWaypointButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotTargetWaypointButton");
             _selectedRobotShowVerticesColorsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotShowVerticesColorsButton");
+            _selectedRobotCommunicationRangeButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotCommunicationRangeButton");
 
             _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
             _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
@@ -84,6 +87,8 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotTargetWaypointButton.RegisterCallback<ClickEvent>(SelectedRobotTargetWaypointButtonClicked);
 
             _selectedRobotShowVerticesColorsButton.RegisterCallback<ClickEvent>(SelectedRobotShowVerticesColorsClicked);
+
+            _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedRobotCommunicationRangeClicked);
 
 
             _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
@@ -120,6 +125,9 @@ namespace Maes.UI.SimulationInfoUIControllers
                     break;
                 case SelectedRobotShowVerticesColorsVisualizationMode:
                     SelectVisualizationButton(_selectedRobotShowVerticesColorsButton);
+                    break;
+                case SelectedRobotCommunicationRangeVisualizationMode:
+                    SelectVisualizationButton(_selectedRobotCommunicationRangeButton);
                     break;
                 default:
                     throw new Exception($"No registered button matches the Visualization mode {mode.GetType()}");
@@ -235,6 +243,19 @@ namespace Maes.UI.SimulationInfoUIControllers
                 }
 
                 sim.PatrollingTracker.ShowSelectedRobotVerticesColors();
+            });
+        }
+
+        private void SelectedRobotCommunicationRangeClicked(ClickEvent _)
+        {
+            ExecuteAndRememberMapVisualizationModification(sim =>
+            {
+                if (!sim.HasSelectedRobot)
+                {
+                    Debug.Log("No robot selected, first select a robot");
+                }
+
+                sim.PatrollingTracker.ShowSelectedRobotCommunicationRange();
             });
         }
 
