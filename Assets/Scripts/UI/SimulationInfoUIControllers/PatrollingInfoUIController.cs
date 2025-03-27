@@ -44,7 +44,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsHighlightRobotsButton,
             _allRobotsPartitioningHighlightingButton,
             _selectedRobotTargetWaypointButton,
-            _selectedVertexCommunicationZoneButton,
             _selectedRobotPartitioningHighlightingButton,
             _selectedRobotCommunicationRangeButton
         };

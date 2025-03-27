@@ -263,23 +263,6 @@ namespace Maes.Statistics.Trackers
             SetVisualizationMode(new SelectedRobotCommunicationRangeVisualizationMode(_selectedRobot, _collisionMap));
         }
 
-        public void ShowAllVerticesLineOfSight()
-        {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new LineOfSightAllVerticesVisualizationMode(_visualizer));
-        }
-
-        private void ShowSelectedLineOfSight()
-        {
-            if (_selectedVertex == null)
-            {
-                throw new Exception("Cannot show line of sight when no vertex is selected");
-            }
-
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new LineOfSightVertexVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
-        }
-
         public void ShowCommunicationZone()
         {
             if (_selectedVertex == null)
