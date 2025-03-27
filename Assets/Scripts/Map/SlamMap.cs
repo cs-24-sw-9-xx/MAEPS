@@ -38,7 +38,7 @@ namespace Maes.Map
 {
     public sealed class SlamMap : ISlamAlgorithm, IPathFindingMap
     {
-        public bool BrokenCollisionMap => _collisionMap.BrokenCollisionMap;
+        public bool BrokenCollisionMap => CollisionMap.BrokenCollisionMap;
         public int LastUpdateTick { get; private set; }
         public int Width { get; }
 
@@ -50,7 +50,7 @@ namespace Maes.Map
         public HashSet<int> CurrentlyVisibleTriangles => _currentlyVisibleTriangles ??= new HashSet<int>();
 
         private HashSet<int>? _currentlyVisibleTriangles;
-        private readonly SimulationMap<Tile> _collisionMap;
+        public readonly SimulationMap<Tile> CollisionMap;
         private readonly IPathFinder _pathFinder;
 
         private readonly Vector2 _offset;
@@ -72,7 +72,7 @@ namespace Maes.Map
 
         public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
-            _collisionMap = collisionMap;
+            CollisionMap = collisionMap;
             _robotConstraints = robotConstraints;
             Width = collisionMap.WidthInTiles * 2;
             Height = collisionMap.HeightInTiles * 2;
@@ -127,8 +127,8 @@ namespace Maes.Map
         {
             var collisionTileIndex = triangleIndex / 8;
             var localTriangleIndex = triangleIndex % 8;
-            var collisionX = collisionTileIndex % _collisionMap.WidthInTiles;
-            var collisionY = collisionTileIndex / _collisionMap.WidthInTiles;
+            var collisionX = collisionTileIndex % CollisionMap.WidthInTiles;
+            var collisionY = collisionTileIndex / CollisionMap.WidthInTiles;
             // Y offset is 1 if the triangle is the in upper half of the tile
             var yOffset = localTriangleIndex > 3 ? 1 : 0;
             // X offset is 1 if the triangle is in the right half of tile
@@ -537,7 +537,7 @@ namespace Maes.Map
         {
             var slamToWorld = new Vector2Int(slamCoordinate.x / 2, slamCoordinate.y / 2);
             var offset = new Vector2(0.5f, 0.5f);
-            var worldCoordinate = slamToWorld + _collisionMap.ScaledOffset + offset;
+            var worldCoordinate = slamToWorld + CollisionMap.ScaledOffset + offset;
             if (!IsWithinBounds(slamCoordinate))
             {
                 throw new ArgumentException("The given coordinate " + slamCoordinate

@@ -19,7 +19,7 @@ namespace Maes.Algorithms.Patrolling.Components
         where TMessage : class
     {
         private readonly IRobotController _robotController;
-        private readonly Func<TMessage> _messageFactory;
+        private readonly Func<HashSet<int>, TMessage> _messageFactory;
 
         // This component should run before anything else.
         public int PreUpdateOrder { get; } = -10000;
@@ -44,7 +44,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// </summary>
         /// <param name="robotController">The robot controller.</param>
         /// <param name="messageFactory">The function that is run at startup, which result is broadcast.</param>
-        public StartupComponent(IRobotController robotController, Func<TMessage> messageFactory)
+        public StartupComponent(IRobotController robotController, Func<HashSet<int>, TMessage> messageFactory)
         {
             _robotController = robotController;
             _messageFactory = messageFactory;
@@ -68,7 +68,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 DiscoveredRobots.Add(_robotController.Id);
 
                 // Send the startup message
-                Message = _messageFactory();
+                Message = _messageFactory(DiscoveredRobots);
                 _robotController.Broadcast(new StartupMessage(Message, DiscoveredRobots));
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
@@ -94,7 +94,7 @@ namespace Maes.Algorithms.Patrolling.Components
                     }
                 }
 
-                var receivedMessage = (StartupMessage)receivedMessages.Single();
+                var receivedMessage = receivedMessages.OfType<StartupMessage>().Single();
                 Message = receivedMessage.Message;
                 foreach (var robotId in receivedMessage.DiscoveredRobots)
                 {
@@ -108,7 +108,7 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        private sealed class StartupMessage
+        public sealed class StartupMessage
         {
             public readonly TMessage Message;
             public readonly HashSet<int> DiscoveredRobots;
