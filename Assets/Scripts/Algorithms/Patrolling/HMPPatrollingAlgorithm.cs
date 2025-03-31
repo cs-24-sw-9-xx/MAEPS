@@ -38,7 +38,7 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(BasePartitionGenerator partitionGenerator)
+        public HMPPatrollingAlgorithm(IPartitionGenerator partitionGenerator)
         {
             _partitionGenerator = partitionGenerator;
         }
@@ -48,7 +48,7 @@ namespace Maes.Algorithms.Patrolling
                                                                            .VertexIds
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { _controller.GetRobot().Color }) ?? new Dictionary<int, Color32[]>();
 
-        private readonly BasePartitionGenerator _partitionGenerator;
+        private readonly IPartitionGenerator _partitionGenerator;
 
         private readonly VirtualStigmergyComponent<PartitionInfo>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
         private VirtualStigmergyComponent<PartitionInfo> _virtualStigmergyComponent = null!;
