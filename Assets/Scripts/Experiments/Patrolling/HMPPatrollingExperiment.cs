@@ -76,7 +76,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))),
+                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(new PartitionGeneratorWithMeetingPoint(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator)))),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
