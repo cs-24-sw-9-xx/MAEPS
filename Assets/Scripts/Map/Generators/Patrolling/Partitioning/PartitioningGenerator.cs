@@ -38,6 +38,9 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 {
     public static class PartitioningGenerator
     {
+        public delegate Dictionary<int, List<Vector2Int>> PartitioningGeneratorDelegate(
+            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
+
         public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, bool colorIslands, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
