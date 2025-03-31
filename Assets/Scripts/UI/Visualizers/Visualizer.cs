@@ -162,7 +162,6 @@ namespace Maes.UI.Visualizers
             foreach (var tile in map)
             {
                 var index = tile.x + tile.y * map.Width;
-                //var color = map.Contains(width, height) ? isContained : isNotContained;
                 triangleIndexes.UnionWith(_cellIndexToTriangleIndexes[index]);
             }
 
