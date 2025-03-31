@@ -29,6 +29,7 @@ using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.UI;
 using Maes.UI.Visualizers.Patrolling;
+using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -185,11 +186,10 @@ namespace Tests.EditModeTests
                 communicationZoneVertices.CommunicationZoneTiles[0].Count + communicationZoneVertices.CommunicationZoneTiles[1].Count);
 
             // Calculate intersection size
-            var intersection = new HashSet<int>(communicationZoneVertices.CommunicationZoneTiles[0]);
-            intersection.IntersectWith(communicationZoneVertices.CommunicationZoneTiles[1]);
+            var intersection = communicationZoneVertices.CommunicationZoneTiles[0].Intersect(communicationZoneVertices.CommunicationZoneTiles[1]);
 
             // Verify intersection is not empty
-            Assert.Greater(intersection.Count, 0);
+            Assert.Greater(intersection.Count(), 0);
         }
 
         [Test]
@@ -239,11 +239,10 @@ namespace Tests.EditModeTests
 
             // Assert
             // Calculate intersection size
-            var intersection = new HashSet<int>(communicationZoneVertices.CommunicationZoneTiles[0]);
-            intersection.IntersectWith(communicationZoneVertices.CommunicationZoneTiles[1]);
+            var intersection = communicationZoneVertices.CommunicationZoneTiles[0].Intersect(communicationZoneVertices.CommunicationZoneTiles[1]);
 
             // Verify communication zones don't intersect because of the wall
-            Assert.AreEqual(0, intersection.Count);
+            Assert.AreEqual(0, intersection.Count());
         }
 
         [Test]
@@ -321,15 +320,15 @@ namespace Tests.EditModeTests
             Assert.AreEqual(4, communicationZoneVertices.CommunicationZoneTiles.Count);
 
             // Create manual union to compare with AllCommunicationZoneTiles
-            var manualUnion = new HashSet<int>();
+            var manualUnion = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
             for (var i = 0; i < 4; i++)
             {
-                manualUnion.UnionWith(communicationZoneVertices.CommunicationZoneTiles[i]);
+                manualUnion.Union(communicationZoneVertices.CommunicationZoneTiles[i]);
             }
 
             // Compare manual union with AllCommunicationZoneTiles
             Assert.AreEqual(manualUnion.Count, communicationZoneVertices.AllCommunicationZoneTiles.Count);
-            Assert.IsTrue(manualUnion.SetEquals(communicationZoneVertices.AllCommunicationZoneTiles));
+            Assert.IsTrue(manualUnion.Equals(communicationZoneVertices.AllCommunicationZoneTiles));
         }
     }
 }

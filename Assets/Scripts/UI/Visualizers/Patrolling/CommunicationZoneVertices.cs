@@ -32,30 +32,23 @@ namespace Maes.UI.Visualizers.Patrolling
 {
     public sealed class CommunicationZoneVertices
     {
-        public Dictionary<int, HashSet<int>> CommunicationZoneTiles { get; }
-        public HashSet<int> AllCommunicationZoneTiles { get; } = new();
+        public Dictionary<int, Bitmap> CommunicationZoneTiles { get; }
+        public Bitmap AllCommunicationZoneTiles { get; }
 
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
-            CommunicationZoneTiles = patrollingMap.Vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
-
-            var positions = patrollingMap.Vertices.Select(v => v.Position).ToList();
-            var communicationZones = communicationManager.CalculateZones(positions);
-            var cellIndexToTriangleIndexes = simulationMap.CellIndexToTriangleIndexes();
-            using var bitmap = MapUtilities.MapToBitMap(simulationMap);
-            foreach (var vertex in patrollingMap.Vertices)
+            CommunicationZoneTiles = new Dictionary<int, Bitmap>();
+            var vertecies = patrollingMap.Vertices;
+            var communicationZones = communicationManager.CalculateZones(vertecies.Select(v => v.Position).ToList());
+            foreach (var vertex in vertecies)
             {
-                var tiles = communicationZones[vertex.Position];
-                if (tiles == null)
-                {
-                    continue;
-                }
-                foreach (var tile in tiles)
-                {
-                    var index = tile.x + tile.y * bitmap.Width;
-                    CommunicationZoneTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
-                }
-                AllCommunicationZoneTiles.UnionWith(CommunicationZoneTiles[vertex.Id]);
+                CommunicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
+            }
+
+            AllCommunicationZoneTiles = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            foreach (var (id, zone) in communicationZones)
+            {
+                AllCommunicationZoneTiles.Union(zone);
             }
         }
     }
