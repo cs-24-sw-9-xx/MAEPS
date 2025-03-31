@@ -20,35 +20,32 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Utilities;
 
-using UnityEngine;
-
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
     public class AdapterToPartitionGenerator : BasePartitionGenerator
     {
-        public AdapterToPartitionGenerator(Func<Dictionary<(Vector2Int, Vector2Int), int>, List<Vector2Int>, int, Dictionary<int, List<Vector2Int>>> partitioningGenerator)
+        public AdapterToPartitionGenerator(PartitioningGenerator.PartitioningGeneratorDelegate partitioningGenerator)
         {
             _partitioningGenerator = partitioningGenerator;
         }
 
-        private readonly Func<Dictionary<(Vector2Int, Vector2Int), int>, List<Vector2Int>, int, Dictionary<int, List<Vector2Int>>> _partitioningGenerator;
+        private readonly PartitioningGenerator.PartitioningGeneratorDelegate _partitioningGenerator;
 
         public override Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)
         {
             using var map = MapUtilities.MapToBitMap(_tileMap);
-            var vertexIdByPoint = _patrollingMap.Vertices.ToDictionary(v => v.Position, v => v.Id);
+            var vertexIdByPosition = _patrollingMap.Vertices.ToDictionary(v => v.Position, v => v.Id);
 
-            var vertexPositions = vertexIdByPoint.Keys.ToList();
+            var vertexPositions = vertexIdByPosition.Keys.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
             var clusters = _partitioningGenerator(distanceMatrix, vertexPositions, robotIds.Count);
 
-            var vertexIdsPartitions = clusters.Values.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPoint[point]).ToList()).ToArray();
+            var vertexIdsPartitions = clusters.Values.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 
             var i = 0;
             var partitionInfoByRobotId = robotIds.ToDictionary(id => id, id => new PartitionInfo(id, vertexIdsPartitions[i++]));

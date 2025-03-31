@@ -20,19 +20,26 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
+using System;
 using System.Collections.Generic;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public class PartitionInfo
+    public class PartitionInfo : IEquatable<PartitionInfo>
     {
-        public PartitionInfo(int robotId, List<int> vertexIds)
+        public PartitionInfo(int robotId, HashSet<int> vertexIds)
         {
             RobotId = robotId;
             VertexIds = vertexIds;
         }
 
         public int RobotId { get; }
-        public List<int> VertexIds { get; }
+        public HashSet<int> VertexIds { get; }
+
+        public bool Equals(PartitionInfo other)
+        {
+            return RobotId == other.RobotId &&
+                   VertexIds.SetEquals(other.VertexIds);
+        }
     }
 }
