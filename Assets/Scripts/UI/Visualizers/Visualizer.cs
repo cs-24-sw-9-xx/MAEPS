@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Statistics;
+using Maes.Utilities;
 
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -28,6 +29,7 @@ namespace Maes.UI.Visualizers
         // Set in SetSimulationMap
         private SimulationMap<Cell> _map = null!;
         protected Color32[] _colors = null!;
+        private Dictionary<int, HashSet<int>> _cellIndexToTriangleIndexes = null!;
 
         private const int ResolutionMultiplier = 2;
 
@@ -56,6 +58,7 @@ namespace Maes.UI.Visualizers
             };
             _mesh.RecalculateNormals();
 
+            _cellIndexToTriangleIndexes = newMap.CellIndexToTriangleIndexes();
             meshFilter.mesh = _mesh;
         }
 
@@ -148,6 +151,31 @@ namespace Maes.UI.Visualizers
         protected virtual Color32 InitializeCellColor(Cell cell)
         {
             return cell.IsExplorable ? StandardCellColor : SolidColor;
+        }
+
+        public void SetAllColors(Bitmap map, Color32 isContained, Color32 isNotContained)
+        {
+            var width = map.Width;
+            var height = map.Height;
+
+            var triangleIndexes = new HashSet<int>();
+            foreach (var tile in map)
+            {
+                var index = tile.x + tile.y * map.Width;
+                //var color = map.Contains(width, height) ? isContained : isNotContained;
+                triangleIndexes.UnionWith(_cellIndexToTriangleIndexes[index]);
+            }
+
+            Color32 CellIndexToColor(int cellIndex)
+            {
+                return triangleIndexes.Contains(cellIndex)
+                ? isContained
+                : isNotContained;
+            }
+
+            SetAllColors(CellIndexToColor);
+
+            _mesh.colors32 = _colors;
         }
 
         /// <summary>
