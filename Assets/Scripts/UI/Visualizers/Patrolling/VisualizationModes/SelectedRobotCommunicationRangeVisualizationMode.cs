@@ -13,13 +13,13 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
     {
         private readonly MonaRobot _robot;
         private readonly SimulationMap<Tile> _simulationMap;
-        private Bitmap _communicationRangeBitmap;
         private HashSet<int> _triangleIndexes;
 
         public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot, SimulationMap<Tile> simulationMap)
         {
             _robot = robot;
             _simulationMap = simulationMap;
+            _triangleIndexes = new HashSet<int>();
         }
 
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
@@ -27,16 +27,17 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
             UpdateMapColor(visualizer);
         }
 
-        // Todo: Only color the cells that changes since last update. 
+        // Performance optimization: only update the color of cell that changed since last update.
+        // Note: This is a debug feature, so performance is not critical.
         private void UpdateMapColor(PatrollingVisualizer visualizer)
         {
             _triangleIndexes = new HashSet<int>();
             var position = _robot.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            _communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(position);
+            var communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(position);
             var cellIndexTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
-            foreach (var tile in _communicationRangeBitmap)
+            foreach (var tile in communicationRangeBitmap)
             {
-                var index = tile.x + tile.y * _communicationRangeBitmap.Width;
+                var index = tile.x + tile.y * communicationRangeBitmap.Width;
                 _triangleIndexes.UnionWith(cellIndexTriangleIndexes[index]);
             }
             visualizer.SetAllColors(CellIndexToColor);
