@@ -63,8 +63,7 @@ namespace Maes.Experiments.Patrolling
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
-                agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, _) => true)
+                agentRelativeSize: 0.6f)
             };
 
             var simulator = new MySimulator();
