@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen, 
+// Henrik van Peet.
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -77,22 +78,23 @@ namespace Maes.Utilities
             Debug.DrawLine(robot, point1, color, duration);
         }
 
-        public static List<List<int>> CellIndexToTriangleIndexes<TCell>(this SimulationMap<TCell> simulationMap)
+        public static Dictionary<int, HashSet<int>> CellIndexToTriangleIndexes<TCell>(this SimulationMap<TCell> simulationMap)
         {
-            var cellIndexTriangleIndexes = new List<List<int>>();
+            var cellIndexToTriangleIndexes = new Dictionary<int, HashSet<int>>();
 
-            var list = new List<int>();
+            var triangleIndexes = new HashSet<int>();
+            var cellIndex = 0;
             foreach (var (index, _) in simulationMap)
             {
-                list.Add(index);
+                triangleIndexes.Add(index);
                 if ((index + 1) % TrianglesPerCell == 0)
                 {
-                    cellIndexTriangleIndexes.Add(list);
-                    list = new List<int>();
+                    cellIndexToTriangleIndexes[cellIndex++] = new HashSet<int>(triangleIndexes);
+                    triangleIndexes.Clear();
                 }
             }
 
-            return cellIndexTriangleIndexes;
+            return cellIndexToTriangleIndexes;
         }
     }
 }
