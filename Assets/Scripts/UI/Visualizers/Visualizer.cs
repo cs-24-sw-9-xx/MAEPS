@@ -173,8 +173,6 @@ namespace Maes.UI.Visualizers
             }
 
             SetAllColors(CellIndexToColor);
-
-            _mesh.colors32 = _colors;
         }
 
         /// <summary>

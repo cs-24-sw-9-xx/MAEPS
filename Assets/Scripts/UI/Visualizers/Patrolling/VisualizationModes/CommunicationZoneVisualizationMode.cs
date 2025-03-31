@@ -28,15 +28,23 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
     public class CommunicationZoneVisualizationMode : IPatrollingVisualizationMode
     {
+        private readonly int _selectedVertexId;
+        private bool _isFirstUpdate = true;
 
-        public CommunicationZoneVisualizationMode(PatrollingVisualizer visualizer, int selectedVertexId)
+        public CommunicationZoneVisualizationMode(int selectedVertexId)
         {
-            var communicationZone = visualizer.CommunicationZoneVertices.CommunicationZoneTiles[selectedVertexId];
-            visualizer.SetAllColors(communicationZone, PatrollingVisualizer.CommunicationColor, Visualizer.StandardCellColor);
+            _selectedVertexId = selectedVertexId;
         }
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             // Nothing to update since the visualization does not change
+            if (_isFirstUpdate)
+            {
+                var communicationZone = visualizer.CommunicationZoneVertices.CommunicationZoneTiles[_selectedVertexId];
+                visualizer.SetAllColors(communicationZone, PatrollingVisualizer.CommunicationColor, Visualizer.StandardCellColor);
+
+                _isFirstUpdate = false;
+            }
         }
     }
 }

@@ -273,7 +273,7 @@ namespace Maes.Statistics.Trackers
 
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(
-                new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+                new CommunicationZoneVisualizationMode(_selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void ShowSelectedRobotVerticesColors()
