@@ -62,24 +62,24 @@ namespace Maes.Utilities
             return reverseNearestNeighbors;
         }
 
-        public static Dictionary<Vector2Int, List<(Vector2Int, int)>> GetKNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
+        public static Dictionary<Vector2Int, List<(Vector2Int position, int distance)>> GetKNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
         {
             // Dictionary to store the k nearest neighbors of each point
-            var nearestNeighbors = new Dictionary<Vector2Int, List<(Vector2Int, int)>>();
+            var nearestNeighbors = new Dictionary<Vector2Int, List<(Vector2Int position, int distance)>>();
 
             // Populate nearest neighbors with distances for each start point
             foreach (var ((start, end), distance) in distanceDict)
             {
                 if (!nearestNeighbors.ContainsKey(start))
                 {
-                    nearestNeighbors[start] = new List<(Vector2Int, int)>();
+                    nearestNeighbors[start] = new List<(Vector2Int position, int distance)>();
                 }
 
                 var neighborsList = nearestNeighbors[start];
                 neighborsList.Add((end, distance));
 
                 // Sort by distance and keep only the top k nearest neighbors
-                neighborsList.Sort((a, b) => a.Item2.CompareTo(b.Item2));
+                neighborsList.Sort((a, b) => a.distance.CompareTo(b.distance));
                 if (neighborsList.Count > k)
                 {
                     neighborsList.RemoveAt(neighborsList.Count - 1); // Remove the farthest neighbor
