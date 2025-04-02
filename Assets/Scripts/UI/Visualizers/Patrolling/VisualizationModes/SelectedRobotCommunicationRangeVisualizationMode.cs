@@ -1,9 +1,4 @@
-using System.Collections.Generic;
-
-using Maes.Map;
-using Maes.Map.Generators;
 using Maes.Robot;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -12,15 +7,11 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
     public class SelectedRobotCommunicationRangeVisualizationMode : IPatrollingVisualizationMode
     {
         private readonly MonaRobot _robot;
-        private readonly SimulationMap<Tile> _simulationMap;
-        private HashSet<int> _triangleIndexes;
         private Vector2Int _lastPosition;
 
-        public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot, SimulationMap<Tile> simulationMap)
+        public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot)
         {
             _robot = robot;
-            _simulationMap = simulationMap;
-            _triangleIndexes = new HashSet<int>();
             _lastPosition = new Vector2Int(int.MaxValue, int.MaxValue);
         }
 
@@ -41,23 +32,9 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                 return;
             }
 
-            _triangleIndexes = new HashSet<int>();
             var communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(position);
-            var cellIndexTriangleIndexes = _simulationMap.CellIndexToTriangleIndexes();
-            foreach (var tile in communicationRangeBitmap)
-            {
-                var index = tile.x + tile.y * communicationRangeBitmap.Width;
-                _triangleIndexes.UnionWith(cellIndexTriangleIndexes[index]);
-            }
-            visualizer.SetAllColors(CellIndexToColor);
-            _lastPosition = position;
-        }
-
-        private Color32 CellIndexToColor(int cellIndex)
-        {
-            return _triangleIndexes.Contains(cellIndex)
-               ? PatrollingVisualizer.CommunicationColor
-               : Visualizer.StandardCellColor;
+            visualizer.SetAllColors(communicationRangeBitmap, PatrollingVisualizer.CommunicationColor, Visualizer.StandardCellColor);
+            communicationRangeBitmap.Dispose();
         }
     }
 }

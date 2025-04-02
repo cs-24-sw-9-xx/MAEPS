@@ -19,32 +19,32 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
+// Henrik van Peet
+// Mads Beyer Mogensen
+// Puvikaran Santhirasegaram
 
-using UnityEngine;
 
 namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
 {
     public class CommunicationZoneVisualizationMode : IPatrollingVisualizationMode
     {
-        private PatrollingVisualizer Visualizer { get; }
-        private int SelectedVertexId { get; }
+        private readonly int _selectedVertexId;
+        private bool _isFirstUpdate = true;
 
-        public CommunicationZoneVisualizationMode(PatrollingVisualizer visualizer, int selectedVertexId)
+        public CommunicationZoneVisualizationMode(int selectedVertexId)
         {
-            Visualizer = visualizer;
-            SelectedVertexId = selectedVertexId;
-            visualizer.SetAllColors(CellIndexToColor);
+            _selectedVertexId = selectedVertexId;
         }
         public void UpdateVisualization(PatrollingVisualizer visualizer, int currentTick)
         {
             // Nothing to update since the visualization does not change
-        }
+            if (_isFirstUpdate)
+            {
+                var communicationZone = visualizer.CommunicationZoneVertices.CommunicationZoneTiles[_selectedVertexId];
+                visualizer.SetAllColors(communicationZone, PatrollingVisualizer.CommunicationColor, Visualizer.StandardCellColor);
 
-        private Color32 CellIndexToColor(int cellIndex)
-        {
-            return Visualizer.CommunicationZoneVertices.CommunicationZoneTiles[SelectedVertexId].Contains(cellIndex)
-               ? PatrollingVisualizer.CommunicationColor
-               : Visualizers.Visualizer.StandardCellColor;
+                _isFirstUpdate = false;
+            }
         }
     }
 }

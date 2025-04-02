@@ -260,7 +260,7 @@ namespace Maes.Statistics.Trackers
             }
 
             _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new SelectedRobotCommunicationRangeVisualizationMode(_selectedRobot, _collisionMap));
+            SetVisualizationMode(new SelectedRobotCommunicationRangeVisualizationMode(_selectedRobot));
         }
 
         public void ShowCommunicationZone()
@@ -273,7 +273,7 @@ namespace Maes.Statistics.Trackers
 
             _visualizer.meshRenderer.enabled = true;
             SetVisualizationMode(
-                new CommunicationZoneVisualizationMode(_visualizer, _selectedVertex.VertexDetails.Vertex.Id));
+                new CommunicationZoneVisualizationMode(_selectedVertex.VertexDetails.Vertex.Id));
         }
 
         public void ShowSelectedRobotVerticesColors()
