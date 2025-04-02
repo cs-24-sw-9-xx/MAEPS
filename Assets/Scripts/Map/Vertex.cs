@@ -12,7 +12,7 @@ namespace Maes.Map
 
         public int Id { get; }
 
-        public int Partition { get; }
+        public int Partition { get; set; }
 
         public Vector2Int Position { get; }
 
