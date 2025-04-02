@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU General Public License along
 // with MAEPS. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Mads Beyer Mogensen
+// Contributors:
+// Mads Beyer Mogensen
+// Puvikaran Santhirasegaram
+// Henrik van Peet
 
 using System;
 using System.Collections.Generic;
@@ -26,6 +29,7 @@ using Maes.Map;
 using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Robot.Tasks;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -47,12 +51,14 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingAlgorithm _patrollingAlgorithm;
         private readonly IRobotController _controller;
         private readonly PatrollingMap _patrollingMap;
+        private readonly InitialVertexToPatrolDelegate _initialVertexToPatrolDelegate;
         public Vector2Int TargetPosition { get; private set; }
 
         /// <summary>
         /// Delegate that specifies the next vertex to travel to.
         /// </summary>
         public delegate Vertex NextVertexDelegate(Vertex currentVertex);
+        public delegate Vertex InitialVertexToPatrolDelegate();
 
         /// <inheritdoc />
         public int PreUpdateOrder { get; } = 0;
@@ -67,12 +73,14 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="patrollingAlgorithm">The patrolling algorithm.</param>
         /// <param name="controller">The robot controller.</param>
         /// <param name="patrollingMap">The patrolling map.</param>
-        public GoToNextVertexComponent(NextVertexDelegate nextVertexDelegate, PatrollingAlgorithm patrollingAlgorithm, IRobotController controller, PatrollingMap patrollingMap)
+        /// <param name="initialVertexToPatrolDelegate">The delegate that gets called to get the initial vertex to patrol.</param>
+        public GoToNextVertexComponent(NextVertexDelegate nextVertexDelegate, PatrollingAlgorithm patrollingAlgorithm, IRobotController controller, PatrollingMap patrollingMap, InitialVertexToPatrolDelegate? initialVertexToPatrolDelegate = null)
         {
             _nextVertexDelegate = nextVertexDelegate;
             _patrollingAlgorithm = patrollingAlgorithm;
             _controller = controller;
             _patrollingMap = patrollingMap;
+            _initialVertexToPatrolDelegate = initialVertexToPatrolDelegate ?? GetClosestVertexDefault;
         }
 
         /// <inheritdoc />
@@ -80,7 +88,7 @@ namespace Maes.Algorithms.Patrolling.Components
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             // Go to the initial vertex.
-            var vertex = GetClosestVertex();
+            var vertex = _initialVertexToPatrolDelegate();
             TargetPosition = vertex.Position;
             while (GetRelativePositionTo(vertex.Position).Distance > MinDistance)
             {
@@ -117,32 +125,11 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        /// <summary>
-        /// Gets the vertex closest to the robot.
-        /// </summary>
-        /// <remarks>
-        /// TODO: This does not take walls into account so it might not pick the best waypoint.
-        /// </remarks>
-        /// <returns>The closest vertex.</returns>
-        private Vertex GetClosestVertex()
+        private Vertex GetClosestVertexDefault()
         {
             var robotPartition = _controller.AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
-
-            var position = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-            var closestVertex = vertices[0];
-            var closestDistance = Vector2Int.Distance(position, closestVertex.Position);
-            foreach (var vertex in vertices.AsSpan(1))
-            {
-                var distance = Vector2Int.Distance(position, vertex.Position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestVertex = vertex;
-                }
-            }
-
-            return closestVertex;
+            return vertices.GetClosestVertex(_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false));
         }
 
 
