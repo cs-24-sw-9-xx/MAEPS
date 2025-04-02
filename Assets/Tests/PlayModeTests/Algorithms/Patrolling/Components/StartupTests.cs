@@ -54,7 +54,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             var robot0 = _algorithms[0];
             var robot1 = _algorithms[1];
 
-            Assert.That(robot0.Robot2DController.Id, Is.EqualTo(0));
+            Assert.That(robot0.RobotController.Id, Is.EqualTo(0));
 
             Assert.That(robot0.StartupComponent.DiscoveredRobots, Has.Count.EqualTo(2));
             Assert.That(robot0.StartupComponent.DiscoveredRobots, Does.Contain(0));
@@ -126,11 +126,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
             public StartupComponent<string> StartupComponent { get; private set; }
 
-            public Robot2DController Robot2DController { get; private set; }
+            public IRobotController RobotController { get; private set; }
 
-            protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
+            protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
             {
-                Robot2DController = controller;
+                RobotController = controller;
                 StartupComponent = new StartupComponent<string>(controller, MessageFactory);
 
                 return new IComponent[] { StartupComponent };

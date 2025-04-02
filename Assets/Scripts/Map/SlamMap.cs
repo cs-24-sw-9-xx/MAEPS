@@ -38,19 +38,28 @@ namespace Maes.Map
 {
     public sealed class SlamMap : ISlamAlgorithm, IPathFindingMap
     {
+        [ForbiddenKnowledge]
+        public SimulationMap<Tile> CollisionMap { get; }
+
+        [ForbiddenKnowledge]
         public bool BrokenCollisionMap => CollisionMap.BrokenCollisionMap;
+
+        [ForbiddenKnowledge]
         public int LastUpdateTick { get; private set; }
+
+        [ForbiddenKnowledge]
         public int Width { get; }
 
+        [ForbiddenKnowledge]
         public int Height { get; }
 
         private SlamTileStatus[,] _tiles;
         private readonly VisibleTile[,] _currentlyVisibleTiles;
 
+        [ForbiddenKnowledge]
         public HashSet<int> CurrentlyVisibleTriangles => _currentlyVisibleTriangles ??= new HashSet<int>();
 
         private HashSet<int>? _currentlyVisibleTriangles;
-        public readonly SimulationMap<Tile> CollisionMap;
         private readonly IPathFinder _pathFinder;
 
         private readonly Vector2 _offset;
@@ -70,6 +79,7 @@ namespace Maes.Map
 
         private int _visibleTilesGeneration;
 
+        [ForbiddenKnowledge]
         public SlamMap(SimulationMap<Tile> collisionMap, RobotConstraints robotConstraints, int randomSeed)
         {
             CollisionMap = collisionMap;
@@ -123,6 +133,7 @@ namespace Maes.Map
             return tiles;
         }
 
+        [ForbiddenKnowledge]
         public Vector2Int TriangleIndexToCoordinate(int triangleIndex)
         {
             var collisionTileIndex = triangleIndex / 8;
@@ -137,12 +148,14 @@ namespace Maes.Map
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ForbiddenKnowledge]
         public static Vector2Int LocalCoordinateToPathFindingCoordinate(Vector2Int localCoordinate)
         {
             return localCoordinate / 2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ForbiddenKnowledge]
         public void SetExploredByCoordinate(Vector2Int localCoordinate, bool isOpen, int tick)
         {
             var x = localCoordinate.x;
@@ -150,6 +163,7 @@ namespace Maes.Map
             SetExploredByCoordinate(x, y, isOpen, tick);
         }
 
+        [ForbiddenKnowledge]
         public void SetExploredByCoordinate(int localX, int localY, bool isOpen, int tick)
         {
             ref var status = ref _tiles[localX, localY];
@@ -181,6 +195,7 @@ namespace Maes.Map
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ForbiddenKnowledge]
         public void ResetRobotVisibility()
         {
             _visibleTilesGeneration++;
@@ -219,6 +234,7 @@ namespace Maes.Map
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ForbiddenKnowledge]
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, Vector2Int localCoordinate, bool isOpen)
         {
             var x = localCoordinate.x;
@@ -227,6 +243,7 @@ namespace Maes.Map
             SetCurrentlyVisibleByTriangle(triangleIndex, x, y, isOpen);
         }
 
+        [ForbiddenKnowledge]
         public void SetCurrentlyVisibleByTriangle(int triangleIndex, int localX, int localY, bool isOpen)
         {
             _currentlyVisibleTriangles?.Add(triangleIndex);
@@ -262,6 +279,7 @@ namespace Maes.Map
             Solid
         }
 
+        [ForbiddenKnowledge]
         public void UpdateApproxPosition(Vector2 worldPosition)
         {
             // TODO: This looks like a bug
@@ -390,6 +408,7 @@ namespace Maes.Map
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [ForbiddenKnowledge]
         public void SetApproxRobotAngle(float robotAngle)
         {
             _robotAngle = robotAngle;
@@ -485,6 +504,7 @@ namespace Maes.Map
             return new RelativePosition(distance, angle);
         }
 
+        [ForbiddenKnowledge]
         public float CellSize => 1f;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

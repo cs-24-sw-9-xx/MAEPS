@@ -23,6 +23,7 @@ using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Robot.Tasks;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -34,6 +35,16 @@ namespace Maes.Robot
         /// Gets the unique integer id of this robot.
         /// </summary>
         int Id { get; }
+
+        /// <summary>
+        /// Gets the partition this robot is assigned to.
+        /// </summary>
+        int AssignedPartition { get; }
+
+        /// <summary>
+        /// Gets the color of this robot.
+        /// </summary>
+        Color32 Color { get; }
 
         /// <summary>
         /// Gives the current state of the robot which can have value of {Idle, Moving, Stopping}.
@@ -202,6 +213,7 @@ namespace Maes.Robot
         /// <summary>
         /// Returns debugging info specific to the controller implementation.
         /// </summary>
+        [ForbiddenKnowledge]
         string GetDebugInfo();
 
         /// <summary>

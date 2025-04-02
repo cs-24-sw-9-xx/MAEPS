@@ -239,12 +239,13 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
             public VirtualStigmergyComponent<string> VirtualStigmergyComponent { get; private set; }
 
-            public Robot2DController Controller => _controller;
+            public IRobotController Controller { get; private set; }
 
-            protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
+            protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
             {
+                Controller = controller;
                 VirtualStigmergyComponent =
-                    new VirtualStigmergyComponent<string>(OnConflict, controller, controller.GetRobot());
+                    new VirtualStigmergyComponent<string>(OnConflict, controller);
 
                 return new IComponent[] { VirtualStigmergyComponent };
             }

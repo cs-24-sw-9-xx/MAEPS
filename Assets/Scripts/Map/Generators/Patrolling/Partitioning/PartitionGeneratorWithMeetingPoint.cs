@@ -15,10 +15,10 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             _partitionGenerator = partitionGenerator;
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, SimulationMap<Tile> tileMap)
+        public void SetMaps(PatrollingMap patrollingMap, Bitmap collisionMap)
         {
             _patrollingMap = patrollingMap;
-            _partitionGenerator.SetMaps(patrollingMap, tileMap);
+            _partitionGenerator.SetMaps(patrollingMap, collisionMap);
         }
 
         public Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)

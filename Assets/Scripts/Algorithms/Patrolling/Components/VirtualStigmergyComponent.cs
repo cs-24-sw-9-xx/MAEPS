@@ -49,8 +49,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly Dictionary<string, ValueInfo> _localKnowledge = new();
 
         private readonly OnConflictDelegate _onConflictDelegate;
-        private readonly CommunicationManager _communicationManager;
-        private readonly MonaRobot _monaRobot;
+        private readonly IRobotController _controller;
 
         /// <inheritdoc />
         public int PreUpdateOrder { get; } = -1000;
@@ -74,11 +73,10 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="onConflictDelegate">A function to call to resolve conflicts.</param>
         /// <param name="controller">The robot controller.</param>
         /// <param name="monaRobot">The mona robot.</param>
-        public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, Robot2DController controller, MonaRobot monaRobot)
+        public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, IRobotController controller)
         {
             _onConflictDelegate = onConflictDelegate;
-            _communicationManager = controller.CommunicationManager;
-            _monaRobot = monaRobot;
+            _controller = controller;
         }
 
         /// <inheritdoc />
@@ -87,7 +85,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             while (true)
             {
-                foreach (var objectMessage in _communicationManager.ReadMessages(_monaRobot))
+                foreach (var objectMessage in _controller.ReceiveBroadcast())
                 {
                     if (objectMessage is VirtualStigmergyMessage message)
                     {
@@ -217,8 +215,8 @@ namespace Maes.Algorithms.Patrolling.Components
                 timestamp = info.Timestamp + 1;
             }
 
-            _localKnowledge[key] = new ValueInfo(timestamp, _monaRobot.id, value);
-            BroadcastMessage(VirtualStigmergyMessage.CreatePutMessage(key, value, timestamp, _monaRobot.id));
+            _localKnowledge[key] = new ValueInfo(timestamp, _controller.Id, value);
+            BroadcastMessage(VirtualStigmergyMessage.CreatePutMessage(key, value, timestamp, _controller.Id));
         }
 
         /// <summary>
@@ -252,7 +250,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 // It won't be immediately available, so we won't be able to return it here.
                 // NOTE: It is unclear what the timestamp should be if we have nothing in our local knowledge.
                 // So I will give it 0, it should always be smaller than any timestamp of any existing entries.
-                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, null, 0, _monaRobot.id));
+                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, null, 0, _controller.Id));
 
                 return null;
             }
@@ -295,7 +293,7 @@ namespace Maes.Algorithms.Patrolling.Components
 #if VIRTUAL_STIGMERGY_TRACING
             Debug.LogFormat("STIGMERGY Robot {0} sending {1} message: key: {2}, value: {3}, timestamp: {4}, robotId: {5}", _monaRobot.id, message.Type, message.Key, message.Value, message.Timestamp, message.RobotId);
 #endif
-            _communicationManager.BroadcastMessage(_monaRobot, message);
+            _controller.Broadcast(message);
         }
 
         public readonly struct ValueInfo

@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private readonly NextVertexDelegate _nextVertexDelegate;
         private readonly PatrollingAlgorithm _patrollingAlgorithm;
-        private readonly Robot2DController _controller;
+        private readonly IRobotController _controller;
         private readonly PatrollingMap _patrollingMap;
         public Vector2Int TargetPosition { get; private set; }
 
@@ -67,7 +67,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="patrollingAlgorithm">The patrolling algorithm.</param>
         /// <param name="controller">The robot controller.</param>
         /// <param name="patrollingMap">The patrolling map.</param>
-        public GoToNextVertexComponent(NextVertexDelegate nextVertexDelegate, PatrollingAlgorithm patrollingAlgorithm, Robot2DController controller, PatrollingMap patrollingMap)
+        public GoToNextVertexComponent(NextVertexDelegate nextVertexDelegate, PatrollingAlgorithm patrollingAlgorithm, IRobotController controller, PatrollingMap patrollingMap)
         {
             _nextVertexDelegate = nextVertexDelegate;
             _patrollingAlgorithm = patrollingAlgorithm;
@@ -126,7 +126,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <returns>The closest vertex.</returns>
         private Vertex GetClosestVertex()
         {
-            var robotPartition = _controller.GetRobot().AssignedPartition;
+            var robotPartition = _controller.AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
 
             var position = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
