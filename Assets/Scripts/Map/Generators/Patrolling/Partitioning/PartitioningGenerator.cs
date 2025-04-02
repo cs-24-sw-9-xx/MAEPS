@@ -56,6 +56,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var allVertices = new List<Vertex>();
             var nextId = 0;
             var partitions = new List<Partition>();
+            var partitionId = 0;
             var communicationZones = new Dictionary<Vector2Int, Bitmap>();
 
             DebuggingVisualizer _debugVisualizer = new();
@@ -83,13 +84,10 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                     communicationZones[vertex.Position] = temp.CalculateCommunicationZone(vertex.Position);
                 }
 
-                partitions.Add(new Partition(cluster.Key, vertices, communicationZones));
+                partitions.Add(new Partition(partitionId, vertices, communicationZones));
+                partitionId++;
             }
 
-            if (partitions.Count == 0)
-            {
-                Debug.Log("No partitions found.... WHY?!");
-            }
             return new PatrollingMap(allVertices, simulationMap, partitions);
         }
 
