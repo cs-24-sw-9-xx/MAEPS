@@ -40,7 +40,7 @@ namespace Maes.Utilities
         }
 
         // Find the k nearest neighbors for each point and return the reverse mapping
-        public static Dictionary<Vector2Int, List<Vector2Int>> FindReverseNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
+        public static Dictionary<Vector2Int, List<Vector2Int>> GetReverseNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
         {
             var nearestNeighbors = GetKNearestNeighbors(distanceDict, k);
 
