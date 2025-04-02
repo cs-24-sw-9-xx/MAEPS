@@ -68,25 +68,22 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 // Assign the partition and color to each vertex in the cluster
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
+
                 foreach (var vertex in vertices)
                 {
                     vertex.Partition = cluster.Key;
                     vertex.Color = clusterColor;
                 }
-
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
 
                 var temp = new CommunicationManager(simulationMap, constraints, _debugVisualizer); //This is a hack for calculating communication zones
-
                 foreach (var vertex in vertices)
                 {
                     communicationZones[vertex.Position] = temp.CalculateCommunicationZone(vertex.Position);
                 }
 
                 partitions.Add(new Partition(cluster.Key, vertices, communicationZones));
-
-
             }
 
             if (partitions.Count == 0)

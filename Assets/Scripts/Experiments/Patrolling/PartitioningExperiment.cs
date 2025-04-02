@@ -62,7 +62,7 @@ namespace Maes.Experiments.Patrolling
             var algoName = "PartitioningTest";
             const int robotCount = 4;
             var seed = 123;
-            
+
             var spawningPosList = new List<Vector2Int>();
             var mapSizeX = 50;
             var mapSizeY = 40;
@@ -79,11 +79,11 @@ namespace Maes.Experiments.Patrolling
                     stopAfterDiff: false,
                     mapSpawner: generator => generator.GenerateMap(CommonMaps.IslandsMap(), seed, brokenCollisionMap: false),
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(
-                        spawnPositions:  spawningPosList,
+                        spawnPositions: spawningPosList,
                         collisionMap: map,
                         seed: seed,
                         numberOfRobots: robotCount,
-                        createAlgorithmDelegate:_ => new PartitionAlgorithm()),
+                        createAlgorithmDelegate: _ => new PartitionAlgorithm()),
                     robotConstraints: robotConstraints,
                     partitions: robotCount, // To have the same amount of partitions as robots
                     statisticsFileName:

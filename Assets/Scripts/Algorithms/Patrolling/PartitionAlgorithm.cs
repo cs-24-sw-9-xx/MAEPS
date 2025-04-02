@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
@@ -10,7 +9,7 @@ namespace Maes.Algorithms.Patrolling
     public class PartitionAlgorithm : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Test Partitioning Algorithm";
-        
+
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
@@ -24,7 +23,7 @@ namespace Maes.Algorithms.Patrolling
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _redistributionComponent };
         }
-        
+
         private static Vertex NextVertex(Vertex currentVertex)
         {
             return currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
