@@ -242,7 +242,7 @@ namespace Tests.EditModeTests
             var intersection = communicationZoneVertices.CommunicationZoneTiles[0].Intersect(communicationZoneVertices.CommunicationZoneTiles[1]);
 
             // Verify communication zones don't intersect because of the wall
-            Assert.AreEqual(0, intersection.Count());
+            Assert.IsFalse(intersection.Any());
         }
 
         [Test]
@@ -328,7 +328,7 @@ namespace Tests.EditModeTests
 
             // Compare manual union with AllCommunicationZoneTiles
             Assert.AreEqual(manualUnion.Count, communicationZoneVertices.AllCommunicationZoneTiles.Count);
-            Assert.IsTrue(manualUnion.Equals(communicationZoneVertices.AllCommunicationZoneTiles));
+            Assert.AreEqual(manualUnion, communicationZoneVertices.AllCommunicationZoneTiles);
         }
     }
 }
