@@ -54,5 +54,29 @@ namespace Maes.UI.Visualizers.Patrolling
                 AllCommunicationZoneTiles.Union(zone);
             }
         }
+        
+        public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, List<Vertex> vertices, CommunicationManager communicationManager)
+        {
+            CommunicationZoneTiles = vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
+
+            var positions = vertices.Select(v => v.Position).ToList();
+            var communicationZones = communicationManager.CalculateZones(positions, simulationMap);
+            var cellIndexToTriangleIndexes = simulationMap.CellIndexToTriangleIndexes();
+            using var bitmap = MapUtilities.MapToBitMap(simulationMap);
+            foreach (var vertex in vertices)
+            {
+                var tiles = communicationZones[vertex.Position];
+                if (tiles == null)
+                {
+                    continue;
+                }
+                foreach (var tile in tiles)
+                {
+                    var index = tile.x + tile.y * bitmap.Width;
+                    CommunicationZoneTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
+                }
+                AllCommunicationZoneTiles.UnionWith(CommunicationZoneTiles[vertex.Id]);
+            }
+        }
     }
 }
