@@ -24,7 +24,13 @@ using System.Collections.Generic;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public abstract class BasePartitionGenerator
+    public interface IPartitionGenerator
+    {
+        void SetMaps(PatrollingMap patrollingMap, SimulationMap<Tile> tileMap);
+        Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds);
+    }
+
+    public abstract class BasePartitionGenerator : IPartitionGenerator
     {
         protected PatrollingMap _patrollingMap = null!;
         protected SimulationMap<Tile> _tileMap = null!;
