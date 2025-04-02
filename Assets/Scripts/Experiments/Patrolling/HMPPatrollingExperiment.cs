@@ -21,14 +21,11 @@
 // Puvikaran Santhirasegaram
 
 using Maes.Algorithms.Patrolling;
-using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -80,18 +77,10 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: MakePatrollingMap)
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             );
 
             simulator.PressPlayButton(); // Instantly enter play mode
-        }
-
-        private static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap)
-        {
-            using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
-            var connectedVertices = AllConnectedWaypointConnector.ConnectVertices(vertexPositions);
-            return new PatrollingMap(connectedVertices, simulationMap);
         }
     }
 }
