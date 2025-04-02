@@ -1,19 +1,19 @@
 using System.Collections;
 
 using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Map.Generators;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 
 using NUnit.Framework;
-
-using UnityEngine;
 
 namespace Tests.PlayModeTests.Algorithms.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    public class PatrollingAlgorithmTest : MonoBehaviour
+    public class PatrollingAlgorithmTest
     {
         private MySimulator _maes;
         private const int Seed = 1;
@@ -72,7 +72,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
+                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn",
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             );
             return _maes.SimulationManager.CurrentSimulation;
         }

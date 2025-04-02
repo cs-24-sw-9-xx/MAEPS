@@ -20,10 +20,12 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Robot;
@@ -39,22 +41,27 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(IPartitionGenerator partitionGenerator)
+        public HMPPatrollingAlgorithm(IPartitionGenerator partitionGenerator, int seed = 0)
         {
             _partitionGenerator = partitionGenerator;
+            _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
+
+        public PartitionInfo? PartitionInfo => _partitionComponent.PartitionInfo;
 
         public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
                                                                            .VertexIds
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { _controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly IPartitionGenerator _partitionGenerator;
+        private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
         private readonly VirtualStigmergyComponent<PartitionInfo>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
         private VirtualStigmergyComponent<PartitionInfo> _virtualStigmergyComponent = null!;
         private StartupComponent<Dictionary<int, PartitionInfo>> _startupComponent = null!;
         private PartitionComponent _partitionComponent = null!;
+        private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private IRobotController _controller = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
@@ -64,8 +71,32 @@ namespace Maes.Algorithms.Patrolling
             _startupComponent = new StartupComponent<Dictionary<int, PartitionInfo>>(controller, _partitionGenerator.GeneratePartitions);
             _virtualStigmergyComponent = new VirtualStigmergyComponent<PartitionInfo>(_onConflict, controller);
             _partitionComponent = new PartitionComponent(controller, _startupComponent, _virtualStigmergyComponent);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
 
-            return new IComponent[] { _startupComponent, _virtualStigmergyComponent, _partitionComponent };
+            return new IComponent[] { _startupComponent, _virtualStigmergyComponent, _partitionComponent, _goToNextVertexComponent };
+        }
+        private Vertex GetInitialVertexToPatrol()
+        {
+            var partitionInfo = _partitionComponent.PartitionInfo!;
+            var vertices = _patrollingMap.Vertices.Where(vertex => partitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
+            return vertices.GetClosestVertex(_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false));
+        }
+
+        private Vertex NextVertex(Vertex currentVertex)
+        {
+            var partitionInfo = _partitionComponent.PartitionInfo!;
+            return _heuristicConscientiousReactiveLogic.NextVertex(currentVertex,
+                currentVertex.Neighbors.Where(vertex => partitionInfo.VertexIds.Contains(vertex.Id)).ToArray());
+        }
+
+        private float DistanceMethod(Vertex source, Vertex target)
+        {
+            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
+            {
+                return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
+            }
+
+            throw new Exception($"Path from {source.Id} to {target.Id} not found");
         }
     }
 }
