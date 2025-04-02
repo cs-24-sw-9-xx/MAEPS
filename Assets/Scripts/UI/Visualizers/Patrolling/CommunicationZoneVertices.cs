@@ -54,7 +54,7 @@ namespace Maes.UI.Visualizers.Patrolling
                 AllCommunicationZoneTiles.Union(zone);
             }
         }
-        
+
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, List<Vertex> vertices, CommunicationManager communicationManager)
         {
             CommunicationZoneTiles = vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());

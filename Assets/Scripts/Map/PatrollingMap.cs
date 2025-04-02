@@ -24,7 +24,7 @@ namespace Maes.Map
         : this(vertices, CreatePaths(vertices, simulationMap))
         {
         }
-        
+
         public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, List<Partition> partitions)
             : this(vertices, CreatePaths(vertices, simulationMap))
         {
@@ -35,15 +35,15 @@ namespace Maes.Map
         {
             Vertices = vertices;
             Paths = paths;
-            
+
         }
-        
+
         private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, List<Partition> partitions)
         {
             Vertices = vertices;
             Paths = paths;
             Partitions = partitions;
-            
+
         }
 
         public PatrollingMap Clone()
