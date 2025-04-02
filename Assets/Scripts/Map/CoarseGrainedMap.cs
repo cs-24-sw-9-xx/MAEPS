@@ -53,6 +53,7 @@ namespace Maes.Map
         /// <param name="height">Height in coarse-grained tiles.</param>
         /// <param name="offset">Coordinate offset.</param>
         /// <param name="mapKnown">Whether the map is initially known.</param>
+        [ForbiddenKnowledge]
         public CoarseGrainedMap(SlamMap slamMap, int width, int height, Vector2 offset, bool mapKnown = false)
         {
             _slamMap = slamMap;
@@ -168,6 +169,7 @@ namespace Maes.Map
         /// </summary>
         /// <param name="localCoordinate">the given tile to set det data at.</param>
         /// <param name="data">the data-value to set at the given tile.</param>
+        [ForbiddenKnowledge]
         public void SetTileExplored(Vector2Int localCoordinate, bool data)
         {
             AssertWithinBounds(localCoordinate);

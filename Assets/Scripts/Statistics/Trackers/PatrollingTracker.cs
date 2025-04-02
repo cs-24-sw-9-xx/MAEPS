@@ -74,12 +74,14 @@ namespace Maes.Statistics.Trackers
             _collisionMap = collisionMap;
         }
 
-        public void OnReachedVertex(int vertexId, int atTick)
+        public void OnReachedVertex(int vertexId)
         {
             if (!_vertices.TryGetValue(vertexId, out var vertexDetails))
             {
                 throw new InvalidOperationException("Invalid vertex");
             }
+
+            var atTick = Simulation.SimulatedLogicTicks;
 
             var idleness = atTick - vertexDetails.Vertex.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);

@@ -8,7 +8,7 @@ namespace Maes.Algorithms.Patrolling.Components
 {
     public class PartitionComponent : IComponent
     {
-        public PartitionComponent(Robot2DController controller, StartupComponent<Dictionary<int, PartitionInfo>> startupComponent, VirtualStigmergyComponent<PartitionInfo> virtualStigmergyComponent)
+        public PartitionComponent(IRobotController controller, StartupComponent<Dictionary<int, PartitionInfo>> startupComponent, VirtualStigmergyComponent<PartitionInfo> virtualStigmergyComponent)
         {
             _robotId = controller.Id;
             _startupComponent = startupComponent;

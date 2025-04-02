@@ -38,11 +38,10 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
         public override Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)
         {
-            using var map = MapUtilities.MapToBitMap(_tileMap);
             var vertexIdByPosition = _patrollingMap.Vertices.ToDictionary(v => v.Position, v => v.Id);
 
             var vertexPositions = vertexIdByPosition.Keys.ToList();
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(_collisionMap, vertexPositions);
             var clusters = _partitioningGenerator(distanceMatrix, vertexPositions, robotIds.Count);
 
             var vertexIdsPartitions = clusters.Values.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();

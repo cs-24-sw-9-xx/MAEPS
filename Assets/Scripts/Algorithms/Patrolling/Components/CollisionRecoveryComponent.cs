@@ -33,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.Components
         // How close the robot has to get to a point before it has arrived.
         private const float MinDistance = 0.25f;
 
-        private readonly Robot2DController _controller;
+        private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
 
         private bool _doingCollisionRecovery;
@@ -41,7 +41,7 @@ namespace Maes.Algorithms.Patrolling.Components
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
-        public CollisionRecoveryComponent(Robot2DController controller, IMovementComponent movementComponent)
+        public CollisionRecoveryComponent(IRobotController controller, IMovementComponent movementComponent)
         {
             _controller = controller;
             _movementComponent = movementComponent;

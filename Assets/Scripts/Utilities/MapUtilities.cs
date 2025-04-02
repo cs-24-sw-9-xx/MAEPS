@@ -39,6 +39,25 @@ namespace Maes.Utilities
             return map;
         }
 
+        [MustDisposeResource]
+        public static Bitmap MapToBitMap(CoarseGrainedMap coarseGrainedMap, bool beOptimistic = false)
+        {
+            var bitmap = new Bitmap(0, 0, coarseGrainedMap.Width, coarseGrainedMap.Height);
+            for (var x = 0; x < coarseGrainedMap.Width; x++)
+            {
+                for (var y = 0; y < coarseGrainedMap.Height; y++)
+                {
+                    var tileStatus = coarseGrainedMap.GetTileStatus(new Vector2Int(x, y), beOptimistic);
+                    if (tileStatus == SlamMap.SlamTileStatus.Solid || (tileStatus == SlamMap.SlamTileStatus.Unseen && !beOptimistic))
+                    {
+                        bitmap.Set(x, y);
+                    }
+                }
+            }
+
+            return bitmap;
+        }
+
         // Find the k nearest neighbors for each point and return the reverse mapping
         public static Dictionary<Vector2Int, List<Vector2Int>> GetReverseNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
         {

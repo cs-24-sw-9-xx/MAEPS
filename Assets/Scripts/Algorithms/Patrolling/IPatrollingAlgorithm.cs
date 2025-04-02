@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling
 {
-    public delegate void OnReachVertex(int vertexId, int atTick);
+    public delegate void OnReachVertex(int vertexId);
 
     public interface IPatrollingAlgorithm : IAlgorithm
     {

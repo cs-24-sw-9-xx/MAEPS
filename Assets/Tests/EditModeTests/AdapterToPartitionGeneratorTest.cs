@@ -3,6 +3,7 @@ using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Utilities;
 
 using NUnit.Framework;
 
@@ -38,7 +39,7 @@ namespace Tests.EditModeTests
 
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, simulationMap);
+            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0, 1 });
 
@@ -70,7 +71,7 @@ namespace Tests.EditModeTests
 
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, simulationMap);
+            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0 });
 

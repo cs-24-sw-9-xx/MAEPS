@@ -28,7 +28,7 @@ namespace Maes.Algorithms.Patrolling
         protected PatrollingMap _patrollingMap = null!;
 
         // Set by SetController
-        protected Robot2DController _controller = null!;
+        private Robot2DController _controller = null!;
 
         /// <summary>
         /// Allow NextVertex to return a vertex that is not from _vertices.
@@ -50,9 +50,11 @@ namespace Maes.Algorithms.Patrolling
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
 
+        private int _logicTicks = -1;
+
         protected event OnReachVertex? OnReachVertexHandler;
 
-        protected abstract IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap);
+        protected abstract IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap);
 
         private void SetComponents(IComponent[] components)
         {
@@ -115,13 +117,12 @@ namespace Maes.Algorithms.Patrolling
 
         public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)
         {
-            var atTick = _controller.GetRobot().Simulation.SimulatedLogicTicks;
             TargetVertex = nextVertex;
-            OnReachVertexHandler?.Invoke(vertex.Id, atTick);
+            OnReachVertexHandler?.Invoke(vertex.Id);
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {
-                vertex.VisitedAtTick(atTick);
+                vertex.VisitedAtTick(_logicTicks);
             }
         }
 
@@ -131,6 +132,8 @@ namespace Maes.Algorithms.Patrolling
         {
             while (true)
             {
+                _logicTicks++;
+
                 // Run components' PreUpdateLogic
                 // Stops if one has ShouldContinue = false
                 var shouldContinue = true;
@@ -174,7 +177,6 @@ namespace Maes.Algorithms.Patrolling
 
                 // Run the algorithm's update handler
                 HandleUpdateMethod(_myUpdateLogicEnumerator, _myUpdateLogicComponentUpdateState);
-
 
                 yield return WaitForCondition.WaitForLogicTicks(1);
             }

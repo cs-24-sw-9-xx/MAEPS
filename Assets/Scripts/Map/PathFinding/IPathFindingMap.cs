@@ -21,6 +21,8 @@
 
 using System.Collections.Generic;
 
+using Maes.Utilities;
+
 using UnityEngine;
 
 using static Maes.Map.SlamMap;
@@ -29,20 +31,25 @@ namespace Maes.Map.PathFinding
 {
     public interface IPathFindingMap
     {
+        [ForbiddenKnowledge]
         public bool BrokenCollisionMap { get; }
 
+        [ForbiddenKnowledge]
         public int LastUpdateTick { get; }
 
+        [ForbiddenKnowledge]
         public int Width { get; }
+        [ForbiddenKnowledge]
         public int Height { get; }
+
+        [ForbiddenKnowledge]
+        public float CellSize { get; }
 
         public bool IsSolid(Vector2Int coordinate);
 
         public bool IsOptimisticSolid(Vector2Int coordinate);
 
         public bool IsUnseenSemiOpen(Vector2Int nextCoordinate, Vector2Int currentCoordinate);
-
-        public float CellSize { get; }
 
         public bool IsWithinBounds(Vector2Int coordinate);
 

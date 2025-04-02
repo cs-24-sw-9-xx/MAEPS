@@ -157,6 +157,7 @@ namespace Maes.Robot
         }
 
         // Adds a message to the broadcast queue
+        [ForbiddenKnowledge]
         public void BroadcastMessage(MonaRobot sender, in object messageContents)
         {
             _queuedMessages.Add(new Message(messageContents, sender, sender.transform.position));

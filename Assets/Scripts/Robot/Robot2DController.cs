@@ -36,6 +36,10 @@ namespace Maes.Robot
     {
         public int Id => _robot.id;
 
+        public int AssignedPartition => _robot.AssignedPartition;
+
+        public Color32 Color => _robot.Color;
+
         public RobotStatus Status
         {
             get
@@ -51,10 +55,17 @@ namespace Maes.Robot
 
 
         private readonly Rigidbody2D _rigidbody;
+
+        [ForbiddenKnowledge]
         public Transform Transform { get; }
+
+        [ForbiddenKnowledge]
         public Transform LeftWheel { get; }
+
+        [ForbiddenKnowledge]
         public Transform RightWheel { get; }
 
+        [ForbiddenKnowledge]
         public float TotalDistanceTraveled { get; private set; }
 
         public float GlobalAngle => GetForwardAngleRelativeToXAxis();
@@ -74,12 +85,14 @@ namespace Maes.Robot
         private ITask? _currentTask;
 
         // Set by RobotSpawner
+        [ForbiddenKnowledge]
         internal CommunicationManager CommunicationManager { get; set; } = null!;
 
         // Set by RobotSpawner
         public SlamMap SlamMap { get; set; } = null!;
 
         // Set by RobotSpawner
+        [ForbiddenKnowledge]
         public RobotConstraints Constraints { get; set; } = null!;
 
         private Queue<Vector2Int> _currentPath = new();
@@ -112,6 +125,7 @@ namespace Maes.Robot
 
         public readonly List<(Vector3, float)> DebugCircle = new();
 
+        [ForbiddenKnowledge]
         public Robot2DController(Rigidbody2D rigidbody, Transform transform, Transform leftWheel, Transform rightWheel,
             MonaRobot robot)
         {
@@ -124,11 +138,7 @@ namespace Maes.Robot
             _previousPosition = _rigidbody.position;
         }
 
-        public MonaRobot GetRobot()
-        {
-            return _robot;
-        }
-
+        [ForbiddenKnowledge]
         public void UpdateLogic()
         {
             // Clear the collision flag
@@ -141,6 +151,7 @@ namespace Maes.Robot
         // Whether the rigidbody is currently colliding with something
         public bool IsCurrentlyColliding { get; private set; }
 
+        [ForbiddenKnowledge]
         public void NotifyCollided()
         {
             HasCollidedSinceLastLogicTick = true;
@@ -148,11 +159,13 @@ namespace Maes.Robot
             StopCurrentTask();
         }
 
+        [ForbiddenKnowledge]
         public void NotifyCollisionExit()
         {
             IsCurrentlyColliding = false;
         }
 
+        [ForbiddenKnowledge]
         public void UpdateMotorPhysics()
         {
             // Calculate movement delta between current and last physics tick
@@ -381,6 +394,8 @@ namespace Maes.Robot
         }
 
         private readonly StringBuilder _debugStringBuilder = new();
+
+        [ForbiddenKnowledge]
         public string GetDebugInfo()
         {
             _debugStringBuilder.Clear();
@@ -462,21 +477,6 @@ namespace Maes.Robot
                 _currentTarget = _currentPath.Dequeue();
                 relativePosition = SlamMap.CoarseMap.GetTileCenterRelativePosition(_currentTarget, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
             }
-            #region DrawPath
-#if DEBUG
-            Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(SlamMap.CoarseMap.GetApproximatePosition()), SlamMap.CoarseMap.TileToWorld(_currentTarget), Color.cyan, 2);
-            for (var i = 0; i < _currentPath.Count - 1; i++)
-            {
-                var pathSteps = _currentPath.ToArray();
-                if (i == 0)
-                {
-                    Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(_currentTarget), SlamMap.CoarseMap.TileToWorld(pathSteps[i]), Color.cyan, 2);
-                }
-
-                Debug.DrawLine(SlamMap.CoarseMap.TileToWorld(pathSteps[i]), SlamMap.CoarseMap.TileToWorld(pathSteps[i + 1]), Color.cyan, 2);
-            }
-#endif
-            #endregion
             if (Math.Abs(relativePosition.RelativeAngle) > 1.5f)
             {
                 Rotate(relativePosition.RelativeAngle);

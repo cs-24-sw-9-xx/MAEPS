@@ -524,7 +524,8 @@ namespace Maes.Algorithms.Exploration.SSB
 
         private void MarkTileExplored(Vector2Int exploredTile)
         {
-            _map.SetTileExplored(exploredTile, true);
+            //_map.SetTileExplored(exploredTile, true);
+            Debug.Assert(_map.IsTileExplored(exploredTile));
             // Remove this from possible back tracking candidates, if present
             _backTrackingPoints.Remove(exploredTile);
             _bpsFoundThisSpiralPhase.Remove(exploredTile);
