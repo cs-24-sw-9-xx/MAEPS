@@ -29,6 +29,8 @@ using System.Linq;
 
 using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
+using Maes.Robot;
+using Maes.UI;
 using Maes.Utilities;
 
 using MathNet.Numerics.LinearAlgebra;
@@ -42,9 +44,9 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
     public static class PartitioningGenerator
     {
         public delegate Dictionary<int, List<Vector2Int>> PartitioningGeneratorDelegate(
-            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
+            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions, RobotConstraints constraints);
 
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints constraints)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
@@ -53,6 +55,13 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
+            var partitions = new List<Partition>();
+            var communicationZones = new Dictionary<Vector2Int, Bitmap>();
+
+            DebuggingVisualizer _debugVisualizer = new();
+
+
+
             foreach (var cluster in clusters)
             {
                 var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, nextId);
@@ -67,8 +76,24 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
+
+                var temp = new CommunicationManager(simulationMap, constraints, _debugVisualizer); //This is a hack for calculating communication zones
+
+                foreach (var vertex in vertices)
+                {
+                    communicationZones[vertex.Position] = temp.CalculateCommunicationZone(vertex.Position);
+                }
+
+                partitions.Add(new Partition(cluster.Key, vertices, communicationZones));
+
+
             }
-            return new PatrollingMap(allVertices, simulationMap);
+
+            if (partitions.Count == 0)
+            {
+                Debug.Log("No partitions found.... WHY?!");
+            }
+            return new PatrollingMap(allVertices, simulationMap, partitions);
         }
 
         public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, bool useOptimizedLOS = true)
@@ -80,6 +105,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var clusters = KMeansPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
+
             foreach (var cluster in clusters)
             {
                 var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, nextId);
@@ -95,6 +121,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
             }
+
             return new PatrollingMap(allVertices, simulationMap);
         }
 
