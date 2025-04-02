@@ -42,6 +42,28 @@ namespace Maes.Utilities
         // Find the k nearest neighbors for each point and return the reverse mapping
         public static Dictionary<Vector2Int, List<Vector2Int>> FindReverseNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
         {
+            var nearestNeighbors = GetKNearestNeighbors(distanceDict, k);
+
+            // Reverse nearest neighbor mapping
+            var reverseNearestNeighbors = new Dictionary<Vector2Int, List<Vector2Int>>();
+
+            foreach (var (start, neighborsList) in nearestNeighbors)
+            {
+                foreach (var (neighbor, _) in neighborsList)
+                {
+                    if (!reverseNearestNeighbors.ContainsKey(neighbor))
+                    {
+                        reverseNearestNeighbors[neighbor] = new List<Vector2Int>();
+                    }
+                    reverseNearestNeighbors[neighbor].Add(start);
+                }
+            }
+
+            return reverseNearestNeighbors;
+        }
+
+        public static Dictionary<Vector2Int, List<(Vector2Int, int)>> GetKNearestNeighbors(Dictionary<(Vector2Int, Vector2Int), int> distanceDict, int k)
+        {
             // Dictionary to store the k nearest neighbors of each point
             var nearestNeighbors = new Dictionary<Vector2Int, List<(Vector2Int, int)>>();
 
@@ -64,22 +86,7 @@ namespace Maes.Utilities
                 }
             }
 
-            // Reverse nearest neighbor mapping
-            var reverseNearestNeighbors = new Dictionary<Vector2Int, List<Vector2Int>>();
-
-            foreach (var (start, neighborsList) in nearestNeighbors)
-            {
-                foreach (var (neighbor, _) in neighborsList)
-                {
-                    if (!reverseNearestNeighbors.ContainsKey(neighbor))
-                    {
-                        reverseNearestNeighbors[neighbor] = new List<Vector2Int>();
-                    }
-                    reverseNearestNeighbors[neighbor].Add(start);
-                }
-            }
-
-            return reverseNearestNeighbors;
+            return nearestNeighbors;
         }
 
         /// <summary>
