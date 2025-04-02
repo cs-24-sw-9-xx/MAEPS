@@ -137,3 +137,6 @@ jobs:
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
       - name: Format
         run: dotnet format MAEPS.sln --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/" --verify-no-changes
+      - name: Check forbidden knowledge
+        run: |
+          unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Editor.ProjectAuditCI.AuditAndExport -quit
