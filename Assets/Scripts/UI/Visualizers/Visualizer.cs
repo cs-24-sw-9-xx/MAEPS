@@ -165,9 +165,9 @@ namespace Maes.UI.Visualizers
                 triangleIndexes.UnionWith(_cellIndexToTriangleIndexes[index]);
             }
 
-            Color32 CellIndexToColor(int cellIndex)
+            Color32 CellIndexToColor(int triangleIndex)
             {
-                return triangleIndexes.Contains(cellIndex)
+                return triangleIndexes.Contains(triangleIndex)
                 ? isContained
                 : isNotContained;
             }
