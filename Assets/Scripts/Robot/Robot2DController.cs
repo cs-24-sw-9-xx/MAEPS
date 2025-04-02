@@ -605,14 +605,7 @@ namespace Maes.Robot
 
         public SensedObject<int>[] SenseNearbyRobots()
         {
-            return CommunicationManager.SenseNearbyRobots(_robot.id)
-                .Select(e => new SensedObject<int>(
-                    e.Distance,
-                    Vector2.SignedAngle(_robot.transform.up,
-                                                new Vector2(Mathf.Cos(e.Angle * Mathf.Deg2Rad),
-                                                            Mathf.Sin(e.Angle * Mathf.Deg2Rad))),
-                    e.Item))
-                .ToArray();
+            return CommunicationManager.SenseNearbyRobots(_robot.id).ToArray();
         }
 
         public bool IsRotating()
