@@ -76,7 +76,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
 
             ConnectIslands(vertices, distanceMatrix);
 
-            Debug.LogFormat("Connect Vertices took {0} s", Time.realtimeSinceStartup - startTime);
+            Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {0} s", Time.realtimeSinceStartup - startTime);
 
             return vertices;
         }
