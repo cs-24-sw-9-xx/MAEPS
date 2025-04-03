@@ -21,11 +21,12 @@
 // Jakob Meyer Olsen
 // Mads Beyer Mogensen
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using Maes.Robot;
 using Maes.Robot.Tasks;
+
+using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
@@ -33,15 +34,18 @@ namespace Maes.Algorithms.Patrolling.Components
     {
         private const float RecoveryAngle = 45f; // All robots rotate by this angle
         private readonly Robot2DController _controller;
+        private readonly IMovementComponent _movementComponent;
         private bool _doingCollisionRecovery;
 
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
-        public CollisionRecoverySenseNeighboringRobotsComponent(Robot2DController controller)
+        public CollisionRecoverySenseNeighboringRobotsComponent(Robot2DController controller, IMovementComponent movementComponent)
         {
             _controller = controller;
+            _movementComponent = movementComponent;
         }
+
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
@@ -55,17 +59,22 @@ namespace Maes.Algorithms.Patrolling.Components
                     var myId = _controller.GetRobot().id;
                     var lowestId = GetLowestIdOfNearbyRobots(myId);
 
-                    if (lowestId == myId)
+                    if (lowestId != myId)
                     {
                         foreach (var condition in PerformRecoveryManeuver())
                         {
                             yield return condition;
                         }
 
-                        while (lowestId == myId)
+                        while (lowestId != myId)
                         {
                             yield return ComponentWaitForCondition.WaitForLogicTicks(1, false);
                             lowestId = GetLowestIdOfNearbyRobots(myId);
+                        }
+                        while (GetRelativePositionTo(_movementComponent.TargetPosition).Distance > 0.25f)
+                        {
+                            _controller.PathAndMoveTo(_movementComponent.TargetPosition, dependOnBrokenBehaviour: false);
+                            yield return ComponentWaitForCondition.WaitForLogicTicks(1, false);
                         }
                     }
                 }
@@ -103,7 +112,20 @@ namespace Maes.Algorithms.Patrolling.Components
         private int GetLowestIdOfNearbyRobots(int myId)
         {
             var nearbyRobots = _controller.SenseNearbyRobots();
-            return nearbyRobots.Length == 0 ? -1 : nearbyRobots.Select(r => r.RobotId).Min();
+            var lowestId = myId;
+            foreach (var robot in nearbyRobots)
+            {
+                if (robot.RobotId < lowestId)
+                {
+                    lowestId = robot.RobotId;
+                }
+            }
+            return lowestId;
+        }
+
+        private RelativePosition GetRelativePositionTo(Vector2Int position)
+        {
+            return _controller.SlamMap.CoarseMap.GetTileCenterRelativePosition(position, dependOnBrokenBehaviour: false);
         }
     }
 }
