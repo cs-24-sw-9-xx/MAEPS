@@ -45,7 +45,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertices with connections(edges) to other vertices.</returns>
-        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
 
@@ -53,7 +53,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
 
             var reverseNearestNeighbors = MapUtilities.GetReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
 
-            var vertices = ConnectReverseNearestNeighbors(vertexPositions, colorIslands, defaultColor, nextId, reverseNearestNeighbors);
+            var vertices = ConnectReverseNearestNeighbors(vertexPositions, nextId, reverseNearestNeighbors);
 
             ConnectIslands(vertices, distanceMatrix);
 
@@ -62,7 +62,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
             return vertices;
         }
 
-        private static Vertex[] ConnectReverseNearestNeighbors(IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId, Dictionary<Vector2Int, List<Vector2Int>> reverseNearestNeighbors)
+        private static Vertex[] ConnectReverseNearestNeighbors(IReadOnlyCollection<Vector2Int> vertexPositions, int nextId, Dictionary<Vector2Int, List<Vector2Int>> reverseNearestNeighbors)
         {
             var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
@@ -73,13 +73,10 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
                 {
                     continue;
                 }
-                var color = colorIslands ? Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f) : defaultColor;
-                vertex.Color = color;
                 foreach (var neighborPos in neighbors)
                 {
                     if (vertexMap.TryGetValue(neighborPos, out var neighborVertex))
                     {
-                        neighborVertex.Color = color;
                         vertex.AddNeighbor(neighborVertex);
                         neighborVertex.AddNeighbor(vertex);
                     }
