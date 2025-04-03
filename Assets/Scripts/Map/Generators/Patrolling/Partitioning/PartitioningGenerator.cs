@@ -19,6 +19,9 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
+// Henrik van Peet,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
 
 using System;
 using System.Collections.Generic;
