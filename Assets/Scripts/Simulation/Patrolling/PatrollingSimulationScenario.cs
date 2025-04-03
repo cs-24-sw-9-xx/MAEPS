@@ -6,8 +6,6 @@ using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 
-using UnityEngine;
-
 namespace Maes.Simulation.Patrolling
 {
     public delegate PatrollingMap PatrollingMapFactory(SimulationMap<Tile> map);
@@ -40,7 +38,7 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyMostVisibilityWaypointGenerator.MakePatrollingMap(map, (bitmap, positions) => ReverseNearestNeighborWaypointConnector.ConnectVertices(bitmap, positions, true, Color.green)));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => GreedyMostVisibilityWaypointGenerator.MakePatrollingMap(map, (bitmap, positions) => ReverseNearestNeighborWaypointConnector.ConnectVertices(bitmap, positions)));
         }
     }
 }
