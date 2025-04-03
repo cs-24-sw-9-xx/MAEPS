@@ -21,26 +21,15 @@
 // Jakob Meyer Olsen
 // Mads Beyer Mogensen
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
-using Maes.Map.PathFinding;
 using Maes.Robot;
 using Maes.Robot.Tasks;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
-    internal class CollisionMessage
-    {
-        public CollisionMessage(int myId, Queue<PathStep> currentPath)
-        {
-            RobotId = myId;
-            PathSteps = currentPath;
-        }
-
-        public int RobotId { get; }
-        public Queue<PathStep> PathSteps { get; }
-    }
-    public class CollisionRecoverySenseNeighboringRobotsComponent : IComponent
+    public sealed class CollisionRecoverySenseNeighboringRobotsComponent : IComponent
     {
         private const float RecoveryAngle = 45f; // All robots rotate by this angle
         private readonly Robot2DController _controller;
@@ -53,6 +42,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             _controller = controller;
         }
+
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             while (true)
@@ -62,8 +52,8 @@ namespace Maes.Algorithms.Patrolling.Components
                     _doingCollisionRecovery = true;
                     _controller.StopCurrentTask();
                     yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
-
-                    GetNearbyRobots(out var myId, out var lowestId);
+                    var myId = _controller.GetRobot().id;
+                    var lowestId = GetLowestIdOfNearbyRobots(myId);
 
                     if (lowestId == myId)
                     {
@@ -75,7 +65,7 @@ namespace Maes.Algorithms.Patrolling.Components
                         while (lowestId == myId)
                         {
                             yield return ComponentWaitForCondition.WaitForLogicTicks(1, false);
-                            GetNearbyRobots(out myId, out lowestId);
+                            lowestId = GetLowestIdOfNearbyRobots(myId);
                         }
                     }
                 }
@@ -89,10 +79,14 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             if (_doingCollisionRecovery)
             {
-                stringBuilder.Append("Doing multi-robot collision avoidance\n");
+                stringBuilder.Append("Doing collision avoidance\n");
             }
         }
 
+        /// <summary>
+        /// Performs the recovery maneuver. The robot rotates by a certain angle and then moves backwards for a short distance.
+        /// </summary>
+        /// <returns></returns>
         private IEnumerable<ComponentWaitForCondition> PerformRecoveryManeuver()
         {
             _controller.Rotate(RecoveryAngle);
@@ -101,25 +95,15 @@ namespace Maes.Algorithms.Patrolling.Components
             yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
         }
 
-        private void GetNearbyRobots(out int myId, out int lowestId)
+        /// <summary>
+        /// Gets the lowest id of the robots in the robots' neighborhood. If no robots are in the neighborhood, -1 is returned.
+        /// </summary>
+        /// <param name="myId"></param>
+        /// <returns></returns>
+        private int GetLowestIdOfNearbyRobots(int myId)
         {
             var nearbyRobots = _controller.SenseNearbyRobots();
-            myId = _controller.GetRobot().id;
-            lowestId = myId;
-
-            if (nearbyRobots.Length == 0)
-            {
-                lowestId = -1;
-                return;
-            }
-
-            foreach (var robot in nearbyRobots)
-            {
-                if (robot.RobotId < lowestId)
-                {
-                    lowestId = robot.RobotId;
-                }
-            }
+            return nearbyRobots.Length == 0 ? -1 : nearbyRobots.Select(r => r.RobotId).Min();
         }
     }
 }
