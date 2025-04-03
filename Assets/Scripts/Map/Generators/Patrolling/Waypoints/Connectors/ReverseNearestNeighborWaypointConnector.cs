@@ -51,7 +51,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
 
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
 
-            var reverseNearestNeighbors = MapUtilities.FindReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
+            var reverseNearestNeighbors = MapUtilities.GetReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
             var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
