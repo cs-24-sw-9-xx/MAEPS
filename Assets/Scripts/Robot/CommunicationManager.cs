@@ -52,13 +52,13 @@ namespace Maes.Robot
     {
         public readonly float Distance;
         public readonly float Angle;
-        public readonly T Item;
+        public readonly T RobotId;
 
-        public SensedObject(float distance, float angle, T item)
+        public SensedObject(float distance, float angle, T robotId)
         {
             Distance = distance;
             Angle = angle;
-            Item = item;
+            RobotId = robotId;
         }
 
         public Vector2 GetRelativePosition(Vector2 myPosition, float globalAngle)
@@ -379,11 +379,9 @@ namespace Maes.Robot
                 {
                     continue;
                 }
-
                 var comInfo = _adjacencyMatrix![(id, robot.id)];
-                if ((comInfo.Distance > _robotConstraints.SenseNearbyAgentsRange && !_robotConstraints.MaterialCommunication) ||
-                   (comInfo.WallCellsDistance > 0 && _robotConstraints.SenseNearbyAgentsBlockedByWalls) ||
-                   (!comInfo.TransmissionSuccessful && _robotConstraints.MaterialCommunication))
+
+                if (!comInfo.TransmissionSuccessful || comInfo.Distance > _robotConstraints.SenseNearbyAgentsRange)
                 {
                     continue;
                 }

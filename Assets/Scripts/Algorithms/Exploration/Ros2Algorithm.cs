@@ -145,7 +145,7 @@ namespace Maes.Algorithms.Exploration
             // ---- Nearby Robots ---- //
             var nearbyRobots = _controller.SenseNearbyRobots();
             // Map to relative positions of other robots
-            var otherRobots = nearbyRobots.Select(e => (item: e.Item, e.GetRelativePosition(robotPosition, robotRotation)));
+            var otherRobots = nearbyRobots.Select(e => (item: e.RobotId, e.GetRelativePosition(robotPosition, robotRotation)));
             // Convert to ros messages
             var nearbyRobotMsgs = otherRobots.Select(e =>
                 new NearbyRobotMsg(e.item.ToString(), new Vector2DMsg(e.Item2.x, e.Item2.y)));
