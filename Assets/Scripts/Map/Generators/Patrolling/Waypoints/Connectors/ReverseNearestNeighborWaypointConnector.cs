@@ -52,6 +52,18 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
 
             var reverseNearestNeighbors = MapUtilities.GetReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
+
+            var vertices = ConnectReverseNearestNeighbors(vertexPositions, colorIslands, defaultColor, nextId, reverseNearestNeighbors);
+
+            ConnectIslands(vertices, distanceMatrix);
+
+            Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {0} s", Time.realtimeSinceStartup - startTime);
+
+            return vertices;
+        }
+
+        private static Vertex[] ConnectReverseNearestNeighbors(IReadOnlyCollection<Vector2Int> vertexPositions, bool colorIslands, Color defaultColor, int nextId, Dictionary<Vector2Int, List<Vector2Int>> reverseNearestNeighbors)
+        {
             var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
@@ -74,13 +86,8 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
                 }
             }
 
-            ConnectIslands(vertices, distanceMatrix);
-
-            Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {0} s", Time.realtimeSinceStartup - startTime);
-
             return vertices;
         }
-
 
         private static void ConnectIslands(
                  Vertex[] vertices,
