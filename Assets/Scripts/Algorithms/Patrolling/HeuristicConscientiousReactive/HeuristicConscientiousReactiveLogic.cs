@@ -1,109 +1,69 @@
-// Copyright 2024 MAES
+// Copyright 2025 MAEPS
 // 
-// This file is part of MAES
+// This file is part of MAEPS
 // 
-// MAES is free software: you can redistribute it and/or modify it under
+// MAEPS is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the
 // Free Software Foundation, either version 3 of the License, or (at your option)
 // any later version.
 // 
-// MAES is distributed in the hope that it will be useful, but WITHOUT
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 // Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License along
-// with MAES. If not, see http://www.gnu.org/licenses/.
-// 
-// Contributors: 
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+//
+// Contributors 2025: 
 // Henrik van Peet,
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
-// 
-// Original repository: https://github.com/Molitany/MAES
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
-using Maes.Robot;
 
 using UnityEngine;
 
-namespace Maes.Algorithms.Patrolling
+using Random = System.Random;
+
+
+namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 {
-    /// <summary>
-    /// Original implementation of the Heuristic Conscientious Reactive Algorithm of https://repositorio.ufpe.br/handle/123456789/2474.
-    /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
-    /// Heuristic: The vertex with the lowest idleness and distance estimation
-    /// </summary>
-    public sealed class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
+    public sealed class HeuristicConscientiousReactiveLogic
     {
-        public HeuristicConscientiousReactiveAlgorithm(int randomSeed = 0)
+        private readonly Random _random;
+        private readonly DistanceEstimator _distanceEstimator;
+
+        public HeuristicConscientiousReactiveLogic(DistanceEstimator distanceEstimator, int seed = 0)
         {
-            _random = new(randomSeed);
-        }
-        public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
-
-        // Set by CreateComponents
-        private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        private IRobotController _controller = null!;
-
-        private readonly System.Random _random;
-
-        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
-        {
-            _controller = controller;
-
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            _random = new Random(seed);
+            _distanceEstimator = distanceEstimator;
         }
 
         public delegate float DistanceEstimator(Vertex source, Vertex target);
 
-        private Vertex NextVertex(Vertex currentVertex)
+        public Vertex NextVertex(Vertex currentVertex, IReadOnlyCollection<Vertex> neighbors)
         {
             // Calculate the normalized idleness of the neighbors
-            var normalizedIdleness = CalculateNormalizedIdleness(currentVertex.Neighbors);
+            var normalizedIdleness = CalculateNormalizedIdleness(neighbors);
 
             // Calculate the normalized distance estimation of the neighbors
-            var normalizedDistances = CalculateNormalizedDistance(currentVertex, ActualDistanceMethod);
-            var bestVertices = UtilityFunction(normalizedIdleness, normalizedDistances);
-            var minUtilityValue = bestVertices.Select(i => i.Value).Min();
-            bestVertices = bestVertices.Where(i => i.Value == minUtilityValue);
-            var nextVertex = bestVertices.ElementAt(_random.Next(bestVertices.Count())).Vertex;
-            Debug.Log($"Next vertex {nextVertex.Id}, with neighbours: {string.Join(", ", nextVertex.Neighbors.Select(x => x.Id))}");
+            var normalizedDistances = CalculateNormalizedDistance(currentVertex, neighbors, _distanceEstimator);
+
+            var bestVertices = UtilityFunction(normalizedIdleness, normalizedDistances).ToArray();
+            var minUtilityValue = bestVertices.Min(i => i.Value);
+            bestVertices = bestVertices.Where(i => i.Value == minUtilityValue).ToArray();
+            var nextVertex = bestVertices.ElementAt(_random.Next(bestVertices.Length)).Vertex;
+
             return nextVertex;
         }
 
-        /// <summary>
-        /// Realistically, this method should be used, since the distance estimation is not always accurate.
-        /// Currently, we use the actual path distance as the distance estimation. 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        private float DistanceEstimatorMethod(Vertex source, Vertex target)
-        {
-            return _controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
-        }
-
-        private float ActualDistanceMethod(Vertex source, Vertex target)
-        {
-            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
-            {
-                return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
-            }
-            throw new Exception($"Path from {source.Id} to {target.Id} not found");
-        }
-
-        private IEnumerable<NormalizedValue> UtilityFunction(List<NormalizedValue> normalizedIdleness, List<NormalizedValue> normalizedDistances)
+        private static IEnumerable<NormalizedValue> UtilityFunction(List<NormalizedValue> normalizedIdleness, List<NormalizedValue> normalizedDistances)
         {
             if (normalizedIdleness.Count != normalizedDistances.Count)
             {
@@ -157,9 +117,8 @@ namespace Maes.Algorithms.Patrolling
             return normalizedIdleness;
         }
 
-        private static List<NormalizedValue> CalculateNormalizedDistance(Vertex currentVertex, DistanceEstimator distanceEstimator)
+        private static List<NormalizedValue> CalculateNormalizedDistance(Vertex currentVertex, IReadOnlyCollection<Vertex> neighbours, DistanceEstimator distanceEstimator)
         {
-            var neighbours = currentVertex.Neighbors;
             var distanceEstimations = neighbours.Select(vertex => (Vertex: vertex, dist: distanceEstimator(currentVertex, vertex))).ToList();
             if (distanceEstimations.Any(estimation => estimation.dist < 0))
             {
