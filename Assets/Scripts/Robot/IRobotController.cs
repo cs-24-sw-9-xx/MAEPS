@@ -39,7 +39,7 @@ namespace Maes.Robot
         /// <summary>
         /// Gets the partition this robot is assigned to.
         /// </summary>
-        int AssignedPartition { get; }
+        int AssignedPartition { get; set; }
 
         /// <summary>
         /// Gets the color of this robot.
