@@ -15,7 +15,7 @@ namespace Maes.Algorithms.Patrolling
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private RedistributionComponent _redistributionComponent = null!;
 
-        protected override IComponent[] CreateComponents(Robot2DController controller, PatrollingMap patrollingMap)
+        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);

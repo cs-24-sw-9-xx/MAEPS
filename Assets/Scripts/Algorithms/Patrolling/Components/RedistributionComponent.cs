@@ -34,9 +34,9 @@ namespace Maes.Algorithms.Patrolling.Components
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
         private readonly List<Partition> _partitions;
+        private readonly IRobotController _controller;
         private Partition _currentPartition;
-        private readonly MonaRobot _monaRobot;
-        private readonly CommunicationManager _communicationManager;
+        private int _assignedPartition;
         private readonly List<int> _currentPartitionIntersection;
         private Dictionary<int, bool> ReceivedCommunication { get; }
 
@@ -46,12 +46,12 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => -200;
 
-        public RedistributionComponent(List<Partition> partitions, Robot2DController controller)
+        public RedistributionComponent(List<Partition> partitions, IRobotController controller)
         {
             _partitions = partitions;
-            _monaRobot = controller.GetRobot();
-            _currentPartition = _partitions[_monaRobot.AssignedPartition];
-            _communicationManager = controller.CommunicationManager;
+            _controller = controller;
+            _assignedPartition = controller.AssignedPartition;
+            _currentPartition = _partitions[_assignedPartition];
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new List<int>();
             ReceivedCommunication = new Dictionary<int, bool>();
@@ -70,7 +70,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void UpdateMessagesReceived()
         {
-            foreach (var objectMessage in _communicationManager.ReadMessages(_monaRobot))
+            foreach (var objectMessage in _controller.ReceiveBroadcast())
             {
                 if (objectMessage is RedistributionMessage message)
                 {
@@ -81,7 +81,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void CalculateRedistribution()
         {
-            var robotPosition = _monaRobot.Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            var robotPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition();
             foreach ((var partitionId, var intersectionZone) in _currentPartition.IntersectionZones)
             {
                 if (intersectionZone.Contains(robotPosition))
@@ -120,7 +120,7 @@ namespace Maes.Algorithms.Patrolling.Components
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _partitions[partitionId];
-                _monaRobot.AssignedPartition = partition.PartitionId;
+                _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();
                 _currentPartitionIntersection.Clear();

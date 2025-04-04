@@ -36,7 +36,11 @@ namespace Maes.Robot
     {
         public int Id => _robot.id;
 
-        public int AssignedPartition => _robot.AssignedPartition;
+        public int AssignedPartition
+        {
+            get => _robot.AssignedPartition;
+            set => _robot.AssignedPartition = value;
+        }
 
         public Color32 Color => _robot.Color;
 
