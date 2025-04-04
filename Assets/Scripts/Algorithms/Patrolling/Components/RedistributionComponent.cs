@@ -41,10 +41,10 @@ namespace Maes.Algorithms.Patrolling.Components
         private Dictionary<int, bool> ReceivedCommunication { get; }
 
         /// <inheritdoc />
-        public int PreUpdateOrder => 1;
+        public int PreUpdateOrder => -200;
 
         /// <inheritdoc />
-        public int PostUpdateOrder => 1;
+        public int PostUpdateOrder => -200;
 
         public RedistributionComponent(List<Partition> partitions, Robot2DController controller)
         {
@@ -81,7 +81,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void CalculateRedistribution()
         {
-            var robotPosition = _monaRobot.Controller.SlamMap.GetCurrentPosition();
+            var robotPosition = _monaRobot.Controller.SlamMap.CoarseMap.GetCurrentPosition();
             foreach ((var partitionId, var intersectionZone) in _currentPartition.IntersectionZones)
             {
                 if (intersectionZone.Contains(robotPosition))
