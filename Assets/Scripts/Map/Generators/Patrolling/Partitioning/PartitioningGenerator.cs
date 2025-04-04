@@ -88,6 +88,16 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 partitionId++;
             }
 
+            foreach (var part in partitions){
+                foreach (var otherPart in partitions)
+                {
+                    if (part.PartitionId != otherPart.PartitionId)
+                    {
+                        part.AddNeighborPartition(otherPart);
+                    }
+                }
+            }
+
             return new PatrollingMap(allVertices, simulationMap, partitions);
         }
 
