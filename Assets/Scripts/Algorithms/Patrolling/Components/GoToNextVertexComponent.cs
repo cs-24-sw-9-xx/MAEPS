@@ -151,7 +151,7 @@ namespace Maes.Algorithms.Patrolling.Components
             TargetPosition = target;
             while (true)
             {
-                yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: false);
+                yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: true);
 
                 var relativePosition = GetRelativePositionTo(target);
                 if (relativePosition.Distance <= MinDistance)
