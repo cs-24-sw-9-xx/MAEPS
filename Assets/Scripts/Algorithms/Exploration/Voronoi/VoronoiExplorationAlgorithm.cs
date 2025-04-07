@@ -717,7 +717,7 @@ namespace Maes.Algorithms.Exploration.Voronoi
                             if (distance < bestDistance)
                             {
                                 bestDistance = distance;
-                                bestRobotId = robot.Item;
+                                bestRobotId = robot.RobotId;
                             }
                         }
 
