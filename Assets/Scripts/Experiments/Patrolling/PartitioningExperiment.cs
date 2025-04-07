@@ -25,12 +25,9 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
-using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
-
-using NUnit.Framework.Constraints;
 
 using UnityEngine;
 

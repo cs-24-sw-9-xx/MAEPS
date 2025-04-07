@@ -1,9 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using Maes.Map;
 using Maes.Robot;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -30,15 +30,18 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void DistributePartitions()
         {
-            var communicationZones = new Dictionary<Vector2Int, Bitmap>();
-            foreach (var partition in _map.VerticesByPartition)
+            foreach (var (partitionId, vertices) in _map.VerticesByPartition)
             {
-                foreach (var vertex in partition.Value)
-                {
-                    var communicationZone = _communicationManager.CalculateCommunicationZone(vertex.Position);
-                    communicationZones[vertex.Position] = communicationZone;
-                }
-                Partitions.Add(new Partition(partition.Key, partition.Value, communicationZones));
+                Debug.Log($"Partition {partitionId} has {vertices.Length} vertices.");
+
+                var communicationZones = vertices.ToDictionary(v => v.Position, v => _communicationManager.CalculateCommunicationZone(v.Position));
+                var partition = new Partition(
+                    partitionId,
+                    vertices,
+                    communicationZones);
+
+
+                Partitions.Add(partition);
             }
 
             foreach (var partition in Partitions)
