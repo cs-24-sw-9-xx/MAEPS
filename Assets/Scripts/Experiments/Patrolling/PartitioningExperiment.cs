@@ -55,7 +55,8 @@ namespace Maes.Experiments.Patrolling
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true,
-                materialCommunication: true);
+                materialCommunication: true,
+                robotCollisions: false);
 
             var simulator = new MySimulator();
             var random = new System.Random(12345);

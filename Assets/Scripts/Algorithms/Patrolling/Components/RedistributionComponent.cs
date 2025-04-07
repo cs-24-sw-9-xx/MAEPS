@@ -20,11 +20,12 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 // Mads Beyer Mogensen
-
 using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Robot;
+
+using UnityEngine;
 
 
 namespace Maes.Algorithms.Patrolling.Components
@@ -33,10 +34,10 @@ namespace Maes.Algorithms.Patrolling.Components
     {
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
-        private readonly PartitionDistributionComponent _partitionDistributionComponent;
         private readonly IRobotController _controller;
         private Partition _currentPartition;
         private readonly List<int> _currentPartitionIntersection;
+        private float _trackerUpdateTimestamp = 0f;
         private Dictionary<int, bool> ReceivedCommunication { get; }
 
         /// <inheritdoc />
@@ -58,11 +59,18 @@ namespace Maes.Algorithms.Patrolling.Components
             _currentPartition = PartitionDistributionComponent.Partitions[_controller.AssignedPartition];
             while (true)
             {
+                BroadCastMessage();
                 UpdateMessagesReceived();
                 CalculateRedistribution();
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
 
             }
+        }
+
+        private void BroadCastMessage()
+        {
+            _controller.Broadcast(new RedistributionMessage(_controller.AssignedPartition));
+            _controller.Broadcast(new PartitionMessage(_trackerUpdateTimestamp, _controller.AssignedPartition, _redistributionTracker));
         }
 
         private void UpdateMessagesReceived()
@@ -71,7 +79,21 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 if (objectMessage is RedistributionMessage message)
                 {
-                    ReceivedCommunication[message.Sender.AssignedPartition] = true;
+                    ReceivedCommunication[message.PartitionId] = true;
+                }
+
+                if (objectMessage is PartitionMessage partitionMessage)
+                {
+                    if (partitionMessage.PartitionId != _controller.AssignedPartition || _trackerUpdateTimestamp < partitionMessage.Timestamp)
+                    {
+                        return;
+                    }
+
+                    foreach (var (partitionId, probability) in partitionMessage.RedistributionTracker)
+                    {
+                        _redistributionTracker[partitionId] = probability;
+                    }
+                    _trackerUpdateTimestamp = partitionMessage.Timestamp;
                 }
             }
         }
@@ -95,6 +117,7 @@ namespace Maes.Algorithms.Patrolling.Components
                         if (ReceivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
                         {
                             _redistributionTracker[partitionId] = -_currentPartition.CommunicationRatio[partitionId];
+                            _trackerUpdateTimestamp = Time.realtimeSinceStartup;
                             ReceivedCommunication[partitionId] = false;
                         }
                         else
@@ -113,7 +136,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private bool SwitchPartition(int partitionId)
         {
-            var randomValue = UnityEngine.Random.value;
+            var randomValue = Random.value;
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = PartitionDistributionComponent.Partitions[partitionId];
@@ -129,14 +152,23 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private sealed class RedistributionMessage
         {
-            public MonaRobot Sender { get; }
-            public string Message { get; }
-            public int Timestamp { get; }
-            public RedistributionMessage(int timestamp, MonaRobot sender, string message)
+            public int PartitionId { get; }
+            public RedistributionMessage(int partitionId)
+            {
+                PartitionId = partitionId;
+            }
+        }
+
+        private sealed class PartitionMessage
+        {
+            public int PartitionId { get; }
+            public float Timestamp { get; }
+            public Dictionary<int, float> RedistributionTracker { get; }
+            public PartitionMessage(float timestamp, int partitionId, Dictionary<int, float> redistributionTracker)
             {
                 Timestamp = timestamp;
-                Sender = sender;
-                Message = message;
+                PartitionId = partitionId;
+                RedistributionTracker = redistributionTracker;
             }
         }
     }
