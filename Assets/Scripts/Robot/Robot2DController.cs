@@ -88,9 +88,7 @@ namespace Maes.Robot
         private RobotStatus _currentStatus = RobotStatus.Idle;
         private ITask? _currentTask;
 
-        // Set by RobotSpawner
-        [ForbiddenKnowledge]
-        internal CommunicationManager CommunicationManager { get; set; } = null!;
+        public CommunicationManager CommunicationManager { get; set; } = null!;
 
         // Set by RobotSpawner
         public SlamMap SlamMap { get; set; } = null!;

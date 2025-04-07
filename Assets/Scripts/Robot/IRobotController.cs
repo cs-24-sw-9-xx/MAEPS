@@ -36,6 +36,8 @@ namespace Maes.Robot
         /// </summary>
         int Id { get; }
 
+        CommunicationManager CommunicationManager { get; set; }
+
         /// <summary>
         /// Gets the partition this robot is assigned to.
         /// </summary>

@@ -119,9 +119,9 @@ namespace Maes.Robot
                 },
                 [2400] = new() //2.4 GHz
                 {
-                    [TileType.Room] = 0f,
-                    [TileType.Hall] = 0f,
-                    [TileType.Wall] = 0f,
+                    [TileType.Room] = 0.5f,
+                    [TileType.Hall] = 0.5f,
+                    [TileType.Wall] = 0.5f,
                     [TileType.Concrete] = 15f,
                     [TileType.Wood] = 6.7f,
                     [TileType.Brick] = 5.5f

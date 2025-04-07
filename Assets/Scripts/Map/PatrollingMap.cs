@@ -16,33 +16,32 @@ namespace Maes.Map
     {
         public readonly IReadOnlyList<Vertex> Vertices;
 
-        public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
+        public readonly Dictionary<int, Vertex[]> VerticesByPartition;
 
-        public List<Partition> Partitions { get; } = null!;
+        public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
         public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
         : this(vertices, CreatePaths(vertices, simulationMap))
         {
         }
 
-        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, List<Partition> partitions)
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, Dictionary<int, Vertex[]> partitions)
             : this(vertices, CreatePaths(vertices, simulationMap))
         {
-            Partitions = partitions;
+            VerticesByPartition = partitions;
         }
 
         private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths)
         {
             Vertices = vertices;
             Paths = paths;
-
         }
 
-        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, List<Partition> partitions)
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, Dictionary<int, Vertex[]> partitions)
         {
             Vertices = vertices;
             Paths = paths;
-            Partitions = partitions;
+            VerticesByPartition = partitions;
 
         }
 
@@ -64,7 +63,7 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, Partitions);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VerticesByPartition);
         }
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)

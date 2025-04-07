@@ -41,9 +41,9 @@ namespace Maes.UI.Visualizers.Patrolling
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
             CommunicationZoneTiles = new Dictionary<int, Bitmap>();
-            var vertecies = patrollingMap.Vertices;
-            var communicationZones = communicationManager.CalculateZones(vertecies.Select(v => v.Position).ToList());
-            foreach (var vertex in vertecies)
+            var vertices = patrollingMap.Vertices;
+            var communicationZones = communicationManager.CalculateZones(vertices.Select(v => v.Position).ToList());
+            foreach (var vertex in vertices)
             {
                 CommunicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
             }
@@ -52,30 +52,6 @@ namespace Maes.UI.Visualizers.Patrolling
             foreach (var (id, zone) in communicationZones)
             {
                 AllCommunicationZoneTiles.Union(zone);
-            }
-        }
-
-        public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, List<Vertex> vertices, CommunicationManager communicationManager)
-        {
-            CommunicationZoneTiles = vertices.ToDictionary(v => v.Id, _ => new HashSet<int>());
-
-            var positions = vertices.Select(v => v.Position).ToList();
-            var communicationZones = communicationManager.CalculateZones(positions, simulationMap);
-            var cellIndexToTriangleIndexes = simulationMap.CellIndexToTriangleIndexes();
-            using var bitmap = MapUtilities.MapToBitMap(simulationMap);
-            foreach (var vertex in vertices)
-            {
-                var tiles = communicationZones[vertex.Position];
-                if (tiles == null)
-                {
-                    continue;
-                }
-                foreach (var tile in tiles)
-                {
-                    var index = tile.x + tile.y * bitmap.Width;
-                    CommunicationZoneTiles[vertex.Id].UnionWith(cellIndexToTriangleIndexes[index]);
-                }
-                AllCommunicationZoneTiles.UnionWith(CommunicationZoneTiles[vertex.Id]);
             }
         }
     }

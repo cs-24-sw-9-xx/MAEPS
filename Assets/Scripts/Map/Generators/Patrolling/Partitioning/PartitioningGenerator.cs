@@ -29,7 +29,6 @@ using System.Linq;
 
 using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
-using Maes.Robot;
 using Maes.UI;
 using Maes.Utilities;
 
@@ -44,9 +43,9 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
     public static class PartitioningGenerator
     {
         public delegate Dictionary<int, List<Vector2Int>> PartitioningGeneratorDelegate(
-            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions, RobotConstraints constraints);
+            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
 
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints constraints)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
@@ -55,9 +54,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
-            var partitions = new List<Partition>();
             var partitionId = 0;
-            var communicationZones = new Dictionary<Vector2Int, Bitmap>();
+            var partitions = new Dictionary<int, Vertex[]>();
 
             DebuggingVisualizer _debugVisualizer = new();
 
@@ -69,30 +67,17 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 // Assign the partition and color to each vertex in the cluster
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-                var communicationManager = new CommunicationManager(simulationMap, constraints, _debugVisualizer); //This is a hack for calculating communication zones
 
                 foreach (var vertex in vertices)
                 {
                     vertex.Partition = partitionId;
                     vertex.Color = clusterColor;
-                    communicationZones[vertex.Position] = communicationManager.CalculateCommunicationZone(vertex.Position);
                 }
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions.Add(new Partition(partitionId, vertices, communicationZones));
+                partitions[partitionId] = vertices;
                 partitionId++;
-            }
-
-            foreach (var part in partitions)
-            {
-                foreach (var otherPart in partitions)
-                {
-                    if (part.PartitionId != otherPart.PartitionId)
-                    {
-                        part.AddNeighborPartition(otherPart);
-                    }
-                }
             }
 
             return new PatrollingMap(allVertices, simulationMap, partitions);

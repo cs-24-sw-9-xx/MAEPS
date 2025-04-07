@@ -30,6 +30,8 @@ using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
+using NUnit.Framework.Constraints;
+
 using UnityEngine;
 
 namespace Maes.Experiments.Patrolling
@@ -55,7 +57,8 @@ namespace Maes.Experiments.Patrolling
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, _) => true);
+                calculateSignalTransmissionProbability: (_, _) => true,
+                materialCommunication: true);
 
             var simulator = new MySimulator();
             var random = new System.Random(12345);
@@ -78,7 +81,7 @@ namespace Maes.Experiments.Patrolling
                     seed: seed,
                     totalCycles: 40,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(CommonMaps.IslandsMap(), seed, brokenCollisionMap: false),
+                    mapSpawner: generator => generator.GenerateMap(CommonMaps.MapAMap(), seed, brokenCollisionMap: false),
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(
                         spawnPositions: spawningPosList,
                         collisionMap: map,
@@ -86,8 +89,8 @@ namespace Maes.Experiments.Patrolling
                         numberOfRobots: robotCount,
                         createAlgorithmDelegate: _ => new PartitionAlgorithm()),
                     robotConstraints: robotConstraints,
-                    partitions: robotCount, // To have the same amount of partitions as robots
-                    faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 4),
+                    partitions: 2, // To have the same amount of partitions as robots
+                                   // faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 4),
                     statisticsFileName:
                     $"{algoName}-map-IslandMap-seed-{seed}-comms-{constraintName}-robots-{robotCount}-SpawnAPart")
             );

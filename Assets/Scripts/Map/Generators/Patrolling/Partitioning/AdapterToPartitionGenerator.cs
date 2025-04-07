@@ -42,7 +42,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
             var vertexPositions = vertexIdByPosition.Keys.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(_collisionMap, vertexPositions);
-            var clusters = _partitioningGenerator(distanceMatrix, vertexPositions, robotIds.Count, _robotConstraints);
+            var clusters = _partitioningGenerator(distanceMatrix, vertexPositions, robotIds.Count);
 
             var vertexIdsPartitions = clusters.Values.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 

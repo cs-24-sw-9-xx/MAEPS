@@ -37,7 +37,7 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions, robotConstraints));
+            PatrollingMapFactory = patrollingMapFactory ?? ((map) => PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions));
         }
     }
 }

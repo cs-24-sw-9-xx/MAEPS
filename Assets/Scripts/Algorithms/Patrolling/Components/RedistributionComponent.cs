@@ -33,10 +33,9 @@ namespace Maes.Algorithms.Patrolling.Components
     {
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
-        private readonly List<Partition> _partitions;
+        private readonly PartitionDistributionComponent _partitionDistributionComponent;
         private readonly IRobotController _controller;
         private Partition _currentPartition;
-        private int _assignedPartition;
         private readonly List<int> _currentPartitionIntersection;
         private Dictionary<int, bool> ReceivedCommunication { get; }
 
@@ -46,12 +45,9 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => -200;
 
-        public RedistributionComponent(List<Partition> partitions, IRobotController controller)
+        public RedistributionComponent(IRobotController controller)
         {
-            _partitions = partitions;
             _controller = controller;
-            _assignedPartition = controller.AssignedPartition;
-            _currentPartition = _partitions[_assignedPartition];
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new List<int>();
             ReceivedCommunication = new Dictionary<int, bool>();
@@ -59,6 +55,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
+            _currentPartition = PartitionDistributionComponent.Partitions[_controller.AssignedPartition];
             while (true)
             {
                 UpdateMessagesReceived();
@@ -119,7 +116,7 @@ namespace Maes.Algorithms.Patrolling.Components
             var randomValue = UnityEngine.Random.value;
             if (randomValue <= _redistributionTracker[partitionId])
             {
-                var partition = _partitions[partitionId];
+                var partition = PartitionDistributionComponent.Partitions[partitionId];
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();
