@@ -86,7 +86,7 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 _controller.PathAndMoveTo(vertex.Position, dependOnBrokenBehaviour: false);
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-            }
+            } 
 
             while (true)
             {
@@ -101,6 +101,7 @@ namespace Maes.Algorithms.Patrolling.Components
                         _controller.PathAndMoveTo(targetVertex.Position, dependOnBrokenBehaviour: false);
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
                     }
+                    _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
                 }
                 else
                 {
