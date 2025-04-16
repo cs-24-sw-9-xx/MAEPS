@@ -16,6 +16,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
         {
             var targetWaypoint = _algorithm.TargetVertex;
 
+            visualizer.ResetWaypointsColor();
             visualizer.ShowTargetWaypoint(targetWaypoint);
         }
     }
