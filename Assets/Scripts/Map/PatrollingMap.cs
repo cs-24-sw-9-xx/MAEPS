@@ -16,6 +16,8 @@ namespace Maes.Map
     {
         public readonly IReadOnlyList<Vertex> Vertices;
 
+        public readonly Dictionary<int, Vertex[]> VerticesByPartition;
+
         public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
         public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
@@ -23,10 +25,24 @@ namespace Maes.Map
         {
         }
 
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, Dictionary<int, Vertex[]> partitions)
+            : this(vertices, CreatePaths(vertices, simulationMap))
+        {
+            VerticesByPartition = partitions;
+        }
+
         private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths)
         {
             Vertices = vertices;
             Paths = paths;
+        }
+
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, Dictionary<int, Vertex[]> partitions)
+        {
+            Vertices = vertices;
+            Paths = paths;
+            VerticesByPartition = partitions;
+
         }
 
         public PatrollingMap Clone()
@@ -47,7 +63,7 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VerticesByPartition);
         }
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)

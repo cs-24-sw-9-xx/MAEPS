@@ -18,11 +18,7 @@
 // Contributors: 
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
-// Henrik van Peet,
 // Jakob Meyer Olsen,
-// Mads Beyer Mogensen,
-// Puvikaran Santhirasegaram
-// 
 // Original repository: https://github.com/Molitany/MAES
 
 using System;
@@ -58,7 +54,7 @@ namespace Maes.Map.Generators
                 {
                     // Reverse y index to flip vertically (making the bitmap read from bottom to top)
                     var tileChar = lines[height - 1 - y][x];
-                    var tile = tileChar == 'X' ? TileType.Wall : TileType.Room;
+                    var tile = tileChar == 'X' ? TileType.Brick : TileType.Room;
                     tiles[x, y] = new Tile(tile);
                 }
             }
