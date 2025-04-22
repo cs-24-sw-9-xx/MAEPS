@@ -26,11 +26,10 @@ namespace Maes.Utilities
         {
             var possibleMeetingPoints = new List<PossibleMeetingPoint>();
 
-            var combinationOfPartitions = partitionInfoByRobotId.Values.GetCombinationOfPartitions();
+            var combinationOfPartitions = partitionInfoByRobotId.Values.Combinations();
             foreach (var (partitionInfo1, partitionInfo2) in combinationOfPartitions)
             {
-                var commonVerticesCount = partitionInfo1.VertexIds.Intersect(partitionInfo2.VertexIds).Count();
-                if (commonVerticesCount > 0)
+                if (partitionInfo1.VertexIds.Overlaps(partitionInfo2.VertexIds))
                 {
                     continue;
                 }
@@ -43,19 +42,6 @@ namespace Maes.Utilities
             }
 
             return possibleMeetingPoints;
-        }
-
-        private static IEnumerable<(PartitionInfo, PartitionInfo)> GetCombinationOfPartitions(this IEnumerable<PartitionInfo> partitionInfoByRobotId)
-        {
-            var partitions = partitionInfoByRobotId.ToArray();
-            var numberOfPartitions = partitions.Length;
-            for (var i = 0; i < numberOfPartitions; i++)
-            {
-                for (var j = i + 1; j < numberOfPartitions; j++)
-                {
-                    yield return (partitions[i], partitions[j]);
-                }
-            }
         }
 
         private static PossibleMeetingPoint GetPossibleMeetingPointsForPartitions(PartitionInfo partitionInfo1, PartitionInfo partitionInfo2, PatrollingMap patrollingMap)

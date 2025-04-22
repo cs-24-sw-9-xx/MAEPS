@@ -41,7 +41,7 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(IPartitionGenerator partitionGenerator, int seed = 0)
+        public HMPPatrollingAlgorithm(IPartitionGenerator<HMPPartitionInfo> partitionGenerator, int seed = 0)
         {
             _partitionGenerator = partitionGenerator;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
@@ -54,12 +54,12 @@ namespace Maes.Algorithms.Patrolling
                                                                            .VertexIds
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { _controller.Color }) ?? new Dictionary<int, Color32[]>();
 
-        private readonly IPartitionGenerator _partitionGenerator;
+        private readonly IPartitionGenerator<HMPPartitionInfo> _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
-        private readonly VirtualStigmergyComponent<int, PartitionInfo>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
-        private VirtualStigmergyComponent<int, PartitionInfo> _virtualStigmergyComponent = null!;
-        private StartupComponent<Dictionary<int, PartitionInfo>> _startupComponent = null!;
+        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
+        private VirtualStigmergyComponent<int, HMPPartitionInfo> _virtualStigmergyComponent = null!;
+        private StartupComponent<Dictionary<int, HMPPartitionInfo>> _startupComponent = null!;
         private PartitionComponent _partitionComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private IRobotController _controller = null!;
@@ -67,9 +67,9 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _partitionGenerator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(controller.SlamMap.CoarseMap));
-            _startupComponent = new StartupComponent<Dictionary<int, PartitionInfo>>(controller, _partitionGenerator.GeneratePartitions);
-            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, PartitionInfo>(_onConflict, controller);
+            _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap, _controller.Constraints);
+            _startupComponent = new StartupComponent<Dictionary<int, HMPPartitionInfo>>(controller, _partitionGenerator.GeneratePartitions);
+            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, HMPPartitionInfo>(_onConflict, controller);
             _partitionComponent = new PartitionComponent(controller, _startupComponent, _virtualStigmergyComponent);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
 

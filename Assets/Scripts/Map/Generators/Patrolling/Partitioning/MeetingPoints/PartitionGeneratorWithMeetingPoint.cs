@@ -1,24 +1,25 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Robot;
 using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public sealed class PartitionGeneratorWithMeetingPoint : IPartitionGenerator
+    public sealed class PartitionGeneratorWithMeetingPoint : IPartitionGenerator<PartitionInfo>
     {
-        private readonly BasePartitionGenerator _partitionGenerator;
+        private readonly BasePartitionGenerator<PartitionInfo> _partitionGenerator;
         private PatrollingMap _patrollingMap = null!;
 
-        public PartitionGeneratorWithMeetingPoint(BasePartitionGenerator partitionGenerator)
+        public PartitionGeneratorWithMeetingPoint(BasePartitionGenerator<PartitionInfo> partitionGenerator)
         {
             _partitionGenerator = partitionGenerator;
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, Bitmap collisionMap)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
         {
             _patrollingMap = patrollingMap;
-            _partitionGenerator.SetMaps(patrollingMap, collisionMap);
+            _partitionGenerator.SetMaps(patrollingMap, coarseMap, robotConstraints);
         }
 
         public Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)

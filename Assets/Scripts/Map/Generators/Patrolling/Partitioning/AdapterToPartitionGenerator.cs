@@ -27,7 +27,7 @@ using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public class AdapterToPartitionGenerator : BasePartitionGenerator
+    public class AdapterToPartitionGenerator : BasePartitionGenerator<PartitionInfo>
     {
         public AdapterToPartitionGenerator(PartitioningGenerator.PartitioningGeneratorDelegate partitioningGenerator)
         {

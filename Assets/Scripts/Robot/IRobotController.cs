@@ -77,6 +77,8 @@ namespace Maes.Robot
         /// </summary>
         float GlobalAngle { get; }
 
+        RobotConstraints Constraints { get; }
+
         /// <summary>
         /// This method instructs the robot to move <paramref name="distanceInMeters"/>ahead.
         /// The distance is approximated by the robot, and accuracy will depend on the implementation.

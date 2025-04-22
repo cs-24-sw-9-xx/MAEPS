@@ -23,6 +23,8 @@
 using System;
 using System.Collections.Generic;
 
+using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
     public class PartitionInfo : IEquatable<PartitionInfo>
@@ -37,6 +39,22 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public HashSet<int> VertexIds { get; }
 
         public bool Equals(PartitionInfo other)
+        {
+            return RobotId == other.RobotId &&
+                   VertexIds.SetEquals(other.VertexIds);
+        }
+    }
+
+    public class HMPPartitionInfo : PartitionInfo, IEquatable<HMPPartitionInfo>
+    {
+        public HMPPartitionInfo(PartitionInfo partitionInfo, List<MeetingPoint> meetingPoints) : base(partitionInfo.RobotId, partitionInfo.VertexIds)
+        {
+            MeetingPoints = meetingPoints;
+        }
+
+        public List<MeetingPoint> MeetingPoints { get; }
+
+        public bool Equals(HMPPartitionInfo other)
         {
             return RobotId == other.RobotId &&
                    VertexIds.SetEquals(other.VertexIds);
