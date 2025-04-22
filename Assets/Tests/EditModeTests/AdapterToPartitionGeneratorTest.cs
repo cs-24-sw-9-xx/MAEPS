@@ -3,7 +3,7 @@ using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Utilities;
+using Maes.Robot;
 
 using NUnit.Framework;
 
@@ -37,9 +37,12 @@ namespace Tests.EditModeTests
             var i = 0;
             var vertices = vertexPositions.Select(position => new Vertex(i++, position)).ToList();
 
+            var robotConstraints = new RobotConstraints(mapKnown: true);
+            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
+            var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
+            generator.SetMaps(patrollingMap, coarseMap, robotConstraints);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0, 1 });
 
@@ -69,9 +72,12 @@ namespace Tests.EditModeTests
             var i = 0;
             var vertices = vertexPositions.Select(position => new Vertex(i++, position)).ToList();
 
+            var robotConstraints = new RobotConstraints(mapKnown: true);
+            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
+            var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
+            generator.SetMaps(patrollingMap, coarseMap, robotConstraints);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0 });
 

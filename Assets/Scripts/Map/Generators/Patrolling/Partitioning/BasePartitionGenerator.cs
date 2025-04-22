@@ -22,25 +22,26 @@
 
 using System.Collections.Generic;
 
+using Maes.Robot;
 using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public interface IPartitionGenerator
+    public interface IPartitionGenerator<TPartitionInfo> where TPartitionInfo : PartitionInfo
     {
-        void SetMaps(PatrollingMap patrollingMap, Bitmap collisionMap);
-        Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds);
+        void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints);
+        Dictionary<int, TPartitionInfo> GeneratePartitions(HashSet<int> robotIds);
     }
 
-    public abstract class BasePartitionGenerator : IPartitionGenerator
+    public abstract class BasePartitionGenerator<TPartitionInfo> : IPartitionGenerator<TPartitionInfo> where TPartitionInfo : PartitionInfo
     {
         protected PatrollingMap _patrollingMap = null!;
         protected Bitmap _collisionMap = null!;
-        public void SetMaps(PatrollingMap patrollingMap, Bitmap collisionMap)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
         {
             _patrollingMap = patrollingMap;
-            _collisionMap = collisionMap;
+            _collisionMap = MapUtilities.MapToBitMap(coarseMap);
         }
-        public abstract Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds);
+        public abstract Dictionary<int, TPartitionInfo> GeneratePartitions(HashSet<int> robotIds);
     }
 }
