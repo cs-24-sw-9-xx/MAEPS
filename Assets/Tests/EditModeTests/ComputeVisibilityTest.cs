@@ -36,7 +36,7 @@ namespace Tests.EditModeTests
             public Bitmap Bitmap
             {
                 [MustDisposeResource]
-                get => Utilities.BitmapFromString(_mapData);
+                get => Utilities.Utilities.BitmapFromString(_mapData);
             }
 
             public TestCase(string name, string map, int expectedVisible, float maxVisibilityRange, Vector2Int point)
@@ -282,7 +282,7 @@ namespace Tests.EditModeTests
         [Timeout(10 * 60 * 60 * 1000)]
         public void EnsureValidWaypointsTest()
         {
-            using (var bitmap = Utilities.BitmapFromString(Map))
+            using (var bitmap = Utilities.Utilities.BitmapFromString(Map))
             {
                 var waypoints = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
 

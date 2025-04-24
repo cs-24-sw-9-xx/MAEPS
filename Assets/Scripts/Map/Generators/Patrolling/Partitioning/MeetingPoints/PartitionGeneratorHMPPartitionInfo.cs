@@ -14,7 +14,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
         private PatrollingMap _patrollingMap = null!;
         private EstimationTravel _estimationTravel = null!;
 
-        public PartitionGeneratorHMPPartitionInfo(BasePartitionGenerator<PartitionInfo> partitionGenerator)
+        public PartitionGeneratorHMPPartitionInfo(IPartitionGenerator<PartitionInfo> partitionGenerator)
         {
             _partitionGenerator = new PartitionGeneratorWithMeetingPoint(partitionGenerator);
         }
@@ -39,6 +39,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
                     .ToList();
                 hmpPartitionsById.Add(robotId, new HMPPartitionInfo(partitionInfo, robotMeetingPoints));
             }
+
+            var a = hmpPartitionsById.Values.Select(GetMinTicksBetweenMeetingPoints).ToArray();
 
             var globalTimeToNextMeeting = hmpPartitionsById.Values.Select(GetMinTicksBetweenMeetingPoints).Max();
 
@@ -100,7 +102,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
             foreach (var (vertexPosition1, vertexPosition2) in vertexPositions.Combinations())
             {
-                var ticks = _estimationTravel.EstimateTimeToTarget(vertexPosition1, vertexPosition2);
+                var ticks = _estimationTravel.EstimateTime(vertexPosition1, vertexPosition2);
                 if (ticks == null)
                 {
                     continue;

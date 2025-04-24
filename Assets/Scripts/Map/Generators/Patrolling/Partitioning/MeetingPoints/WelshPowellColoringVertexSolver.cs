@@ -49,7 +49,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
         private void WelshPowellAlgorithm()
         {
             var coloredVertices = 0;
-            var color = -1;
+            var color = 0;
             while (coloredVertices < _vertices.Length)
             {
                 color++;

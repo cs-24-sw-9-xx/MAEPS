@@ -58,7 +58,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestDirectCommunication()
         {
-            EnqueueScenario(EditModeTests.Utilities.CreateEmptyBitmap(16, 16), 100, new Vector2Int(1, 8), new Vector2Int(15, 8));
+            EnqueueScenario(EditModeTests.Utilities.Utilities.CreateEmptyBitmap(16, 16), 100, new Vector2Int(1, 8), new Vector2Int(15, 8));
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -106,7 +106,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestTransitiveCommunication()
         {
-            EnqueueScenario(EditModeTests.Utilities.CreateEmptyBitmap(24, 16), 16, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
+            EnqueueScenario(EditModeTests.Utilities.Utilities.CreateEmptyBitmap(24, 16), 16, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -135,7 +135,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestSpottyCommunication()
         {
-            var semiWalledMap = EditModeTests.Utilities.CreateEmptyBitmap(16, 16);
+            var semiWalledMap = EditModeTests.Utilities.Utilities.CreateEmptyBitmap(16, 16);
             for (var i = 0; i < 8; i++)
             {
                 semiWalledMap.Set(8, i);

@@ -370,6 +370,21 @@ namespace Maes.Map
         }
 
         /// <summary>
+        /// Calculates, and returns, the path from the robot's current position to the target.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        /// <param name="acceptPartialPaths"></param>
+        /// <param name="dependOnBrokenBehavior"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector2Int[]? GetPath(Vector2Int start, Vector2Int target, bool beOptimistic = false, bool acceptPartialPaths = false)
+        {
+            return _aStar.GetPath(start, target, this, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
+        }
+
+        /// <summary>
         /// Calculates, and returns, the path from the robot's current position to the target. Will avoid planning a path though the excluded tiles.
         /// </summary>
         /// <param name="target">the target that the path should end at.</param>
