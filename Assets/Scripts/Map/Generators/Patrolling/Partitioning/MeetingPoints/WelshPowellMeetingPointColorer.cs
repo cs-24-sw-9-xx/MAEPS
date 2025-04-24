@@ -1,9 +1,38 @@
+// Copyright 2025 MAES
+// 
+// This file is part of MAES
+// 
+// MAES is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAES is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAES. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: 
+// Henrik van Peet,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
+
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {
-    public class WelshPowellColoringVertexSolver
+    /*
+     * Welsh-Powell algorithm for coloring the vertices of a graph.
+     * The algorithm is inspired by from the paper:
+     *      A comparative analysis between two heuristic algorithms for the graph vertex coloring problem
+     *      ISSN: 2088-8708, DOI: 10.11591/ijece.v13i3.pp2981-2989
+     * The algorithm is rewritten to be more readable and understandable for the purpose of this project.
+     */
+    public class WelshPowellMeetingPointColorer
     {
         private class Vertex
         {
@@ -18,7 +47,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             public HashSet<Vertex> Neighbors { get; } = new();
         }
 
-        public WelshPowellColoringVertexSolver(MeetingPoint[] meetingPoints)
+        public WelshPowellMeetingPointColorer(MeetingPoint[] meetingPoints)
         {
             _vertices = meetingPoints.Select(meetingPoint => new Vertex(meetingPoint)).ToArray();
             SetNeighbors();
@@ -62,11 +91,13 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
                     var isFeasible = vertex.Neighbors.All(neighbor => neighbor.ColorId != color);
 
-                    if (isFeasible)
+                    if (!isFeasible)
                     {
-                        vertex.ColorId = color;
-                        coloredVertices++;
+                        continue;
                     }
+
+                    vertex.ColorId = color;
+                    coloredVertices++;
                 }
             }
         }

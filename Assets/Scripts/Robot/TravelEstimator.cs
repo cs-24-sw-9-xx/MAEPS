@@ -7,9 +7,9 @@ using UnityEngine;
 
 namespace Maes.Robot
 {
-    public class EstimationTravel
+    public class TravelEstimator
     {
-        public EstimationTravel(CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
+        public TravelEstimator(CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
         {
             CoarseMap = coarseMap;
             RelativeMoveSpeed = robotConstraints.RelativeMoveSpeed;
@@ -17,7 +17,7 @@ namespace Maes.Robot
         private CoarseGrainedMap CoarseMap { get; }
         private float RelativeMoveSpeed { get; }
 
-        private float? EstimateDistance(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
+        public float? EstimateDistance(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
             if (Distance(start, target, dependOnBrokenBehaviour) < 0.5f)
             {

@@ -2,6 +2,8 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities.MapInterpreter;
+
 namespace Tests.EditModeTests
 {
     public class ExtensionUtilsTests
@@ -10,7 +12,7 @@ namespace Tests.EditModeTests
         public void CellIndexToTriangleIndexes_TwoTileMap_ReturnsCorrectTriangleIndexes()
         {
             // Arrange
-            var map = Utilities.Utilities.GenerateSimulationMapFromString(" X");
+            var map = new SimulationMapBuilder(" X").BuildMap();
             // Act
             var triangleIndexes = ExtensionUtils.CellIndexToTriangleIndexes(map.map);
 

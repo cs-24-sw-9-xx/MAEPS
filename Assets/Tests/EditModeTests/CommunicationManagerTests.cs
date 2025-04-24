@@ -26,6 +26,8 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities.MapInterpreter;
+
 using Unity.Mathematics;
 
 
@@ -71,7 +73,7 @@ namespace Tests.EditModeTests
                   "XXe", math.SQRT2)]
         public void WallDistanceBetweenPointsTest(string stringMap, float distance)
         {
-            var ((start, end), map) = Utilities.Utilities.GenerateSimulationMapFromString(stringMap);
+            var ((start, end), map) = new SimulationMapBuilder(stringMap).BuildMap();
             var communicationManager = new CommunicationManager(map, _robotConstraints, null);
 
             var result = communicationManager.CommunicationBetweenPoints(start, end);
