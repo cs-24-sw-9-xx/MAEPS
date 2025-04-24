@@ -17,14 +17,14 @@ namespace Maes.Robot
         private CoarseGrainedMap CoarseMap { get; }
         private float RelativeMoveSpeed { get; }
 
-        private float? EstimateDistanceToTarget(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
+        private float? EstimateDistance(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
             if (Distance(start, target, dependOnBrokenBehaviour) < 0.5f)
             {
                 return 0f;
             }
 
-            var pathList = CoarseMap.GetPath(target, acceptPartialPaths, beOptimistic);
+            var pathList = CoarseMap.GetPath(start, target, acceptPartialPaths, beOptimistic);
             if (pathList == null)
             {
                 return null;
@@ -51,11 +51,11 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public int? EstimateTimeToTarget(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        public int? EstimateTime(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
         {
             // An estimation for the distance it takes the robot to reach terminal speed.
             const float distForMaxSpeed = 2.5f;
-            var distance = EstimateDistanceToTarget(start, target, acceptPartialPaths, beOptimistic);
+            var distance = EstimateDistance(start, target, acceptPartialPaths, beOptimistic);
             if (distance == null)
             {
                 return null;

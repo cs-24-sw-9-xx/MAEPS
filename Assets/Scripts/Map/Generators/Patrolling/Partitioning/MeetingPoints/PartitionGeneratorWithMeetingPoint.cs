@@ -4,14 +4,14 @@ using System.Linq;
 using Maes.Robot;
 using Maes.Utilities;
 
-namespace Maes.Map.Generators.Patrolling.Partitioning
+namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {
     public sealed class PartitionGeneratorWithMeetingPoint : IPartitionGenerator<PartitionInfo>
     {
-        private readonly BasePartitionGenerator<PartitionInfo> _partitionGenerator;
+        private readonly IPartitionGenerator<PartitionInfo> _partitionGenerator;
         private PatrollingMap _patrollingMap = null!;
 
-        public PartitionGeneratorWithMeetingPoint(BasePartitionGenerator<PartitionInfo> partitionGenerator)
+        public PartitionGeneratorWithMeetingPoint(IPartitionGenerator<PartitionInfo> partitionGenerator)
         {
             _partitionGenerator = partitionGenerator;
         }

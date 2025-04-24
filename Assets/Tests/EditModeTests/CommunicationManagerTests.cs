@@ -71,7 +71,7 @@ namespace Tests.EditModeTests
                   "XXe", math.SQRT2)]
         public void WallDistanceBetweenPointsTest(string stringMap, float distance)
         {
-            var ((start, end), map) = Utilities.GenerateSimulationMapFromString(stringMap);
+            var ((start, end), map) = Utilities.Utilities.GenerateSimulationMapFromString(stringMap);
             var communicationManager = new CommunicationManager(map, _robotConstraints, null);
 
             var result = communicationManager.CommunicationBetweenPoints(start, end);

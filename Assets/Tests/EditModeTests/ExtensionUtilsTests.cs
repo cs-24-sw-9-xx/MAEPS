@@ -10,7 +10,7 @@ namespace Tests.EditModeTests
         public void CellIndexToTriangleIndexes_TwoTileMap_ReturnsCorrectTriangleIndexes()
         {
             // Arrange
-            var map = Utilities.GenerateSimulationMapFromString(" X");
+            var map = Utilities.Utilities.GenerateSimulationMapFromString(" X");
             // Act
             var triangleIndexes = ExtensionUtils.CellIndexToTriangleIndexes(map.map);
 

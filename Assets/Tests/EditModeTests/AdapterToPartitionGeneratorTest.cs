@@ -25,7 +25,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_TwoPartitions_Test()
         {
-            var ((start, end), simulationMap) = Utilities.GenerateSimulationMapFromString(testMap);
+            var ((start, end), simulationMap) = Utilities.Utilities.GenerateSimulationMapFromString(testMap);
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;
@@ -60,7 +60,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_OnePartition_Test()
         {
-            var ((start, end), simulationMap) = Utilities.GenerateSimulationMapFromString(testMap);
+            var ((start, end), simulationMap) = Utilities.Utilities.GenerateSimulationMapFromString(testMap);
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;

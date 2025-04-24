@@ -22,7 +22,7 @@ namespace Tests.EditModeTests.Benchmarks
 
             Dictionary<Vector2Int, Bitmap> result = null;
 
-            using (var bitmap = Utilities.BitmapFromString(Map))
+            using (var bitmap = Utilities.Utilities.BitmapFromString(Map))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
