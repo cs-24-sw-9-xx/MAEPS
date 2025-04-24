@@ -25,6 +25,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -88,7 +89,7 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: _ => new PartitionAlgorithm()),
                     robotConstraints: robotConstraints,
                     partitions: 2, // To have the same amount of partitions as robots
-                                   // faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 4),
+                    faultInjection: new DestroyRobotsRandomFaultInjection(123, 0.05f, 1000, 3),
                     statisticsFileName:
                     $"{algoName}-map-IslandMap-seed-{seed}-comms-{constraintName}-robots-{robotCount}-SpawnAPart")
             );

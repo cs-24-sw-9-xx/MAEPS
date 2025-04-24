@@ -26,15 +26,15 @@ namespace Maes.Map
         }
 
         public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, Dictionary<int, Vertex[]> partitions)
-            : this(vertices, CreatePaths(vertices, simulationMap))
+            : this(vertices, CreatePaths(vertices, simulationMap), partitions)
         {
-            VerticesByPartition = partitions;
         }
 
         private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths)
         {
             Vertices = vertices;
             Paths = paths;
+            VerticesByPartition = new Dictionary<int, Vertex[]> { { 0, Vertices.ToArray() } };
         }
 
         private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, Dictionary<int, Vertex[]> partitions)

@@ -35,7 +35,7 @@ namespace Maes.Algorithms.Patrolling.Components
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
         private readonly IRobotController _controller;
-        private Partition _currentPartition;
+        private Partition _currentPartition = null!;
         private readonly List<int> _currentPartitionIntersection;
         private float _trackerUpdateTimestamp = 0f;
         private Dictionary<int, bool> ReceivedCommunication { get; }
@@ -75,25 +75,32 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void UpdateMessagesReceived()
         {
+            if (_controller.ReceiveBroadcast().Count == 0)
+            {
+                return;
+            }
+
             foreach (var objectMessage in _controller.ReceiveBroadcast())
             {
-                if (objectMessage is RedistributionMessage message)
+                switch (objectMessage)
                 {
-                    ReceivedCommunication[message.PartitionId] = true;
-                }
-
-                if (objectMessage is PartitionMessage partitionMessage)
-                {
-                    if (partitionMessage.PartitionId != _controller.AssignedPartition || _trackerUpdateTimestamp < partitionMessage.Timestamp)
-                    {
+                    case RedistributionMessage message:
+                        ReceivedCommunication[message.PartitionId] = true;
+                        break;
+                    case PartitionMessage partitionMessage
+                        when partitionMessage.PartitionId != _controller.AssignedPartition ||
+                             _trackerUpdateTimestamp < partitionMessage.Timestamp:
                         return;
-                    }
+                    case PartitionMessage partitionMessage:
+                        {
+                            foreach (var (partitionId, probability) in partitionMessage.RedistributionTracker)
+                            {
+                                _redistributionTracker[partitionId] = probability;
+                            }
 
-                    foreach (var (partitionId, probability) in partitionMessage.RedistributionTracker)
-                    {
-                        _redistributionTracker[partitionId] = probability;
-                    }
-                    _trackerUpdateTimestamp = partitionMessage.Timestamp;
+                            _trackerUpdateTimestamp = partitionMessage.Timestamp;
+                            break;
+                        }
                 }
             }
         }

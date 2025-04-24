@@ -3,6 +3,8 @@ using Maes.FaultInjections;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 
 namespace Maes.Simulation.Patrolling
@@ -37,7 +39,13 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
-            PatrollingMapFactory = patrollingMapFactory ?? ((map) => PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions));
+            PatrollingMapFactory = partitions > 1
+                ? patrollingMapFactory ?? ((map) =>
+                    PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions))
+                : patrollingMapFactory ?? ((map) =>
+                    GreedyMostVisibilityWaypointGenerator.MakePatrollingMap(map,
+                        (bitmap, positions) =>
+                            ReverseNearestNeighborWaypointConnector.ConnectVertices(bitmap, positions)));
         }
     }
 }
