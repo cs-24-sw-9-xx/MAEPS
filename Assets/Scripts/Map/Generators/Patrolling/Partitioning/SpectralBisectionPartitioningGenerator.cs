@@ -46,6 +46,13 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             List<Vector2Int> vertexPositions,
             int amountOfPartitions)
         {
+            if (amountOfPartitions == 1)
+            {
+                return new Dictionary<int, List<Vector2Int>> {
+                    { 0, vertexPositions }
+                };
+            }
+
             var initialClusters = Bisection(distanceMatrix, vertexPositions);
 
             if (amountOfPartitions == 2 || initialClusters[0].Count == 0 || initialClusters[1].Count == 0)

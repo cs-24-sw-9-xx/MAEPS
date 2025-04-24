@@ -114,7 +114,7 @@ namespace Maes.Simulation
                 if (scenario is PatrollingSimulationScenario simulationScenario)
                 {
                     // Assign robots to partitions, distributed evenly.
-                    robot.AssignedPartition = (((robot.id) % simulationScenario.Partitions) + 1);
+                    robot.AssignedPartition = (((robot.id) % simulationScenario.Partitions));
                 }
                 robot.OnRobotSelected = SetSelectedRobot;
             }
