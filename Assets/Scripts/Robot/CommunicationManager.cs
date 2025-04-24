@@ -95,7 +95,7 @@ namespace Maes.Robot
 
         private int _localTickCounter;
 
-        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix;
+        private Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = null!;
 
         private List<HashSet<int>>? _communicationGroups;
 
@@ -176,7 +176,11 @@ namespace Maes.Robot
                     continue;
                 }
 
-                var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
+                if (!_adjacencyMatrix.TryGetValue((message.Sender.id, receiver.id), out var communicationTrace))
+                {
+                    continue;
+                }
+                
                 // If the transmission probability is above the specified threshold then the message will be sent
                 // otherwise it is discarded
                 if (communicationTrace.TransmissionSuccessful)
@@ -267,8 +271,7 @@ namespace Maes.Robot
                 CommunicationTracker.CommunicationGroups = _communicationGroups;
                 CommunicationTracker.CreateSnapshot(_localTickCounter);
             }
-
-            _adjacencyMatrix = null;
+            
             _communicationGroups = null;
         }
 
@@ -294,7 +297,7 @@ namespace Maes.Robot
 
         private void PopulateAdjacencyMatrix()
         {
-            if (_adjacencyMatrix != null)
+            if (_adjacencyMatrix != null && _adjacencyMatrix.Count == (_robots.Count * (_robots.Count-1)))
             {
                 return;
             }
