@@ -60,18 +60,18 @@ namespace Maes.Map
 
         public void AddNeighborPartition(Partition partition)
         {
-            if (NeighborPartitions.Contains(partition))
+            if (!NeighborPartitions.Add(partition))
             {
                 return;
             }
-            NeighborPartitions.Add(partition);
+
             CalculateIntersectionAndRatio(partition);
             partition.AddNeighborPartition(this);
         }
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
-            var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            using var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
 
             foreach ((var position, var vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
