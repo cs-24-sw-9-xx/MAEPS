@@ -357,7 +357,6 @@ namespace Maes.Map
         /// Calculates, and returns, the path from the robot's current position to the target.
         /// </summary>
         /// <param name="target">the target that the path should end at.</param>
-        /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
         /// <param name="acceptPartialPaths"></param>
         /// <param name="dependOnBrokenBehavior"></param>
@@ -366,15 +365,14 @@ namespace Maes.Map
         {
             var approxPosition = GetApproximatePosition();
             var position = dependOnBrokenBehavior ? Vector2Int.FloorToInt(approxPosition) : Vector2Int.RoundToInt(approxPosition);
-            return _aStar.GetPath(position, target, this, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
+            return GetPath(position, target, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
         }
 
         /// <summary>
-        /// Calculates, and returns, the path from the robot's current position to the target.
+        /// Calculates, and returns, the path from the start to the target.
         /// </summary>
-        /// <param name="start"></param>
+        /// <param name="start">the start position of the path.</param>
         /// <param name="target">the target that the path should end at.</param>
-        /// <param name="beOptimistic">if <b>true</b>, returns path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
         /// <param name="acceptPartialPaths"></param>
         /// <param name="dependOnBrokenBehavior"></param>
