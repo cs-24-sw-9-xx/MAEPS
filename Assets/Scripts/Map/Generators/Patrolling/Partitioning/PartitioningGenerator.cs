@@ -58,7 +58,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
             foreach (var cluster in clusters)
             {
-                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, nextId);
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster, nextId);
 
                 // Assign the partition and color to each vertex in the cluster
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
