@@ -77,7 +77,7 @@ namespace Maes.Robot
         /// </summary>
         float GlobalAngle { get; }
 
-        RobotConstraints Constraints { get; }
+        TravelEstimator TravelEstimator { get; }
 
         /// <summary>
         /// This method instructs the robot to move <paramref name="distanceInMeters"/>ahead.

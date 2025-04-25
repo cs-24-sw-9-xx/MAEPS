@@ -34,7 +34,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
      */
     public class WelshPowellMeetingPointColorer
     {
-        private class Vertex
+        private sealed class Vertex
         {
             public Vertex(int id, HashSet<int> meetingRobotIds)
             {

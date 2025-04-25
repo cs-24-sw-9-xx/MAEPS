@@ -22,14 +22,17 @@
 
 using System.Collections.Generic;
 
-using Maes.Robot;
 using Maes.Utilities;
+
+using UnityEngine;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
+    public delegate int? EstimateTimeDelegate(Vector2Int start, Vector2Int end);
+
     public interface IPartitionGenerator<TPartitionInfo> where TPartitionInfo : PartitionInfo
     {
-        void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints);
+        void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime);
         Dictionary<int, TPartitionInfo> GeneratePartitions(HashSet<int> robotIds);
     }
 
@@ -37,7 +40,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
     {
         protected PatrollingMap _patrollingMap = null!;
         protected Bitmap _collisionMap = null!;
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
             _patrollingMap = patrollingMap;
             _collisionMap = MapUtilities.MapToBitMap(coarseMap);

@@ -55,9 +55,10 @@ namespace Tests.EditModeTests
             var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(interpreter.VertexPositionsByPartitionId));
-            generator.SetMaps(patrollingMap, coarseMap, robotConstraints);
-
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
+
+            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+
 
             var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
             var expectedGlobalTimeToNextMeeting = 2 * 3 * estimateTicks;
@@ -90,9 +91,9 @@ namespace Tests.EditModeTests
             var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(interpreter.VertexPositionsByPartitionId));
-            generator.SetMaps(patrollingMap, coarseMap, robotConstraints);
-
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
+
+            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
 
             var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
             var expectedGlobalTimeToNextMeeting = 2 * 3 * estimateTicks;

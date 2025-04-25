@@ -24,8 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Robot;
-
 using UnityEngine;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
@@ -34,18 +32,19 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
     {
         private readonly PartitionGeneratorWithMeetingPoint _partitionGeneratorWithMeetings;
         private PatrollingMap _patrollingMap = null!;
-        private TravelEstimator _travelEstimator = null!;
+        private EstimateTimeDelegate _estimateTime = (_, _) => null;
+
 
         public MeetingPointTimePartitionGenerator(IPartitionGenerator<PartitionInfo> partitionGenerator)
         {
             _partitionGeneratorWithMeetings = new PartitionGeneratorWithMeetingPoint(partitionGenerator);
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
             _patrollingMap = patrollingMap;
-            _partitionGeneratorWithMeetings.SetMaps(patrollingMap, coarseMap, robotConstraints);
-            _travelEstimator = new TravelEstimator(coarseMap, robotConstraints);
+            _partitionGeneratorWithMeetings.SetMaps(patrollingMap, coarseMap, estimateTime);
+            _estimateTime = estimateTime;
         }
 
         public Dictionary<int, HMPPartitionInfo> GeneratePartitions(HashSet<int> robotIds)
@@ -156,7 +155,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
             foreach (var (vertexPosition1, vertexPosition2) in vertexPositions.Combinations())
             {
-                var ticks = _travelEstimator.EstimateTime(vertexPosition1, vertexPosition2);
+                var ticks = _estimateTime(vertexPosition1, vertexPosition2);
                 if (ticks == null)
                 {
                     continue;
