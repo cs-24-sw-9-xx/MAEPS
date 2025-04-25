@@ -25,7 +25,6 @@ using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Robot;
 
 namespace Tests.EditModeTests.Utilities.Partitions
 {
@@ -38,7 +37,7 @@ namespace Tests.EditModeTests.Utilities.Partitions
 
         private readonly Dictionary<int, HashSet<Vertex>> _vertexPositionsByPartitionId;
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
 
         }

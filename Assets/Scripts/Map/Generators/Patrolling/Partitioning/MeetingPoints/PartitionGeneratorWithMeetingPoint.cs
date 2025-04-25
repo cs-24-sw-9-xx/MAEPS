@@ -23,7 +23,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Robot;
 using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
@@ -38,10 +37,10 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             _partitionGenerator = partitionGenerator;
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, RobotConstraints robotConstraints)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
             _patrollingMap = patrollingMap;
-            _partitionGenerator.SetMaps(patrollingMap, coarseMap, robotConstraints);
+            _partitionGenerator.SetMaps(patrollingMap, coarseMap, estimateTime);
         }
 
         public Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)

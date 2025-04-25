@@ -67,7 +67,7 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap, _controller.Constraints);
+            _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap, (s, e) => controller.TravelEstimator.EstimateTime(s, e));
             _startupComponent = new StartupComponent<Dictionary<int, HMPPartitionInfo>>(controller, _partitionGenerator.GeneratePartitions);
             _virtualStigmergyComponent = new VirtualStigmergyComponent<int, HMPPartitionInfo>(_onConflict, controller);
             _partitionComponent = new PartitionComponent(controller, _startupComponent, _virtualStigmergyComponent);
