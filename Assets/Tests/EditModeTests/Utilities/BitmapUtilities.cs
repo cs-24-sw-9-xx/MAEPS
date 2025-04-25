@@ -8,7 +8,7 @@ using Random = System.Random;
 
 namespace Tests.EditModeTests.Utilities
 {
-    public static class Utilities
+    public static class BitmapUtilities
     {
         [MustDisposeResource]
         public static Bitmap CreateRandomBitmap(int width, int height, int seed)
