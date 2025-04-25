@@ -51,7 +51,7 @@ namespace Tests.EditModeTests
             _communicationZones = new Dictionary<Vector2Int, Bitmap>();
 
             // Communication zone for vertex at (2,2)
-            var bitmap1 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap1 = new Bitmap(BitmapWidth, BitmapHeight);
             for (var x = 1; x <= 3; x++)
             {
                 for (var y = 1; y <= 3; y++)
@@ -62,7 +62,7 @@ namespace Tests.EditModeTests
             _communicationZones[new Vector2Int(2, 2)] = bitmap1;
 
             // Communication zone for vertex at (5,5)
-            var bitmap2 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap2 = new Bitmap(BitmapWidth, BitmapHeight);
             for (var x = 4; x <= 6; x++)
             {
                 for (var y = 4; y <= 6; y++)
@@ -73,7 +73,7 @@ namespace Tests.EditModeTests
             _communicationZones[new Vector2Int(5, 5)] = bitmap2;
 
             // Communication zone for vertex at (8,8)
-            var bitmap3 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap3 = new Bitmap(BitmapWidth, BitmapHeight);
             for (var x = 7; x <= 9; x++)
             {
                 for (var y = 7; y <= 9; y++)
@@ -131,7 +131,7 @@ namespace Tests.EditModeTests
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
 
             // Communication zone for vertex at (3,3)
-            var bitmap4 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap4 = new Bitmap(BitmapWidth, BitmapHeight);
             for (var x = 2; x <= 4; x++)
             {
                 for (var y = 2; y <= 4; y++)
@@ -142,7 +142,7 @@ namespace Tests.EditModeTests
             communicationZones2[new Vector2Int(3, 3)] = bitmap4;
 
             // Communication zone for vertex at (7,7)
-            var bitmap5 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap5 = new Bitmap(BitmapWidth, BitmapHeight);
             for (var x = 6; x <= 8; x++)
             {
                 for (var y = 6; y <= 8; y++)
@@ -192,7 +192,7 @@ namespace Tests.EditModeTests
             var vertices2 = new List<Vertex> { vertex };
 
             var communicationZones2 = new Dictionary<Vector2Int, Bitmap>();
-            var bitmap4 = new Bitmap(0, 0, BitmapWidth, BitmapHeight);
+            var bitmap4 = new Bitmap(BitmapWidth, BitmapHeight);
             bitmap4.Set(9, 9);
             communicationZones2[new Vector2Int(9, 9)] = bitmap4;
 

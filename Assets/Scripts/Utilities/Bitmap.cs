@@ -39,14 +39,8 @@ namespace Maes.Utilities
     [MustDisposeResource]
     public sealed class Bitmap : IEnumerable<Vector2Int>, IDisposable, ICloneable<Bitmap>, IEquatable<Bitmap>
     {
-        public int Width => XEnd - XStart;
-        public int Height => YEnd - YStart;
-
-        public readonly int XStart;
-        public readonly int YStart;
-
-        public readonly int XEnd;
-        public readonly int YEnd;
+        public readonly int Width;
+        public readonly int Height;
 
         private readonly int _length;
 
@@ -61,19 +55,19 @@ namespace Maes.Utilities
         {
             get
             {
-                var width = XEnd;
-                var height = YEnd;
+                var width = Width;
+                var height = Height;
 
                 var output = new StringBuilder();
 
                 output.AppendLine("Legend: '#': Out of bounds 'X': True ' ': False");
-                output.AppendFormat("XStart: {0}, YStart: {1}, XEnd: {2}, YEnd: {3}\n", XStart, YStart, XEnd, YEnd);
+                output.AppendFormat("Width: {0}, Height: {1}\n", Width, Height);
 
                 for (var y = -1; y < height + 1; y++)
                 {
                     for (var x = -1; x < width + 1; x++)
                     {
-                        if (x < XStart || x >= XEnd || y < YStart || y >= YEnd)
+                        if (x < 0 || x >= Width || y < 0 || y >= Height)
                         {
                             // Out of bounds
                             output.Append('#');
@@ -95,17 +89,12 @@ namespace Maes.Utilities
         /// <summary>
         /// Creates a new instance of <see cref="Bitmap"/>.
         /// </summary>
-        /// <param name="xStart">The inclusive minimum x-coordinate of the bitmap.</param>
-        /// <param name="yStart">The inclusive minimum y-coordinate of the bitmap.</param>
-        /// <param name="xEnd">The exclusive maximum x-coordinate of the bitmap.</param>
-        /// <param name="yEnd">The exclusive maximum y-coordinate of the bitmap.</param>
-        public Bitmap(int xStart, int yStart, int xEnd, int yEnd)
+        /// <param name="width">The exclusive maximum x-coordinate of the bitmap.</param>
+        /// <param name="height">The exclusive maximum y-coordinate of the bitmap.</param>
+        public Bitmap(int width, int height)
         {
-            XStart = xStart;
-            YStart = yStart;
-
-            XEnd = xEnd;
-            YEnd = yEnd;
+            Width = width;
+            Height = height;
 
             // Ceil division
             _length = ((Width * Height) - 1) / 64 + 1;
@@ -116,13 +105,10 @@ namespace Maes.Utilities
             }
         }
 
-        private Bitmap(int xStart, int yStart, int xEnd, int yEnd, ulong[] bits)
+        private Bitmap(int width, int height, ulong[] bits)
         {
-            XStart = xStart;
-            YStart = yStart;
-
-            XEnd = xEnd;
-            YEnd = yEnd;
+            Width = width;
+            Height = height;
 
             // Ceil division
             _length = ((Width * Height) - 1) / 64 + 1;
@@ -133,8 +119,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitmap Intersection(Bitmap first, Bitmap second)
         {
-            if (first.XStart == second.XStart && first.YStart == second.YStart && first.XEnd == second.XEnd &&
-                first.YEnd == second.YEnd)
+            if (first.Width == second.Width && first.Height == second.Height)
             {
                 return IntersectionSameSize(first, second);
             }
@@ -153,22 +138,19 @@ namespace Maes.Utilities
                 bits[i] = first._bits[i] & second._bits[i];
             }
 
-            return new Bitmap(first.XStart, first.YStart, first.XEnd, first.YEnd, bits);
+            return new Bitmap(first.Width, first.Height, bits);
         }
 
         [MustDisposeResource]
         private static Bitmap IntersectionDifferentSizes(Bitmap first, Bitmap second)
         {
-            var xStart = Math.Max(first.XStart, second.XStart);
-            var yStart = Math.Max(first.YStart, second.YStart);
+            var width = Math.Min(first.Width, second.Width);
+            var height = Math.Min(first.Height, second.Height);
 
-            var xEnd = Math.Min(first.XEnd, second.XEnd);
-            var yEnd = Math.Min(first.YEnd, second.YEnd);
-
-            var intersected = new Bitmap(xStart, yStart, xEnd, yEnd);
-            for (var x = xStart; x < xEnd; x++)
+            var intersected = new Bitmap(width, height);
+            for (var x = 0; x < width; x++)
             {
-                for (var y = yStart; y < yEnd; y++)
+                for (var y = 0; y < height; y++)
                 {
                     if (first.Contains(x, y) && second.Contains(x, y))
                     {
@@ -200,7 +182,7 @@ namespace Maes.Utilities
 
                 NativeArray<ulong>.Copy(nativeArray, length * b, bits, 0, length);
 
-                bitmaps[b] = new Bitmap(0, 0, width, height, bits);
+                bitmaps[b] = new Bitmap(width, height, bits);
             }
 
             return bitmaps;
@@ -214,7 +196,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int x, int y)
         {
-            Set((x - XStart) * Height + (y - YStart));
+            Set(x * Height + y);
         }
 
         /// <summary>
@@ -223,7 +205,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unset(int x, int y)
         {
-            Unset((x - XStart) * Height + (y - YStart));
+            Unset(x * Height + y);
         }
 
         /// <summary>
@@ -243,7 +225,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x, int y)
         {
-            return Contains((x - XStart) * Height + (y - YStart));
+            return Contains(x * Height + y);
         }
 
 
@@ -286,8 +268,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Union(Bitmap other)
         {
-            if (XStart == other.XStart && YStart == other.YStart && XEnd == other.XEnd &&
-                YEnd == other.YEnd)
+            if (Width == other.Width && Height == other.Height)
             {
                 UnionSameSize(other);
             }
@@ -308,16 +289,13 @@ namespace Maes.Utilities
 
         private void UnionDifferentSizes(Bitmap other)
         {
-            var xStart = Math.Max(XStart, other.XStart);
-            var yStart = Math.Max(YStart, other.YStart);
-
-            var xEnd = Math.Min(XEnd, other.XEnd);
-            var yEnd = Math.Min(YEnd, other.YEnd);
+            var width = Math.Min(Width, other.Width);
+            var height = Math.Min(Height, other.Height);
 
 
-            for (var x = xStart; x < xEnd; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (var y = yStart; y < yEnd; y++)
+                for (var y = 0; y < height; y++)
                 {
                     if (other.Contains(x, y))
                     {
@@ -334,8 +312,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ExceptWith(Bitmap other)
         {
-            if (XStart == other.XStart && YStart == other.YStart && XEnd == other.XEnd &&
-                YEnd == other.YEnd)
+            if (Width == other.Width && Height == other.Height)
             {
                 ExceptWithSameSize(other);
             }
@@ -356,16 +333,12 @@ namespace Maes.Utilities
 
         private void ExceptWithDifferentSizes(Bitmap other)
         {
-            var xStart = Math.Max(XStart, other.XStart);
-            var yStart = Math.Max(YStart, other.YStart);
+            var width = Math.Min(Width, other.Width);
+            var height = Math.Min(Height, other.Height);
 
-            var xEnd = Math.Min(XEnd, other.XEnd);
-            var yEnd = Math.Min(YEnd, other.YEnd);
-
-
-            for (var x = xStart; x < xEnd; x++)
+            for (var x = 0; x < width; x++)
             {
-                for (var y = yStart; y < yEnd; y++)
+                for (var y = 0; y < height; y++)
                 {
                     if (other.Contains(x, y))
                     {
@@ -459,7 +432,7 @@ namespace Maes.Utilities
 
                     if (_bitmap.Contains(_index))
                     {
-                        Current = new Vector2Int((_index / _bitmap.Height) + _bitmap.XStart, (_index % _bitmap.Height) + _bitmap.YStart);
+                        Current = new Vector2Int(_index / _bitmap.Height, _index % _bitmap.Height);
                         return true;
                     }
                 }
@@ -504,7 +477,7 @@ namespace Maes.Utilities
         /// <inheritdoc />
         public bool Equals(Bitmap other)
         {
-            if (XStart != other.XStart || YStart != other.YStart || XEnd != other.XEnd || YEnd != other.YEnd)
+            if (Width != other.Width || Height != other.Height)
             {
                 return false;
             }
@@ -537,7 +510,7 @@ namespace Maes.Utilities
             var bits = ArrayPool<ulong>.Shared.Rent(_length);
             Array.Copy(_bits, bits, _length);
 
-            return new Bitmap(XStart, YStart, XEnd, YEnd, bits);
+            return new Bitmap(Width, Height, bits);
         }
     }
 }
