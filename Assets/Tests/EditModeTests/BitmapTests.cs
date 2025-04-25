@@ -13,7 +13,7 @@ namespace Tests.EditModeTests
         [Test]
         public void VisibilityBitmapContainsTests()
         {
-            using var bitmap = new Bitmap(1, 1, 3, 3);
+            using var bitmap = new Bitmap(3, 3);
             bitmap.Set(1, 1);
 
             Assert.AreEqual(1, bitmap.Count);
@@ -23,7 +23,7 @@ namespace Tests.EditModeTests
             Assert.IsFalse(bitmap.Contains(1, 2));
             Assert.IsFalse(bitmap.Contains(2, 2));
 
-            using var bitmap2 = new Bitmap(1, 1, 3, 3);
+            using var bitmap2 = new Bitmap(3, 3);
             bitmap2.Set(2, 2);
             Assert.IsTrue(bitmap2.Contains(2, 2));
         }
@@ -31,10 +31,10 @@ namespace Tests.EditModeTests
         [Test]
         public void VisibilityBitmapIntersectionTests()
         {
-            using var bitmap1 = new Bitmap(1, 1, 3, 3);
+            using var bitmap1 = new Bitmap(3, 3);
             bitmap1.Set(2, 2);
 
-            using var bitmap2 = new Bitmap(2, 2, 4, 4);
+            using var bitmap2 = new Bitmap(4, 4);
             bitmap2.Set(2, 2);
 
             using var intersectedBitmap = Bitmap.Intersection(bitmap1, bitmap2);
@@ -44,7 +44,7 @@ namespace Tests.EditModeTests
         [Test]
         public void VisibilityBitmapExceptWithTests()
         {
-            using var bitmap1 = new Bitmap(1, 1, 3, 3);
+            using var bitmap1 = new Bitmap(3, 3);
             for (var x = 1; x < 3; x++)
             {
                 for (var y = 1; y < 3; y++)
@@ -53,7 +53,7 @@ namespace Tests.EditModeTests
                 }
             }
 
-            using var bitmap2 = new Bitmap(0, 0, 4, 4);
+            using var bitmap2 = new Bitmap(4, 4);
             for (var x = 0; x < 4; x++)
             {
                 for (var y = 0; y < 4; y++)
@@ -83,7 +83,7 @@ namespace Tests.EditModeTests
         [Test]
         public void VisibilityBitmapEnumeratorTests()
         {
-            using (var bitmap = new Bitmap(1, 1, 3, 3))
+            using (var bitmap = new Bitmap(3, 3))
             {
                 bitmap.Set(1, 2);
 

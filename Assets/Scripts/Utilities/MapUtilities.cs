@@ -22,7 +22,7 @@ namespace Maes.Utilities
         [MustDisposeResource]
         public static Bitmap MapToBitMap(SimulationMap<Tile> simulationMap)
         {
-            var map = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            var map = new Bitmap(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
             for (var x = 0; x < simulationMap.WidthInTiles; x++)
             {
                 for (var y = 0; y < simulationMap.HeightInTiles; y++)
@@ -42,7 +42,7 @@ namespace Maes.Utilities
         [MustDisposeResource]
         public static Bitmap MapToBitMap(CoarseGrainedMap coarseGrainedMap, bool beOptimistic = false)
         {
-            var bitmap = new Bitmap(0, 0, coarseGrainedMap.Width, coarseGrainedMap.Height);
+            var bitmap = new Bitmap(coarseGrainedMap.Width, coarseGrainedMap.Height);
             for (var x = 0; x < coarseGrainedMap.Width; x++)
             {
                 for (var y = 0; y < coarseGrainedMap.Height; y++)
@@ -164,8 +164,8 @@ namespace Maes.Utilities
         // Function to check if a position is within bounds and walkable
         private static bool IsWalkable(Vector2Int pos, Bitmap map)
         {
-            return pos.x >= map.XStart && pos.x < map.XEnd &&
-                   pos.y >= map.YStart && pos.y < map.YEnd &&
+            return pos.x >= 0 && pos.x < map.Width &&
+                   pos.y >= 0 && pos.y < map.Height &&
                    !map.Contains(pos.x, pos.y);
         }
     }

@@ -60,7 +60,7 @@ namespace Maes.Map
             Width = width;
             Height = height;
             _offset = offset;
-            _tilesCoveredStatus = new Bitmap(0, 0, width, height);
+            _tilesCoveredStatus = new Bitmap(width, height);
             _optimisticTileStatuses = SetTileStatuses(slamMap, width, height, mapKnown);
         }
 
@@ -488,7 +488,7 @@ namespace Maes.Map
         public static void Synchronize(List<CoarseGrainedMap> maps, SlamMap.SlamTileStatus[,] newSlamStatuses)
         {
             // Synchronize exploration bool statuses
-            using var globalExplorationStatuses = new Bitmap(0, 0, maps[0].Width, maps[0].Height);
+            using var globalExplorationStatuses = new Bitmap(maps[0].Width, maps[0].Height);
             foreach (var map in maps)
             {
                 globalExplorationStatuses.Union(map._tilesCoveredStatus);
@@ -529,7 +529,7 @@ namespace Maes.Map
         /// <param name="newSlamStatuses"></param>
         public static void Combine(CoarseGrainedMap map, List<CoarseGrainedMap> others, SlamMap.SlamTileStatus[,] newSlamStatuses)
         {
-            var globalExplorationStatuses = new Bitmap(0, 0, map.Width, map.Height);
+            var globalExplorationStatuses = new Bitmap(map.Width, map.Height);
             foreach (var other in others)
             {
                 globalExplorationStatuses.Union(other._tilesCoveredStatus);

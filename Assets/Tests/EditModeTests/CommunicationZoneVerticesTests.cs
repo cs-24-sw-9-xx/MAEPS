@@ -323,7 +323,7 @@ namespace Tests.EditModeTests
             Assert.AreEqual(4, communicationZoneVertices.CommunicationZoneTiles.Count);
 
             // Create manual union to compare with AllCommunicationZoneTiles
-            var manualUnion = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            var manualUnion = new Bitmap(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
             for (var i = 0; i < 4; i++)
             {
                 manualUnion.Union(communicationZoneVertices.CommunicationZoneTiles[i]);

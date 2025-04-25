@@ -296,11 +296,11 @@ namespace Tests.EditModeTests
                 }
 
                 // Check that the whole map is visible
-                using (var checkMap = new Bitmap(bitmap.XStart, bitmap.YStart, bitmap.XEnd, bitmap.YEnd))
+                using (var checkMap = new Bitmap(bitmap.Width, bitmap.Height))
                 {
-                    for (var x = checkMap.XStart; x < checkMap.XEnd; x++)
+                    for (var x = 0; x < checkMap.Width; x++)
                     {
-                        for (var y = checkMap.YStart; y < checkMap.YEnd; y++)
+                        for (var y = 0; y < checkMap.Height; y++)
                         {
                             checkMap.Set(x, y);
                         }

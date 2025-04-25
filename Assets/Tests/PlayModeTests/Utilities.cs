@@ -26,22 +26,14 @@ namespace Tests.PlayModeTests
     {
         public static Tile[,] BitmapToTilemap(Bitmap bitmap)
         {
-            var tiles = new Tile[bitmap.XEnd, bitmap.YEnd];
+            var tiles = new Tile[bitmap.Width, bitmap.Height];
 
-            for (var x = 0; x < bitmap.XEnd; x++)
+            for (var x = 0; x < bitmap.Width; x++)
             {
-                for (var y = 0; y < bitmap.YEnd; y++)
+                for (var y = 0; y < bitmap.Height; y++)
                 {
-                    // If we are outside map make it a wall
-                    if (x < bitmap.XStart || y < bitmap.YStart)
-                    {
-                        tiles[x, y] = new Tile(TileType.Concrete);
-                    }
-                    else
-                    {
-                        // A bit weird that the only floor is room?
-                        tiles[x, y] = new Tile(bitmap.Contains(x, y) ? TileType.Concrete : TileType.Room);
-                    }
+                    // A bit weird that the only floor is room?
+                    tiles[x, y] = new Tile(bitmap.Contains(x, y) ? TileType.Concrete : TileType.Room);
                 }
             }
 
