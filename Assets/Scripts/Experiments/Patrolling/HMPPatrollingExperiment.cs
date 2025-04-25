@@ -23,6 +23,7 @@
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 

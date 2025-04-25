@@ -33,6 +33,7 @@
 
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;

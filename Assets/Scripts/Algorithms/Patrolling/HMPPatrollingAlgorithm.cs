@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Robot;

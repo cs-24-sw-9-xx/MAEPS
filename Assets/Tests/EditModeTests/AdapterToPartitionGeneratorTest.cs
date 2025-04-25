@@ -48,9 +48,9 @@ namespace Tests.EditModeTests
             Assert.AreEqual(partitions[1], new PartitionInfo(1, new HashSet<int> { vertices[0].Id }));
             return;
 
-            Dictionary<int, List<Vector2Int>> PartitioningGenerator(Dictionary<(Vector2Int, Vector2Int), int> ints, List<Vector2Int> list, int i1)
+            IEnumerable<List<Vector2Int>> PartitioningGenerator(Dictionary<(Vector2Int, Vector2Int), int> ints, List<Vector2Int> list, int i1)
             {
-                return new Dictionary<int, List<Vector2Int>> { { 0, new List<Vector2Int> { secondPartitionCentroid } }, { 1, new List<Vector2Int> { firstPartitionCentroid } } };
+                return new HashSet<List<Vector2Int>> { new() { secondPartitionCentroid }, new() { firstPartitionCentroid } };
             }
         }
 
@@ -79,9 +79,9 @@ namespace Tests.EditModeTests
             Assert.AreEqual(partitions[0], new PartitionInfo(0, new HashSet<int> { vertices[0].Id, vertices[1].Id }));
             return;
 
-            Dictionary<int, List<Vector2Int>> PartitioningGenerator(Dictionary<(Vector2Int, Vector2Int), int> ints, List<Vector2Int> list, int i1)
+            IEnumerable<List<Vector2Int>> PartitioningGenerator(Dictionary<(Vector2Int, Vector2Int), int> ints, List<Vector2Int> list, int i1)
             {
-                return new Dictionary<int, List<Vector2Int>> { { 0, new List<Vector2Int> { firstPartitionCentroid, secondPartitionCentroid } } };
+                return new HashSet<List<Vector2Int>> { new() { firstPartitionCentroid, secondPartitionCentroid } };
             }
         }
     }

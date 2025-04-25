@@ -1,7 +1,9 @@
 using System.Collections;
 
 using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Map.Generators;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 
 using NUnit.Framework;
