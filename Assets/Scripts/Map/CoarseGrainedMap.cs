@@ -375,7 +375,6 @@ namespace Maes.Map
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
         /// <param name="acceptPartialPaths"></param>
-        /// <param name="dependOnBrokenBehavior"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2Int[]? GetPath(Vector2Int start, Vector2Int target, bool beOptimistic = false, bool acceptPartialPaths = false)
         {
