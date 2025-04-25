@@ -36,20 +36,21 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
     {
         private class Vertex
         {
-            public Vertex(MeetingPoint meetingPoint)
+            public Vertex(int id, HashSet<int> meetingRobotIds)
             {
-                MeetingPoint = meetingPoint;
+                Id = id;
+                MeetingRobotIds = meetingRobotIds;
             }
 
-            public MeetingPoint MeetingPoint { get; }
-            public int Id => MeetingPoint.VertexId;
+            public HashSet<int> MeetingRobotIds { get; }
+            public int Id { get; }
             public int? ColorId { get; set; }
             public HashSet<Vertex> Neighbors { get; } = new();
         }
 
-        public WelshPowellMeetingPointColorer(MeetingPoint[] meetingPoints)
+        public WelshPowellMeetingPointColorer(Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId)
         {
-            _vertices = meetingPoints.Select(meetingPoint => new Vertex(meetingPoint)).ToArray();
+            _vertices = meetingRobotIdsByVertexId.Select(kvp => new Vertex(kvp.Key, kvp.Value)).ToArray();
             SetNeighbors();
         }
 
@@ -59,7 +60,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
         {
             foreach (var (vertex1, vertex2) in _vertices.Combinations())
             {
-                if (!vertex1.MeetingPoint.RobotIds.Overlaps(vertex2.MeetingPoint.RobotIds))
+                if (!vertex1.MeetingRobotIds.Overlaps(vertex2.MeetingRobotIds))
                 {
                     continue;
                 }
