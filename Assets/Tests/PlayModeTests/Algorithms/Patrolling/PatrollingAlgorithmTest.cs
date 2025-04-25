@@ -167,7 +167,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_CognitiveCoordinated_CaveMap()
         {
-            var simulation = EnqueueCaveMapScenario(new CognitiveCoordinated());
+            var simulation = EnqueueCaveMapScenario(new CognitiveCoordinatedGlobal());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
@@ -179,7 +179,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_CognitiveCoordinated_BuildingMap()
         {
-            var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinated());
+            var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinatedGlobal());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {

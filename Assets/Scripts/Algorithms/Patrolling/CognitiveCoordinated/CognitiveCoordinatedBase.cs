@@ -11,9 +11,8 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling
 {
-    public sealed class CognitiveCoordinated : PatrollingAlgorithm
+    public abstract class CognitiveCoordinatedBase : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Cognitive Coordinated Algorithm";
         private List<Vertex> _currentPath = new();
         private int _pathStep;
         private readonly Dictionary<(int, int), Vertex[]> _pathsCache = new();
@@ -34,7 +33,7 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, Coordinator.GlobalMap);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
@@ -44,14 +43,10 @@ namespace Maes.Algorithms.Patrolling
         {
             base.SetGlobalPatrollingMap(globalMap);
 
-            // Will be set multiple times.
-            // Too bad!
-            Coordinator.GlobalMap = globalMap;
-
-            // We must clear Coordinators knowledge of occupied vertices as we have new robots, and we might just have started a new experiment.
-            // This will break if robots are added mid-experiment.
-            Coordinator.ClearOccupiedVertices();
+            InitializeCoordinator(globalMap);
         }
+
+        public abstract void InitializeCoordinator(PatrollingMap globalMap);
 
         private Vertex NextVertex(Vertex currentVertex)
         {
@@ -76,13 +71,13 @@ namespace Maes.Algorithms.Patrolling
 
             var lastVertex = _currentPath.Last();
 
-            Coordinator.OccupyVertex(_controller.Id, lastVertex);
+            OccupyVertex(_controller.Id, lastVertex);
         }
 
         private Vertex HighestIdle(Vertex targetVertex)
         {
             // excluding the vertices other agents are pathing towards
-            var availableVertices = Coordinator.GetUnoccupiedVertices(_controller.Id)
+            var availableVertices = GetUnoccupiedVertices(_controller.Id)
                 .Where(vertex => vertex != targetVertex)
                 .OrderBy(vertex => vertex.LastTimeVisitedTick)
                 .ToList();
@@ -183,43 +178,8 @@ namespace Maes.Algorithms.Patrolling
             return Vector2Int.Distance(a.Position, b.Position);
         }
 
-        // TODO: Find a better way to have a coordinator, so that it is not static.
-        private static class Coordinator
-        {
-            public static PatrollingMap GlobalMap { get; set; } = null!; // Set by CognitiveCoordinated.SetGlobalPatrollingMap
-
-            private static readonly Dictionary<int, Vertex> VerticesOccupiedByRobot = new();
-
-            public static IEnumerable<Vertex> GetOccupiedVertices(int robotId)
-            {
-                return VerticesOccupiedByRobot
-                    .Where(p => p.Key != robotId)
-                    .Select(p => p.Value);
-            }
-
-            public static IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
-            {
-                var occupiedVertices = GetOccupiedVertices(robotId);
-                return GlobalMap.Vertices.Except(occupiedVertices);
-            }
-
-            public static void OccupyVertex(int robotId, Vertex vertex)
-            {
-#if DEBUG
-                if (!GlobalMap.Vertices.Contains(vertex))
-                {
-                    throw new ArgumentException("Vertex is not a part of GlobalMap.Vertices.", nameof(vertex));
-                }
-#endif
-
-                VerticesOccupiedByRobot[robotId] = vertex;
-            }
-
-            public static void ClearOccupiedVertices()
-            {
-                VerticesOccupiedByRobot.Clear();
-            }
-        }
+        public abstract void OccupyVertex(int robotId, Vertex vertex);
+        public abstract IEnumerable<Vertex> GetOccupiedVertices(int robotId);
+        public abstract IEnumerable<Vertex> GetUnoccupiedVertices(int robotId);
     }
-
 }
