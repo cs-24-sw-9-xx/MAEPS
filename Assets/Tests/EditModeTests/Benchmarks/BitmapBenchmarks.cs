@@ -4,6 +4,8 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities;
+
 using Debug = UnityEngine.Debug;
 
 namespace Tests.EditModeTests.Benchmarks
@@ -17,7 +19,7 @@ namespace Tests.EditModeTests.Benchmarks
             var count = 0;
             const int iterations = 1000000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 1234))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 1234))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -45,7 +47,7 @@ namespace Tests.EditModeTests.Benchmarks
             var any = false;
             const int iterations = 1000000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 1234))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 1234))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -72,7 +74,7 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 100000000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 1))
+            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 1))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -95,7 +97,7 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 100000000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 1))
+            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 1))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -118,9 +120,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap1 = Utilities.Utilities.CreateRandomBitmap(100, 100, 2))
+            using (var bitmap1 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 2))
             {
-                using (var bitmap2 = Utilities.Utilities.CreateRandomBitmap(100, 100, 3))
+                using (var bitmap2 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 3))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -144,9 +146,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap1 = Utilities.Utilities.CreateRandomBitmap(100, 100, 2))
+            using (var bitmap1 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 2))
             {
-                using (var bitmap2 = Utilities.Utilities.CreateRandomBitmap(60, 60, 3))
+                using (var bitmap2 = Utilities.BitmapUtilities.CreateRandomBitmap(60, 60, 3))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -170,9 +172,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 1000000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 5))
+            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 5))
             {
-                using (var otherBitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 4))
+                using (var otherBitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 4))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -199,9 +201,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap = Utilities.Utilities.CreateRandomBitmap(100, 100, 5))
+            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 5))
             {
-                using (var otherBitmap = Utilities.Utilities.CreateRandomBitmap(60, 60, 4))
+                using (var otherBitmap = Utilities.BitmapUtilities.CreateRandomBitmap(60, 60, 4))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();

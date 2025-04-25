@@ -33,6 +33,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities;
 using Tests.EditModeTests.Utilities.MapInterpreter;
 
 using UnityEngine;
@@ -84,7 +85,7 @@ namespace Tests.EditModeTests
                 "            ;" +
                 "            ";
 
-            using var expectedBitmap = Utilities.Utilities.BitmapFromString(expectedBitmapString);
+            using var expectedBitmap = BitmapUtilities.BitmapFromString(expectedBitmapString);
             var slamMap = new SimulationMapBuilder(bitmapString).BuildMap().map;
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
             var vector2Ints = new List<Vector2Int> { vertex.Position };
