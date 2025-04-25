@@ -41,12 +41,13 @@ namespace Maes.Algorithms.Patrolling.Components
     /// Implements the paper: A Tuple Space for Data Sharing in Robot Swarms
     /// DOI 10.4108/eai.3-12-2015.2262503
     /// </remarks>
-    public sealed class VirtualStigmergyComponent<TValue> : IComponent
+    public sealed class VirtualStigmergyComponent<TKey, TValue> : IComponent
+        where TKey : notnull
         where TValue : class
     {
-        public delegate ValueInfo OnConflictDelegate(string key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
+        public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
-        private readonly Dictionary<string, ValueInfo> _localKnowledge = new();
+        private readonly Dictionary<TKey, ValueInfo> _localKnowledge = new();
 
         private readonly OnConflictDelegate _onConflictDelegate;
         private readonly IRobotController _controller;
@@ -72,7 +73,6 @@ namespace Maes.Algorithms.Patrolling.Components
         /// </summary>
         /// <param name="onConflictDelegate">A function to call to resolve conflicts.</param>
         /// <param name="controller">The robot controller.</param>
-        /// <param name="monaRobot">The mona robot.</param>
         public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, IRobotController controller)
         {
             _onConflictDelegate = onConflictDelegate;
@@ -207,7 +207,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="key">The key to update.</param>
         /// <param name="value">The new value.</param>
         /// <remarks>This communicates this change with neighbors.</remarks>
-        public void Put(string key, TValue value)
+        public void Put(TKey key, TValue value)
         {
             var timestamp = 1;
             if (_localKnowledge.TryGetValue(key, out var info))
@@ -225,7 +225,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="key">The key to get.</param>
         /// <returns>The value or null if key is not present.</returns>
         /// <remarks>You probably don't want to use this method. See <see cref="Get"/>.</remarks>
-        public TValue? GetNonSending(string key)
+        public TValue? GetNonSending(TKey key)
         {
             if (_localKnowledge.TryGetValue(key, out var valueInfo))
             {
@@ -242,7 +242,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="key">The key to get the value for.</param>
         /// <returns>The value or null if key is not present.</returns>
         /// <remarks>This only returns what is in the local knowledge, but it sends a get message to receive the newest information from neighbors. This information is first available next tick, however.</remarks>
-        public TValue? Get(string key)
+        public TValue? Get(TKey key)
         {
             if (!_localKnowledge.TryGetValue(key, out var valueInfo))
             {
@@ -268,7 +268,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="key">The key to check existance for.</param>
         /// <returns><see langword="true"/> if the key exists otherwise <see langword="false"/></returns>
         /// <remarks>This does not communicate with neighbors.</remarks>
-        public bool Has(string key)
+        public bool Has(TKey key)
         {
             // The paper is a little vague what Has does.
             // Should it ask the swarm like Get? or should it just check the local knowledge?
@@ -316,7 +316,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             public MessageType Type { get; }
 
-            public string Key { get; }
+            public TKey Key { get; }
 
             public TValue? Value { get; }
 
@@ -324,7 +324,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
             public int RobotId { get; }
 
-            private VirtualStigmergyMessage(MessageType type, string key, TValue? value, int timestamp, int robotId)
+            private VirtualStigmergyMessage(MessageType type, TKey key, TValue? value, int timestamp, int robotId)
             {
                 Type = type;
                 Key = key;
@@ -333,13 +333,13 @@ namespace Maes.Algorithms.Patrolling.Components
                 RobotId = robotId;
             }
 
-            public static VirtualStigmergyMessage CreateGetMessage(string key, TValue? value, int timestamp,
+            public static VirtualStigmergyMessage CreateGetMessage(TKey key, TValue? value, int timestamp,
                 int robotId)
             {
                 return new VirtualStigmergyMessage(MessageType.Get, key, value, timestamp, robotId);
             }
 
-            public static VirtualStigmergyMessage CreatePutMessage(string key, TValue value, int timestamp, int robotId)
+            public static VirtualStigmergyMessage CreatePutMessage(TKey key, TValue value, int timestamp, int robotId)
             {
                 return new VirtualStigmergyMessage(MessageType.Put, key, value, timestamp, robotId);
             }
