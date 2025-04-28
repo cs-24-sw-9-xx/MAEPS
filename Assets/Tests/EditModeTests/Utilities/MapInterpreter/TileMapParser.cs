@@ -30,9 +30,9 @@ namespace Tests.EditModeTests.Utilities.MapInterpreter
 {
     public class TileMapParser
     {
-        public TileMapParser(string map)
+        public TileMapParser(string map, char delimiter = ';')
         {
-            _lines = map.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            _lines = map.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
             Width = _lines[0].Length;
             Height = _lines.Length;
 
@@ -49,7 +49,7 @@ namespace Tests.EditModeTests.Utilities.MapInterpreter
             {
                 for (var x = 0; x < Width; x++)
                 {
-                    yield return (_lines[y][x], x, y);
+                    yield return (_lines[y][x], x, Height - 1 - y);
                 }
             }
         }

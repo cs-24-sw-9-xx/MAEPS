@@ -53,6 +53,8 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingMap _patrollingMap;
         private readonly InitialVertexToPatrolDelegate _initialVertexToPatrolDelegate;
         public Vector2Int TargetPosition { get; private set; }
+        public Vertex ApproachingVertex { get; private set; }
+        private AbortingTask? _abortingTask;
 
         /// <summary>
         /// Delegate that specifies the next vertex to travel to.
@@ -88,18 +90,18 @@ namespace Maes.Algorithms.Patrolling.Components
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
             // Go to the initial vertex.
-            var vertex = _initialVertexToPatrolDelegate();
-            TargetPosition = vertex.Position;
-            while (GetRelativePositionTo(vertex.Position).Distance > MinDistance)
+            ApproachingVertex = _initialVertexToPatrolDelegate();
+            TargetPosition = ApproachingVertex.Position;
+            while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance)
             {
-                _controller.PathAndMoveTo(vertex.Position, dependOnBrokenBehaviour: false);
+                _controller.PathAndMoveTo(ApproachingVertex.Position, dependOnBrokenBehaviour: false);
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
             }
 
             while (true)
             {
                 Vertex targetVertex;
-                if (_controller.AssignedPartition != vertex.Partition)
+                if (_controller.AssignedPartition != ApproachingVertex.Partition)
                 {
                     // The robot has been assigned to another partition. We need to find the closest vertex in the new partition.
                     targetVertex = _nextVertexDelegate(_initialVertexToPatrolDelegate());
@@ -113,14 +115,20 @@ namespace Maes.Algorithms.Patrolling.Components
                     continue;
                 }
 
+                if (_abortingTask != null)
+                {
+                    ApproachingVertex = _abortingTask.Value.TargetVertex;
+                    _abortingTask = null;
+                }
+
                 // Follow the path.
                 // Go to the next vertex
-                targetVertex = _nextVertexDelegate(vertex);
+                targetVertex = _nextVertexDelegate(ApproachingVertex);
 
                 // Tell PatrollingAlgorithm that we reached the vertex
-                _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
-                var path = GetPathStepsToVertex(vertex, targetVertex);
-                vertex = targetVertex;
+                _patrollingAlgorithm.OnReachTargetVertex(ApproachingVertex, targetVertex);
+                var path = GetPathStepsToVertex(ApproachingVertex, targetVertex);
+                ApproachingVertex = targetVertex;
 
                 // Move to the start of the path
                 foreach (var condition in MoveToPosition(path.Peek().Start))
@@ -138,11 +146,12 @@ namespace Maes.Algorithms.Patrolling.Components
                 }
             }
         }
+
         private Vertex GetClosestVertexDefault()
         {
             var robotPartition = _controller.AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
-            return vertices.GetClosestVertex(_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false));
+            return vertices.GetClosestVertex(target => _controller.EstimateDistanceToTarget(target) ?? int.MaxValue);
         }
 
 
@@ -151,6 +160,11 @@ namespace Maes.Algorithms.Patrolling.Components
             TargetPosition = target;
             while (true)
             {
+                if (_abortingTask != null)
+                {
+                    yield break;
+                }
+
                 yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: false);
 
                 var relativePosition = GetRelativePositionTo(target);
@@ -185,6 +199,12 @@ namespace Maes.Algorithms.Patrolling.Components
                 return path;
             }
             return new Queue<PathStep>(_patrollingMap.Paths[(currentVertex.Id, targetVertex.Id)]);
+        }
+
+        public void AbortCurrentTask(AbortingTask abortingTask)
+        {
+            _abortingTask = abortingTask;
+            TargetPosition = abortingTask.TargetVertex.Position;
         }
     }
 }

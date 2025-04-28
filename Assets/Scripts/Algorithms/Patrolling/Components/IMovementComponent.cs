@@ -19,6 +19,8 @@
 // Puvikaran Santhirasegaram
 // Mads Beyer Mogensen
 
+using Maes.Map;
+
 using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
@@ -26,5 +28,18 @@ namespace Maes.Algorithms.Patrolling.Components
     public interface IMovementComponent : IComponent
     {
         public Vector2Int TargetPosition { get; }
+        public Vertex ApproachingVertex { get; }
+        public void AbortCurrentTask(AbortingTask abortingTask);
+
+    }
+
+    public readonly struct AbortingTask
+    {
+        public AbortingTask(Vertex targetVertex)
+        {
+            TargetVertex = targetVertex;
+        }
+
+        public Vertex TargetVertex { get; }
     }
 }

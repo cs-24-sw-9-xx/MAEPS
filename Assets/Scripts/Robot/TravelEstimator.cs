@@ -19,12 +19,12 @@ namespace Maes.Robot
 
         public float? EstimateDistance(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
-            if (Distance(start, target, dependOnBrokenBehaviour) < 0.5f)
+            if (start == target || Distance(start, target, dependOnBrokenBehaviour) < 0.5f)
             {
                 return 0f;
             }
 
-            var pathList = CoarseMap.GetPath(start, target, acceptPartialPaths, beOptimistic);
+            var pathList = CoarseMap.GetPath(start, target, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
             if (pathList == null)
             {
                 return null;
@@ -51,11 +51,17 @@ namespace Maes.Robot
         /// <param name="target">the target that the path should end at.</param>
         /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
         /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public int? EstimateTime(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        /// <param name="dependOnBrokenBehaviour"></param>
+        public int? EstimateTime(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
+            if (start == target)
+            {
+                return 0;
+            }
+
             // An estimation for the distance it takes the robot to reach terminal speed.
             const float distForMaxSpeed = 2.5f;
-            var distance = EstimateDistance(start, target, acceptPartialPaths, beOptimistic);
+            var distance = EstimateDistance(start, target, acceptPartialPaths: acceptPartialPaths, beOptimistic: beOptimistic, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
             if (distance == null)
             {
                 return null;
