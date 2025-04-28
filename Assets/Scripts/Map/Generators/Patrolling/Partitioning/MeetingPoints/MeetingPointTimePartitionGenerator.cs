@@ -28,11 +28,12 @@ using UnityEngine;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {
-    public class MeetingPointTimePartitionGenerator : IPartitionGenerator<HMPPartitionInfo>
+    public class MeetingPointTimePartitionGenerator : IHMPPartitionGenerator
     {
         private readonly PartitionGeneratorWithMeetingPoint _partitionGeneratorWithMeetings;
         private PatrollingMap _patrollingMap = null!;
-        private EstimateTimeDelegate _estimateTime = (_, _) => null;
+        private EstimateTimeDelegate _estimateTime = null!;
+        private EstimateTimeToTargetDelegate _estimateTimeToTarget = null!;
 
 
         public MeetingPointTimePartitionGenerator(IPartitionGenerator<PartitionInfo> partitionGenerator)
@@ -40,11 +41,16 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             _partitionGeneratorWithMeetings = new PartitionGeneratorWithMeetingPoint(partitionGenerator);
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap)
         {
             _patrollingMap = patrollingMap;
-            _partitionGeneratorWithMeetings.SetMaps(patrollingMap, coarseMap, estimateTime);
+            _partitionGeneratorWithMeetings.SetMaps(patrollingMap, coarseMap);
+        }
+
+        public void SetEstimates(EstimateTimeDelegate estimateTime, EstimateTimeToTargetDelegate estimateTimeToTarget)
+        {
             _estimateTime = estimateTime;
+            _estimateTimeToTarget = estimateTimeToTarget;
         }
 
         public Dictionary<int, HMPPartitionInfo> GeneratePartitions(HashSet<int> robotIds)
@@ -53,10 +59,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
             var meetingRobotIdsByVertexId = FindMeetingRobotsAtMeetingPoints(partitionsById.Values.ToArray());
 
-            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
-            var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
-
-            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, tickColorAssignment, globalMeetingIntervalTicks);
+            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsById);
 
             var hmpPartitionsById = new Dictionary<int, HMPPartitionInfo>();
             foreach (var (robotId, partitionInfo) in partitionsById)
@@ -99,15 +102,19 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             return meetingPointVertexByVertexId;
         }
 
-        private static Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
-            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, int> tickColorAssignment,
-            int globalMeetingIntervalTicks)
+        private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
+            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, PartitionInfo> partitionsById)
         {
+            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
+            var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
+
+            var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
+
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
                 var atTicks = tickColorAssignment[vertexId] * globalMeetingIntervalTicks;
-                var meetingPoint = new MeetingPoint(vertexId, atTicks, meetingRobotIds);
+                var meetingPoint = new MeetingPoint(vertexId, atTicks, startMeetingAfterTicks + atTicks, meetingRobotIds);
                 foreach (var robotId in meetingRobotIds)
                 {
                     if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
@@ -165,6 +172,31 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             }
 
             return maxTicks;
+        }
+
+        private int GetWhenToStartMeeting(IEnumerable<PartitionInfo> partitionInfos)
+        {
+            var startMeetingAfterTicks = 0;
+
+            foreach (var partitionInfo in partitionInfos)
+            {
+                int? timeToClosestVertex = null;
+                foreach (var vertex in _patrollingMap.Vertices.Where(v => partitionInfo.VertexIds.Contains(v.Id)))
+                {
+                    var timeToTarget = _estimateTimeToTarget(vertex.Position) ?? int.MaxValue;
+                    if (timeToClosestVertex == null || timeToTarget < timeToClosestVertex)
+                    {
+                        timeToClosestVertex = timeToTarget;
+                    }
+                }
+
+                if (timeToClosestVertex > startMeetingAfterTicks)
+                {
+                    startMeetingAfterTicks = timeToClosestVertex.Value;
+                }
+            }
+
+            return startMeetingAfterTicks;
         }
     }
 }
