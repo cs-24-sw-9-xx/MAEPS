@@ -50,6 +50,9 @@ namespace Maes.Algorithms.Patrolling.Components
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
+        public static OnConflictDelegate KeepNewest => (_, local, incoming) => local.Timestamp > incoming.Timestamp ? local : incoming;
+        public static OnConflictDelegate KeepOldest => (_, local, incoming) => local.Timestamp < incoming.Timestamp ? local : incoming;
+
         private readonly Dictionary<TKey, ValueInfo> _localKnowledge = new();
 
         private readonly OnConflictDelegate _onConflictDelegate;
