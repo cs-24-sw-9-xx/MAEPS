@@ -10,7 +10,7 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
 
-        protected override PatrollingMap GlobalMap => Coordinator.GlobalMap;
+        protected override PatrollingMap _globalMap => Coordinator.GlobalMap;
 
         public override void InitializeCoordinator(PatrollingMap globalMap)
         {
