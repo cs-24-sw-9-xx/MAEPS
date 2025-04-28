@@ -71,7 +71,7 @@ namespace Maes.Map
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
-            using var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
+            var communicationZoneIntersection = new Bitmap(0, 0, _bitmapWidth, _bitmapHeight);
 
             foreach ((var position, var vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
