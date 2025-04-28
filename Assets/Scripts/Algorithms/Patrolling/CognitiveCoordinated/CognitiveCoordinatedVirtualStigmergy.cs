@@ -18,7 +18,6 @@ namespace Maes.Algorithms.Patrolling
 
         public override void InitializeCoordinator(PatrollingMap _)
         {
-            //_virtualStigmergyComponent.Put(_vertualStigmergyMessageId, new Dictionary<int, Vertex>());
         }
 
         public override void OccupyVertex(int robotId, Vertex vertex)
@@ -29,6 +28,12 @@ namespace Maes.Algorithms.Patrolling
                 throw new ArgumentException($"Vertex ({vertex}) is not a part of GlobalMap.Vertices.", nameof(vertex));
             }
 #endif
+            if (!_virtualStigmergyComponent.Has(VirtualStigmergyMessageId))
+            {
+                _virtualStigmergyComponent.Put(VirtualStigmergyMessageId, new Dictionary<int, Vertex>());
+            }
+
+            // Update the local knowledge of the robot.
             var _localKnowledge = _virtualStigmergyComponent.GetNonSending(VirtualStigmergyMessageId)!;
             _localKnowledge[robotId] = vertex;
             _virtualStigmergyComponent.Put(VirtualStigmergyMessageId, _localKnowledge);
@@ -36,6 +41,11 @@ namespace Maes.Algorithms.Patrolling
 
         public override IEnumerable<Vertex> GetOccupiedVertices(int robotId)
         {
+            // Hacky solution to initialize the local knowledge of the robot.
+            if (!_virtualStigmergyComponent.Has(VirtualStigmergyMessageId))
+            {
+                return Enumerable.Empty<Vertex>();
+            }
             return _virtualStigmergyComponent.Get(VirtualStigmergyMessageId)
                     .Where(p => p.Key != robotId)
                     .Select(p => p.Value);
