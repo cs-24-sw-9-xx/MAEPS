@@ -37,7 +37,7 @@ namespace Tests.EditModeTests.Utilities.Partitions
 
         private readonly Dictionary<int, HashSet<Vertex>> _vertexPositionsByPartitionId;
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap)
         {
 
         }

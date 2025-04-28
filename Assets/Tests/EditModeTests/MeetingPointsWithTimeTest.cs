@@ -36,6 +36,7 @@ using RobotConstraints = Maes.Robot.RobotConstraints;
 
 namespace Tests.EditModeTests
 {
+    // TODO: Check if the tests are still valid
     public class MeetingPointsWithTimeTest
     {
         private const string TestMap1 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -55,7 +56,9 @@ namespace Tests.EditModeTests
             var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(vertexPositionsByPartitionId));
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
-            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+            generator.SetMaps(patrollingMap, coarseMap);
+            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e), _ => 0);
+
 
 
             var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
@@ -63,12 +66,12 @@ namespace Tests.EditModeTests
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2 });
 
-            //Check that the the meeting point are vertex 2
+            //Check that the meeting point are vertex 2
             Assert.AreEqual(2, partitions[1].MeetingPoints[0].VertexId);
             Assert.AreEqual(2, partitions[2].MeetingPoints[0].VertexId);
 
             //Check that the meeting point is at the correct time
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[1].MeetingPoints[0].AtTicks);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[1].MeetingPoints[0].MeetingAtEveryTick);
         }
 
         private const string TestMap2 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -88,14 +91,15 @@ namespace Tests.EditModeTests
             var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(vertexPositionsByPartitionId));
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
-            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+            generator.SetMaps(patrollingMap, coarseMap);
+            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e), _ => 0);
 
             var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
             var expectedGlobalTimeToNextMeeting = 2 * 3 * estimateTicks;
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2, 3 });
 
-            //Check that the the meeting point are vertex 2
+            //Check that the meeting point are vertex 2
             Assert.AreEqual(2, partitions[1].MeetingPoints[0].VertexId);
             Assert.AreEqual(2, partitions[2].MeetingPoints[0].VertexId);
             Assert.AreEqual(4, partitions[2].MeetingPoints[1].VertexId);
@@ -103,8 +107,8 @@ namespace Tests.EditModeTests
 
             //Check that the meeting point is at the correct time
             Assert.AreNotEqual(0, expectedGlobalTimeToNextMeeting);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 1, partitions[2].MeetingPoints[0].AtTicks);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 2, partitions[2].MeetingPoints[1].AtTicks);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 1, partitions[2].MeetingPoints[0].MeetingAtEveryTick);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 2, partitions[2].MeetingPoints[1].MeetingAtEveryTick);
         }
     }
 }

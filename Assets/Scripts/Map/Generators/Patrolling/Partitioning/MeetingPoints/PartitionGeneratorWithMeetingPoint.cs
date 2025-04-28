@@ -39,7 +39,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             _partitionGenerator = partitionGenerator;
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap)
         {
             _patrollingMap = patrollingMap;
 
@@ -47,7 +47,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             _verticesReverseNearestNeighbors = patrollingMap.Vertices.Select(v => new Vertex(v.Id, v.Position, v.Partition, v.Color)).ToArray();
             ReverseNearestNeighborWaypointConnector.ConnectVertices(_verticesReverseNearestNeighbors, bitmap);
 
-            _partitionGenerator.SetMaps(patrollingMap, coarseMap, estimateTime);
+            _partitionGenerator.SetMaps(patrollingMap, coarseMap);
         }
 
         public Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)
