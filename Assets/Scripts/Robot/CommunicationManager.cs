@@ -446,7 +446,7 @@ namespace Maes.Robot
             Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
                 {
-                    using var bitmap = CalculateCommunicationZone(vertex);
+                    var bitmap = CalculateCommunicationZone(vertex);
                     lock (vertexPositionsMultiThread)
                     {
                         vertexPositionsMultiThread.Add(vertex, bitmap);
