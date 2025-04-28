@@ -7,9 +7,9 @@ namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
 {
     public abstract class BaseSimulationMapBuilder<TResult>
     {
-        protected BaseSimulationMapBuilder(string map)
+        protected BaseSimulationMapBuilder(string map, char delimiter = ';')
         {
-            _tileMapParser = new TileMapParser(map);
+            _tileMapParser = new TileMapParser(map, delimiter);
             _tiles = new SimulationMapTile<Tile>[_tileMapParser.Width, _tileMapParser.Height];
         }
 

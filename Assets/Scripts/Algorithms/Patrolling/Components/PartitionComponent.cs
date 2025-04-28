@@ -16,6 +16,7 @@ namespace Maes.Algorithms.Patrolling.Components
             _robotId = controller.Id;
             _partitionGenerator = partitionGenerator;
         }
+
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
@@ -25,7 +26,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private StartupComponent<IReadOnlyDictionary<int, HMPPartitionInfo>, PartitionComponent> _startupComponent = null!;
         private VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
-        public PartitionInfo? PartitionInfo { get; private set; }
+        public HMPPartitionInfo? PartitionInfo { get; private set; }
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
@@ -57,9 +58,27 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 var success = _virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo);
                 Debug.Assert(success);
-                PartitionInfo = partitionInfo;
+                PartitionInfo = partitionInfo!;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
+        }
+
+        public IEnumerable<ComponentWaitForCondition> ExchangeInformation()
+        {
+            foreach (var robotId in _startupComponent.DiscoveredRobots)
+            {
+                _virtualStigmergyComponent.TryGet(robotId, out var _);
+            }
+
+            yield return ComponentWaitForCondition.WaitForLogicTicks(2, shouldContinue: false);
+        }
+
+        public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobots)
+        {
+            // TODO: Implement the logic for when some other robots are not at the meeting point
+            Debug.Log("Some robots are not at the meeting point");
+
+            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
     }
 }
