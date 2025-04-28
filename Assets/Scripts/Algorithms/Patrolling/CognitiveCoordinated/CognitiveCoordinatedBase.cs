@@ -45,7 +45,6 @@ namespace Maes.Algorithms.Patrolling
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _globalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _virtualStigmergyComponent = new VirtualStigmergyComponent<int, Dictionary<int, Vertex>>(VirtualStigmergyComponent<int, Dictionary<int, Vertex>>.KeepNewest, controller);
-            _virtualStigmergyComponent.Put(VirtualStigmergyMessageId, new Dictionary<int, Vertex>());
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _virtualStigmergyComponent };
         }
 
