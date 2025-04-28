@@ -57,7 +57,7 @@ namespace Maes.Algorithms.Patrolling
 #if DEBUG
                 if (!GlobalMap.Vertices.Contains(vertex))
                 {
-                    throw new ArgumentException("Vertex is not a part of GlobalMap.Vertices.", nameof(vertex));
+                    throw new ArgumentException($"Vertex ({vertex}) is not a part of GlobalMap.Vertices.", nameof(vertex));
                 }
 #endif
 
