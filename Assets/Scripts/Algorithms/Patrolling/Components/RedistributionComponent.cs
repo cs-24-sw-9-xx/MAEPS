@@ -74,12 +74,13 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void UpdateMessagesReceived()
         {
-            if (_controller.ReceiveBroadcast().Count == 0)
+            var messages = _controller.ReceiveBroadcast();
+            if (messages.Count == 0)
             {
                 return;
             }
 
-            foreach (var objectMessage in _controller.ReceiveBroadcast())
+            foreach (var objectMessage in messages)
             {
                 switch (objectMessage)
                 {
