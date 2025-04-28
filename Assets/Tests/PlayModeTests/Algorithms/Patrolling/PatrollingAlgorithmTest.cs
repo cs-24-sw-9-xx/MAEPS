@@ -187,5 +187,29 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             }
             Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
         }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_CognitiveCoordinatedVirtualStigmergy_CaveMap()
+        {
+            var simulation = EnqueueCaveMapScenario(new CognitiveCoordinatedVirtualStigmergy());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_CognitiveCoordinatedVirtualStigmergy_BuildingMap()
+        {
+            var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinatedVirtualStigmergy());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
     }
 }

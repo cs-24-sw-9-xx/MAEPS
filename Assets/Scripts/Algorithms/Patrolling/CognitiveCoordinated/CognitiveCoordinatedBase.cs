@@ -13,6 +13,7 @@ namespace Maes.Algorithms.Patrolling
 {
     public abstract class CognitiveCoordinatedBase : PatrollingAlgorithm
     {
+        protected const int VirtualStigmergyMessageId = 0;
         private List<Vertex> _currentPath = new();
         private int _pathStep;
         private readonly Dictionary<(int, int), Vertex[]> _pathsCache = new();
@@ -25,6 +26,7 @@ namespace Maes.Algorithms.Patrolling
         /// </summary>
         protected virtual PatrollingMap _globalMap => null!;
 
+        protected VirtualStigmergyComponent<int, Dictionary<int, Vertex>> _virtualStigmergyComponent = null!;
 
         protected override void GetDebugInfo(StringBuilder stringBuilder)
         {
@@ -42,8 +44,9 @@ namespace Maes.Algorithms.Patrolling
             _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _globalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, Dictionary<int, Vertex>>(VirtualStigmergyComponent<int, Dictionary<int, Vertex>>.KeepNewest, controller);
+            _virtualStigmergyComponent.Put(VirtualStigmergyMessageId, new Dictionary<int, Vertex>());
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _virtualStigmergyComponent };
         }
 
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
