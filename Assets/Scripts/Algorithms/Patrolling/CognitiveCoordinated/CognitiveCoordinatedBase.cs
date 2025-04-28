@@ -19,6 +19,8 @@ namespace Maes.Algorithms.Patrolling
 
         protected override bool AllowForeignVertices => true;
 
+        protected virtual PatrollingMap GlobalMap => null!;
+
         protected override void GetDebugInfo(StringBuilder stringBuilder)
         {
             stringBuilder
@@ -33,7 +35,7 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _patrollingMap);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, GlobalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };

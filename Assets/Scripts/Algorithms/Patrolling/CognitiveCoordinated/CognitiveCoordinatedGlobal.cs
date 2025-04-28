@@ -10,6 +10,8 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
 
+        protected override PatrollingMap GlobalMap => Coordinator.GlobalMap;
+
         public override void InitializeCoordinator(PatrollingMap globalMap)
         {
             Coordinator.GlobalMap = globalMap;
@@ -35,7 +37,7 @@ namespace Maes.Algorithms.Patrolling
         // TODO: Find a better way to have a coordinator, so that it is not static.
         private static class Coordinator
         {
-            public static PatrollingMap GlobalMap { get; set; } = null!; // Set by CognitiveCoordinated.SetGlobalPatrollingMap
+            public static PatrollingMap GlobalMap { get; set; } = null!;
 
             private static readonly Dictionary<int, Vertex> VerticesOccupiedByRobot = new();
 
