@@ -44,7 +44,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(_collisionMap, vertexPositions);
             var clusters = _partitioningGenerator(distanceMatrix, vertexPositions, robotIds.Count);
 
-            var vertexIdsPartitions = clusters.Values.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
+            var vertexIdsPartitions = clusters.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 
             var i = 0;
             var partitionInfoByRobotId = robotIds.ToDictionary(id => id, id => new PartitionInfo(id, vertexIdsPartitions[i++]));

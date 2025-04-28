@@ -41,18 +41,25 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         /// <param name="vertexPositions"></param>
         /// <param name="amountOfPartitions"></param>
         /// <returns></returns>
-        public static Dictionary<int, List<Vector2Int>> Generator(
+        public static IEnumerable<List<Vector2Int>> Generator(
             Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix,
             List<Vector2Int> vertexPositions,
             int amountOfPartitions)
         {
+            if (amountOfPartitions == 1)
+            {
+                return new HashSet<List<Vector2Int>>() {
+                    { vertexPositions }
+                };
+            }
+
             var initialClusters = Bisection(distanceMatrix, vertexPositions);
 
             if (amountOfPartitions == 2 || initialClusters[0].Count == 0 || initialClusters[1].Count == 0)
             {
-                return new Dictionary<int, List<Vector2Int>> {
-                    { 0, initialClusters[0] },
-                    { 1, initialClusters[1] }
+                return new HashSet<List<Vector2Int>>() {
+                    { initialClusters[0] },
+                    { initialClusters[1] }
                 };
             }
 
@@ -95,7 +102,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 finalClusters[index] = remainingCluster;
             }
 
-            return finalClusters;
+            return finalClusters.Values;
         }
 
 

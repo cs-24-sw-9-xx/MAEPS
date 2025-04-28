@@ -25,7 +25,7 @@ namespace Maes.Map
         public int NumberOfVisits { get; private set; }
 
 
-        public Vertex(int id, Vector2Int position, int partition = 1, Color? color = null)
+        public Vertex(int id, Vector2Int position, int partition = 0, Color? color = null)
         {
             Id = id;
             Partition = partition;
