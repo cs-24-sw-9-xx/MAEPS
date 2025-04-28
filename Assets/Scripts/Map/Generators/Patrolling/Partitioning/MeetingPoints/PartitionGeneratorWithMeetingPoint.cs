@@ -1,24 +1,46 @@
+// Copyright 2025 MAEPS
+// 
+// This file is part of MAEPS
+// 
+// MAEPS is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: 
+// Henrik van Peet,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
+
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Utilities;
 
-namespace Maes.Map.Generators.Patrolling.Partitioning
+namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {
-    public sealed class PartitionGeneratorWithMeetingPoint : IPartitionGenerator
+    public sealed class PartitionGeneratorWithMeetingPoint : IPartitionGenerator<PartitionInfo>
     {
-        private readonly BasePartitionGenerator _partitionGenerator;
+        private readonly IPartitionGenerator<PartitionInfo> _partitionGenerator;
         private PatrollingMap _patrollingMap = null!;
 
-        public PartitionGeneratorWithMeetingPoint(BasePartitionGenerator partitionGenerator)
+        public PartitionGeneratorWithMeetingPoint(IPartitionGenerator<PartitionInfo> partitionGenerator)
         {
             _partitionGenerator = partitionGenerator;
         }
 
-        public void SetMaps(PatrollingMap patrollingMap, Bitmap collisionMap)
+        public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
             _patrollingMap = patrollingMap;
-            _partitionGenerator.SetMaps(patrollingMap, collisionMap);
+            _partitionGenerator.SetMaps(patrollingMap, coarseMap, estimateTime);
         }
 
         public Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robotIds)

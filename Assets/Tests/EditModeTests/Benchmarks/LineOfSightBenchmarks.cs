@@ -6,6 +6,8 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities;
+
 using UnityEngine;
 
 using Debug = UnityEngine.Debug;
@@ -22,7 +24,7 @@ namespace Tests.EditModeTests.Benchmarks
 
             Dictionary<Vector2Int, Bitmap> result = null;
 
-            using (var bitmap = Utilities.BitmapFromString(Map))
+            using (var bitmap = BitmapUtilities.BitmapFromString(Map))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();

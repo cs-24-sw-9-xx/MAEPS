@@ -1,11 +1,35 @@
+// Copyright 2025 MAEPS
+// 
+// This file is part of MAEPS
+// 
+// MAEPS is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+// 
+// Contributors: 
+// Henrik van Peet,
+// Mads Beyer Mogensen,
+// Puvikaran Santhirasegaram
+
 using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Utilities;
+using Maes.Robot;
 
 using NUnit.Framework;
+
+using Tests.EditModeTests.Utilities.MapInterpreter;
 
 using UnityEngine;
 
@@ -25,7 +49,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_TwoPartitions_Test()
         {
-            var ((start, end), simulationMap) = Utilities.GenerateSimulationMapFromString(testMap);
+            var ((start, end), simulationMap) = new SimulationMapBuilder(testMap).BuildMap();
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;
@@ -37,9 +61,12 @@ namespace Tests.EditModeTests
             var i = 0;
             var vertices = vertexPositions.Select(position => new Vertex(i++, position)).ToList();
 
+            var robotConstraints = new RobotConstraints(mapKnown: true);
+            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
+            var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
+            generator.SetMaps(patrollingMap, coarseMap, (_, _) => null);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0, 1 });
 
@@ -57,7 +84,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_OnePartition_Test()
         {
-            var ((start, end), simulationMap) = Utilities.GenerateSimulationMapFromString(testMap);
+            var ((start, end), simulationMap) = new SimulationMapBuilder(testMap).BuildMap();
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;
@@ -69,9 +96,12 @@ namespace Tests.EditModeTests
             var i = 0;
             var vertices = vertexPositions.Select(position => new Vertex(i++, position)).ToList();
 
+            var robotConstraints = new RobotConstraints(mapKnown: true);
+            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
+            var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, MapUtilities.MapToBitMap(simulationMap));
+            generator.SetMaps(patrollingMap, coarseMap, (_, _) => null);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0 });
 

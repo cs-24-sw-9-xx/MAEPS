@@ -8,7 +8,7 @@ namespace Maes.Algorithms.Patrolling.Components
 {
     public class PartitionComponent : IComponent
     {
-        public PartitionComponent(IRobotController controller, StartupComponent<Dictionary<int, PartitionInfo>> startupComponent, VirtualStigmergyComponent<int, PartitionInfo> virtualStigmergyComponent)
+        public PartitionComponent(IRobotController controller, StartupComponent<Dictionary<int, HMPPartitionInfo>> startupComponent, VirtualStigmergyComponent<int, HMPPartitionInfo> virtualStigmergyComponent)
         {
             _robotId = controller.Id;
             _startupComponent = startupComponent;
@@ -18,8 +18,8 @@ namespace Maes.Algorithms.Patrolling.Components
         public int PostUpdateOrder => -900;
 
         private readonly int _robotId;
-        private readonly StartupComponent<Dictionary<int, PartitionInfo>> _startupComponent;
-        private readonly VirtualStigmergyComponent<int, PartitionInfo> _virtualStigmergyComponent;
+        private readonly StartupComponent<Dictionary<int, HMPPartitionInfo>> _startupComponent;
+        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo> _virtualStigmergyComponent;
 
         public PartitionInfo? PartitionInfo { get; private set; }
 

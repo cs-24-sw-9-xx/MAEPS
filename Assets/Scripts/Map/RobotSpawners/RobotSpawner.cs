@@ -414,6 +414,7 @@ namespace Maes.Map.RobotSpawners
             robot.Algorithm = algorithm;
             robot.Controller.CommunicationManager = CommunicationManager;
             robot.Controller.SlamMap = new SlamMap(collisionMap, RobotConstraints, seed);
+            robot.Controller.TravelEstimator = new TravelEstimator(robot.Controller.SlamMap.CoarseMap, RobotConstraints);
             robot.Controller.Constraints = RobotConstraints;
             algorithm.SetController(robot.Controller);
             robot.Color = color;

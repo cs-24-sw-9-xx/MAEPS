@@ -12,6 +12,8 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
+using Tests.EditModeTests.Utilities;
+
 using UnityEngine;
 
 namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
@@ -39,7 +41,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestComponent()
         {
-            EnqueueScenario(EditModeTests.Utilities.CreateEmptyBitmap(16, 16), new Vector2Int(1, 8), new Vector2Int(15, 8));
+            EnqueueScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), new Vector2Int(1, 8), new Vector2Int(15, 8));
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks

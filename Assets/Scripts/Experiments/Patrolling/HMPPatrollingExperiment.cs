@@ -1,19 +1,19 @@
-// Copyright 2025 MAES
+// Copyright 2025 MAEPS
 // 
-// This file is part of MAES
+// This file is part of MAEPS
 // 
-// MAES is free software: you can redistribute it and/or modify it under
+// MAEPS is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the
 // Free Software Foundation, either version 3 of the License, or (at your option)
 // any later version.
 // 
-// MAES is distributed in the hope that it will be useful, but WITHOUT
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 // Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License along
-// with MAES. If not, see http://www.gnu.org/licenses/.
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
 // 
 // Contributors: 
 // Henrik van Peet,
@@ -23,6 +23,7 @@
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -73,7 +74,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(new PartitionGeneratorWithMeetingPoint(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator)))),
+                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator)))),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
