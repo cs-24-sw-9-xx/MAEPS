@@ -19,12 +19,6 @@ namespace Maes.Algorithms.Patrolling
 
         protected override bool AllowForeignVertices => true;
 
-        /// <summary>
-        /// The "global" map that is used to coordinate the robots.
-        /// Whether the map is global or not depends on the implementation of the algorithm.
-        /// </summary>
-        protected virtual PatrollingMap _globalMap => null!;
-
         protected override void GetDebugInfo(StringBuilder stringBuilder)
         {
             stringBuilder
@@ -39,7 +33,7 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _globalMap);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }

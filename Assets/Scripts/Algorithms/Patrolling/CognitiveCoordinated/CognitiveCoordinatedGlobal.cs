@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,8 +8,6 @@ namespace Maes.Algorithms.Patrolling
     public sealed class CognitiveCoordinatedGlobal : CognitiveCoordinatedBase
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
-
-        protected override PatrollingMap _globalMap => Coordinator.GlobalMap;
 
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
         {
@@ -58,13 +55,6 @@ namespace Maes.Algorithms.Patrolling
 
             public static void OccupyVertex(int robotId, Vertex vertex)
             {
-#if DEBUG
-                if (!GlobalMap.Vertices.Contains(vertex))
-                {
-                    throw new ArgumentException($"Vertex ({vertex}) is not a part of GlobalMap.Vertices.", nameof(vertex));
-                }
-#endif
-
                 VerticesOccupiedByRobot[robotId] = vertex;
             }
 
