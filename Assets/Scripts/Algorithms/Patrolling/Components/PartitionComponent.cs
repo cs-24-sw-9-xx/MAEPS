@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components
 {
     public class PartitionComponent : IComponent
@@ -32,7 +34,8 @@ namespace Maes.Algorithms.Patrolling.Components
 
             while (true)
             {
-                PartitionInfo = _virtualStigmergyComponent.Get(_robotId);
+                Debug.Assert(_virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo));
+                PartitionInfo = partitionInfo;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
