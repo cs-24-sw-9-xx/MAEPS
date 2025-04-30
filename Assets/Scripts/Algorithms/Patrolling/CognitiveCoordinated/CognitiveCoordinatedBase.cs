@@ -26,8 +26,6 @@ namespace Maes.Algorithms.Patrolling
         /// </summary>
         protected virtual PatrollingMap _globalMap => null!;
 
-        protected VirtualStigmergyComponent<int, Dictionary<int, Vertex>> _virtualStigmergyComponent = null!;
-
         protected override void GetDebugInfo(StringBuilder stringBuilder)
         {
             stringBuilder
@@ -44,8 +42,7 @@ namespace Maes.Algorithms.Patrolling
             _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, _globalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, Dictionary<int, Vertex>>((_, localKnowledge, _) => localKnowledge, controller);
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _virtualStigmergyComponent };
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
