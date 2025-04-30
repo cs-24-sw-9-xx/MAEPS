@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Robot;
 
 namespace Maes.Algorithms.Patrolling
 {
@@ -15,6 +17,15 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
         protected override PatrollingMap _globalMap => _patrollingMap;
+        private VirtualStigmergyComponent<int, Dictionary<int, Vertex>> _virtualStigmergyComponent = null!;
+
+        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
+        {
+            var components = base.CreateComponents(controller, patrollingMap);
+            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, Dictionary<int, Vertex>>((_, localKnowledge, _) => localKnowledge, controller);
+            components = components.Append(_virtualStigmergyComponent).ToArray();
+            return components;
+        }
 
         public override void InitializeCoordinator(PatrollingMap _)
         {
