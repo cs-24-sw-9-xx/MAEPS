@@ -24,6 +24,7 @@ using System.Collections.Generic;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Robot;
 
 using NUnit.Framework;
@@ -46,7 +47,7 @@ namespace Tests.EditModeTests
         [Test]
         public void PartitionGeneratorHMPPartitionInfo_OneMeetingPointCorrectTime_Test()
         {
-            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap1).Build();
+            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap1, AllConnectedWaypointConnector.ConnectVertices).Build();
             var vertices = patrollingMap.Vertices;
 
             var robotConstraints = new RobotConstraints(mapKnown: true);
@@ -79,7 +80,7 @@ namespace Tests.EditModeTests
         [Test]
         public void PartitionGeneratorHMPPartitionInfo_TwoMeetingPointCorrectTime_Test()
         {
-            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap2).Build();
+            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap2, AllConnectedWaypointConnector.ConnectVertices).Build();
             var vertices = patrollingMap.Vertices;
 
             var robotConstraints = new RobotConstraints(mapKnown: true);

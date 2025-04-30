@@ -38,6 +38,13 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
                 id++;
             }
 
+            ConnectVertices(vertices);
+
+            return vertices;
+        }
+
+        public static void ConnectVertices(IReadOnlyCollection<Vertex> vertices)
+        {
             foreach (var vertex in vertices)
             {
                 foreach (var neighborVertex in vertices)
@@ -50,8 +57,6 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
                     vertex.AddNeighbor(neighborVertex);
                 }
             }
-
-            return vertices;
         }
     }
 }
