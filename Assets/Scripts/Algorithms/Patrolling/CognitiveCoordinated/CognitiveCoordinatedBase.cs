@@ -13,7 +13,6 @@ namespace Maes.Algorithms.Patrolling
 {
     public abstract class CognitiveCoordinatedBase : PatrollingAlgorithm
     {
-        protected const int VirtualStigmergyMessageId = 0;
         private List<Vertex> _currentPath = new();
         private int _pathStep;
         private readonly Dictionary<(int, int), Vertex[]> _pathsCache = new();

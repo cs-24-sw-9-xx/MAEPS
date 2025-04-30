@@ -18,6 +18,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         private MySimulator _maes;
         private const int Seed = 1;
         private const int MaxSimulatedLogicTicks = 250000;
+        private const int RobotCount = 1;
 
         private PatrollingSimulation EnqueueCaveMapScenario(PatrollingAlgorithm algorithm, int seed = Seed)
         {
@@ -28,8 +29,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             var robotConstraints = StandardTestingConfiguration.GlobalRobotConstraints();
             var mapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = algorithm.AlgorithmName;
-            var robotCount = 1;
-            var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, robotCount);
+            var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, RobotCount);
 
             _maes.EnqueueScenario(
                 new MySimulationScenario(
@@ -39,11 +39,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: seed,
-                        numberOfRobots: robotCount,
+                        numberOfRobots: RobotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
+                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn")
             );
             return _maes.SimulationManager.CurrentSimulation;
         }
@@ -57,8 +57,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             var robotConstraints = StandardTestingConfiguration.GlobalRobotConstraints();
             var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = algorithm.AlgorithmName;
-            var robotCount = 1;
-            var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, robotCount);
+            var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, RobotCount);
 
             _maes.EnqueueScenario(
                 new MySimulationScenario(
@@ -68,11 +67,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                         collisionMap: buildingConfig,
                         seed: seed,
-                        numberOfRobots: robotCount,
+                        numberOfRobots: RobotCount,
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn",
+                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn",
                     patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             );
             return _maes.SimulationManager.CurrentSimulation;
@@ -191,7 +190,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_CognitiveCoordinatedVirtualStigmergy_CaveMap()
         {
-            var simulation = EnqueueCaveMapScenario(new CognitiveCoordinatedVirtualStigmergy());
+            var simulation = EnqueueCaveMapScenario(new CognitiveCoordinatedVirtualStigmergy(RobotCount));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
@@ -203,7 +202,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         [Test(ExpectedResult = null)]
         public IEnumerator Test_CognitiveCoordinatedVirtualStigmergy_BuildingMap()
         {
-            var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinatedVirtualStigmergy());
+            var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinatedVirtualStigmergy(RobotCount));
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
