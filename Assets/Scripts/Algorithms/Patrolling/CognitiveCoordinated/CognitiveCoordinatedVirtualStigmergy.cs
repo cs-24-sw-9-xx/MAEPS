@@ -56,8 +56,10 @@ namespace Maes.Algorithms.Patrolling
             var currentState = new Dictionary<int, int>();
             for (var i = 0; i < _amountOfRobots; i++)
             {
-                var info = _virtualStigmergyComponent.Get(i);
-                currentState.Add(i, info);
+                if (_virtualStigmergyComponent.TryGet(i, out var value))
+                {
+                    currentState.Add(i, value);
+                }
             }
             return currentState;
         }
