@@ -34,7 +34,8 @@ namespace Maes.Algorithms.Patrolling.Components
 
             while (true)
             {
-                Debug.Assert(_virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo));
+                var success = _virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo);
+                Debug.Assert(success);
                 PartitionInfo = partitionInfo;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
