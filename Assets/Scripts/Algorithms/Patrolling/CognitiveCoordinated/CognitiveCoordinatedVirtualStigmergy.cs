@@ -33,10 +33,6 @@ namespace Maes.Algorithms.Patrolling
             return components;
         }
 
-        public override void InitializeCoordinator(PatrollingMap _)
-        {
-        }
-
         public override void OccupyVertex(int robotId, Vertex vertex)
         {
 #if DEBUG
