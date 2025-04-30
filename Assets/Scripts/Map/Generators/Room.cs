@@ -53,7 +53,7 @@ namespace Maes.Map.Generators
             Tiles = roomTiles;
             RoomSize = Tiles.Count;
             ConnectedRooms = new List<Room>();
-            TilesAsBitmap = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
+            TilesAsBitmap = new Bitmap(map.GetLength(0), map.GetLength(1));
 
             EdgeTiles = new List<Vector2Int>();
             foreach (var tile in Tiles)
@@ -87,7 +87,7 @@ namespace Maes.Map.Generators
 
         private static bool IsInMapRange(int x, int y, Bitmap map)
         {
-            return x >= map.XStart && x < map.XEnd && y >= map.YStart && y < map.YEnd;
+            return x >= 0 && x < map.Width && y >= 0 && y < map.Height;
         }
 
         public bool IsWithinRangeOf(Room other, int range)

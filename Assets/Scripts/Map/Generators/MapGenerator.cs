@@ -102,7 +102,7 @@ namespace Maes.Map.Generators
             var regions = new List<List<Vector2Int>>();
             // Flags if a given coordinate has already been accounted for
             // 1 = yes, 0 = no
-            using var mapFlags = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
+            using var mapFlags = new Bitmap(map.GetLength(0), map.GetLength(1));
 
             for (var x = 0; x < map.GetLength(0); x++)
             {
@@ -133,7 +133,7 @@ namespace Maes.Map.Generators
         protected List<Vector2Int> GetRegionTiles(int startX, int startY, Tile[,] map)
         {
             var tiles = new List<Vector2Int>();
-            using var mapFlags = new Bitmap(0, 0, map.GetLength(0), map.GetLength(1));
+            using var mapFlags = new Bitmap(map.GetLength(0), map.GetLength(1));
             var tileType = map[startX, startY].Type;
 
             var queue = new Queue<Vector2Int>();

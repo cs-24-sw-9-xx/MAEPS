@@ -13,7 +13,7 @@ namespace Tests.EditModeTests.Utilities
         [MustDisposeResource]
         public static Bitmap CreateRandomBitmap(int width, int height, int seed)
         {
-            var bitmap = new Bitmap(0, 0, width, height);
+            var bitmap = new Bitmap(width, height);
 
             var random = new Random(seed);
 
@@ -39,7 +39,7 @@ namespace Tests.EditModeTests.Utilities
 
             var width = split[0].Length;
 
-            var bitmap = new Bitmap(0, 0, width, height);
+            var bitmap = new Bitmap(width, height);
 
             for (var y = 0; y < height; y++)
             {
@@ -58,7 +58,7 @@ namespace Tests.EditModeTests.Utilities
         [MustDisposeResource]
         public static Bitmap CreateEmptyBitmap(int width, int height)
         {
-            var bitmap = new Bitmap(0, 0, width, height);
+            var bitmap = new Bitmap(width, height);
 
             // Top and bottom walls
             for (var x = 0; x < width; x++)

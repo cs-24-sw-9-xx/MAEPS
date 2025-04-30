@@ -65,7 +65,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 
             var guardPositions = new HashSet<Vector2Int>();
 
-            using var uncoveredTiles = new Bitmap(0, 0, map.Width, map.Height);
+            using var uncoveredTiles = new Bitmap(map.Width, map.Height);
             var uncoveredTilesSet = precomputedVisibility.Keys.ToHashSet();
             foreach (var uncoveredTile in precomputedVisibility.Keys)
             {
@@ -75,7 +75,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             while (uncoveredTiles.Count > 0)
             {
                 var bestGuardPosition = Vector2Int.zero;
-                var bestCoverage = new Bitmap(0, 0, 0, 0);
+                var bestCoverage = new Bitmap(0, 0);
 
                 var foundCandidate = false;
 

@@ -462,7 +462,7 @@ namespace Maes.Robot
         {
             var width = _tileMap.WidthInTiles;
             var height = _tileMap.HeightInTiles;
-            var bitmap = new Bitmap(0, 0, width, height);
+            var bitmap = new Bitmap(width, height);
 
             for (var x = 0; x < width; x++)
             {

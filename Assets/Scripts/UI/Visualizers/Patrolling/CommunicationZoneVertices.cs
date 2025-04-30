@@ -48,7 +48,7 @@ namespace Maes.UI.Visualizers.Patrolling
                 CommunicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
             }
 
-            AllCommunicationZoneTiles = new Bitmap(0, 0, simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            AllCommunicationZoneTiles = new Bitmap(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
             foreach (var (id, zone) in communicationZones)
             {
                 AllCommunicationZoneTiles.Union(zone);
