@@ -41,7 +41,7 @@ namespace Maes.Map
         public IReadOnlyDictionary<Vector2Int, Bitmap> WaypointsCommunicationZones { get; }
         public IReadOnlyDictionary<int, Bitmap> IntersectionZones => _intersectionZones;
         public IReadOnlyDictionary<int, float> CommunicationRatio => _communicationRatio;
-        public HashSet<Partition> NeighborPartitions { get; } = new();
+        private HashSet<Partition> NeighborPartitions { get; } = new();
 
         private readonly Dictionary<int, Bitmap> _intersectionZones = new();
         private readonly Dictionary<int, float> _communicationRatio = new();
@@ -73,7 +73,7 @@ namespace Maes.Map
         {
             var communicationZoneIntersection = new Bitmap(_bitmapWidth, _bitmapHeight);
 
-            foreach ((var position, var vertexComZone) in otherPartition.WaypointsCommunicationZones)
+            foreach (var (position, vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
                 var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
                 if (intersection.Contains(position))

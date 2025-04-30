@@ -30,7 +30,10 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
-    public sealed class RedistributionComponent : IComponent
+    /// <summary>
+    /// Component responsible for redistributing robots to different partitions.
+    /// </summary>
+    public sealed class PartitionRedistributionComponent : IComponent
     {
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
         private readonly Dictionary<int, float> _redistributionTracker;
@@ -39,6 +42,8 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly List<int> _currentPartitionIntersection;
         private float _trackerUpdateTimestamp = 0f;
         private Dictionary<int, bool> ReceivedCommunication { get; }
+        
+        private PartitionInitalizationComponent _partitionInitalizationComponent;
 
         /// <inheritdoc />
         public int PreUpdateOrder => -200;
@@ -46,17 +51,18 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => -200;
 
-        public RedistributionComponent(IRobotController controller)
+        public PartitionRedistributionComponent(IRobotController controller, PartitionInitalizationComponent partitionInitalizationComponent)
         {
             _controller = controller;
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new List<int>();
             ReceivedCommunication = new Dictionary<int, bool>();
+            _partitionInitalizationComponent = partitionInitalizationComponent;
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _currentPartition = PartitionDistributionComponent.Partitions[_controller.AssignedPartition];
+            _currentPartition = _partitionInitalizationComponent.Partitions[_controller.AssignedPartition];
             while (true)
             {
                 BroadCastMessage();
@@ -146,7 +152,7 @@ namespace Maes.Algorithms.Patrolling.Components
             var randomValue = Random.value;
             if (randomValue <= _redistributionTracker[partitionId])
             {
-                var partition = PartitionDistributionComponent.Partitions[partitionId];
+                var partition = _partitionInitalizationComponent.Partitions[partitionId];
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();

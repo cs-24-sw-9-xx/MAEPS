@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
 using Maes.Map;
 using Maes.Robot;
 
@@ -9,7 +7,10 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
-    public sealed class PartitionDistributionComponent : IComponent
+    /// <summary>
+    /// This component is responsible for initializing the partitions in the patrolling map.
+    /// </summary>>
+    public sealed class PartitionInitalizationComponent : IComponent
     {
         private readonly IRobotController _robotController;
 
@@ -17,16 +18,17 @@ namespace Maes.Algorithms.Patrolling.Components
 
         public int PostUpdateOrder => -10000;
 
-        public static List<Partition> Partitions { get; private set; } = new List<Partition>();
+        public List<Partition> Partitions { get; } = new();
+        
         private PatrollingMap _map { get; }
 
-        public PartitionDistributionComponent(PatrollingMap map, IRobotController robotController)
+        public PartitionInitalizationComponent(PatrollingMap map, IRobotController robotController)
         {
             _map = map;
             _robotController = robotController;
         }
 
-        private void DistributePartitions()
+        private void InitPartitions()
         {
             foreach (var (partitionId, vertices) in _map.VerticesByPartition)
             {
@@ -58,7 +60,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             if (_robotController.Id == 0)
             {
-                DistributePartitions();
+                InitPartitions();
             }
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
@@ -74,12 +76,6 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
-        }
-
-        public void DebugInfo(StringBuilder stringBuilder)
-        {
-            // Intentionally left blank.
-            // Don't force components to implement this.
         }
     }
 }
