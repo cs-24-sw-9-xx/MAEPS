@@ -1,13 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Robot;
 
 namespace Maes.Algorithms.Patrolling
 {
     public sealed class CognitiveCoordinatedGlobal : CognitiveCoordinatedBase
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
+
+        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap globalMap)
+        {
+            _controller = controller;
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, globalMap);
+            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+        }
 
         public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
         {
