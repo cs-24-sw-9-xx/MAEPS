@@ -25,10 +25,11 @@ namespace Maes.Algorithms.Patrolling
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            var components = base.CreateComponents(controller, patrollingMap);
+            _controller = controller;
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _virtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, _) => localKnowledge, controller);
-            components = components.Append(_virtualStigmergyComponent).ToArray();
-            return components;
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _virtualStigmergyComponent };
         }
 
         public override void OccupyVertex(int robotId, Vertex vertex)

@@ -26,9 +26,9 @@ namespace Maes.Algorithms.Patrolling
         }
 
         // Set by CreateComponents
-        private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        private IRobotController _controller = null!;
+        protected GoToNextVertexComponent _goToNextVertexComponent = null!;
+        protected CollisionRecoveryComponent _collisionRecoveryComponent = null!;
+        protected IRobotController _controller = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
@@ -38,7 +38,7 @@ namespace Maes.Algorithms.Patrolling
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
-        private Vertex NextVertex(Vertex currentVertex)
+        protected Vertex NextVertex(Vertex currentVertex)
         {
             // We have reached our target. Create a new path.
             if (_pathStep == _currentPath.Count)
