@@ -44,15 +44,6 @@ namespace Maes.Algorithms.Patrolling
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
-        public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
-        {
-            base.SetGlobalPatrollingMap(globalMap);
-
-            InitializeCoordinator(globalMap);
-        }
-
-        public abstract void InitializeCoordinator(PatrollingMap globalMap);
-
         private Vertex NextVertex(Vertex currentVertex)
         {
             // We have reached our target. Create a new path.

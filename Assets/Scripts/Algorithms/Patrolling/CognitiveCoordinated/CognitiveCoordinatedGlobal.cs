@@ -12,8 +12,10 @@ namespace Maes.Algorithms.Patrolling
 
         protected override PatrollingMap _globalMap => Coordinator.GlobalMap;
 
-        public override void InitializeCoordinator(PatrollingMap globalMap)
+        public override void SetGlobalPatrollingMap(PatrollingMap globalMap)
         {
+            base.SetGlobalPatrollingMap(globalMap);
+
             Coordinator.GlobalMap = globalMap;
 
             Coordinator.ClearOccupiedVertices();
