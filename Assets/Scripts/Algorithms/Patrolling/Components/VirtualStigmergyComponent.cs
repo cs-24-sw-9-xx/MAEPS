@@ -43,7 +43,6 @@ namespace Maes.Algorithms.Patrolling.Components
     /// </remarks>
     public sealed class VirtualStigmergyComponent<TKey, TValue> : IComponent
         where TKey : notnull
-        where TValue : class
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
@@ -223,43 +222,54 @@ namespace Maes.Algorithms.Patrolling.Components
         /// The same as Get, but does not communicate with neighbors.
         /// </summary>
         /// <param name="key">The key to get.</param>
-        /// <returns>The value or null if key is not present.</returns>
+        /// <param name="value">The value.</param>
+        /// <returns><see langword="true"/> if the key is present.</returns>
         /// <remarks>You probably don't want to use this method. See <see cref="Get"/>.</remarks>
-        public TValue? GetNonSending(TKey key)
+        public bool TryGetNonSending(TKey key, [NotNullWhen(true)] out TValue? value)
         {
-            if (_localKnowledge.TryGetValue(key, out var valueInfo))
+            var ret = _localKnowledge.TryGetValue(key, out var info);
+            if (ret)
             {
-                return valueInfo.Value;
+                value = info.Value;
+            }
+            else
+            {
+                value = default;
             }
 
-            return null;
-
+            return ret;
         }
 
         /// <summary>
         /// Gets a value in the stigmergy.
         /// </summary>
         /// <param name="key">The key to get the value for.</param>
-        /// <returns>The value or null if key is not present.</returns>
+        /// <param name="value">The value.</param>
+        /// <returns><see langword="true"/> if the key is present.</returns>
         /// <remarks>This only returns what is in the local knowledge, but it sends a get message to receive the newest information from neighbors. This information is first available next tick, however.</remarks>
-        public TValue? Get(TKey key)
+        public bool TryGet(TKey key, [NotNullWhen(true)] out TValue? value)
         {
-            if (!_localKnowledge.TryGetValue(key, out var valueInfo))
+            var ret = _localKnowledge.TryGetValue(key, out var valueInfo);
+
+            if (ret)
+            {
+                // Ask neighbors if our information is up to date.
+                // It won't be immediately available, so we won't be able to return it here.
+                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, valueInfo.Value, valueInfo.Timestamp,
+                    valueInfo.RobotId));
+                value = valueInfo.Value;
+            }
+            else
             {
                 // Ask neighbors for this information.
                 // It won't be immediately available, so we won't be able to return it here.
                 // NOTE: It is unclear what the timestamp should be if we have nothing in our local knowledge.
                 // So I will give it 0, it should always be smaller than any timestamp of any existing entries.
-                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, null, 0, _controller.Id));
-
-                return null;
+                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, default, 0, _controller.Id));
+                value = default;
             }
 
-            // Ask neighbors if our information is up to date.
-            // It won't be immediately available, so we won't be able to return it here.
-            BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, valueInfo.Value, valueInfo.Timestamp, valueInfo.RobotId));
-
-            return valueInfo.Value;
+            return ret;
         }
 
         /// <summary>
