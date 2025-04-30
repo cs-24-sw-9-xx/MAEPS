@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,7 +21,6 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly int _amountOfRobots;
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
-        protected override PatrollingMap _globalMap => _patrollingMap;
         private VirtualStigmergyComponent<int, Vertex> _virtualStigmergyComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
@@ -35,13 +33,6 @@ namespace Maes.Algorithms.Patrolling
 
         public override void OccupyVertex(int robotId, Vertex vertex)
         {
-#if DEBUG
-            if (!_globalMap.Vertices.Contains(vertex))
-            {
-                throw new ArgumentException($"Vertex ({vertex}) is not a part of GlobalMap.Vertices.", nameof(vertex));
-            }
-#endif
-
             // Update the local knowledge of the robot.
             _virtualStigmergyComponent.Put(robotId, vertex);
         }
@@ -56,7 +47,7 @@ namespace Maes.Algorithms.Patrolling
         public override IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
         {
             var occupiedVertices = GetOccupiedVertices(robotId);
-            return _globalMap.Vertices.Except(occupiedVertices);
+            return _patrollingMap.Vertices.Except(occupiedVertices);
         }
 
         private Dictionary<int, Vertex> GetCurrentState()
