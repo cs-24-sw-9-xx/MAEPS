@@ -21,12 +21,12 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly int _amountOfRobots;
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
-        private VirtualStigmergyComponent<int, Vertex> _virtualStigmergyComponent = null!;
+        private VirtualStigmergyComponent<int, int> _virtualStigmergyComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             var components = base.CreateComponents(controller, patrollingMap);
-            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, Vertex>((_, localKnowledge, _) => localKnowledge, controller);
+            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, _) => localKnowledge, controller);
             components = components.Append(_virtualStigmergyComponent).ToArray();
             return components;
         }
@@ -34,14 +34,15 @@ namespace Maes.Algorithms.Patrolling
         public override void OccupyVertex(int robotId, Vertex vertex)
         {
             // Update the local knowledge of the robot.
-            _virtualStigmergyComponent.Put(robotId, vertex);
+            _virtualStigmergyComponent.Put(robotId, vertex.Id);
         }
 
         public override IEnumerable<Vertex> GetOccupiedVertices(int robotId)
         {
             return GetCurrentState()
                     .Where(p => p.Key != robotId)
-                    .Select(p => p.Value);
+                    .Select(p => _patrollingMap.Vertices.Single(v => v.Id == p.Value))
+                    .ToArray();
         }
 
         public override IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
@@ -50,16 +51,12 @@ namespace Maes.Algorithms.Patrolling
             return _patrollingMap.Vertices.Except(occupiedVertices);
         }
 
-        private Dictionary<int, Vertex> GetCurrentState()
+        private Dictionary<int, int> GetCurrentState()
         {
-            var currentState = new Dictionary<int, Vertex>();
+            var currentState = new Dictionary<int, int>();
             for (var i = 0; i < _amountOfRobots; i++)
             {
                 var info = _virtualStigmergyComponent.Get(i);
-                if (info == null)
-                {
-                    continue;
-                }
                 currentState.Add(i, info);
             }
             return currentState;
