@@ -165,6 +165,12 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private Queue<PathStep> GetPathStepsToVertex(Vertex currentVertex, Vertex targetVertex)
         {
+            if (currentVertex == targetVertex)
+            {
+                var path = new Queue<PathStep>();
+                path.Enqueue(new PathStep(currentVertex.Position, currentVertex.Position, new HashSet<Vector2Int>() { currentVertex.Position }));
+                return path;
+            }
             return new Queue<PathStep>(_patrollingMap.Paths[(currentVertex.Id, targetVertex.Id)]);
         }
     }
