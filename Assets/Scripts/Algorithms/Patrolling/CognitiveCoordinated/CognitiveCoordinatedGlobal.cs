@@ -33,14 +33,22 @@ namespace Maes.Algorithms.Patrolling
             Coordinator.OccupyVertex(robotId, vertex);
         }
 
-        public override IEnumerable<Vertex> GetOccupiedVertices(int robotId)
-        {
-            return Coordinator.GetOccupiedVertices(robotId);
-        }
-
         public override IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
         {
             return Coordinator.GetUnoccupiedVertices(robotId);
+        }
+
+        protected override void UpdateLastTimeVisitedTick(Vertex vertex)
+        {
+            // It's handled by the using the global map in the coordinator.
+            return;
+        }
+
+        public override IEnumerable<(int vertexId, int lastTimeVisitedTick)> GetLastTimeVisitedTick(IEnumerable<int> vertexIds)
+        {
+            return vertexIds
+                .Select(vertexId => (vertexId, Coordinator.GetLastTimeVisitedTick(vertexId)))
+                .ToList();
         }
 
         // TODO: Find a better way to have a coordinator, so that it is not static.
@@ -48,9 +56,9 @@ namespace Maes.Algorithms.Patrolling
         {
             public static PatrollingMap GlobalMap { get; set; } = null!;
 
-            private static readonly Dictionary<int, Vertex> VerticesOccupiedByRobot = new();
+            private static readonly Dictionary<int, int> VerticesOccupiedByRobot = new();
 
-            public static IEnumerable<Vertex> GetOccupiedVertices(int robotId)
+            public static IEnumerable<int> GetOccupiedVertices(int robotId)
             {
                 return VerticesOccupiedByRobot
                     .Where(p => p.Key != robotId)
@@ -60,17 +68,24 @@ namespace Maes.Algorithms.Patrolling
             public static IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
             {
                 var occupiedVertices = GetOccupiedVertices(robotId);
-                return GlobalMap.Vertices.Except(occupiedVertices);
+                return GlobalMap.Vertices.Where(v => !occupiedVertices.Contains(v.Id));
             }
 
             public static void OccupyVertex(int robotId, Vertex vertex)
             {
-                VerticesOccupiedByRobot[robotId] = vertex;
+                VerticesOccupiedByRobot[robotId] = vertex.Id;
             }
 
             public static void ClearOccupiedVertices()
             {
                 VerticesOccupiedByRobot.Clear();
+            }
+
+            public static int GetLastTimeVisitedTick(int vertexId)
+            {
+                return GlobalMap.Vertices
+                    .Single(v => v.Id == vertexId)
+                    .LastTimeVisitedTick;
             }
         }
     }

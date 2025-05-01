@@ -21,26 +21,51 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly int _amountOfRobots;
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
-        private VirtualStigmergyComponent<int, int> _virtualStigmergyComponent = null!;
+        private VirtualStigmergyComponent<int, int> _occupiedTilesVirtualStigmergyComponent = null!;
+        private VirtualStigmergyComponent<int, int> _vertexLastTimeVisitedVirtualStigmergyComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, _) => localKnowledge, controller);
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _virtualStigmergyComponent };
+            _occupiedTilesVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, _) => localKnowledge, controller);
+            _vertexLastTimeVisitedVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, incoming) => localKnowledge.Value > incoming.Value ? localKnowledge : incoming, controller);
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _occupiedTilesVirtualStigmergyComponent };
+        }
+
+        public override IEnumerable<(int vertexId, int lastTimeVisitedTick)> GetLastTimeVisitedTick(IEnumerable<int> vertexIds)
+        {
+            var result = new List<(int vertexId, int lastTimeVisitedTick)>();
+            foreach (var vertexId in vertexIds)
+            {
+                if (_vertexLastTimeVisitedVirtualStigmergyComponent.TryGet(vertexId, out var value))
+                {
+                    result.Add((vertexId, value));
+                }
+                else
+                {
+                    // This is the case when the vertex was never visited by any robot (to this robots knowledge).
+                    result.Add((vertexId, _patrollingMap.Vertices.Single(v => v.Id == vertexId).LastTimeVisitedTick));
+                }
+            }
+            return result;
+        }
+
+        protected override void UpdateLastTimeVisitedTick(Vertex vertex)
+        {
+            _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertex.Id, vertex.LastTimeVisitedTick);
         }
 
         public override void OccupyVertex(int robotId, Vertex vertex)
         {
             // Update the local knowledge of the robot.
-            _virtualStigmergyComponent.Put(robotId, vertex.Id);
+            _occupiedTilesVirtualStigmergyComponent.Put(robotId, vertex.Id);
         }
 
-        public override IEnumerable<Vertex> GetOccupiedVertices(int robotId)
+        private IEnumerable<Vertex> GetOccupiedVertices(int robotId)
         {
-            return GetCurrentState()
+            return GetCurrentTileOccupancy()
                     .Where(p => p.Key != robotId)
                     .Select(p => _patrollingMap.Vertices.Single(v => v.Id == p.Value))
                     .ToArray();
@@ -52,12 +77,12 @@ namespace Maes.Algorithms.Patrolling
             return _patrollingMap.Vertices.Except(occupiedVertices);
         }
 
-        private Dictionary<int, int> GetCurrentState()
+        private Dictionary<int, int> GetCurrentTileOccupancy()
         {
             var currentState = new Dictionary<int, int>();
             for (var i = 0; i < _amountOfRobots; i++)
             {
-                if (_virtualStigmergyComponent.TryGet(i, out var value))
+                if (_occupiedTilesVirtualStigmergyComponent.TryGet(i, out var value))
                 {
                     currentState.Add(i, value);
                 }
