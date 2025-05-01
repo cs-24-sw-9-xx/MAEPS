@@ -2,7 +2,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter;
+using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
 
 namespace Tests.EditModeTests
 {
@@ -12,9 +12,9 @@ namespace Tests.EditModeTests
         public void CellIndexToTriangleIndexes_TwoTileMap_ReturnsCorrectTriangleIndexes()
         {
             // Arrange
-            var map = new SimulationMapBuilder(" X").BuildMap();
+            var map = new SimulationMapBuilder(" X").Build();
             // Act
-            var triangleIndexes = ExtensionUtils.CellIndexToTriangleIndexes(map.map);
+            var triangleIndexes = map.CellIndexToTriangleIndexes();
 
             // Assert
             Assert.IsNotNull(triangleIndexes);
