@@ -40,6 +40,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected Vertex NextVertex(Vertex currentVertex)
         {
+            UpdateLastTimeVisitedTick(currentVertex);
             // We have reached our target. Create a new path.
             if (_pathStep == _currentPath.Count)
             {
@@ -64,29 +65,30 @@ namespace Maes.Algorithms.Patrolling
             OccupyVertex(_controller.Id, lastVertex);
         }
 
-        private Vertex HighestIdle(Vertex targetVertex)
+        private Vertex HighestIdle(Vertex currentVertex)
         {
-            // excluding the vertices other agents are pathing towards
+            var currentRobotPosition = currentVertex.Position;
+
+            // excluding the vertices other agents are pathing towards and the current vertex
             var availableVertices = GetUnoccupiedVertices(_controller.Id)
-                .Where(vertex => vertex != targetVertex)
-                .OrderBy(vertex => vertex.LastTimeVisitedTick)
+                .Where(v => v != currentVertex)
                 .ToList();
 
-            var position = targetVertex.Position;
-            var first = availableVertices.First();
-            var closestVertex = first;
+            // Get last visited ticks and order by idleness (ascending)
+            var vertexIdleness = GetLastTimeVisitedTick(availableVertices.Select(v => v.Id)).ToList();
 
-            //maybe this extra computation shouldn't exist for CC.
-            foreach (var vertex in availableVertices.Where(vertex => vertex.LastTimeVisitedTick == first.LastTimeVisitedTick))
-            {
-                //would be better if it wasn't euclidean distance
-                if (Vector2Int.Distance(position, vertex.Position) < Vector2Int.Distance(position, closestVertex.Position))
-                {
-                    closestVertex = vertex;
-                }
-            }
+            // Get the most idle tick value
+            var minIdlenessTick = vertexIdleness.Min(info => info.lastTimeVisitedTick);
 
-            return closestVertex;
+            // Filter the vertices that have the highest idleness
+            var mostIdleVertices = vertexIdleness
+                .Where(info => info.lastTimeVisitedTick == minIdlenessTick)
+                .Select(info => availableVertices.Single(v => v.Id == info.vertexId));
+
+            // Return the closest vertex among the most idle vertices
+            return mostIdleVertices
+                .OrderBy(v => Vector2Int.Distance(currentRobotPosition, v.Position))
+                .First();
         }
 
         private List<Vertex> AStar(Vertex start, Vertex target)
@@ -168,8 +170,10 @@ namespace Maes.Algorithms.Patrolling
             return Vector2Int.Distance(a.Position, b.Position);
         }
 
+
+        protected abstract void UpdateLastTimeVisitedTick(Vertex vertex);
+        public abstract IEnumerable<(int vertexId, int lastTimeVisitedTick)> GetLastTimeVisitedTick(IEnumerable<int> vertexIds);
         public abstract void OccupyVertex(int robotId, Vertex vertex);
-        public abstract IEnumerable<Vertex> GetOccupiedVertices(int robotId);
         public abstract IEnumerable<Vertex> GetUnoccupiedVertices(int robotId);
     }
 }
