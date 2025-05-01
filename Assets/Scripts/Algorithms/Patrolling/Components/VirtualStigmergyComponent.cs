@@ -20,6 +20,7 @@
 // Uncomment this to enable debug log tracing of messages.
 // #define VIRTUAL_STIGMERGY_TRACING
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -44,6 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
     // ReSharper disable once UnusedTypeParameter
     public sealed class VirtualStigmergyComponent<TKey, TValue, TMarker> : IComponent
         where TKey : notnull
+        where TValue : ICloneable
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
@@ -130,7 +132,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 // We need to do conflict resolution
                 var newValueInfo = _onConflictDelegate(message.Key, valueInfo,
-                    new ValueInfo(message.Timestamp, message.RobotId, message.Value!));
+                    new ValueInfo(message.Timestamp, message.RobotId, (TValue)message.Value!.Clone())); // Clone the value from the message to ensure nothing is smuggled.
 
                 // Update our local knowledge and create a put message.
                 // I don't know if we should do this the paper is not clear on it.
