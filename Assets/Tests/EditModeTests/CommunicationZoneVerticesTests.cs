@@ -34,7 +34,7 @@ using Maes.Utilities;
 using NUnit.Framework;
 
 using Tests.EditModeTests.Utilities;
-using Tests.EditModeTests.Utilities.MapInterpreter;
+using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
 
 using UnityEngine;
 
@@ -52,7 +52,7 @@ namespace Tests.EditModeTests
                 {
                     {
                         2400U,
-                        new Dictionary<TileType, float> { { TileType.Wall, float.MaxValue }, { TileType.Room, 0f } }
+                        new Dictionary<TileType, float> { { TileType.Brick, float.MaxValue }, { TileType.Room, 0f } }
                     }
                 },
                 materialCommunication: true);
@@ -86,7 +86,7 @@ namespace Tests.EditModeTests
                 "            ";
 
             using var expectedBitmap = BitmapUtilities.BitmapFromString(expectedBitmapString);
-            var slamMap = new SimulationMapBuilder(bitmapString).BuildMap().map;
+            var slamMap = new SimulationMapBuilder(bitmapString).Build();
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
             var vector2Ints = new List<Vector2Int> { vertex.Position };
             var result = communicationManager.CalculateZones(vector2Ints)[vertex.Position];
@@ -122,7 +122,7 @@ namespace Tests.EditModeTests
                 " X        X ;" +
                 " XXXXXXXXXX ;" +
                 "            ";
-            var simulationMap = new SimulationMapBuilder(mapString).BuildMap().map;
+            var simulationMap = new SimulationMapBuilder(mapString).Build();
             var vertexPositions = new List<Vector2Int> { new Vector2Int(6, 6) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
@@ -166,7 +166,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = new SimulationMapBuilder(mapString).BuildMap().map;
+            var simulationMap = new SimulationMapBuilder(mapString).Build();
             // Place vertices close enough to have overlapping communication zones
             var vertexPositions = new List<Vector2Int> { new Vector2Int(8, 10), new Vector2Int(12, 10) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -204,7 +204,7 @@ namespace Tests.EditModeTests
                 {
                     {
                         2400U,
-                        new Dictionary<TileType, float> { { TileType.Wall, float.MaxValue }, { TileType.Room, 0f } }
+                        new Dictionary<TileType, float> { { TileType.Brick, float.MaxValue }, { TileType.Room, 0f } }
                     }
                 },
                 materialCommunication: true);
@@ -231,7 +231,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = new SimulationMapBuilder(mapString).BuildMap().map;
+            var simulationMap = new SimulationMapBuilder(mapString).Build();
             // Place vertices on opposite sides of the wall
             var vertexPositions = new List<Vector2Int> { new Vector2Int(18, 9), new Vector2Int(18, 11) };
             var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
@@ -262,7 +262,7 @@ namespace Tests.EditModeTests
                 "     ;" +
                 "     ";
 
-            var simulationMap = new SimulationMapBuilder(mapString).BuildMap().map;
+            var simulationMap = new SimulationMapBuilder(mapString).Build();
             var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>());
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
 
@@ -304,7 +304,7 @@ namespace Tests.EditModeTests
                 "                    ;" +
                 "                    ";
 
-            var simulationMap = new SimulationMapBuilder(mapString).BuildMap().map;
+            var simulationMap = new SimulationMapBuilder(mapString).Build();
             // Create several vertices to test union functionality
             var vertexPositions = new List<Vector2Int> {
                 new Vector2Int(5, 5),
