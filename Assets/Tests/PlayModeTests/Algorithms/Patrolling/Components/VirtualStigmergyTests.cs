@@ -246,7 +246,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         {
             public override string AlgorithmName { get; } = "VirtualStigmergyTests";
 
-            public VirtualStigmergyComponent<string, string> VirtualStigmergyComponent { get; private set; }
+            public VirtualStigmergyComponent<string, string, TestingAlgorithm> VirtualStigmergyComponent { get; private set; }
 
             public IRobotController Controller { get; private set; }
 
@@ -254,16 +254,21 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             {
                 Controller = controller;
                 VirtualStigmergyComponent =
-                    new VirtualStigmergyComponent<string, string>(OnConflict, controller);
+                    new VirtualStigmergyComponent<string, string, TestingAlgorithm>(OnConflict, controller);
 
                 return new IComponent[] { VirtualStigmergyComponent };
             }
 
-            private static VirtualStigmergyComponent<string, string>.ValueInfo OnConflict(string key,
-                VirtualStigmergyComponent<string, string>.ValueInfo localValueInfo,
-                VirtualStigmergyComponent<string, string>.ValueInfo incomingValueInfo)
+            private static VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo OnConflict(string key,
+                VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo localValueInfo,
+                VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo incomingValueInfo)
             {
-                return localValueInfo;
+                if (localValueInfo.RobotId < incomingValueInfo.RobotId)
+                {
+                    return localValueInfo;
+                }
+
+                return incomingValueInfo;
             }
         }
     }

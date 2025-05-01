@@ -41,7 +41,8 @@ namespace Maes.Algorithms.Patrolling.Components
     /// Implements the paper: A Tuple Space for Data Sharing in Robot Swarms
     /// DOI 10.4108/eai.3-12-2015.2262503
     /// </remarks>
-    public sealed class VirtualStigmergyComponent<TKey, TValue> : IComponent
+    // ReSharper disable once UnusedTypeParameter
+    public sealed class VirtualStigmergyComponent<TKey, TValue, TMarker> : IComponent
         where TKey : notnull
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
@@ -58,17 +59,12 @@ namespace Maes.Algorithms.Patrolling.Components
         public int PostUpdateOrder { get; } = -1000;
 
         /// <summary>
-        /// Gets a queue of messages that are not from virtual stigmergy.
-        /// </summary>
-        public Queue<object> NonVirtualStigmergyMessageQueue { get; } = new Queue<object>();
-
-        /// <summary>
         /// Gets how many key-value pairs are in the local knowledge.
         /// </summary>
         public int Size => _localKnowledge.Count;
 
         /// <summary>
-        /// Creates a new instance of <see cref="VirtualStigmergyComponent{TValue}"/>.
+        /// Creates a new instance of <see cref="VirtualStigmergyComponent{TKey,TValue,TMarker}"/>.
         /// </summary>
         /// <param name="onConflictDelegate">A function to call to resolve conflicts.</param>
         /// <param name="controller">The robot controller.</param>
@@ -98,11 +94,6 @@ namespace Maes.Algorithms.Patrolling.Components
                                 break;
                         }
                     }
-                    else
-                    {
-                        NonVirtualStigmergyMessageQueue.Enqueue(objectMessage);
-                    }
-
                 }
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
@@ -224,7 +215,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="key">The key to get.</param>
         /// <param name="value">The value.</param>
         /// <returns><see langword="true"/> if the key is present.</returns>
-        /// <remarks>You probably don't want to use this method. See <see cref="Get"/>.</remarks>
+        /// <remarks>You probably don't want to use this method. See <see cref="TryGet"/>.</remarks>
         public bool TryGetNonSending(TKey key, [NotNullWhen(true)] out TValue? value)
         {
             var ret = _localKnowledge.TryGetValue(key, out var info);
