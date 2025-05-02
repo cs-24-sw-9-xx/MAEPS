@@ -475,8 +475,23 @@ namespace Maes.Utilities
         }
 
         /// <inheritdoc />
+        [MustDisposeResource]
+        public Bitmap Clone()
+        {
+            var bits = ArrayPool<ulong>.Shared.Rent(_length);
+            Array.Copy(_bits, bits, _length);
+
+            return new Bitmap(Width, Height, bits);
+        }
+
+        /// <inheritdoc />
         public bool Equals(Bitmap other)
         {
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             if (Width != other.Width || Height != other.Height)
             {
                 return false;
@@ -493,24 +508,27 @@ namespace Maes.Utilities
             return true;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object? obj)
         {
-            if (obj is Bitmap other)
-            {
-                return Equals(other);
-            }
-
-            return false;
+            return ReferenceEquals(this, obj) || obj is Bitmap other && Equals(other);
         }
 
         /// <inheritdoc />
-        [MustDisposeResource]
-        public Bitmap Clone()
+        public override int GetHashCode()
         {
-            var bits = ArrayPool<ulong>.Shared.Rent(_length);
-            Array.Copy(_bits, bits, _length);
+            // ReSharper disable once NonReadonlyMemberInGetHashCode
+            return HashCode.Combine(Width, Height, _length, _bits);
+        }
 
-            return new Bitmap(Width, Height, bits);
+        public static bool operator ==(Bitmap? left, Bitmap? right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Bitmap? left, Bitmap? right)
+        {
+            return !Equals(left, right);
         }
     }
 }
