@@ -86,6 +86,7 @@ namespace Maes.Map
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
                 }
             }
+            FileLogger.LogToFile("data/MapGenerationLog.txt", $"Create Paths took {Time.realtimeSinceStartup - startTime}s");
 
             Debug.LogFormat("Create Paths took {0} s", Time.realtimeSinceStartup - startTime);
 

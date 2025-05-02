@@ -29,12 +29,16 @@ namespace Maes.Map.Generators
         public SimulationMap<Tile> GenerateMap(CaveMapConfig caveConfig, float wallHeight = 2.0f)
         {
             var caveGenerator = gameObject.AddComponent<CaveGenerator>();
+            FileLogger.LogToFile("data/MapGenerationLog.txt", $"\nGenerating map {caveConfig.HeightInTiles}x{caveConfig.WidthInTiles}");
+
             return caveGenerator.GenerateCaveMap(caveConfig, wallHeight);
         }
 
         public SimulationMap<Tile> GenerateMap(BuildingMapConfig buildingConfig, float wallHeight = 2.0f)
         {
             var buildingGenerator = gameObject.AddComponent<BuildingGenerator>();
+            FileLogger.LogToFile("data/MapGenerationLog.txt", $"\nGenerating map {buildingConfig.HeightInTiles}x{buildingConfig.WidthInTiles}");
+
             return buildingGenerator.GenerateBuildingMap(buildingConfig, wallHeight);
         }
 

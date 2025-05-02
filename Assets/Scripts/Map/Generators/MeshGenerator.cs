@@ -158,8 +158,10 @@ namespace Maes.Map.Generators
             Generate2DColliders();
 
             var collisionMap = GenerateCollisionMap(_squareGrid2D, map,
-                new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
+            new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
 
+            var logFilePath = "data/MapGenerationLog.txt";
+            FileLogger.LogToFile(logFilePath, $"GenerateMesh took {Time.realtimeSinceStartup - startTime}s");
             Debug.LogFormat("GenerateMesh took {0}s", Time.realtimeSinceStartup - startTime);
             return collisionMap;
         }

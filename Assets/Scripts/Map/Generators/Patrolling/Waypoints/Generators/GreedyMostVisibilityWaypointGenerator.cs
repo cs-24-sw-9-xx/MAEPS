@@ -121,6 +121,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
                 bitmap.Dispose();
             }
 
+            FileLogger.LogToFile("data/MapGenerationLog.txt", $"Greedy guard positions took {Time.realtimeSinceStartup - startTime}s");
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
@@ -189,7 +190,8 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 
             // To debug the ComputeVisibility method, use the following utility method to save as image
             // SaveAsImage.SaveVisibileTiles();
-
+            var logFilePath = "data/MapGenerationLog.txt";
+            FileLogger.LogToFile(logFilePath, $"Compute visibility took {Time.realtimeSinceStartup - startTime}s");
             Debug.LogFormat("Compute visibility took {0} seconds", Time.realtimeSinceStartup - startTime);
 
 

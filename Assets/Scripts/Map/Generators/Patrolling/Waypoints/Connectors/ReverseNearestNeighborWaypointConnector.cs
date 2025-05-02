@@ -56,6 +56,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
             var vertices = ConnectReverseNearestNeighbors(vertexPositions, nextId, reverseNearestNeighbors);
 
             ConnectIslands(vertices, distanceMatrix);
+            FileLogger.LogToFile("data/MapGenerationLog.txt", $"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {Time.realtimeSinceStartup - startTime}s");
 
             Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {0} s", Time.realtimeSinceStartup - startTime);
 
