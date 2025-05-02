@@ -29,7 +29,7 @@ namespace Maes.Algorithms.Patrolling
         protected PatrollingMap _patrollingMap = null!;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
 
         /// <summary>
         /// Allow NextVertex to return a vertex that is not from _vertices.

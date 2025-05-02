@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Map;
@@ -104,6 +105,26 @@ namespace Maes.Robot
             // Convert to local coordinate
             var target = tileCoord + (dependOnBrokenBehaviour ? Vector2.one * 0.5f : Vector2.zero);
             return Vector2.Distance(robotStartPosition, target);
+        }
+
+        /// <summary>
+        /// Estimate the path length.
+        /// <returns>Returns null if the vertices are not a connected graph. <see cref="https://en.wikipedia.org/wiki/Connectivity_(graph_theory)"/></returns>
+        /// </summary>
+        public float? EstimatePathLength(List<Vertex> path)
+        {
+            float length = 0;
+            for (var i = 0; i < path.Count - 1; i++)
+            {
+                var distance = EstimateDistance(path[i].Position, path[i + 1].Position);
+                if (!distance.HasValue)
+                {
+                    return null;
+                }
+
+                length += distance.Value;
+            }
+            return length;
         }
     }
 }
