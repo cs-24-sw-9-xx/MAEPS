@@ -40,7 +40,6 @@ namespace Maes.Algorithms.Patrolling
 
         protected Vertex NextVertex(Vertex currentVertex)
         {
-            UpdateLastTimeVisitedTick(currentVertex);
             // We have reached our target. Create a new path.
             if (_pathStep == _currentPath.Count)
             {
@@ -170,8 +169,6 @@ namespace Maes.Algorithms.Patrolling
             return Vector2Int.Distance(a.Position, b.Position);
         }
 
-
-        protected abstract void UpdateLastTimeVisitedTick(Vertex vertex);
         public abstract IEnumerable<(int vertexId, int lastTimeVisitedTick)> GetLastTimeVisitedTick(IEnumerable<int> vertexIds);
         public abstract void OccupyVertex(int robotId, Vertex vertex);
         public abstract IEnumerable<Vertex> GetUnoccupiedVertices(int robotId);

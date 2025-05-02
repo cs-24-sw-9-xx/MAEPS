@@ -19,6 +19,7 @@ namespace Maes.Algorithms.Patrolling
         public CognitiveCoordinatedVirtualStigmergy(int amountOfRobots)
         {
             _amountOfRobots = amountOfRobots;
+            SubscribeOnReachVertex(UpdateLastTimeVisitedTick);
         }
 
         private readonly int _amountOfRobots;
@@ -54,9 +55,9 @@ namespace Maes.Algorithms.Patrolling
             return result;
         }
 
-        protected override void UpdateLastTimeVisitedTick(Vertex vertex)
+        private void UpdateLastTimeVisitedTick(int vertexId)
         {
-            _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertex.Id, vertex.LastTimeVisitedTick);
+            _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertexId, _logicTicks);
         }
 
         public override void OccupyVertex(int robotId, Vertex vertex)
