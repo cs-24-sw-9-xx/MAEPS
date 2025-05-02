@@ -70,10 +70,10 @@ namespace Maes.Experiments.Patrolling
                 250,
                 300
             };
-            
+
             var partitionsCounts = new List<int> { 1, 2, 4 };
-            var robotCounts = new List<int>{1, 2, 4, 8, 16, 32};
-            
+            var robotCounts = new List<int> { 1, 2, 4, 8, 16, 32 };
+
             var mapDict = new Dictionary<string, object>
             {
                 { "IslandMap", CommonMaps.IslandsMap() },
@@ -91,7 +91,7 @@ namespace Maes.Experiments.Patrolling
 
                 mapDict.Add(buildingKey, new BuildingMapConfig(seed, widthInTiles: size, heightInTiles: size, brokenCollisionMap: false));
                 mapDict.Add(caveKey, new CaveMapConfig(seed, widthInTiles: size, heightInTiles: size, brokenCollisionMap: false));
-            } 
+            }
 
             var algorithms = new Dictionary<string, PatrollingAlgorithm> // for all the redistribution types
             {
@@ -169,10 +169,10 @@ namespace Maes.Experiments.Patrolling
                         }
                     }
                 }
-            } 
+            }
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }
-    
-    
+
+
 }
