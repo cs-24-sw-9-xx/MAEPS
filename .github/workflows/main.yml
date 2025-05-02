@@ -52,7 +52,9 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: Library
-          key: Library-Test-${{ hashFiles('Packages/*') }}
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
       - uses: actions/cache/restore@v3
         with:
           path: Assets/Packages
@@ -75,7 +77,7 @@ jobs:
   
   
   build:
-    needs: [setup, test]
+    needs: setup
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
@@ -92,7 +94,10 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/*') }}
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+            Library-
       - uses: actions/cache/restore@v3
         with:
           path: Assets/Packages
