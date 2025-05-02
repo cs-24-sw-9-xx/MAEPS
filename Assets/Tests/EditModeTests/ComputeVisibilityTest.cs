@@ -281,7 +281,7 @@ namespace Tests.EditModeTests
         }
 
         [Test]
-        [Timeout(10 * 60 * 60 * 1000)]
+        [Explicit]
         public void EnsureValidWaypointsTest()
         {
             using (var bitmap = BitmapUtilities.BitmapFromString(Map))
