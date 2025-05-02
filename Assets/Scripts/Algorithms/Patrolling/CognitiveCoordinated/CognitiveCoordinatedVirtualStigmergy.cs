@@ -14,6 +14,8 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class CognitiveCoordinatedVirtualStigmergy : CognitiveCoordinatedBase
     {
+        private sealed class VertexVirtualStigmergy { }
+        private sealed class OccupiedtilesVirtualStigmergy { }
         public CognitiveCoordinatedVirtualStigmergy(int amountOfRobots)
         {
             _amountOfRobots = amountOfRobots;
@@ -21,16 +23,16 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly int _amountOfRobots;
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
-        private VirtualStigmergyComponent<int, int> _occupiedTilesVirtualStigmergyComponent = null!;
-        private VirtualStigmergyComponent<int, int> _vertexLastTimeVisitedVirtualStigmergyComponent = null!;
+        private VirtualStigmergyComponent<int, int, OccupiedtilesVirtualStigmergy> _occupiedTilesVirtualStigmergyComponent = null!;
+        private VirtualStigmergyComponent<int, int, VertexVirtualStigmergy> _vertexLastTimeVisitedVirtualStigmergyComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _occupiedTilesVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, _) => localKnowledge, controller);
-            _vertexLastTimeVisitedVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int>((_, localKnowledge, incoming) => localKnowledge.Value > incoming.Value ? localKnowledge : incoming, controller);
+            _occupiedTilesVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int, OccupiedtilesVirtualStigmergy>((_, localKnowledge, _) => localKnowledge, controller);
+            _vertexLastTimeVisitedVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int, VertexVirtualStigmergy>((_, localKnowledge, incoming) => localKnowledge.Value > incoming.Value ? localKnowledge : incoming, controller);
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _occupiedTilesVirtualStigmergyComponent };
         }
 
