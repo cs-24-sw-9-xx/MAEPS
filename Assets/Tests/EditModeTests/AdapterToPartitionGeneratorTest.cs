@@ -29,7 +29,7 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter;
+using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
 
 using UnityEngine;
 
@@ -49,7 +49,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_TwoPartitions_Test()
         {
-            var ((start, end), simulationMap) = new SimulationMapBuilder(testMap).BuildMap();
+            var (start, end, simulationMap) = new StartEndLocationSimulationMapBuilder(testMap).Build();
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;
@@ -84,7 +84,7 @@ namespace Tests.EditModeTests
         [Test]
         public void AdapterToPartitionGenerator_OnePartition_Test()
         {
-            var ((start, end), simulationMap) = new SimulationMapBuilder(testMap).BuildMap();
+            var (start, end, simulationMap) = new StartEndLocationSimulationMapBuilder(testMap).Build();
 
             var centerX = (int)(start.x + end.x) / 2;
             var oneOfFifthY = (int)(start.y + end.y) / 5;

@@ -28,7 +28,7 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter;
+using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
 using Tests.EditModeTests.Utilities.Partitions;
 
 using RobotConstraints = Maes.Robot.RobotConstraints;
@@ -37,24 +37,21 @@ namespace Tests.EditModeTests
 {
     public class MeetingPointsWithTimeTest
     {
-        private const string TestMap1 = "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
+        private const string TestMap1 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "X                                X;" +
                                         "X   1     1     12     2     2   X;" +
                                         "X                                X;" +
-                                        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXE";
+                                        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
         [Test]
         public void PartitionGeneratorHMPPartitionInfo_OneMeetingPointCorrectTime_Test()
         {
-            var interpreter = new PartitionSimulationMapBuilder(TestMap1);
-            var simulationMap = interpreter.BuildMap().map;
-            var vertices = interpreter.Vertices;
+            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap1).Build();
+            var vertices = patrollingMap.Vertices;
 
             var robotConstraints = new RobotConstraints(mapKnown: true);
-            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
-            var coarseMap = slamMap.CoarseMap;
-            var patrollingMap = new PatrollingMap(vertices, simulationMap);
-            var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(interpreter.VertexPositionsByPartitionId));
+            var coarseMap = new SlamMap(simulationMap, robotConstraints, 0).CoarseMap;
+            var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(vertexPositionsByPartitionId));
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
             generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
@@ -73,24 +70,21 @@ namespace Tests.EditModeTests
             Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[1].MeetingPoints[0].AtTicks);
         }
 
-        private const string TestMap2 = "SXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
+        private const string TestMap2 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
                                         "X                                             X;" +
                                         "X   1     1     12     2     23     3     3   X;" +
                                         "X                                             X;" +
-                                        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXE";
+                                        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 
         [Test]
         public void PartitionGeneratorHMPPartitionInfo_TwoMeetingPointCorrectTime_Test()
         {
-            var interpreter = new PartitionSimulationMapBuilder(TestMap2);
-            var simulationMap = interpreter.BuildMap().map;
-            var vertices = interpreter.Vertices;
+            var (simulationMap, patrollingMap, vertexPositionsByPartitionId) = new PartitionSimulationMapBuilder(TestMap2).Build();
+            var vertices = patrollingMap.Vertices;
 
             var robotConstraints = new RobotConstraints(mapKnown: true);
-            var slamMap = new SlamMap(simulationMap, robotConstraints, 0);
-            var coarseMap = slamMap.CoarseMap;
-            var patrollingMap = new PatrollingMap(vertices, simulationMap);
-            var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(interpreter.VertexPositionsByPartitionId));
+            var coarseMap = new SlamMap(simulationMap, robotConstraints, 0).CoarseMap;
+            var generator = new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(vertexPositionsByPartitionId));
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
             generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
