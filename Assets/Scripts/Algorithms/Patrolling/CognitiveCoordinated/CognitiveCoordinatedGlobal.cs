@@ -11,10 +11,10 @@ namespace Maes.Algorithms.Patrolling
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
 
-        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap globalMap)
+        protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _controller = controller;
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, globalMap);
+            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, Coordinator.GlobalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
