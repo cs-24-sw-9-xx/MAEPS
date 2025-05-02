@@ -45,7 +45,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(),
+                robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, _robotsToSpawn,
                     Vector2Int.zero, _ => new TestingAlgorithm()),
                 faultInjection: new DestroyRobotsRandomFaultInjection(RandomSeed, Probability, InvokeEvery, _robotsToSpawn));
