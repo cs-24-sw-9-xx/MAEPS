@@ -29,7 +29,7 @@ namespace Maes.Utilities
             var combinationOfPartitions = partitionInfoByRobotId.Values.Combinations();
             foreach (var (partitionInfo1, partitionInfo2) in combinationOfPartitions)
             {
-                if (partitionInfo1.VertexIds.Overlaps(partitionInfo2.VertexIds))
+                if (partitionInfo1.VertexIds.Any(v => partitionInfo2.VertexIds.Contains(v)))
                 {
                     continue;
                 }

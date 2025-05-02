@@ -57,8 +57,8 @@ namespace Maes.Algorithms.Patrolling
         private readonly IPartitionGenerator<HMPPartitionInfo> _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
-        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
-        private VirtualStigmergyComponent<int, HMPPartitionInfo> _virtualStigmergyComponent = null!;
+        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>.OnConflictDelegate _onConflict = (_, _, incoming) => incoming;
+        private VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
         private StartupComponent<Dictionary<int, HMPPartitionInfo>> _startupComponent = null!;
         private PartitionComponent _partitionComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -69,7 +69,7 @@ namespace Maes.Algorithms.Patrolling
             _controller = controller;
             _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap, (s, e) => controller.TravelEstimator.EstimateTime(s, e));
             _startupComponent = new StartupComponent<Dictionary<int, HMPPartitionInfo>>(controller, _partitionGenerator.GeneratePartitions);
-            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, HMPPartitionInfo>(_onConflict, controller);
+            _virtualStigmergyComponent = new VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>(_onConflict, controller);
             _partitionComponent = new PartitionComponent(controller, _startupComponent, _virtualStigmergyComponent);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
 

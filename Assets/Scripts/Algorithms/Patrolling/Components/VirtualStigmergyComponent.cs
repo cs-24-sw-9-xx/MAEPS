@@ -20,6 +20,7 @@
 // Uncomment this to enable debug log tracing of messages.
 // #define VIRTUAL_STIGMERGY_TRACING
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -41,9 +42,10 @@ namespace Maes.Algorithms.Patrolling.Components
     /// Implements the paper: A Tuple Space for Data Sharing in Robot Swarms
     /// DOI 10.4108/eai.3-12-2015.2262503
     /// </remarks>
-    public sealed class VirtualStigmergyComponent<TKey, TValue> : IComponent
+    // ReSharper disable once UnusedTypeParameter
+    public sealed class VirtualStigmergyComponent<TKey, TValue, TMarker> : IComponent
         where TKey : notnull
-        where TValue : class
+        where TValue : ICloneable
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
@@ -59,17 +61,12 @@ namespace Maes.Algorithms.Patrolling.Components
         public int PostUpdateOrder { get; } = -1000;
 
         /// <summary>
-        /// Gets a queue of messages that are not from virtual stigmergy.
-        /// </summary>
-        public Queue<object> NonVirtualStigmergyMessageQueue { get; } = new Queue<object>();
-
-        /// <summary>
         /// Gets how many key-value pairs are in the local knowledge.
         /// </summary>
         public int Size => _localKnowledge.Count;
 
         /// <summary>
-        /// Creates a new instance of <see cref="VirtualStigmergyComponent{TValue}"/>.
+        /// Creates a new instance of <see cref="VirtualStigmergyComponent{TKey,TValue,TMarker}"/>.
         /// </summary>
         /// <param name="onConflictDelegate">A function to call to resolve conflicts.</param>
         /// <param name="controller">The robot controller.</param>
@@ -99,11 +96,6 @@ namespace Maes.Algorithms.Patrolling.Components
                                 break;
                         }
                     }
-                    else
-                    {
-                        NonVirtualStigmergyMessageQueue.Enqueue(objectMessage);
-                    }
-
                 }
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
@@ -140,7 +132,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 // We need to do conflict resolution
                 var newValueInfo = _onConflictDelegate(message.Key, valueInfo,
-                    new ValueInfo(message.Timestamp, message.RobotId, message.Value!));
+                    new ValueInfo(message.Timestamp, message.RobotId, (TValue)message.Value!.Clone())); // Clone the value from the message to ensure nothing is smuggled.
 
                 // Update our local knowledge and create a put message.
                 // I don't know if we should do this the paper is not clear on it.
@@ -223,43 +215,54 @@ namespace Maes.Algorithms.Patrolling.Components
         /// The same as Get, but does not communicate with neighbors.
         /// </summary>
         /// <param name="key">The key to get.</param>
-        /// <returns>The value or null if key is not present.</returns>
-        /// <remarks>You probably don't want to use this method. See <see cref="Get"/>.</remarks>
-        public TValue? GetNonSending(TKey key)
+        /// <param name="value">The value.</param>
+        /// <returns><see langword="true"/> if the key is present.</returns>
+        /// <remarks>You probably don't want to use this method. See <see cref="TryGet"/>.</remarks>
+        public bool TryGetNonSending(TKey key, [NotNullWhen(true)] out TValue? value)
         {
-            if (_localKnowledge.TryGetValue(key, out var valueInfo))
+            var ret = _localKnowledge.TryGetValue(key, out var info);
+            if (ret)
             {
-                return valueInfo.Value;
+                value = info.Value;
+            }
+            else
+            {
+                value = default;
             }
 
-            return null;
-
+            return ret;
         }
 
         /// <summary>
         /// Gets a value in the stigmergy.
         /// </summary>
         /// <param name="key">The key to get the value for.</param>
-        /// <returns>The value or null if key is not present.</returns>
+        /// <param name="value">The value.</param>
+        /// <returns><see langword="true"/> if the key is present.</returns>
         /// <remarks>This only returns what is in the local knowledge, but it sends a get message to receive the newest information from neighbors. This information is first available next tick, however.</remarks>
-        public TValue? Get(TKey key)
+        public bool TryGet(TKey key, [NotNullWhen(true)] out TValue? value)
         {
-            if (!_localKnowledge.TryGetValue(key, out var valueInfo))
+            var ret = _localKnowledge.TryGetValue(key, out var valueInfo);
+
+            if (ret)
+            {
+                // Ask neighbors if our information is up to date.
+                // It won't be immediately available, so we won't be able to return it here.
+                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, valueInfo.Value, valueInfo.Timestamp,
+                    valueInfo.RobotId));
+                value = valueInfo.Value;
+            }
+            else
             {
                 // Ask neighbors for this information.
                 // It won't be immediately available, so we won't be able to return it here.
                 // NOTE: It is unclear what the timestamp should be if we have nothing in our local knowledge.
                 // So I will give it 0, it should always be smaller than any timestamp of any existing entries.
-                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, null, 0, _controller.Id));
-
-                return null;
+                BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, default, 0, _controller.Id));
+                value = default;
             }
 
-            // Ask neighbors if our information is up to date.
-            // It won't be immediately available, so we won't be able to return it here.
-            BroadcastMessage(VirtualStigmergyMessage.CreateGetMessage(key, valueInfo.Value, valueInfo.Timestamp, valueInfo.RobotId));
-
-            return valueInfo.Value;
+            return ret;
         }
 
         /// <summary>
