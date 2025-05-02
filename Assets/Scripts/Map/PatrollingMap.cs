@@ -15,7 +15,7 @@ namespace Maes.Map
     {
         public readonly IReadOnlyList<Vertex> Vertices;
 
-        public readonly List<Partition> Partitions;
+        public readonly IReadOnlyList<Partition> Partitions;
 
         public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
@@ -24,7 +24,7 @@ namespace Maes.Map
         {
         }
 
-        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, List<Partition> partitions)
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, IReadOnlyList<Partition> partitions)
             : this(vertices, CreatePaths(vertices, simulationMap), partitions)
         {
         }
@@ -33,10 +33,13 @@ namespace Maes.Map
         {
             Vertices = vertices;
             Paths = paths;
-            Partitions = new List<Partition> { new Partition(0, vertices, null) };
+            Partitions = new List<Partition>
+            {
+                new Partition(0, vertices, vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
+            };
         }
 
-        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, List<Partition> partitions)
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, IReadOnlyList<Partition> partitions)
         {
             Vertices = vertices;
             Paths = paths;

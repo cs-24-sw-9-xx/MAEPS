@@ -24,8 +24,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using JetBrains.Annotations;
-
 using Maes.Map;
 using Maes.Robot.Tasks;
 using Maes.Utilities;
@@ -572,12 +570,6 @@ namespace Maes.Robot
         public SensedObject<int>[] SenseNearbyRobots()
         {
             return CommunicationManager.SenseNearbyRobots(_robot.id).ToArray();
-        }
-
-        [MustDisposeResource]
-        public Bitmap CalculateCommunicationZone(Vector2Int position)
-        {
-            return CommunicationManager.CalculateCommunicationZone(position);
         }
 
         public bool IsRotating()

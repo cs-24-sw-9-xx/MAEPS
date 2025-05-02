@@ -224,6 +224,5 @@ namespace Maes.Robot
         /// <returns>a list of relative positions (containing integer ids of sensed robots) </returns>
         SensedObject<int>[] SenseNearbyRobots();
 
-        Bitmap CalculateCommunicationZone(Vector2Int position);
     }
 }

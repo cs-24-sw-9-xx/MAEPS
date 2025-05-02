@@ -39,10 +39,10 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly Dictionary<int, float> _redistributionTracker;
         private readonly IRobotController _controller;
         private Partition _currentPartition = null!;
-        private readonly List<int> _currentPartitionIntersection;
+        private readonly HashSet<int> _currentPartitionIntersection;
         private float _trackerUpdateTimestamp = 0f;
         private readonly PatrollingMap _map;
-        private Dictionary<int, bool> ReceivedCommunication { get; }
+        private readonly Dictionary<int, bool> _receivedCommunication;
 
         /// <inheritdoc />
         public int PreUpdateOrder => -200;
@@ -54,8 +54,8 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             _controller = controller;
             _redistributionTracker = new Dictionary<int, float>();
-            _currentPartitionIntersection = new List<int>();
-            ReceivedCommunication = new Dictionary<int, bool>();
+            _currentPartitionIntersection = new HashSet<int>();
+            _receivedCommunication = new Dictionary<int, bool>();
             _map = map;
         }
 
@@ -90,13 +90,11 @@ namespace Maes.Algorithms.Patrolling.Components
                 switch (objectMessage)
                 {
                     case RedistributionMessage message:
-                        ReceivedCommunication[message.PartitionId] = true;
+                        _receivedCommunication[message.PartitionId] = true;
                         break;
-                    case PartitionMessage partitionMessage
-                        when partitionMessage.PartitionId != _controller.AssignedPartition ||
-                             _trackerUpdateTimestamp < partitionMessage.Timestamp:
-                        return;
-                    case PartitionMessage partitionMessage:
+                    case PartitionMessage partitionMessage when
+                        !(partitionMessage.PartitionId != _controller.AssignedPartition ||
+                        _trackerUpdateTimestamp < partitionMessage.Timestamp):
                         {
                             foreach (var (partitionId, probability) in partitionMessage.RedistributionTracker)
                             {
@@ -126,11 +124,11 @@ namespace Maes.Algorithms.Patrolling.Components
                 {
                     if (_currentPartitionIntersection.Contains(partitionId))
                     {
-                        if (ReceivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
+                        if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
                         {
                             _redistributionTracker[partitionId] = -_currentPartition.CommunicationRatio[partitionId];
                             _trackerUpdateTimestamp = Time.realtimeSinceStartup;
-                            ReceivedCommunication[partitionId] = false;
+                            _receivedCommunication[partitionId] = false;
                         }
                         else
                         {
