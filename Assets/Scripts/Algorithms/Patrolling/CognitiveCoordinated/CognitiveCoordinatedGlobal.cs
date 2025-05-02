@@ -38,12 +38,6 @@ namespace Maes.Algorithms.Patrolling
             return Coordinator.GetUnoccupiedVertices(robotId);
         }
 
-        protected override void UpdateLastTimeVisitedTick(Vertex vertex)
-        {
-            // It's handled by the using the global map in the coordinator.
-            return;
-        }
-
         public override IEnumerable<(int vertexId, int lastTimeVisitedTick)> GetLastTimeVisitedTick(IEnumerable<int> vertexIds)
         {
             return vertexIds
