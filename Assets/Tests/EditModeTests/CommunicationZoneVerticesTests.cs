@@ -88,8 +88,8 @@ namespace Tests.EditModeTests
             using var expectedBitmap = BitmapUtilities.BitmapFromString(expectedBitmapString);
             var slamMap = new SimulationMapBuilder(bitmapString).BuildMap().map;
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
-            var vector2Ints = new List<Vector2Int> { vertex.Position };
-            var result = communicationManager.CalculateZones(vector2Ints)[vertex.Position];
+            var vertices = new List<Vertex> { vertex };
+            var result = communicationManager.CalculateZones(vertices)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
         }

@@ -29,6 +29,8 @@ using System.Linq;
 
 using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
+using Maes.Robot;
+using Maes.UI;
 using Maes.Utilities;
 
 using MathNet.Numerics.LinearAlgebra;
@@ -39,13 +41,16 @@ using Random = UnityEngine.Random;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
+    //TODO: Comments and refactor this class.
     public static class PartitioningGenerator
     {
         public delegate IEnumerable<List<Vector2Int>> PartitioningGeneratorDelegate(
             Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
 
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints)
         {
+            var communicationManager =
+                new CommunicationManager(simulationMap, robotConstraints, new DebuggingVisualizer());
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
             var vertexPositionsList = vertexPositions.ToList();
@@ -54,7 +59,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var allVertices = new List<Vertex>();
             var nextId = 0;
             var partitionId = 0;
-            var partitions = new Dictionary<int, Vertex[]>();
+            var partitions = new List<Partition>();
 
             foreach (var cluster in clusters)
             {
@@ -70,15 +75,28 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions[partitionId] = vertices;
+                partitions.Add(new Partition(partitionId, vertices, communicationManager.CalculateZones(vertices)));
                 partitionId++;
+            }
+
+            foreach (var partition in partitions)
+            {
+                foreach (var otherPartition in partitions)
+                {
+                    if (partition.PartitionId != otherPartition.PartitionId)
+                    {
+                        partition.AddNeighborPartition(otherPartition);
+                    }
+                }
             }
 
             return new PatrollingMap(allVertices, simulationMap, partitions);
         }
 
-        public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions)
+        public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints)
         {
+            var communicationManager =
+                new CommunicationManager(simulationMap, robotConstraints, new DebuggingVisualizer());
             using var map = MapUtilities.MapToBitMap(simulationMap);
             var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
             var vertexPositionsList = vertexPositions.ToList();
@@ -87,7 +105,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var allVertices = new List<Vertex>();
             var nextId = 0;
             var partitionId = 0;
-            var partitions = new Dictionary<int, Vertex[]>();
+            var partitions = new List<Partition>();
 
             foreach (var cluster in clusters)
             {
@@ -103,7 +121,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions[partitionId] = vertices;
+                partitions.Add(new Partition(partitionId, vertices, communicationManager.CalculateZones(vertices)));
                 partitionId++;
             }
             return new PatrollingMap(allVertices, simulationMap, partitions);

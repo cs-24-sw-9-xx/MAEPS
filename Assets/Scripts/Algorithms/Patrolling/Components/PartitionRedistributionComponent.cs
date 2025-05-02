@@ -41,9 +41,8 @@ namespace Maes.Algorithms.Patrolling.Components
         private Partition _currentPartition = null!;
         private readonly List<int> _currentPartitionIntersection;
         private float _trackerUpdateTimestamp = 0f;
+        private readonly PatrollingMap _map;
         private Dictionary<int, bool> ReceivedCommunication { get; }
-        
-        private PartitionInitalizationComponent _partitionInitalizationComponent;
 
         /// <inheritdoc />
         public int PreUpdateOrder => -200;
@@ -51,18 +50,18 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <inheritdoc />
         public int PostUpdateOrder => -200;
 
-        public PartitionRedistributionComponent(IRobotController controller, PartitionInitalizationComponent partitionInitalizationComponent)
+        public PartitionRedistributionComponent(IRobotController controller, PatrollingMap map)
         {
             _controller = controller;
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new List<int>();
             ReceivedCommunication = new Dictionary<int, bool>();
-            _partitionInitalizationComponent = partitionInitalizationComponent;
+            _map = map;
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _currentPartition = _partitionInitalizationComponent.Partitions[_controller.AssignedPartition];
+            _currentPartition = _map.Partitions[_controller.AssignedPartition];
             while (true)
             {
                 BroadCastMessage();
@@ -152,7 +151,7 @@ namespace Maes.Algorithms.Patrolling.Components
             var randomValue = Random.value;
             if (randomValue <= _redistributionTracker[partitionId])
             {
-                var partition = _partitionInitalizationComponent.Partitions[partitionId];
+                var partition = _map.Partitions[partitionId];
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();

@@ -54,6 +54,7 @@ namespace Maes.Map
             Vertices = vertices;
             WaypointsCommunicationZones = communicationZones;
             CommunicationZone = CreatePartitionCommunicationZone(vertices, communicationZones);
+            //TODO: Look into the way this bitmap is used, it may cause problems with intersection calculations in the future.
             _bitmapWidth = CommunicationZone.Width;
             _bitmapHeight = CommunicationZone.Height;
         }

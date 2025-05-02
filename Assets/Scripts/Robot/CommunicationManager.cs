@@ -441,15 +441,15 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(IEnumerable<Vertex> vertices)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count());
             Parallel.ForEach(vertices, vertex =>
                 {
-                    var bitmap = CalculateCommunicationZone(vertex);
+                    var bitmap = CalculateCommunicationZone(vertex.Position);
                     lock (vertexPositionsMultiThread)
                     {
-                        vertexPositionsMultiThread.Add(vertex, bitmap);
+                        vertexPositionsMultiThread.Add(vertex.Position, bitmap);
                     }
                 }
             );
