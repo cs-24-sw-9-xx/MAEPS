@@ -29,7 +29,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public EstimateTestStraightPath(float relativeMoveSpeed)
         {
-            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
+            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
         }
 
         [SetUp]

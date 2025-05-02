@@ -68,7 +68,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(),
+                robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, robotsToSpawn,
                     Vector2Int.zero, _ => new TestingAlgorithm()),
                 faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(RandomSeed, robotsToDestroyAtTicks));
@@ -151,7 +151,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
             var expectedNumberOfRobotsAfterDestroyed = robotsToSpawn - robotsToDestroyAtTicks.Length;
 
             _maes.PressPlayButton();
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.Play); // HACK to fix flakeyness
 
             var stop = robotsToDestroyAtTicks.Length == 0 ? 0 : robotsToDestroyAtTicks[^1] + 2;
 

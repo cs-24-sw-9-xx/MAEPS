@@ -66,7 +66,7 @@ namespace Tests.PlayModeTests
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true),
+                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
@@ -284,6 +284,7 @@ namespace Tests.PlayModeTests
             yield return null;
         }
 
+        // TODO: The tests should run in FastAsPossible, but they are flakey.
         [UnityTest]
         [TestCase(0.1f, ExpectedResult = null)]
         [TestCase(1.0f, ExpectedResult = null)]
