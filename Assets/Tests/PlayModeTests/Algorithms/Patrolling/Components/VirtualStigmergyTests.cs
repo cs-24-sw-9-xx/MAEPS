@@ -74,7 +74,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             algorithm1.VirtualStigmergyComponent.Put("test", "ayo");
 
             Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm1.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm1.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue));
+            Assert.AreEqual("ayo", testValue);
 
             // Make sure we have no keys
             Assert.AreEqual(0, algorithm2.VirtualStigmergyComponent.Size);
@@ -87,7 +88,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
             // Make sure we have the key
             Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue2));
+            Assert.AreEqual("ayo", testValue2);
 
             ticks = _simulator.SimulationManager.CurrentSimulation.SimulatedLogicTicks;
 
@@ -99,10 +101,12 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             }
 
             Assert.AreEqual(1, algorithm1.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm1.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm1.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue3));
+            Assert.AreEqual("ayo", testValue3);
 
             Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue4));
+            Assert.AreEqual("ayo", testValue4);
         }
 
         [Test(ExpectedResult = null)]
@@ -128,10 +132,12 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             }
 
             Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue));
+            Assert.AreEqual("ayo", testValue);
 
             Assert.AreEqual(1, algorithm3.VirtualStigmergyComponent.Size);
-            Assert.AreEqual("ayo", algorithm3.VirtualStigmergyComponent.GetNonSending("test"));
+            Assert.IsTrue(algorithm3.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue2));
+            Assert.AreEqual("ayo", testValue2);
         }
 
         [Test(ExpectedResult = null)]
@@ -172,7 +178,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
 
             // Should be null, but should send a get message so that we can get the info after some ticks
-            Assert.IsNull(algorithm2.VirtualStigmergyComponent.Get("test"));
+            Assert.IsFalse(algorithm2.VirtualStigmergyComponent.TryGet("test", out _));
 
             // Wait for at least 3 ticks to wait for the put message from algorithm 1
             var ticks = _simulator.SimulationManager.CurrentSimulation!.SimulatedLogicTicks;
@@ -181,7 +187,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 yield return null;
             }
 
-            Assert.AreEqual("ayo", algorithm2.VirtualStigmergyComponent.Get("test"));
+            Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGet("test", out var testValue));
+            Assert.AreEqual("ayo", testValue);
         }
 
 
@@ -239,7 +246,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         {
             public override string AlgorithmName { get; } = "VirtualStigmergyTests";
 
-            public VirtualStigmergyComponent<string, string> VirtualStigmergyComponent { get; private set; }
+            public VirtualStigmergyComponent<string, string, TestingAlgorithm> VirtualStigmergyComponent { get; private set; }
 
             public IRobotController Controller { get; private set; }
 
@@ -247,16 +254,21 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             {
                 Controller = controller;
                 VirtualStigmergyComponent =
-                    new VirtualStigmergyComponent<string, string>(OnConflict, controller);
+                    new VirtualStigmergyComponent<string, string, TestingAlgorithm>(OnConflict, controller);
 
                 return new IComponent[] { VirtualStigmergyComponent };
             }
 
-            private static VirtualStigmergyComponent<string, string>.ValueInfo OnConflict(string key,
-                VirtualStigmergyComponent<string, string>.ValueInfo localValueInfo,
-                VirtualStigmergyComponent<string, string>.ValueInfo incomingValueInfo)
+            private static VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo OnConflict(string key,
+                VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo localValueInfo,
+                VirtualStigmergyComponent<string, string, TestingAlgorithm>.ValueInfo incomingValueInfo)
             {
-                return localValueInfo;
+                if (localValueInfo.RobotId < incomingValueInfo.RobotId)
+                {
+                    return localValueInfo;
+                }
+
+                return incomingValueInfo;
             }
         }
     }

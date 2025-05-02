@@ -22,42 +22,107 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+using Accord.Math;
 
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
     public class PartitionInfo : IEquatable<PartitionInfo>
     {
-        public PartitionInfo(int robotId, HashSet<int> vertexIds)
+        public PartitionInfo(int robotId, IReadOnlyCollection<int> vertexIds)
         {
             RobotId = robotId;
             VertexIds = vertexIds;
         }
 
         public int RobotId { get; }
-        public HashSet<int> VertexIds { get; }
+        public IReadOnlyCollection<int> VertexIds { get; }
 
         public bool Equals(PartitionInfo other)
         {
             return RobotId == other.RobotId &&
                    VertexIds.SetEquals(other.VertexIds);
         }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
+            return Equals((PartitionInfo)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(RobotId, VertexIds);
+        }
+
+        public static bool operator ==(PartitionInfo? left, PartitionInfo? right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PartitionInfo? left, PartitionInfo? right)
+        {
+            return !Equals(left, right);
+        }
     }
 
-    public class HMPPartitionInfo : PartitionInfo, IEquatable<HMPPartitionInfo>
+    public sealed class HMPPartitionInfo : PartitionInfo, IEquatable<HMPPartitionInfo>, ICloneable<HMPPartitionInfo>
     {
-        public HMPPartitionInfo(PartitionInfo partitionInfo, List<MeetingPoint> meetingPoints) : base(partitionInfo.RobotId, partitionInfo.VertexIds)
+        public HMPPartitionInfo(PartitionInfo partitionInfo, IReadOnlyList<MeetingPoint> meetingPoints)
+            : base(partitionInfo.RobotId, partitionInfo.VertexIds)
         {
             MeetingPoints = meetingPoints;
         }
 
-        public List<MeetingPoint> MeetingPoints { get; }
+        public IReadOnlyList<MeetingPoint> MeetingPoints { get; }
+
+        public HMPPartitionInfo Clone()
+        {
+            // This class is immutable, therefore we can just return this.
+            return this;
+        }
 
         public bool Equals(HMPPartitionInfo other)
         {
-            return RobotId == other.RobotId &&
-                   VertexIds.SetEquals(other.VertexIds);
+            return base.Equals(other) && MeetingPoints.SequenceEqual(other.MeetingPoints);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return ReferenceEquals(this, obj) || obj is HMPPartitionInfo other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(base.GetHashCode(), MeetingPoints);
+        }
+
+        public static bool operator ==(HMPPartitionInfo? left, HMPPartitionInfo? right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(HMPPartitionInfo? left, HMPPartitionInfo? right)
+        {
+            return !Equals(left, right);
         }
     }
 }

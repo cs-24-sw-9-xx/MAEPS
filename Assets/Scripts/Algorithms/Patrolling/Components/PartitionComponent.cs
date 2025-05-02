@@ -4,11 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components
 {
     public class PartitionComponent : IComponent
     {
-        public PartitionComponent(IRobotController controller, StartupComponent<Dictionary<int, HMPPartitionInfo>> startupComponent, VirtualStigmergyComponent<int, HMPPartitionInfo> virtualStigmergyComponent)
+        public PartitionComponent(IRobotController controller, StartupComponent<Dictionary<int, HMPPartitionInfo>> startupComponent, VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent> virtualStigmergyComponent)
         {
             _robotId = controller.Id;
             _startupComponent = startupComponent;
@@ -19,7 +21,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private readonly int _robotId;
         private readonly StartupComponent<Dictionary<int, HMPPartitionInfo>> _startupComponent;
-        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo> _virtualStigmergyComponent;
+        private readonly VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent> _virtualStigmergyComponent;
 
         public PartitionInfo? PartitionInfo { get; private set; }
 
@@ -32,7 +34,9 @@ namespace Maes.Algorithms.Patrolling.Components
 
             while (true)
             {
-                PartitionInfo = _virtualStigmergyComponent.Get(_robotId);
+                var success = _virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo);
+                Debug.Assert(success);
+                PartitionInfo = partitionInfo;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }

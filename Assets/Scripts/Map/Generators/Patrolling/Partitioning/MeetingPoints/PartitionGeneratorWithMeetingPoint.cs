@@ -77,8 +77,12 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
                     : meetingPoint.Robot2Id;
 
                 // One of the partitions would already contain the vertex id of the best connection, so that will be a redundant since duplicates can not happen because of HashSet
-                partitions[robotIdWithSmallestPartition].VertexIds.Add(shortestConnection.Item1.Id);
-                partitions[robotIdWithSmallestPartition].VertexIds.Add(shortestConnection.Item2.Id);
+                var partitionToReplace = partitions[robotIdWithSmallestPartition];
+                var newVertexIds = new HashSet<int>(partitionToReplace.VertexIds)
+                {
+                    shortestConnection.Item1.Id, shortestConnection.Item2.Id
+                };
+                partitions[robotIdWithSmallestPartition] = new PartitionInfo(partitionToReplace.RobotId, newVertexIds);
             }
 
             return partitions;
