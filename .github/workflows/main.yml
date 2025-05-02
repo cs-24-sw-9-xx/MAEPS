@@ -17,7 +17,7 @@ jobs:
         with:
           lfs: true
       - name: Cache .NET tools
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.nuget/packages
@@ -26,7 +26,7 @@ jobs:
           restore-keys: |
             dotnet-tools-${{ runner.os }}
       - name: Cache Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
@@ -49,13 +49,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
           key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
@@ -91,14 +91,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           lfs: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
           key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-
             Library-
-      - uses: actions/cache/restore@v3
+      - uses: actions/cache/restore@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
