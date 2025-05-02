@@ -25,6 +25,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
+using JetBrains.Annotations;
+
 using Maes.Robot;
 
 #if VIRTUAL_STIGMERGY_TRACING
@@ -45,7 +47,6 @@ namespace Maes.Algorithms.Patrolling.Components
     // ReSharper disable once UnusedTypeParameter
     public sealed class VirtualStigmergyComponent<TKey, TValue, TMarker> : IComponent
         where TKey : notnull
-        where TValue : ICloneable
     {
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
@@ -53,6 +54,8 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private readonly OnConflictDelegate _onConflictDelegate;
         private readonly IRobotController _controller;
+
+        private readonly bool _isStruct;
 
         /// <inheritdoc />
         public int PreUpdateOrder { get; } = -1000;
@@ -72,6 +75,15 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="controller">The robot controller.</param>
         public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, IRobotController controller)
         {
+            var valueType = typeof(TValue);
+            if (!valueType.IsValueType && valueType.GetInterface(nameof(ICloneable)) == null)
+            {
+                throw new InvalidOperationException(
+                    $"{nameof(TValue)} must be either a struct or implement the {nameof(ICloneable)} interface");
+            }
+
+            _isStruct = valueType.IsValueType;
+
             _onConflictDelegate = onConflictDelegate;
             _controller = controller;
         }
@@ -132,7 +144,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 // We need to do conflict resolution
                 var newValueInfo = _onConflictDelegate(message.Key, valueInfo,
-                    new ValueInfo(message.Timestamp, message.RobotId, (TValue)message.Value!.Clone())); // Clone the value from the message to ensure nothing is smuggled.
+                    new ValueInfo(message.Timestamp, message.RobotId, CloneValue(message.Value)!)); // Clone the value from the message to ensure nothing is smuggled.
 
                 // Update our local knowledge and create a put message.
                 // I don't know if we should do this the paper is not clear on it.
@@ -297,6 +309,17 @@ namespace Maes.Algorithms.Patrolling.Components
             Debug.LogFormat("STIGMERGY Robot {0} sending {1} message: key: {2}, value: {3}, timestamp: {4}, robotId: {5}", _monaRobot.id, message.Type, message.Key, message.Value, message.Timestamp, message.RobotId);
 #endif
             _controller.Broadcast(message);
+        }
+
+        [ContractAnnotation("value:null => null; value:notnull=>notnull")]
+        private TValue? CloneValue(TValue? value)
+        {
+            if (_isStruct)
+            {
+                return value;
+            }
+
+            return (TValue?)((ICloneable?)value)?.Clone();
         }
 
         public readonly struct ValueInfo

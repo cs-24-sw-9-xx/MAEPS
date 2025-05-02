@@ -25,12 +25,13 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 
 using Maes.Map;
+using Maes.Map.Generators;
 
 using UnityEngine;
 
-namespace Tests.EditModeTests.Utilities.MapInterpreter
+namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
 {
-    public class PartitionSimulationMapBuilder : SimulationMapBuilder
+    public class PartitionSimulationMapBuilder : BaseSimulationMapBuilder<(SimulationMap<Tile> map, PatrollingMap patrollingMap, Dictionary<int, HashSet<Vertex>> verticesByPartitionId)>
     {
         public PartitionSimulationMapBuilder(string map) : base(map)
         {
@@ -38,9 +39,11 @@ namespace Tests.EditModeTests.Utilities.MapInterpreter
         }
 
         private readonly VertexInterpreter _vertexInterpreter = new();
-
-        public List<Vertex> Vertices => _vertexInterpreter.Vertices;
-        public Dictionary<int, HashSet<Vertex>> VertexPositionsByPartitionId => _vertexInterpreter.VerticesByPartitionId;
+        protected override (SimulationMap<Tile> map, PatrollingMap patrollingMap, Dictionary<int, HashSet<Vertex>> verticesByPartitionId) BuildResult(SimulationMap<Tile> map)
+        {
+            var patrollingMap = new PatrollingMap(_vertexInterpreter.Vertices, map);
+            return (map, patrollingMap, _vertexInterpreter.VerticesByPartitionId);
+        }
 
         protected override void InterpretTile(char tileChar, int x, int y)
         {
