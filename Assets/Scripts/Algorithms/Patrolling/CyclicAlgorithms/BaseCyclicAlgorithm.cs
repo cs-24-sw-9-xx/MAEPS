@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
@@ -61,5 +62,40 @@ namespace Maes.Algorithms.Patrolling
         }
 
         protected abstract List<Vertex> CreatePatrollingCycle(Vertex startVertex);
+
+        protected float[,] EstimatedDistanceMatrix(IReadOnlyList<Vertex> vertices)
+        {
+            if (vertices.Max(v => v.Id) >= _patrollingMap.Vertices.Count)
+            {
+                throw new System.Exception($"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
+            }
+    
+            var distanceMatrix = new float[vertices.Count, vertices.Count];
+            foreach (var v1 in vertices)
+            {
+                foreach (var v2 in vertices)
+                {
+                    if (v1.Id == v2.Id)
+                    {
+                        distanceMatrix[v1.Id, v2.Id] = 0;
+                    }
+                    else
+                    {
+                        distanceMatrix[v1.Id, v2.Id] = _controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position) ?? float.MaxValue;
+                    }
+                }
+            }
+            return distanceMatrix;
+        }
+
+        protected float PathLength(IReadOnlyList<Vertex> path, float[,] distanceMatrix)
+        {
+            var length = 0f;
+            for (var i = 0; i < path.Count - 1; i++)
+            {
+                length += distanceMatrix[path[i].Id, path[i + 1].Id];
+            }
+            return length;
+        }
     }
 }

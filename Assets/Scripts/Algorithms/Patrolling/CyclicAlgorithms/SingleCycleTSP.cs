@@ -47,6 +47,7 @@ namespace Maes.Algorithms.Patrolling
             var verticesInPartition = _patrollingMap.Vertices.Where(v => v.Partition == startVertex.Partition).ToList();
             var bestPath = new List<Vertex>();
             var bestDistance = float.MaxValue;
+            var estimatedDistanceMatrix = EstimatedDistanceMatrix(verticesInPartition);
             var allPermutations = GetPermutations(verticesInPartition.Skip(1).ToList()); // Fix first vertex
             Debug.Log($"Found {verticesInPartition.Count} vertices in partition {startVertex.Partition}. Found {allPermutations.Count()} permutations.");
             foreach (var perm in allPermutations)
@@ -55,7 +56,7 @@ namespace Maes.Algorithms.Patrolling
                 path.AddRange(perm);
                 path.Add(verticesInPartition[0]); // Return to start
 
-                var dist = _controller.TravelEstimator.EstimatePathLength(path) ?? throw new System.Exception($"No path found between vertices. Not all vertices in the partition are reachable from each other.");
+                var dist = PathLength(path, estimatedDistanceMatrix);
                 if (dist < bestDistance)
                 {
                     bestDistance = dist;
@@ -66,7 +67,7 @@ namespace Maes.Algorithms.Patrolling
             return bestPath.Take(_patrollingMap.Vertices.Count - 1).ToList();
         }
 
-        private IEnumerable<List<Vertex>> GetPermutations(List<Vertex> list)
+        private static IEnumerable<List<Vertex>> GetPermutations(List<Vertex> list)
         {
             if (list.Count == 0)
             {
