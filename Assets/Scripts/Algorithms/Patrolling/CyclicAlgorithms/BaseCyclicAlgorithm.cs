@@ -58,6 +58,7 @@ namespace Maes.Algorithms.Patrolling
                 _patrollingCycle = CreatePatrollingCycle(currentVertex);
                 var elapsed = Time.realtimeSinceStartup - startTime;
                 Debug.Log($"Patrolling cycle created in {elapsed} s. Cycle length: {_patrollingCycle.Count}");
+                Debug.Log($"Patrolling cycle: {string.Join(", ", _patrollingCycle.Select(v => v.Id))}");
             }
             return NextVertexInCycle(currentVertex);
         }

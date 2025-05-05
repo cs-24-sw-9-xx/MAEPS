@@ -63,7 +63,7 @@ namespace Maes.Experiments.Patrolling
 
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = nameof(SingleCycleTSP);
-            const int robotCount = 3;
+            const int robotCount = 1;
             var spawningPosList = new List<Vector2Int>();
             for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
             {
