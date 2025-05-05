@@ -95,7 +95,7 @@ namespace Maes.Robot
 
         private int _localTickCounter;
 
-        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix;
+        private readonly Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = new();
 
         private List<HashSet<int>>? _communicationGroups;
 
@@ -103,6 +103,7 @@ namespace Maes.Robot
         private readonly Vector2 _offset;
 
         public readonly CommunicationTracker CommunicationTracker;
+        private bool _adjacencyMatrixPopulated;
 
         private readonly struct Message
         {
@@ -268,7 +269,7 @@ namespace Maes.Robot
                 CommunicationTracker.CreateSnapshot(_localTickCounter);
             }
 
-            _adjacencyMatrix = null;
+            _adjacencyMatrixPopulated = false;
             _communicationGroups = null;
         }
 
@@ -294,23 +295,37 @@ namespace Maes.Robot
 
         private void PopulateAdjacencyMatrix()
         {
-            if (_adjacencyMatrix != null)
+            if (_adjacencyMatrixPopulated)
             {
                 return;
             }
 
-            _adjacencyMatrix = new Dictionary<(int, int), CommunicationInfo>();
+            _adjacencyMatrix.Clear();
 
-            foreach (var r1 in _robots)
+            var count = _robots.Count;
+
+            for (var i = 0; i < count; i++)
             {
-                foreach (var r2 in _robots)
+                for (var j = i + 1; j < count; j++)
                 {
-                    if (r1.id != r2.id)
-                    {
-                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
-                    }
+                    var r1 = _robots[i];
+                    var r2 = _robots[j];
+
+                    var r1Position = (Vector2)r1.transform.position - _offset;
+                    var r2Position = (Vector2)r2.transform.position - _offset;
+
+                    var communicationInfo = CommunicationBetweenPoints(r1Position, r2Position);
+                    var communicationInfo2 = new CommunicationInfo(communicationInfo.Distance,
+                        (communicationInfo.Angle + 180) % 360, communicationInfo.WallCellsDistance,
+                        communicationInfo.RegularCellsDistance, communicationInfo.TransmissionSuccessful,
+                        communicationInfo.SignalStrength);
+
+                    _adjacencyMatrix[(r1.id, r2.id)] = communicationInfo;
+                    _adjacencyMatrix[(r2.id, r1.id)] = communicationInfo2;
                 }
             }
+
+            _adjacencyMatrixPopulated = true;
         }
 
         private List<HashSet<int>> GetCommunicationGroups()
