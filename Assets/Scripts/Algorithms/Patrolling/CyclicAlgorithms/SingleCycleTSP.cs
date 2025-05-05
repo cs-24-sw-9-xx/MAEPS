@@ -31,6 +31,8 @@ namespace Maes.Algorithms.Patrolling
 {
     /// <summary>
     /// THIS ALGORITHMS HAS FACTORIAL TIME-COMPLEXITY OF THE SIZE OF THE ROBOTS PARTITION!
+    /// For partitions of size 9, it takes 2.5 seconds to compute the cycle.
+    /// For partitions of size 10, it takes 15 seconds to compute the cycle.
     /// Implementation of the Single Cycle algorithm but using exact TSP solver instead christofides as in: https://doi.org/10.1007/978-3-540-28645-5_48.
     /// An implementation can be found here: https://github.com/matteoprata/DRONET-for-Patrolling/blob/main_july_2023/src/patrolling/tsp_cycle.py
     /// </summary>
@@ -63,8 +65,8 @@ namespace Maes.Algorithms.Patrolling
                     bestPath = path;
                 }
             }
-            // Return the best path, but remove the last vertex, which is the start vertex.
-            return bestPath.Take(_patrollingMap.Vertices.Count - 1).ToList();
+            // Return the best path, but remove the last vertex, which is the same as the start vertex.
+            return bestPath.Take(verticesInPartition.Count).ToList();
         }
 
         private static IEnumerable<List<Vertex>> GetPermutations(IReadOnlyList<Vertex> list)
