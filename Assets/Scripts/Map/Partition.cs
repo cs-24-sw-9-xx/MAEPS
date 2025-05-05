@@ -53,10 +53,6 @@ namespace Maes.Map
             PartitionId = partitionId;
             Vertices = vertices;
             WaypointsCommunicationZones = communicationZones;
-            if (vertices.Count == 0)
-            {
-                return;
-            }
 
             CommunicationZone = CreatePartitionCommunicationZone(vertices, communicationZones);
             //TODO: Look into the way this bitmap is used, it may cause problems with intersection calculations in the future.
