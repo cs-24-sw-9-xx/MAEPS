@@ -126,14 +126,14 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         {
             public override string AlgorithmName { get; } = "StartupTests";
 
-            public StartupComponent<string> StartupComponent { get; private set; }
+            public StartupComponent<string, TestingAlgorithm> StartupComponent { get; private set; }
 
             public IRobotController RobotController { get; private set; }
 
             protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
             {
                 RobotController = controller;
-                StartupComponent = new StartupComponent<string>(controller, MessageFactory);
+                StartupComponent = new StartupComponent<string, TestingAlgorithm>(controller, MessageFactory);
 
                 return new IComponent[] { StartupComponent };
             }
