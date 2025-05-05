@@ -101,7 +101,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 Vertex targetVertex;
                 if (_controller.AssignedPartition != vertex.Partition)
                 {
-                    // The robot has moved to another partition. We need to find the closest vertex in the new partition.
+                    // The robot has been assigned to another partition. We need to find the closest vertex in the new partition.
                     targetVertex = _nextVertexDelegate(_initialVertexToPatrolDelegate());
                     TargetPosition = targetVertex.Position;
                     while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance)
