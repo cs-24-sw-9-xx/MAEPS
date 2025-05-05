@@ -102,7 +102,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 if (_controller.AssignedPartition != vertex.Partition)
                 {
                     // The robot has moved to another partition. We need to find the closest vertex in the new partition.
-                    targetVertex = _nextVertexDelegate(GetClosestVertexDefault());
+                    targetVertex = _nextVertexDelegate(_initialVertexToPatrolDelegate());
                     TargetPosition = targetVertex.Position;
                     while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance)
                     {
@@ -110,33 +110,30 @@ namespace Maes.Algorithms.Patrolling.Components
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
                     }
                     _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
+                    continue;
                 }
-                else
+
+                // Follow the path.
+                // Go to the next vertex
+                targetVertex = _nextVertexDelegate(vertex);
+
+                // Tell PatrollingAlgorithm that we reached the vertex
+                _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
+                var path = GetPathStepsToVertex(vertex, targetVertex);
+                vertex = targetVertex;
+
+                // Move to the start of the path
+                foreach (var condition in MoveToPosition(path.Peek().Start))
                 {
-                    // Follow the path.
-                    // Go to the next vertex
-                    targetVertex = _nextVertexDelegate(vertex);
+                    yield return condition;
+                }
 
-                    // Tell PatrollingAlgorithm that we reached the vertex
-                    _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
-                    var path = GetPathStepsToVertex(vertex, targetVertex);
-                    vertex = targetVertex;
-
-
-
-                    // Move to the start of the path
-                    foreach (var condition in MoveToPosition(path.Peek().Start))
+                // Move to the end of each path
+                while (path.TryDequeue(out var pathStep))
+                {
+                    foreach (var condition in MoveToPosition(pathStep.End))
                     {
                         yield return condition;
-                    }
-
-                    // Move to the end of each path
-                    while (path.TryDequeue(out var pathStep))
-                    {
-                        foreach (var condition in MoveToPosition(pathStep.End))
-                        {
-                            yield return condition;
-                        }
                     }
                 }
             }
