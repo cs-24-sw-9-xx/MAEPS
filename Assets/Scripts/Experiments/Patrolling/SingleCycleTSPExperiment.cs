@@ -26,6 +26,7 @@ using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
@@ -82,7 +83,8 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: _ => new SingleCycleTSP()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             );
 
             simulator.PressPlayButton(); // Instantly enter play mode

@@ -27,9 +27,14 @@ using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
 
+using UnityEngine;
+
 
 namespace Maes.Algorithms.Patrolling
 {
+    /// <summary>
+    /// Currently only works when all vertices are connected to all other vertices.
+    /// </summary>
     public abstract class BaseCyclicAlgorithm : PatrollingAlgorithm
     {
         // Set by CreateComponents
@@ -49,7 +54,10 @@ namespace Maes.Algorithms.Patrolling
         {
             if (_patrollingCycle.Count == 0)
             {
+                var startTime = Time.realtimeSinceStartup;
                 _patrollingCycle = CreatePatrollingCycle(currentVertex);
+                var elapsed = Time.realtimeSinceStartup - startTime;
+                Debug.Log($"Patrolling cycle created in {elapsed} s. Cycle length: {_patrollingCycle.Count}");
             }
             return NextVertexInCycle(currentVertex);
         }
@@ -69,7 +77,7 @@ namespace Maes.Algorithms.Patrolling
             {
                 throw new System.Exception($"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
             }
-    
+
             var distanceMatrix = new float[vertices.Count, vertices.Count];
             foreach (var v1 in vertices)
             {

@@ -67,7 +67,7 @@ namespace Maes.Algorithms.Patrolling
             return bestPath.Take(_patrollingMap.Vertices.Count - 1).ToList();
         }
 
-        private static IEnumerable<List<Vertex>> GetPermutations(List<Vertex> list)
+        private static IEnumerable<List<Vertex>> GetPermutations(IReadOnlyList<Vertex> list)
         {
             if (list.Count == 0)
             {
