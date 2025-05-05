@@ -31,6 +31,7 @@ namespace Maes.Algorithms.Patrolling
 {
     /// <summary>
     /// THIS ALGORITHMS HAS FACTORIAL TIME-COMPLEXITY OF THE SIZE OF THE ROBOTS PARTITION!
+    /// For reference (on my machine):
     /// For partitions of size 9, it takes 2.5 seconds to compute the cycle.
     /// For partitions of size 10, it takes 15 seconds to compute the cycle.
     /// Implementation of the Single Cycle algorithm but using exact TSP solver instead christofides as in: https://doi.org/10.1007/978-3-540-28645-5_48.
