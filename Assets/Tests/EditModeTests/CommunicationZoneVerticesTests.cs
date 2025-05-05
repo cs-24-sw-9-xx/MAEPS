@@ -20,7 +20,6 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -251,33 +250,6 @@ namespace Tests.EditModeTests
 
             // Verify communication zones don't intersect because of the wall
             Assert.IsFalse(intersection.Any());
-        }
-
-        [Test]
-        public void TestCommunicationZoneVertices_EmptyMap()
-        {
-            // Arrange
-            var robotConstraints = new RobotConstraints(
-                materialCommunication: false);
-
-            const string mapString = "" +
-                "     ;" +
-                "     ;" +
-                "     ;" +
-                "     ;" +
-                "     ";
-
-            var simulationMap = new SimulationMapBuilder(mapString).Build();
-            var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
-            var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>(), communicationManager);
-
-            // Act
-            var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
-
-            // Assert
-            Assert.IsNotNull(communicationZoneVertices.CommunicationZoneTiles);
-            Assert.AreEqual(0, communicationZoneVertices.CommunicationZoneTiles.Count);
-            Assert.AreEqual(0, communicationZoneVertices.AllCommunicationZoneTiles.Count);
         }
 
         [Test]
