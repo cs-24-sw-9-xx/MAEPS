@@ -17,9 +17,13 @@
 // 
 // Contributors: Mads Beyer Mogensen
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+
+using Maes.Map;
+using Maes.Robot;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
@@ -44,6 +48,12 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
+        }
+
+        IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
+        {
+            // Most components don't create more components.
+            return Array.Empty<IComponent>();
         }
 
         void DebugInfo(StringBuilder stringBuilder)
