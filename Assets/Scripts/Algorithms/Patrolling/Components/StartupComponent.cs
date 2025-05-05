@@ -15,7 +15,8 @@ namespace Maes.Algorithms.Patrolling.Components
     /// Robots not in range will do nothing for the rest of the simulation.
     /// </summary>
     /// <typeparam name="TMessage">The type of the message.</typeparam>
-    public sealed class StartupComponent<TMessage> : IComponent
+    /// <typeparam name="TMarker">Marker type to differentiate between startup components.</typeparam>
+    public sealed class StartupComponent<TMessage, TMarker> : IComponent
         where TMessage : class
     {
         private readonly IRobotController _robotController;
@@ -40,7 +41,7 @@ namespace Maes.Algorithms.Patrolling.Components
         public TMessage Message { get; private set; } = null!;
 
         /// <summary>
-        /// Create a new instance of <see cref="StartupComponent{TMessage}"/>.
+        /// Create a new instance of <see cref="StartupComponent{TMessage, TMarker}"/>.
         /// </summary>
         /// <param name="robotController">The robot controller.</param>
         /// <param name="messageFactory">The function that is run at startup, which result is broadcast.</param>
@@ -108,7 +109,7 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        public sealed class StartupMessage
+        private sealed class StartupMessage
         {
             public readonly TMessage Message;
             public readonly HashSet<int> DiscoveredRobots;
