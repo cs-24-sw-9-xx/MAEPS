@@ -88,18 +88,23 @@ namespace Tests.EditModeTests
             using var expectedBitmap = BitmapUtilities.BitmapFromString(expectedBitmapString);
             var slamMap = new SimulationMapBuilder(bitmapString).Build();
             var communicationManager = new CommunicationManager(slamMap, robotConstraints, _debugVisualizer);
-            var vector2Ints = new List<Vector2Int> { vertex.Position };
-            var result = communicationManager.CalculateZones(vector2Ints)[vertex.Position];
+            var vertices = new List<Vertex> { vertex };
+            var result = communicationManager.CalculateZones(vertices)[vertex.Position];
             Assert.AreEqual(expectedBitmap, result);
 
         }
 
-        private static PatrollingMap CreatePatrollingMap(SimulationMap<Tile> simulationMap, IEnumerable<Vector2Int> vertexPositions)
+        private static PatrollingMap CreatePatrollingMap(SimulationMap<Tile> simulationMap, IEnumerable<Vector2Int> vertexPositions, CommunicationManager communicationManager)
         {
             var id = 0;
             var vertices = vertexPositions.Select(p => new Vertex(id++, p)).ToList();
 
-            return new PatrollingMap(vertices, simulationMap);
+            var partitions = new List<Partition>
+            {
+                new(0, vertices, communicationManager.CalculateZones(vertices))
+            };
+
+            return new PatrollingMap(vertices, simulationMap, partitions);
         }
 
         [Test]
@@ -124,8 +129,8 @@ namespace Tests.EditModeTests
                 "            ";
             var simulationMap = new SimulationMapBuilder(mapString).Build();
             var vertexPositions = new List<Vector2Int> { new Vector2Int(6, 6) };
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions, communicationManager);
 
             // Act
             var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
@@ -169,8 +174,8 @@ namespace Tests.EditModeTests
             var simulationMap = new SimulationMapBuilder(mapString).Build();
             // Place vertices close enough to have overlapping communication zones
             var vertexPositions = new List<Vector2Int> { new Vector2Int(8, 10), new Vector2Int(12, 10) };
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions, communicationManager);
 
             // Act
             var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
@@ -234,8 +239,8 @@ namespace Tests.EditModeTests
             var simulationMap = new SimulationMapBuilder(mapString).Build();
             // Place vertices on opposite sides of the wall
             var vertexPositions = new List<Vector2Int> { new Vector2Int(18, 9), new Vector2Int(18, 11) };
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions, communicationManager);
 
             // Act
             var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
@@ -263,8 +268,8 @@ namespace Tests.EditModeTests
                 "     ";
 
             var simulationMap = new SimulationMapBuilder(mapString).Build();
-            var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>());
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+            var patrollingMap = CreatePatrollingMap(simulationMap, Array.Empty<Vector2Int>(), communicationManager);
 
             // Act
             var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
@@ -312,8 +317,8 @@ namespace Tests.EditModeTests
                 new Vector2Int(5, 15),
                 new Vector2Int(15, 15)
             };
-            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions);
             var communicationManager = new CommunicationManager(simulationMap, robotConstraints, _debugVisualizer);
+            var patrollingMap = CreatePatrollingMap(simulationMap, vertexPositions, communicationManager);
 
             // Act
             var communicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);

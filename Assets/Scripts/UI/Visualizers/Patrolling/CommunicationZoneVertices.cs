@@ -24,7 +24,6 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
-using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -41,9 +40,9 @@ namespace Maes.UI.Visualizers.Patrolling
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
             CommunicationZoneTiles = new Dictionary<int, Bitmap>();
-            var vertecies = patrollingMap.Vertices;
-            var communicationZones = communicationManager.CalculateZones(vertecies.Select(v => v.Position).ToList());
-            foreach (var vertex in vertecies)
+            var vertices = patrollingMap.Vertices;
+            var communicationZones = communicationManager.CalculateZones(vertices);
+            foreach (var vertex in vertices)
             {
                 CommunicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
             }
