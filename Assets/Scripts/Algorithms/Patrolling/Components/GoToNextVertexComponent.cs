@@ -98,33 +98,49 @@ namespace Maes.Algorithms.Patrolling.Components
 
             while (true)
             {
-                // Follow the path.
-                // Go to the next vertex
-                var targetVertex = _nextVertexDelegate(vertex);
-
-                // Tell PatrollingAlgorithm that we reached the vertex
-                _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
-                var path = GetPathStepsToVertex(vertex, targetVertex);
-                vertex = targetVertex;
-
-
-                // Move to the start of the path
-                foreach (var condition in MoveToPosition(path.Peek().Start))
+                Vertex targetVertex;
+                if (_controller.AssignedPartition != vertex.Partition)
                 {
-                    yield return condition;
+                    // The robot has moved to another partition. We need to find the closest vertex in the new partition.
+                    targetVertex = _nextVertexDelegate(GetClosestVertexDefault());
+                    TargetPosition = targetVertex.Position;
+                    while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance)
+                    {
+                        _controller.PathAndMoveTo(targetVertex.Position, dependOnBrokenBehaviour: false);
+                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+                    }
+                    _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
                 }
-
-                // Move to the end of each path
-                while (path.TryDequeue(out var pathStep))
+                else
                 {
-                    foreach (var condition in MoveToPosition(pathStep.End))
+                    // Follow the path.
+                    // Go to the next vertex
+                    targetVertex = _nextVertexDelegate(vertex);
+
+                    // Tell PatrollingAlgorithm that we reached the vertex
+                    _patrollingAlgorithm.OnReachTargetVertex(vertex, targetVertex);
+                    var path = GetPathStepsToVertex(vertex, targetVertex);
+                    vertex = targetVertex;
+
+
+
+                    // Move to the start of the path
+                    foreach (var condition in MoveToPosition(path.Peek().Start))
                     {
                         yield return condition;
+                    }
+
+                    // Move to the end of each path
+                    while (path.TryDequeue(out var pathStep))
+                    {
+                        foreach (var condition in MoveToPosition(pathStep.End))
+                        {
+                            yield return condition;
+                        }
                     }
                 }
             }
         }
-
         private Vertex GetClosestVertexDefault()
         {
             var robotPartition = _controller.AssignedPartition;
