@@ -22,7 +22,7 @@ namespace Maes.Utilities
             }
         }
 
-        public static List<PossibleMeetingPoint> GetNeighborsPartitionsWithNoCommonVertices(this Dictionary<int, PartitionInfo> partitionInfoByRobotId, PatrollingMap patrollingMap)
+        public static List<PossibleMeetingPoint> GetNeighborsPartitionsWithNoCommonVertices(this Dictionary<int, PartitionInfo> partitionInfoByRobotId, IReadOnlyCollection<Vertex> vertices)
         {
             var possibleMeetingPoints = new List<PossibleMeetingPoint>();
 
@@ -34,7 +34,7 @@ namespace Maes.Utilities
                     continue;
                 }
 
-                var possibleMeetingPoint = GetPossibleMeetingPointsForPartitions(partitionInfo1, partitionInfo2, patrollingMap);
+                var possibleMeetingPoint = GetPossibleMeetingPointsForPartitions(partitionInfo1, partitionInfo2, vertices);
                 if (possibleMeetingPoint.Connections.Count > 0)
                 {
                     possibleMeetingPoints.Add(possibleMeetingPoint);
@@ -44,10 +44,10 @@ namespace Maes.Utilities
             return possibleMeetingPoints;
         }
 
-        private static PossibleMeetingPoint GetPossibleMeetingPointsForPartitions(PartitionInfo partitionInfo1, PartitionInfo partitionInfo2, PatrollingMap patrollingMap)
+        private static PossibleMeetingPoint GetPossibleMeetingPointsForPartitions(PartitionInfo partitionInfo1, PartitionInfo partitionInfo2, IReadOnlyCollection<Vertex> vertices)
         {
             var possibleMeetingPoint = new PossibleMeetingPoint(partitionInfo1.RobotId, partitionInfo2.RobotId);
-            var partition1Vertices = patrollingMap.Vertices.Where(vertex => partitionInfo1.VertexIds.Contains(vertex.Id));
+            var partition1Vertices = vertices.Where(vertex => partitionInfo1.VertexIds.Contains(vertex.Id));
             foreach (var vertex in partition1Vertices)
             {
                 foreach (var neighborVertex in vertex.Neighbors)

@@ -13,11 +13,11 @@ jobs:
     name: Setup Packages
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
       - name: Cache .NET tools
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.nuget/packages
@@ -26,7 +26,7 @@ jobs:
           restore-keys: |
             dotnet-tools-${{ runner.os }}
       - name: Cache Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
@@ -46,14 +46,16 @@ jobs:
     name: Run all tests ✨
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-Test-${{ hashFiles('Packages/*') }}
-      - uses: actions/cache/restore@v3
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+      - uses: actions/cache/restore@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
@@ -75,7 +77,7 @@ jobs:
   
   
   build:
-    needs: [setup, test]
+    needs: setup
     name: Build for ${{ matrix.targetPlatform }}
     runs-on: ubuntu-latest
     strategy:
@@ -86,14 +88,17 @@ jobs:
           - StandaloneWindows64
           - StandaloneOSX
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           lfs: true
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/*') }}
-      - uses: actions/cache/restore@v3
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-
+            Library-
+      - uses: actions/cache/restore@v4
         with:
           path: Assets/Packages
           key: Packages-${{ hashFiles('Assets/NuGet.config') }}
@@ -115,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     container: unityci/editor:ubuntu-6000.0.37f1-linux-il2cpp-3
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:

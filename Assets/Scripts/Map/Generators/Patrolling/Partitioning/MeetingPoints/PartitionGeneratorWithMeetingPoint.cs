@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
@@ -31,6 +32,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
     {
         private readonly IPartitionGenerator<PartitionInfo> _partitionGenerator;
         private PatrollingMap _patrollingMap = null!;
+        private Vertex[] _verticesReverseNearestNeighbors = null!;
 
         public PartitionGeneratorWithMeetingPoint(IPartitionGenerator<PartitionInfo> partitionGenerator)
         {
@@ -40,6 +42,11 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
         public void SetMaps(PatrollingMap patrollingMap, CoarseGrainedMap coarseMap, EstimateTimeDelegate estimateTime)
         {
             _patrollingMap = patrollingMap;
+
+            using var bitmap = MapUtilities.MapToBitMap(coarseMap);
+            _verticesReverseNearestNeighbors = patrollingMap.Vertices.Select(v => new Vertex(v.Id, v.Position, v.Partition, v.Color)).ToArray();
+            ReverseNearestNeighborWaypointConnector.ConnectVertices(_verticesReverseNearestNeighbors, bitmap);
+
             _partitionGenerator.SetMaps(patrollingMap, coarseMap, estimateTime);
         }
 
@@ -51,7 +58,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
         private Dictionary<int, PartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Dictionary<int, PartitionInfo> partitions)
         {
-            var neighborsPartitionsWithNoCommonVertices = partitions.GetNeighborsPartitionsWithNoCommonVertices(_patrollingMap);
+            var neighborsPartitionsWithNoCommonVertices = partitions.GetNeighborsPartitionsWithNoCommonVertices(_verticesReverseNearestNeighbors);
             foreach (var meetingPoint in neighborsPartitionsWithNoCommonVertices)
             {
                 var shortestConnection = meetingPoint.Connections[0];

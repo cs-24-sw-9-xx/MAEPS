@@ -29,7 +29,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
     [TestFixture(1.5f, 10, 10)]
     [TestFixture(1.5f, 15, 15)]
 
-    public class EstimateTestTurnsPath
+    public class OverEstimateTestTurnsPath
     {
         private const int RandomSeed = 123;
         private const float DiffRatio = 0.23f;
@@ -40,9 +40,9 @@ namespace Tests.PlayModeTests.EstimateTickTest
         private readonly Vector2Int _targetTile;
         private MonaRobot _robot;
 
-        public EstimateTestTurnsPath(float relativeMoveSpeed, int x, int y)
+        public OverEstimateTestTurnsPath(float relativeMoveSpeed, int x, int y)
         {
-            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
+            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
             _targetTile = new Vector2Int(x, y);
         }
 
@@ -78,11 +78,10 @@ namespace Tests.PlayModeTests.EstimateTickTest
             _maes.Destroy();
         }
 
-
         [Test(ExpectedResult = null)]
-        public IEnumerator EstimateTicksToTile_TurnsPath()
+        public IEnumerator EstimateTicksToTile_TestOverEstimate_TurnsPath()
         {
-            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(_targetTile);
+            var expectedEstimatedTicks = _robot.Controller.OverEstimateTimeToTarget(_targetTile);
             if (expectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
@@ -99,9 +98,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
             }
 
             var actualTicks = _testAlgorithm.Tick;
-
-            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
-            Assert.LessOrEqual(diff, DiffRatio);
+            Assert.GreaterOrEqual(expectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
+            Debug.Log("Over estimate with " + (expectedEstimatedTicks.Value - actualTicks) + " ticks");
         }
     }
 }

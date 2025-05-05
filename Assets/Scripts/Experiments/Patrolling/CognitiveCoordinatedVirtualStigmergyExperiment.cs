@@ -16,10 +16,7 @@
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
 // Contributors: 
-// Casper Nyvang Sørensen,
-// Christian Ziegler Sejersen,
 // Henrik van Peet,
-// Jakob Meyer Olsen,
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 // 
@@ -39,7 +36,7 @@ namespace Maes.Experiments.Patrolling
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    internal class CognitiveCoordinatedExperiment : MonoBehaviour
+    internal class CognitiveCoordinatedVirtualStigmergyExperiment : MonoBehaviour
     {
         private void Start()
         {
@@ -82,7 +79,7 @@ namespace Maes.Experiments.Patrolling
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: _ => new CognitiveCoordinatedGlobal()),
+                        createAlgorithmDelegate: _ => new CognitiveCoordinatedVirtualStigmergy(robotCount)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")

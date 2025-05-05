@@ -50,7 +50,7 @@ namespace Maes.Algorithms.Patrolling
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
 
-        private int _logicTicks = -1;
+        protected int _logicTicks { get; private set; } = -1;
 
         protected event OnReachVertex? OnReachVertexHandler;
 

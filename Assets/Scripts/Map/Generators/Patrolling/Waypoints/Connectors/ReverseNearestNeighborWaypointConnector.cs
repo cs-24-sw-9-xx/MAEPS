@@ -48,23 +48,29 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
         public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
+            var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
 
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-
-            var reverseNearestNeighbors = MapUtilities.GetReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
-
-            var vertices = ConnectReverseNearestNeighbors(vertexPositions, nextId, reverseNearestNeighbors);
-
-            ConnectIslands(vertices, distanceMatrix);
+            ConnectVertices(vertices, map, numberOfReverseNearestNeighbors);
 
             Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {0} s", Time.realtimeSinceStartup - startTime);
 
             return vertices;
         }
 
-        private static Vertex[] ConnectReverseNearestNeighbors(IReadOnlyCollection<Vector2Int> vertexPositions, int nextId, Dictionary<Vector2Int, List<Vector2Int>> reverseNearestNeighbors)
+        public static void ConnectVertices(IReadOnlyCollection<Vertex> vertices, Bitmap map, int numberOfReverseNearestNeighbors = 1)
         {
-            var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
+            var vertexPositions = vertices.Select(v => v.Position).ToArray();
+            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
+
+            ConnectReverseNearestNeighbors(vertices, distanceMatrix, numberOfReverseNearestNeighbors);
+
+            ConnectIslands(vertices, distanceMatrix);
+        }
+
+        public static void ConnectReverseNearestNeighbors(IReadOnlyCollection<Vertex> vertices, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, int numberOfReverseNearestNeighbors = 1)
+        {
+            var reverseNearestNeighbors = MapUtilities.GetReverseNearestNeighbors(distanceMatrix, numberOfReverseNearestNeighbors);
+
             var vertexMap = vertices.ToDictionary(v => v.Position);
 
             foreach (var (position, neighbors) in reverseNearestNeighbors)
@@ -82,12 +88,10 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
                     }
                 }
             }
-
-            return vertices;
         }
 
         private static void ConnectIslands(
-                 Vertex[] vertices,
+                 IReadOnlyCollection<Vertex> vertices,
                  Dictionary<(Vector2Int, Vector2Int), int> distanceDict)
         {
             var visited = new HashSet<Vertex>();

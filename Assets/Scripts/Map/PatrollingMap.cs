@@ -24,8 +24,9 @@ namespace Maes.Map
         {
         }
 
+
         public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, IReadOnlyList<Partition> partitions)
-            : this(vertices, CreatePaths(vertices, simulationMap), partitions)
+        : this(vertices, CreatePaths(vertices, simulationMap), partitions)
         {
         }
 
@@ -77,6 +78,17 @@ namespace Maes.Map
             // HACK: Creating a slam map with robot constraints seems a bit hacky tbh :(
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;
+
+            return CreatePaths(vertices, coarseMap);
+        }
+
+        private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, CoarseGrainedMap coarseMap)
+        {
+            // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
+            // TODO: Of cause this requires specific code for that waypoint generation algorithm.
+
+            var startTime = Time.realtimeSinceStartup;
+
             var aStar = new MyAStar();
             var paths = new Dictionary<(int, int), IReadOnlyList<PathStep>>();
             foreach (var vertex in vertices)

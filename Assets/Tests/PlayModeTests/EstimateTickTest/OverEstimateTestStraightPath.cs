@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 
-using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
 using Maes.UI;
@@ -15,47 +14,29 @@ namespace Tests.PlayModeTests.EstimateTickTest
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
 
-    [TestFixture(0.5f, 5, 5)]
-    [TestFixture(0.5f, 10, 10)]
-    [TestFixture(0.5f, 20, 20)]
-    [TestFixture(0.5f, 15, 15)]
-
-    [TestFixture(1.0f, 5, 5)]
-    [TestFixture(1.0f, 10, 10)]
-    [TestFixture(1.0f, 20, 20)]
-    [TestFixture(1.0f, 15, 15)]
-
-    [TestFixture(1.5f, 5, 5)]
-    [TestFixture(1.5f, 10, 10)]
-    [TestFixture(1.5f, 15, 15)]
-
-    public class EstimateTestTurnsPath
+    [TestFixture(0.5f)]
+    [TestFixture(1.0f)]
+    [TestFixture(1.5f)]
+    public class OverEstimateTestStraightPath
     {
         private const int RandomSeed = 123;
-        private const float DiffRatio = 0.23f;
+        private const float DiffRatio = 0.25f;
         private MySimulator _maes;
         private MoveToTargetTileAlgorithm _testAlgorithm;
         private ExplorationSimulation _simulationBase;
-        private readonly RobotConstraints _robotConstraints;
-        private readonly Vector2Int _targetTile;
         private MonaRobot _robot;
+        private readonly RobotConstraints _robotConstraints;
 
-        public EstimateTestTurnsPath(float relativeMoveSpeed, int x, int y)
+        public OverEstimateTestStraightPath(float relativeMoveSpeed)
         {
-            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
-            _targetTile = new Vector2Int(x, y);
+            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
         }
 
         [SetUp]
         public void InitializeTestingSimulator()
         {
-            const int randomSeed = 12345;
-            var random = new System.Random(randomSeed);
-            const int size = 75;
-            var randVal = random.Next(0, 1000000);
-            var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
             var testingScenario = new MySimulationScenario(RandomSeed,
-                mapSpawner: generator => generator.GenerateMap(mapConfig),
+                mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
                 robotConstraints: _robotConstraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
@@ -80,15 +61,17 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
 
         [Test(ExpectedResult = null)]
-        public IEnumerator EstimateTicksToTile_TurnsPath()
+        public IEnumerator EstimateTicksToTile_TestOverEstimate_StraightPath()
         {
-            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(_targetTile);
+            var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            var targetTile = robotCurrentPosition + new Vector2Int(10, 0);
+            var expectedEstimatedTicks = _robot.Controller.OverEstimateTimeToTarget(targetTile);
             if (expectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
             }
 
-            _testAlgorithm.TargetTile = _targetTile;
+            _testAlgorithm.TargetTile = targetTile;
 
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
@@ -99,9 +82,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
             }
 
             var actualTicks = _testAlgorithm.Tick;
-
-            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
-            Assert.LessOrEqual(diff, DiffRatio);
+            Assert.GreaterOrEqual(expectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
+            Debug.Log("Over estimate with " + (expectedEstimatedTicks.Value - actualTicks) + " ticks");
         }
     }
 }

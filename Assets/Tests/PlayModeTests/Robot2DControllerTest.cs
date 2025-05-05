@@ -54,23 +54,22 @@ namespace Tests.PlayModeTests
 
         private readonly float _relativeMoveSpeed;
 
-        private Vector2Int _currentCoarseTile => Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
+        private Vector2Int CurrentCoarseTile => Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
         public Robot2DControllerTest(float relativeMoveSpeed)
         {
             _relativeMoveSpeed = relativeMoveSpeed;
         }
 
-        [SetUp]
-        public void InitializeTestingSimulator()
+        private void InitializeTestingSimulator(TestingAlgorithm.CustomUpdateFunction customUpdateFunction)
         {
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true),
+                robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new TestingAlgorithm();
+                        var algorithm = new TestingAlgorithm(customUpdateFunction);
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
@@ -79,6 +78,7 @@ namespace Tests.PlayModeTests
             _maes.EnqueueScenario(testingScenario);
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }
 
         [TearDown]
@@ -97,21 +97,20 @@ namespace Tests.PlayModeTests
         [TestCase(20.0f, ExpectedResult = null)]
         public IEnumerator MoveTo_IsDistanceCorrectTest(float movementDistance)
         {
-            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            InitializeTestingSimulator((tick, controller) =>
             {
                 if (tick == 0)
                 {
                     controller.Move(movementDistance);
                 }
-            };
+            });
+
             var controller = _robot.Controller;
 
             // Register the starting position and calculate the expected position
             var transform = _robot.transform;
             var startingPosition = transform.position;
             var expectedEndingPosition = startingPosition + (controller.GetForwardDirectionVector() * movementDistance);
-
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
@@ -131,7 +130,6 @@ namespace Tests.PlayModeTests
             var endingPosition = _robot.transform.position;
             const float maximumDeviation = 0.1f;
             var targetPositionDelta = (expectedEndingPosition - endingPosition).magnitude;
-            Debug.Log($"Actual: {endingPosition}  vs  expected: {expectedEndingPosition}");
             Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
         }
 
@@ -143,15 +141,13 @@ namespace Tests.PlayModeTests
         [TestCase(20.0f, ExpectedResult = null)]
         public IEnumerator CheckTotalTraveledDistanceIsCorrect(float movementDistance)
         {
-            _testAlgorithm.UpdateFunction = (tick, controller) =>
+            InitializeTestingSimulator((tick, controller) =>
             {
                 if (tick == 0)
                 {
                     controller.Move(movementDistance);
                 }
-            };
-
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            });
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
@@ -170,8 +166,7 @@ namespace Tests.PlayModeTests
             // Assert that the actual traveled distance approximately matches the expected traveled distance
             const float maximumDeviation = 0.7f;
             var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
-            Debug.Log($"Actual traveled distance: {actualTraveledDistance}  vs  expected traveled distance: {movementDistance}");
-            Assert.LessOrEqual(Math.Abs(movementDistance - actualTraveledDistance), maximumDeviation);
+            Assert.AreEqual(movementDistance, actualTraveledDistance, maximumDeviation);
         }
 
         [UnityTest]
@@ -186,15 +181,13 @@ namespace Tests.PlayModeTests
             queue.Enqueue(() => _robot.Controller.Rotate(90));
             queue.Enqueue(() => _robot.Controller.Move(movementDistance));
 
-            _testAlgorithm.UpdateFunction = (_, _) =>
+            InitializeTestingSimulator((_, _) =>
             {
                 if (_testAlgorithm.Controller.Status == RobotStatus.Idle && queue.TryDequeue(out var action))
                 {
                     action();
                 }
-            };
-
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            });
 
             while (queue.Count > 0)
             {
@@ -211,8 +204,7 @@ namespace Tests.PlayModeTests
             // Assert that the actual traveled distance approximately matches the expected traveled distance
             const float maximumDeviation = 0.7f;
             var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
-            Debug.Log($"Actual traveled distance: {actualTraveledDistance}  vs  expected traveled distance: {movementDistance * 2}");
-            Assert.LessOrEqual(Math.Abs((movementDistance * 2) - actualTraveledDistance), maximumDeviation);
+            Assert.AreEqual(movementDistance * 2, actualTraveledDistance, maximumDeviation);
         }
 
         [UnityTest]
@@ -227,7 +219,13 @@ namespace Tests.PlayModeTests
         [TestCase(-180.0f, ExpectedResult = null)]
         public IEnumerator Rotate_RotatesCorrectAmountOfDegrees(float degreesToRotate)
         {
-            _testAlgorithm.UpdateFunction = (tick, controller) => { if (tick == 1) { controller.Rotate(degreesToRotate); } };
+            InitializeTestingSimulator((tick, controller) =>
+            {
+                if (tick == 1)
+                {
+                    controller.Rotate(degreesToRotate);
+                }
+            });
 
             // Register the starting position and calculate the expected position
             var transform = _robot.transform;
@@ -239,8 +237,6 @@ namespace Tests.PlayModeTests
             }
 
             expectedAngle %= 360;
-
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // Wait until the robot has started and completed the movement task
             while (_testAlgorithm.Tick < 10 || _testAlgorithm.Controller.Status != RobotStatus.Idle)
@@ -258,9 +254,7 @@ namespace Tests.PlayModeTests
             // Assert that the actual final rotation approximately matches the expected angle
             var actualAngle = _robot.transform.rotation.eulerAngles.z;
             const float maximumDeviationDegrees = 0.5f;
-            var targetPositionDelta = Mathf.Abs(expectedAngle - actualAngle);
-            Debug.Log($"Actual final angle: {actualAngle}  vs  expected angle: {expectedAngle}");
-            Assert.LessOrEqual(targetPositionDelta, maximumDeviationDegrees);
+            Assert.AreEqual(expectedAngle, actualAngle, maximumDeviationDegrees);
         }
 
         [UnityTest]
@@ -270,6 +264,8 @@ namespace Tests.PlayModeTests
         [TestCase(3.0f, ExpectedResult = null)]
         public IEnumerator EstimateDistanceToTarget_IsDistanceCorrectTest(float actualDistance)
         {
+            InitializeTestingSimulator(null);
+
             var coarseMapStartingPosition = Vector2Int.FloorToInt(_robot.Controller.SlamMap.CoarseMap.GetApproximatePosition());
             var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
             var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
@@ -277,10 +273,8 @@ namespace Tests.PlayModeTests
             var estimatedDistance = _robot.Controller.EstimateDistanceToTarget(coarseMapTargetPosition);
 
             const float maximumDeviation = 0.5f;
-            Debug.Log($"{nameof(coarseMapStartingPosition)}: {coarseMapStartingPosition}, {nameof(coarseMapTargetPosition)}: {coarseMapTargetPosition}, {nameof(actualDistance)}: {actualDistance}");
-            Debug.Log($"Actual distance: {actualDistance}, estimated distance: {estimatedDistance}");
-            var targetPositionDelta = Math.Abs(actualDistance - estimatedDistance.Value);
-            Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
+            Assert.AreEqual(actualDistance, estimatedDistance, maximumDeviation);
+
             yield return null;
         }
 
@@ -300,33 +294,39 @@ namespace Tests.PlayModeTests
         [TestCase(20.0f, ExpectedResult = null)]
         public IEnumerator EstimateTimeToTarget_IsTimeCorrectTest(float actualDistance)
         {
-            var debug = false;
-            var coarseMapStartingPosition = _currentCoarseTile;
-            var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
-            var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
-            var estimatedTime = _robot.Controller.EstimateTimeToTarget(coarseMapTargetPosition).Value;
+            Vector2Int coarseMapTargetPosition = default;
+            var estimatedTime = 0;
 
-            // Make the robot move to target.
-            _testAlgorithm.UpdateFunction = (_, controller) =>
-            {
-                controller.PathAndMoveTo(coarseMapTargetPosition);
-            };
+            var done = false;
+            var doneTick = 0;
 
-            _maes.PressPlayButton();
-            var prevTick = -1;
-            while (_testAlgorithm.Tick == 0 || _currentCoarseTile != coarseMapTargetPosition)
+            InitializeTestingSimulator((tick, controller) =>
             {
-                if (debug && prevTick != _testAlgorithm.Tick)
+                if (tick == 0)
                 {
-                    prevTick = _testAlgorithm.Tick;
+                    var coarseMapStartingPosition = CurrentCoarseTile;
+                    var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
+                    coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
+                    estimatedTime = _robot.Controller.EstimateTimeToTarget(coarseMapTargetPosition)!.Value;
                 }
+
+                // Make the robot move to target.
+                controller.PathAndMoveTo(coarseMapTargetPosition);
+
+                if (!done && CurrentCoarseTile == coarseMapTargetPosition)
+                {
+                    done = true;
+                    doneTick = tick;
+                }
+            });
+
+            while (!done)
+            {
                 yield return null;
             }
+
             var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 5f);
-            Debug.Log($"Cells moved: {cellOffset}, dist: {actualDistance}, {nameof(estimatedTime)}: {estimatedTime}, {nameof(_testAlgorithm.Tick)}: {_testAlgorithm.Tick}");
-            var targetTimeDelta = Math.Abs(_testAlgorithm.Tick - estimatedTime);
-            Assert.LessOrEqual(targetTimeDelta, maximumDeviation);
-            yield return null;
+            Assert.AreEqual(doneTick, estimatedTime, maximumDeviation);
         }
     }
 }
