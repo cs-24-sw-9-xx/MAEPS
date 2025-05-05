@@ -59,6 +59,10 @@ namespace Maes.Algorithms.Patrolling
                 var elapsed = Time.realtimeSinceStartup - startTime;
                 Debug.Log($"Patrolling cycle created in {elapsed} s. Cycle length: {_patrollingCycle.Count}");
                 Debug.Log($"Patrolling cycle: {string.Join(", ", _patrollingCycle.Select(v => v.Id))}");
+                if (_patrollingCycle.Count == 0)
+                {
+                    throw new System.ArgumentOutOfRangeException("Patrolling cycle is empty.");
+                }
             }
             return NextVertexInCycle(currentVertex);
         }
