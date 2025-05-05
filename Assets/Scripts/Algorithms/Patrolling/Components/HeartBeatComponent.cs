@@ -33,6 +33,18 @@ namespace Maes.Algorithms.Patrolling.Components
         }
 
         /// <summary>
+        /// Removes a robot from the heartbeat tracking system.
+        /// </summary>
+        /// <param name="robotId"></param>
+        public void RemoveRobot(int robotId)
+        {
+            if (RobotHeartbeats.ContainsKey(robotId))
+            {
+                RobotHeartbeats.Remove(robotId);
+            }
+        }
+
+        /// <summary>
         /// Processes heartbeat messages received via broadcast.
         /// </summary>
         private void ProcessHeartbeatMessages()
