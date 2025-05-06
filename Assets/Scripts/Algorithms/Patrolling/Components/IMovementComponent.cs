@@ -28,18 +28,21 @@ namespace Maes.Algorithms.Patrolling.Components
     public interface IMovementComponent : IComponent
     {
         public Vector2Int TargetPosition { get; }
-        public Vertex ApproachingVertex { get; }
+        public Vertex TargetVertex { get; }
+        public AbortingTask? AbortingTask { get; }
         public void AbortCurrentTask(AbortingTask abortingTask);
 
     }
 
     public readonly struct AbortingTask
     {
-        public AbortingTask(Vertex targetVertex)
+        public AbortingTask(Vertex targetVertex, bool reachedByOther)
         {
             TargetVertex = targetVertex;
+            ReachedByOther = reachedByOther;
         }
 
         public Vertex TargetVertex { get; }
+        public bool ReachedByOther { get; }
     }
 }

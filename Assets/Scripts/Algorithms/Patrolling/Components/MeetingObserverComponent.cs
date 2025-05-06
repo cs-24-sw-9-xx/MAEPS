@@ -28,10 +28,10 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 if (_collisionRecoveryComponent.DoingCollisionRecovery)
                 {
-                    var shouldGoToMeeting = _meetingComponent.ShouldGoToNextMeeting(_movementComponent.ApproachingVertex.Position);
+                    var shouldGoToMeeting = _meetingComponent.ShouldGoToNextMeeting(_movementComponent.TargetVertex.Position);
                     if (shouldGoToMeeting != null && shouldGoToMeeting.Position != _movementComponent.TargetPosition)
                     {
-                        _movementComponent.AbortCurrentTask(new AbortingTask(shouldGoToMeeting));
+                        _movementComponent.AbortCurrentTask(new AbortingTask(shouldGoToMeeting, false));
                     }
                 }
 
