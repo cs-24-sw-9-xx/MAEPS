@@ -120,7 +120,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public void AddRobot(int robotId, HMPPatrollingAlgorithm algorithm)
             {
                 _observedRobotVertices[robotId] = new HashSet<int>();
-                algorithm.SubscribeOnReachVertex(vertexId =>
+                algorithm.SubscribeOnReachVertex((vertexId, _) =>
                 {
                     _observedRobotVertices[robotId].Add(vertexId);
                 });

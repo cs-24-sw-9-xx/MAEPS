@@ -33,6 +33,7 @@ using Maes.Robot;
 using Maes.Utilities;
 
 using UnityEngine;
+using UnityEngine.Assertions;
 
 namespace Maes.Algorithms.Patrolling
 {
@@ -46,6 +47,8 @@ namespace Maes.Algorithms.Patrolling
         {
             _partitionGenerator = partitionGenerator;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
+
+            OnReachVertexHandler += (_, position) => _ticksTracker.Visited(position, _logicTicks);
         }
         public override string AlgorithmName => "HMPAlgorithm";
         public HMPPartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
@@ -55,6 +58,7 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly IHMPPartitionGenerator _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
+        private readonly TicksTracker _ticksTracker = new();
 
         private PartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
@@ -81,7 +85,10 @@ namespace Maes.Algorithms.Patrolling
 
         private int? EstimateTime(Vector2Int start, Vector2Int target)
         {
-            return _controller.TravelEstimator.OverEstimateTime(start, target);
+            var actualTicks = _ticksTracker.GetTicks(start, target);
+            var estimatedTicks = _controller.TravelEstimator.OverEstimateTime(start, target);
+            Assert.IsTrue((actualTicks ?? 0) <= (estimatedTicks ?? int.MaxValue));
+            return actualTicks ?? estimatedTicks;
         }
 
         private Vertex GetInitialVertexToPatrol()

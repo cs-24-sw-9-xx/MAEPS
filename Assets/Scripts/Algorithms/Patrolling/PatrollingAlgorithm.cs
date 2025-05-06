@@ -130,7 +130,7 @@ namespace Maes.Algorithms.Patrolling
         public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)
         {
             TargetVertex = nextVertex;
-            OnReachVertexHandler?.Invoke(vertex.Id);
+            OnReachVertexHandler?.Invoke(vertex.Id, vertex.Position);
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {
