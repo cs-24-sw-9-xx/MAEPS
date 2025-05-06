@@ -31,7 +31,7 @@ namespace Maes.Algorithms.Patrolling.Components
                     var shouldGoToMeeting = _meetingComponent.ShouldGoToNextMeeting(_movementComponent.ApproachingVertex.Position);
                     if (shouldGoToMeeting != null && shouldGoToMeeting.Position != _movementComponent.TargetPosition)
                     {
-                        _movementComponent.AbortCurrentTask(new AbortingTask(shouldGoToMeeting));
+                        _movementComponent.AbortCurrentTask(new AbortingTask(shouldGoToMeeting, false));
                     }
                 }
 

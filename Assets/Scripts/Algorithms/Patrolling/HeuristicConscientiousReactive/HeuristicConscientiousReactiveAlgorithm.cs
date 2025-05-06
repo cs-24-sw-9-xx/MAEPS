@@ -38,6 +38,7 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(ActualDistanceMethod, seed);
         }
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
         private IRobotController _controller = null!;

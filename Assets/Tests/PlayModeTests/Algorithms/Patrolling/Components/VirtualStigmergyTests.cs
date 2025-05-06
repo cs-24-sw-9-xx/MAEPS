@@ -246,6 +246,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         private class TestingAlgorithm : PatrollingAlgorithm
         {
             public override string AlgorithmName { get; } = "VirtualStigmergyTests";
+            public override Vertex TargetVertex => new(0, Vector2Int.zero);
 
             public VirtualStigmergyComponent<string, string, TestingAlgorithm> VirtualStigmergyComponent { get; private set; }
 

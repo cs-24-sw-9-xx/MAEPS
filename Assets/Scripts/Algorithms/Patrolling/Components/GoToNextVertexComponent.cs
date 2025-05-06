@@ -53,8 +53,8 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingMap _patrollingMap;
         private readonly InitialVertexToPatrolDelegate _initialVertexToPatrolDelegate;
         public Vector2Int TargetPosition { get; private set; }
-        public Vertex ApproachingVertex { get; private set; }
-        private AbortingTask? _abortingTask;
+        public Vertex ApproachingVertex { get; private set; } = new(-1, Vector2Int.zero);
+        public AbortingTask? AbortingTask { get; private set; }
 
         /// <summary>
         /// Delegate that specifies the next vertex to travel to.
@@ -111,14 +111,13 @@ namespace Maes.Algorithms.Patrolling.Components
                         _controller.PathAndMoveTo(targetVertex.Position, dependOnBrokenBehaviour: false);
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
                     }
-                    _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
+                    _patrollingAlgorithm.OnReachTargetVertex(targetVertex);
                     continue;
                 }
 
-                if (_abortingTask != null)
+                if (AbortingTask != null)
                 {
-                    ApproachingVertex = _abortingTask.Value.TargetVertex;
-                    _abortingTask = null;
+                    ApproachingVertex = AbortingTask.Value.TargetVertex;
                 }
 
                 // Follow the path.
@@ -126,9 +125,22 @@ namespace Maes.Algorithms.Patrolling.Components
                 targetVertex = _nextVertexDelegate(ApproachingVertex);
 
                 // Tell PatrollingAlgorithm that we reached the vertex
-                _patrollingAlgorithm.OnReachTargetVertex(ApproachingVertex, targetVertex);
+                _patrollingAlgorithm.OnReachTargetVertex(ApproachingVertex);
                 var path = GetPathStepsToVertex(ApproachingVertex, targetVertex);
                 ApproachingVertex = targetVertex;
+                
+                if (AbortingTask != null)
+                {
+                    var reachedByOther = AbortingTask.Value.ReachedByOther;
+                    AbortingTask = null;
+                    if (reachedByOther)
+                    {
+                        foreach (var condition in RecoverAfterOtherReachedTarget(path))
+                        {
+                            yield return condition;
+                        }
+                    }
+                }
 
                 // Move to the start of the path
                 foreach (var condition in MoveToPosition(path.Peek().Start))
@@ -160,7 +172,7 @@ namespace Maes.Algorithms.Patrolling.Components
             TargetPosition = target;
             while (true)
             {
-                if (_abortingTask != null)
+                if (AbortingTask != null)
                 {
                     yield break;
                 }
@@ -203,8 +215,52 @@ namespace Maes.Algorithms.Patrolling.Components
 
         public void AbortCurrentTask(AbortingTask abortingTask)
         {
-            _abortingTask = abortingTask;
+            AbortingTask = abortingTask;
+            ApproachingVertex = abortingTask.TargetVertex;
             TargetPosition = abortingTask.TargetVertex.Position;
+        }
+
+        /*
+         * Handles recovery after the robot's target was reached by another robot.
+         * When making the new path to the next target, it assumes that the robot start from the previous target.
+         * Skips pathsteps and resumes movement from the nearest pathstep,
+         * ensuring smooth continuation without returning to the claimed vertex.
+         */
+        private IEnumerable<ComponentWaitForCondition> RecoverAfterOtherReachedTarget(Queue<PathStep> path)
+        {
+            var steps = 0;
+            var position = path.Peek().Start;
+            var distance = GetRelativePositionTo(position).Distance;
+
+            foreach (var distanceToStep in path.Select(step => GetRelativePositionTo(step.End).Distance))
+            {
+                if (distanceToStep >= distance)
+                {
+                    break;
+                }
+
+                distance = distanceToStep;
+                steps++;
+            }
+
+            PathStep latestDequeued = default;
+            for (var i = 0; i < steps + 1 && path.Count > 0; i++)
+            {
+                latestDequeued = path.Dequeue();
+            }
+
+            if (!path.TryPeek(out var firstStep))
+            {
+                firstStep = new PathStep(latestDequeued.End, latestDequeued.End, new HashSet<Vector2Int>());
+                path.Enqueue(firstStep);
+            }
+
+            TargetPosition = firstStep.Start;
+            while (GetRelativePositionTo(TargetPosition).Distance > MinDistance)
+            {
+                _controller.PathAndMoveTo(TargetPosition, dependOnBrokenBehaviour: false);
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
         }
     }
 }

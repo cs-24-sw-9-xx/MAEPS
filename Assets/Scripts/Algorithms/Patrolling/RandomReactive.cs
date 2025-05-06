@@ -22,6 +22,7 @@ namespace Maes.Algorithms.Patrolling
         }
 
         public override string AlgorithmName => "Random Reactive Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;

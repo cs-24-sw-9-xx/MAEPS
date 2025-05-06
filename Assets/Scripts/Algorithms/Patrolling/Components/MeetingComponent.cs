@@ -65,7 +65,7 @@ namespace Maes.Algorithms.Patrolling.Components
                     if (SenseNearbyRobots.OtherRobotsGoingToMeeting(_controller, _nextMeeting))
                     {
                         GoingToMeeting = _nextMeeting;
-                        _movementComponent.AbortCurrentTask(new AbortingTask(GoingToMeeting.Value.Vertex));
+                        _movementComponent.AbortCurrentTask(new AbortingTask(GoingToMeeting.Value.Vertex, true));
                     }
                     else
                     {

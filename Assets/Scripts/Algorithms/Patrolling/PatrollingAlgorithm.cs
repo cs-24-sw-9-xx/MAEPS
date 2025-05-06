@@ -18,7 +18,7 @@ namespace Maes.Algorithms.Patrolling
         public abstract string AlgorithmName { get; }
 
         /// <inheritdoc/>
-        public Vertex TargetVertex { get; private set; } = null!;
+        public abstract Vertex TargetVertex { get; }
 
         public virtual Dictionary<int, Color32[]> ColorsByVertexId => new();
 
@@ -96,9 +96,6 @@ namespace Maes.Algorithms.Patrolling
         {
             _patrollingMap = map;
 
-            // Just to ensure we get no null reference exceptions.
-            TargetVertex = map.Vertices[0];
-
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_controller != null)
             {
@@ -127,9 +124,8 @@ namespace Maes.Algorithms.Patrolling
             OnTrackInfoHandler?.Invoke(objectToLog);
         }
 
-        public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)
+        public void OnReachTargetVertex(Vertex vertex)
         {
-            TargetVertex = nextVertex;
             OnReachVertexHandler?.Invoke(vertex.Id);
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
