@@ -46,6 +46,8 @@ namespace Maes.Algorithms.Patrolling
         {
             _partitionGenerator = partitionGenerator;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
+
+            OnReachVertexHandler += (_, position) => _ticksTracker.Visited(position, LogicTicks);
         }
         public override string AlgorithmName => "HMPAlgorithm";
         public HMPPartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
@@ -55,6 +57,7 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly IHMPPartitionGenerator _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
+        private readonly TicksTracker _ticksTracker = new();
 
         private HMPPartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
@@ -78,7 +81,7 @@ namespace Maes.Algorithms.Patrolling
 
         private int? EstimateTime(Vector2Int start, Vector2Int target)
         {
-            return Controller.TravelEstimator.OverEstimateTime(start, target);
+            return _ticksTracker.GetTicks(start, target) ?? Controller.TravelEstimator.OverEstimateTime(start, target);
         }
 
         private Vertex GetInitialVertexToPatrol()

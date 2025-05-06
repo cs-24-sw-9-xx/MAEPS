@@ -1,0 +1,87 @@
+using System;
+using System.Collections;
+
+using Maes.Robot;
+using Maes.Simulation;
+using Maes.Simulation.Exploration;
+using Maes.UI;
+
+using NUnit.Framework;
+
+using Tests.PlayModeTests.EstimateTickTest;
+
+using UnityEngine;
+
+namespace Tests.PlayModeTests
+{
+    [TestFixture(0.5f)]
+    [TestFixture(1.0f)]
+    [TestFixture(1.5f)]
+    public class TestTickTracker
+    {
+        private const int RandomSeed = 123;
+        private ExplorationSimulator _maes;
+        private MoveToTargetTileAlgorithm _testAlgorithm;
+        private ExplorationSimulation _simulationBase;
+        private MonaRobot _robot;
+        private readonly RobotConstraints _robotConstraints;
+
+        public TestTickTracker(float relativeMoveSpeed)
+        {
+            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
+        }
+
+        [SetUp]
+        public void InitializeTestingSimulator()
+        {
+            var testingScenario = new ExplorationSimulationScenario(RandomSeed,
+                mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
+                hasFinishedSim: ((ExplorationSimulation _, out SimulationEndCriteriaReason? endReason) =>
+                {
+                    endReason = null;
+                    return false;
+                }),
+                robotConstraints: _robotConstraints,
+                robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
+                    Vector2Int.zero, _ =>
+                    {
+                        var algorithm = new MoveToTargetTileAlgorithm();
+                        _testAlgorithm = algorithm;
+                        return algorithm;
+                    }));
+
+            _maes = new ExplorationSimulator(new[] { testingScenario });
+            _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
+            _robot = _simulationBase.Robots[0];
+        }
+
+        [TearDown]
+        public void ClearSimulator()
+        {
+            _maes.Destroy();
+        }
+
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator EstimateTicksToTile_StraightPath()
+        {
+            var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            var targetTile = robotCurrentPosition + new Vector2Int(10, 0);
+            _testAlgorithm.TargetTile = targetTile;
+
+            _maes.PressPlayButton();
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+
+            while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
+            {
+                yield return null;
+            }
+
+            var expectedEstimatedTicks = _testAlgorithm.Tick;
+            var actualTicks = _testAlgorithm.TicksTracker.GetTicks(robotCurrentPosition, targetTile);
+
+            Assert.IsTrue(actualTicks.HasValue, "The value is null");
+            Assert.AreEqual(expectedEstimatedTicks, actualTicks);
+        }
+    }
+}

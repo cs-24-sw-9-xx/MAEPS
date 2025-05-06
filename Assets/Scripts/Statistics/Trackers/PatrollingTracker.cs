@@ -74,7 +74,7 @@ namespace Maes.Statistics.Trackers
             _collisionMap = collisionMap;
         }
 
-        public void OnReachedVertex(int vertexId)
+        public void OnReachedVertex(int vertexId, Vector2Int _)
         {
             if (!_vertices.TryGetValue(vertexId, out var vertexDetails))
             {
