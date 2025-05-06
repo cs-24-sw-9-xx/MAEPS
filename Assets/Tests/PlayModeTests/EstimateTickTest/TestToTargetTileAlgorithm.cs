@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Algorithms.Exploration;
+using Maes.Map;
 using Maes.Robot;
 
 using UnityEngine;
@@ -26,12 +27,13 @@ namespace Tests.PlayModeTests.EstimateTickTest
         private readonly bool _useOffset;
         private Vector2Int _offset;
         private Vector2Int _targetTile;
-        private Vector2Int _startPosition;
+        public Vector2Int StartPosition { get; private set; }
         public int Tick { get; private set; }
         public Robot2DController Controller = null!;
-        public Vector2Int TargetTile => _useOffset ? _startPosition + _offset : _targetTile;
+        public Vector2Int TargetTile => _useOffset ? StartPosition + _offset : _targetTile;
         public bool TargetReached;
         public float? ExpectedEstimatedTicks;
+        public TicksTracker TicksTracker { get; private set; } = null!;
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
@@ -43,8 +45,10 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
-            _startPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            StartPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
             ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
+            TicksTracker.Visited(new Vertex(0, StartPosition), Tick);
+
             while (true)
             {
                 if (!IsDestinationReached(TargetTile) && !TargetReached)
@@ -55,6 +59,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 else
                 {
                     TargetReached = true;
+                    TicksTracker.Visited(new Vertex(1, TargetTile), Tick);
                 }
 
                 yield return WaitForCondition.WaitForLogicTicks(1);
@@ -64,6 +69,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         public void SetController(Robot2DController controller)
         {
             Controller = controller;
+            TicksTracker = new TicksTracker(controller);
         }
 
         public string GetDebugInfo()
