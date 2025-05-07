@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.IO;
 
 using Maes.Algorithms.Patrolling;
@@ -9,6 +7,7 @@ using Maes.Statistics.Trackers;
 using Maes.Statistics.Writer;
 using Maes.UI.SimulationInfoUIControllers;
 using Maes.UI.Visualizers.Patrolling;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -71,7 +70,7 @@ namespace Maes.Simulation.Patrolling
         {
             Debug.Log("Creating statistics file");
             var folderPath =
-                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
+                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{TimeUtilities.GetCurrentTimeUTC()}";
             Directory.CreateDirectory(folderPath);
 
             var patrollingFilename = Path.Join(folderPath, "patrolling");
