@@ -61,12 +61,12 @@ namespace Maes.Map.RobotSpawners
             var random = new System.Random(seed);
             var maxWidth = collisionMap.WidthInTiles / 2;
             var maxHeight = collisionMap.HeightInTiles / 2;
-            
-            for(var i = 0; i < numberOfRobots; i++)
+
+            for (var i = 0; i < numberOfRobots; i++)
             {
                 spawnPositions.Add(new Vector2Int(random.Next(-maxWidth, maxWidth), random.Next(-maxHeight, maxHeight)));
             }
-     
+
             // Ensure the same spawn position is not given twice
             if (spawnPositions.Distinct().Count() != spawnPositions.Count)
             {
@@ -135,7 +135,7 @@ namespace Maes.Map.RobotSpawners
 
             return robots;
         }
-        
+
         public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
