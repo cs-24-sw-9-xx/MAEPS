@@ -400,9 +400,8 @@ namespace Maes.Map.RobotSpawners
             robot.HideOutline();
 
             const float rtOffset = 0.01f; // Offset is used, since being exactly at integer value positions can cause issues with ray tracing
-            const float marchingSquareOffset = 0.5f; // Offset to put robots back on coarsemap tiles instead of marching squares.
-            robot.transform.position = new Vector3(x + rtOffset + collisionMap.ScaledOffset.x + marchingSquareOffset,
-                y + rtOffset + collisionMap.ScaledOffset.y + marchingSquareOffset);
+            robot.transform.position = new Vector3(x + rtOffset + collisionMap.ScaledOffset.x,
+                y + rtOffset + collisionMap.ScaledOffset.y);
 
             if (GlobalSettings.IsRosMode)
             {
