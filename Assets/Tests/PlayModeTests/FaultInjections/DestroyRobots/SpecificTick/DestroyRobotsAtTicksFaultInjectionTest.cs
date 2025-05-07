@@ -84,8 +84,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
                     Vector2Int.zero, _ => new TestingAlgorithm((tick, _) => tracker.UpdateLogic(tick, spawner))),
                 faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(RandomSeed, robotsToDestroyAtTicks));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }

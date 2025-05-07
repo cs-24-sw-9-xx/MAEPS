@@ -30,6 +30,8 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
+using Debug = UnityEngine.Debug;
+
 namespace Maes.Simulation
 {
     public abstract class SimulationManager<TSimulation, TAlgorithm, TScenario> : MonoBehaviour, ISimulationManager
@@ -125,6 +127,7 @@ namespace Maes.Simulation
 
         private void Update()
         {
+#if !UNITY_SERVER
             var keyboard = Keyboard.current;
             if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
             {
@@ -145,6 +148,7 @@ namespace Maes.Simulation
                     AttemptSetPlayState(SimulationPlayState.Step);
                 }
             }
+#endif
 
             if (CurrentSimulation == null)
             {
@@ -269,9 +273,11 @@ namespace Maes.Simulation
 
         private void UpdateStatisticsUI()
         {
+#if !UNITY_SERVER
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             CurrentSimulation?.UpdateDebugInfo();
             CurrentSimulation?.Tracker.UIUpdate();
+#endif
         }
 
         public void RemoveCurrentSimulation()

@@ -20,6 +20,8 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
+using System.Collections.Generic;
+
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
@@ -60,11 +62,12 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
+
 
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
 
-            simulator.EnqueueScenario(
+            scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
                     totalCycles: 4,
@@ -81,6 +84,7 @@ namespace Maes.Experiments.Patrolling
                     patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             );
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }

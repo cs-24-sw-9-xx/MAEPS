@@ -40,13 +40,37 @@ namespace Maes.Simulation
 
         private readonly GameObject _maesGameObject;
 
-        protected Simulator(bool autoMaxSpeedInBatchMode = true)
+        protected Simulator(IReadOnlyList<TScenario> scenarios, bool autoMaxSpeedInBatchMode = true)
         {
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
             SimulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             SimulationManager.AutoMaxSpeedInBatchMode = autoMaxSpeedInBatchMode;
+
+            var (instances, instanceId) = ParseCommandLine();
+
+            // We are running alone. Queue all scenarios.
+            if (instances == 0)
+            {
+                foreach (var scenario in scenarios)
+                {
+                    EnqueueScenario(scenario);
+                }
+            }
+            // Run every 'instances' scenarios offset by 'instanceId'.
+            else
+            {
+                for (var i = 0; i < scenarios.Count; i++)
+                {
+                    if ((i + instanceId) % instances == 0)
+                    {
+                        EnqueueScenario(scenarios[i]);
+                    }
+                }
+            }
+
+
         }
 
         protected abstract GameObject LoadSimulatorGameObject();
@@ -57,17 +81,58 @@ namespace Maes.Simulation
             Object.Destroy(_maesGameObject);
         }
 
-        public void EnqueueScenario(TScenario scenario)
+        private void EnqueueScenario(TScenario scenario)
         {
             SimulationManager.EnqueueScenario(scenario);
             SimulationManager.InitialScenarios.Enqueue(scenario);
         }
-        public void EnqueueScenarios(IEnumerable<TScenario> scenario)
+        private void EnqueueScenarios(IEnumerable<TScenario> scenario)
         {
             foreach (var simulationScenario in scenario)
             {
                 SimulationManager.EnqueueScenario(simulationScenario);
             }
+        }
+
+        private (int Instances, int InstanceId) ParseCommandLine()
+        {
+            var args = Environment.GetCommandLineArgs();
+
+            var nextInstances = false;
+            var nextInstanceId = false;
+
+            var instances = 0;
+            var instanceId = 0;
+
+            foreach (var arg in args)
+            {
+                if (nextInstances)
+                {
+                    instances = int.Parse(arg);
+                    nextInstances = false;
+                    continue;
+                }
+
+                if (nextInstanceId)
+                {
+                    instanceId = int.Parse(arg);
+                    nextInstanceId = false;
+                    continue;
+                }
+
+
+                switch (arg)
+                {
+                    case "--instances":
+                        nextInstances = true;
+                        continue;
+                    case "--instanceid":
+                        nextInstanceId = true;
+                        continue;
+                }
+            }
+
+            return (instances, instanceId);
         }
 
         public void PressPlayButton()

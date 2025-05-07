@@ -31,7 +31,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             var algoName = algorithm.AlgorithmName;
             var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, RobotCount);
 
-            _maes.EnqueueScenario(
+            var scenarios = new[] {(
                 new MySimulationScenario(
                     seed: seed,
                     totalCycles: 4,
@@ -44,7 +44,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn")
-            );
+            )};
+
+            _maes = new MySimulator(scenarios);
+
             return _maes.SimulationManager.CurrentSimulation;
         }
 
@@ -59,7 +62,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             var algoName = algorithm.AlgorithmName;
             var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, RobotCount);
 
-            _maes.EnqueueScenario(
+            var scenarios = new[] {(
                 new MySimulationScenario(
                     seed: seed,
                     totalCycles: 4,
@@ -73,14 +76,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn",
                     patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
-            );
-            return _maes.SimulationManager.CurrentSimulation;
-        }
+            )};
 
-        [SetUp]
-        public void Setup()
-        {
-            _maes = new MySimulator();
+            _maes = new MySimulator(scenarios);
+
+            return _maes.SimulationManager.CurrentSimulation;
         }
 
         [TearDown]

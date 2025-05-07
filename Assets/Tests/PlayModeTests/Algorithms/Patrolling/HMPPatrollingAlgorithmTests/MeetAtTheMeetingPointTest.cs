@@ -37,12 +37,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             calculateSignalTransmissionProbability: (totalDistance, distanceThroughWalls) => distanceThroughWalls == 0.0 && totalDistance <= 5.0f);
 
 
-        [SetUp]
-        public void Setup()
-        {
-            _simulator = new PatrollingSimulator();
-        }
-
         [TearDown]
         public void ClearSimulator()
         {
@@ -64,7 +58,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
             var spawnAtVertexPosition = patrollingMap.Vertices[spawnAtVertexId].Position;
 
-            _simulator.EnqueueScenario(
+            var scenario =
                 new PatrollingSimulationScenario(
                     seed: seed,
                     totalCycles: totalCycles,
@@ -79,7 +73,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     patrollingMapFactory: _ => patrollingMap,
                     robotConstraints: _robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{seed}-size-{mapWidth}-robots-{robotCount}-RandomRobotSpawn")
-            );
+            ;
+
+            _simulator = new PatrollingSimulator(new[] { scenario });
 
             return _simulator.SimulationManager.CurrentSimulation;
         }

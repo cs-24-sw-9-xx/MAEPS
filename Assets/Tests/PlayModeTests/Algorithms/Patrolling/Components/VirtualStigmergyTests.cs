@@ -41,13 +41,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
     {
         private PatrollingSimulator _simulator;
 
-        private List<TestingAlgorithm> _algorithms;
+        private readonly List<TestingAlgorithm> _algorithms = new();
 
-        [SetUp]
-        public void Setup()
+        private void Setup(IReadOnlyList<PatrollingSimulationScenario> scenarios)
         {
-            _simulator = new PatrollingSimulator();
-            _algorithms = new List<TestingAlgorithm>();
+            _simulator = new PatrollingSimulator(scenarios);
         }
 
         [TearDown]
@@ -60,7 +58,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestDirectCommunication()
         {
-            EnqueueScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), 100, new Vector2Int(1, 8), new Vector2Int(15, 8));
+            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), 100, new Vector2Int(1, 8), new Vector2Int(15, 8));
+            Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -112,7 +111,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestTransitiveCommunication()
         {
-            EnqueueScenario(BitmapUtilities.CreateEmptyBitmap(24, 16), 16, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
+            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(24, 16), 16, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
+            Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -149,7 +149,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 semiWalledMap.Set(8, i);
             }
 
-            EnqueueScenario(semiWalledMap, 100, new Vector2Int(5, 8), new Vector2Int(11, 8));
+            var scenario = CreateScenario(semiWalledMap, 100, new Vector2Int(5, 8), new Vector2Int(11, 8));
+            Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -192,13 +193,13 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         }
 
 
-        private void EnqueueScenario(Bitmap bitmap, float communicationRange, params Vector2Int[] robotPositions)
+        private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, float communicationRange, params Vector2Int[] robotPositions)
         {
             var tilemap = Utilities.BitmapToTilemap(bitmap);
 
             var robotSpawnPositions = robotPositions.ToList();
 
-            _simulator.EnqueueScenario(new PatrollingSimulationScenario(
+            return new PatrollingSimulationScenario(
                 seed: 123,
                 totalCycles: 4,
                 stopAfterDiff: false,
@@ -213,7 +214,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
                 CreateRobotConstraints(communicationRange),
                 patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
-            ));
+            );
         }
 
         private static RobotConstraints CreateRobotConstraints(float communicationRange)

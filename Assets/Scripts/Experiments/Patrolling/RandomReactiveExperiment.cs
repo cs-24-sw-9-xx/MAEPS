@@ -95,7 +95,8 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
 
-            var simulator = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
+
             var random = new System.Random(12345);
             var randNumbers = new List<int>();
             for (var i = 0; i < 100; i++)
@@ -128,7 +129,7 @@ namespace Maes.Experiments.Patrolling
                     {
                         foreach (var (algorithmName, algorithm) in algorithms)
                         {
-                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                            scenarios.Add(new MySimulationScenario(seed: 123,
                                                                              totalCycles: 3,
                                                                              stopAfterDiff: true,
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
@@ -148,7 +149,7 @@ namespace Maes.Experiments.Patrolling
                                 spawningPosList.Add(new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)));
                             }
 
-                            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                            scenarios.Add(new MySimulationScenario(seed: 123,
                                                                              totalCycles: 3,
                                                                              stopAfterDiff: true,
                                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
@@ -168,7 +169,7 @@ namespace Maes.Experiments.Patrolling
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50, brokenCollisionMap: false);
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+            scenarios.Add(new MySimulationScenario(seed: 123,
                 totalCycles: 3,
                 stopAfterDiff: true,
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
@@ -181,6 +182,7 @@ namespace Maes.Experiments.Patrolling
                 robotConstraints: robotConstraints,
                 statisticsFileName: "delete-me"));
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
 
             //simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);
