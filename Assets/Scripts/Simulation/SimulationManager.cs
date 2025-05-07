@@ -100,11 +100,9 @@ namespace Maes.Simulation
         private void PrependExperimentFolderNameToStatisticsFileName()
         {
             var experimentName = "experiment-start-time-" + TimeUtilities.GetCurrentTimeUTC();
-            Debug.Log($"# of scenarios: {InitialScenarios.Count}");
             foreach (var item in InitialScenarios)
             {
                 item.StatisticsFileName = $"/{experimentName}/{item.StatisticsFileName}";
-                Debug.Log($"Statistics file name: {item.StatisticsFileName}");
             }
         }
 
