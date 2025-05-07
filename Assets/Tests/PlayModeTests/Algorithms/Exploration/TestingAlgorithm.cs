@@ -35,6 +35,14 @@ namespace Tests.PlayModeTests.Algorithms.Exploration
 
         public delegate void CustomUpdateFunction(int tick, Robot2DController controller);
 
+        public TestingAlgorithm(CustomUpdateFunction customUpdateFunction = null)
+        {
+            if (customUpdateFunction != null)
+            {
+                UpdateFunction = customUpdateFunction;
+            }
+        }
+
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
             while (true)

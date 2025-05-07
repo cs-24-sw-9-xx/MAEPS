@@ -82,6 +82,17 @@ namespace Maes.Robot
             }
         }
 
+        public int? OverEstimateTime(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false,
+            bool beOptimistic = true)
+        {
+            var estimate = EstimateTime(start, target, acceptPartialPaths, beOptimistic);
+            if (estimate == null)
+            {
+                return null;
+            }
+            return (int)(estimate * 1.3);
+        }
+
         private static float Distance(Vector2 robotStartPosition, Vector2Int tileCoord, bool dependOnBrokenBehaviour = true)
         {
             // Convert to local coordinate

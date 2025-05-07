@@ -36,7 +36,11 @@ namespace Maes.Robot
     {
         public int Id => _robot.id;
 
-        public int AssignedPartition => _robot.AssignedPartition;
+        public int AssignedPartition
+        {
+            get => _robot.AssignedPartition;
+            set => _robot.AssignedPartition = value;
+        }
 
         public Color32 Color => _robot.Color;
 
@@ -502,6 +506,21 @@ namespace Maes.Robot
             var approxPosition = SlamMap.CoarseMap.GetApproximatePosition();
             var position = Vector2Int.FloorToInt(approxPosition);
             return TravelEstimator.EstimateTime(position, target, acceptPartialPaths, beOptimistic);
+        }
+
+        /// <summary>
+        /// Estimates the time of arrival for the robot to reach the specified destination.
+        /// This this estimation is overestimated from the expected time.
+        /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
+        /// </summary>
+        /// <param name="target">the target that the path should end at.</param>
+        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
+        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
+        public int? OverEstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        {
+            var approxPosition = SlamMap.CoarseMap.GetApproximatePosition();
+            var position = Vector2Int.FloorToInt(approxPosition);
+            return TravelEstimator.OverEstimateTime(position, target, acceptPartialPaths, beOptimistic);
         }
 
         /// <summary>

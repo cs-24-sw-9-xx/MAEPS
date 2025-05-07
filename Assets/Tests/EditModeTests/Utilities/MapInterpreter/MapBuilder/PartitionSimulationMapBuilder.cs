@@ -26,22 +26,33 @@ using JetBrains.Annotations;
 
 using Maes.Map;
 using Maes.Map.Generators;
+using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
+using Maes.Utilities;
 
 using UnityEngine;
 
 namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
 {
+    public delegate void ConnectVerticesDelegate(IReadOnlyCollection<Vertex> vertices);
     public class PartitionSimulationMapBuilder : BaseSimulationMapBuilder<(SimulationMap<Tile> map, PatrollingMap patrollingMap, Dictionary<int, HashSet<Vertex>> verticesByPartitionId)>
     {
-        public PartitionSimulationMapBuilder(string map) : base(map)
+        public PartitionSimulationMapBuilder(string map, ConnectVerticesDelegate connectVerticesDelegate) : base(map)
         {
-
+            _connectVerticesDelegate = connectVerticesDelegate;
         }
+
+        private readonly ConnectVerticesDelegate _connectVerticesDelegate;
 
         private readonly VertexInterpreter _vertexInterpreter = new();
         protected override (SimulationMap<Tile> map, PatrollingMap patrollingMap, Dictionary<int, HashSet<Vertex>> verticesByPartitionId) BuildResult(SimulationMap<Tile> map)
         {
-            var patrollingMap = new PatrollingMap(_vertexInterpreter.Vertices, map);
+            var vertices = _vertexInterpreter.Vertices;
+
+            // Connect the vertices using reverse nearest neighbors
+            using var bitmap = MapUtilities.MapToBitMap(map);
+            ReverseNearestNeighborWaypointConnector.ConnectVertices(vertices, bitmap);
+
+            var patrollingMap = new PatrollingMap(vertices, map);
             return (map, patrollingMap, _vertexInterpreter.VerticesByPartitionId);
         }
 

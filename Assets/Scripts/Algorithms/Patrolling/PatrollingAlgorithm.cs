@@ -50,7 +50,7 @@ namespace Maes.Algorithms.Patrolling
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
 
-        private int _logicTicks = -1;
+        protected int _logicTicks { get; private set; } = -1;
 
         protected event OnReachVertex? OnReachVertexHandler;
 
@@ -86,7 +86,7 @@ namespace Maes.Algorithms.Patrolling
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_patrollingMap != null)
             {
-                SetComponents(CreateComponents(_controller, _patrollingMap));
+                SetComponents(CreateAllComponents(_controller, _patrollingMap));
             }
         }
 
@@ -100,7 +100,7 @@ namespace Maes.Algorithms.Patrolling
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
             if (_controller != null)
             {
-                SetComponents(CreateComponents(_controller, _patrollingMap));
+                SetComponents(CreateAllComponents(_controller, _patrollingMap));
             }
         }
 
@@ -197,6 +197,31 @@ namespace Maes.Algorithms.Patrolling
             while (true)
             {
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+            }
+        }
+
+        private IComponent[] CreateAllComponents(IRobotController robotController, PatrollingMap patrollingMap)
+        {
+            var components = new List<IComponent>();
+            var rootComponents = CreateComponents(robotController, patrollingMap);
+            components.AddRange(rootComponents);
+
+            foreach (var component in rootComponents)
+            {
+                AddRecursively(component);
+            }
+
+            return components.ToArray();
+
+            void AddRecursively(IComponent component)
+            {
+                var moreComponents = component.CreateComponents(robotController, patrollingMap);
+                components.AddRange(moreComponents);
+
+                foreach (var otherComponent in moreComponents)
+                {
+                    AddRecursively(otherComponent);
+                }
             }
         }
 

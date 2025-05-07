@@ -1,7 +1,10 @@
 using System;
 using System.Collections;
+using System.Linq;
 
+using Maes.Algorithms.Exploration;
 using Maes.FaultInjections.DestroyRobots;
+using Maes.Map.RobotSpawners;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
 using Maes.UI;
@@ -23,7 +26,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
     [TestFixture]
     public class DestroyRobotsAtTicksFaultInjectionTest
     {
-        public class TestCase
+        public sealed class TestCase
         {
             public readonly string Name;
             public readonly int RobotsToSpawn;
@@ -34,9 +37,15 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
                 RobotsToSpawn = robotsToSpawn;
                 RobotsToDestroyAtTicks = robotsToDestroyAtTicks;
             }
+
+            public override string ToString()
+            {
+                return
+                    $"{nameof(Name)}: {Name}, {nameof(RobotsToSpawn)}: {RobotsToSpawn}, {nameof(RobotsToDestroyAtTicks)}: {RobotsToDestroyAtTicks}";
+            }
         }
 
-        private class TestCasesDestroyAtTicks
+        private static class TestCasesDestroyAtTicks
         {
             private static readonly TestCase[] Cases =
             {
@@ -65,27 +74,20 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
 
         private void InitializeTestingSimulator(int robotsToSpawn, int[] robotsToDestroyAtTicks, string testCaseName)
         {
+            var tracker = new DestroyTrackerTest(robotsToDestroyAtTicks, robotsToSpawn, testCaseName);
+
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(),
+                robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, robotsToSpawn,
-                    Vector2Int.zero, _ => new TestingAlgorithm()),
+                    Vector2Int.zero, _ => new TestingAlgorithm((tick, _) => tracker.UpdateLogic(tick, spawner))),
                 faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(RandomSeed, robotsToDestroyAtTicks));
 
             _maes = new MySimulator();
             _maes.EnqueueScenario(testingScenario);
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
-
-            var tracker = new DestroyTrackerTest(_simulationBase, robotsToDestroyAtTicks, robotsToSpawn, testCaseName);
-
-            foreach (var robot in _simulationBase.Robots)
-            {
-                ((TestingAlgorithm)robot.Algorithm).UpdateFunction = (tick, _) =>
-                {
-                    tracker.UpdateLogic(tick, _simulationBase.RobotSpawner.transform.childCount);
-                };
-            }
+            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }
 
         [TearDown]
@@ -96,46 +98,30 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
 
         private class DestroyTrackerTest
         {
-            private ExplorationSimulation Simulation { get; }
             private int[] RobotsToDestroyAtTicks { get; }
             private int RobotsToSpawn { get; }
             private string TestCaseName { get; }
-            private int Tick { get; set; } = -1;
-            private readonly int _index;
 
-            public DestroyTrackerTest(ExplorationSimulation simulation, int[] robotsToDestroyAtTicks, int robotsToSpawn, string testCaseName)
+            public DestroyTrackerTest(int[] robotsToDestroyAtTicks, int robotsToSpawn, string testCaseName)
             {
-                Simulation = simulation;
                 RobotsToDestroyAtTicks = robotsToDestroyAtTicks;
                 RobotsToSpawn = robotsToSpawn;
                 TestCaseName = testCaseName;
             }
 
-            public void UpdateLogic(int tick, int robotCount)
+            public void UpdateLogic(int tick, RobotSpawner<IExplorationAlgorithm> spawner)
             {
-                if (Tick >= tick)
-                {
-                    return;
-                }
-
                 // Check that the robots are destroyed at the correct ticks
-                var destroyed = 0;
-                var recentTick = 0;
-                foreach (var destroyAtTick in RobotsToDestroyAtTicks)
-                {
-                    if (destroyAtTick <= tick)
-                    {
-                        destroyed++;
-                        recentTick = destroyAtTick;
-                    }
-                }
+                var destroyed = RobotsToDestroyAtTicks.Count(t => t <= tick);
 
-                if (recentTick + 5 < tick) // +5 because allows some time for the robots to be destroyed
-                {
-                    Assert.AreEqual(RobotsToSpawn - destroyed, robotCount, $"Simulated Logic Tick: {tick}, Destroyed: {destroyed}, Count:{Simulation.RobotSpawner.transform.childCount}, Name: {TestCaseName}");
-                }
-
-                Tick = tick;
+                var children = Enumerable.Range(0, spawner.transform.childCount)
+                    .Select(spawner.transform.GetChild)
+                    .Where(c => c.gameObject.activeSelf)
+                    .ToList();
+                var childrenNames = string.Join(", ",
+                    children
+                        .Select(t => t.name));
+                Assert.AreEqual(RobotsToSpawn - destroyed, children.Count, $"Simulated Logic Tick: {tick}, Destroyed: {destroyed}, Count:{children.Count}, Name: {TestCaseName}, Children: {childrenNames}");
             }
         }
 
@@ -150,18 +136,15 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
 
             var expectedNumberOfRobotsAfterDestroyed = robotsToSpawn - robotsToDestroyAtTicks.Length;
 
-            _maes.PressPlayButton();
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
+            var stop = robotsToDestroyAtTicks.Length == 0 ? 0 : robotsToDestroyAtTicks[^1];
 
-            var stop = robotsToDestroyAtTicks.Length == 0 ? 0 : robotsToDestroyAtTicks[^1] + 2;
-
-            while (_simulationBase.SimulatedLogicTicks <= stop + 10)
+            while (_simulationBase.SimulatedLogicTicks <= stop)
             {
                 yield return null;
             }
 
             // Assert that the robots are destroyed
-            Assert.AreEqual(expectedNumberOfRobotsAfterDestroyed, _simulationBase.RobotSpawner.transform.childCount, $"expectedNumberOfRobotsAfterDestroyed: {expectedNumberOfRobotsAfterDestroyed}, Count:{_simulationBase.RobotSpawner.transform.childCount}, Name: {testCase.Name}");
+            Assert.AreEqual(expectedNumberOfRobotsAfterDestroyed, _simulationBase.RobotSpawner.transform.childCount);
         }
     }
 }

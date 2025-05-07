@@ -15,7 +15,7 @@ namespace Maes.Map
     {
         public readonly IReadOnlyList<Vertex> Vertices;
 
-        public readonly Dictionary<int, Vertex[]> VerticesByPartition;
+        public readonly IReadOnlyList<Partition> Partitions;
 
         public readonly IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> Paths;
 
@@ -24,8 +24,9 @@ namespace Maes.Map
         {
         }
 
-        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, Dictionary<int, Vertex[]> partitions)
-            : this(vertices, CreatePaths(vertices, simulationMap), partitions)
+
+        public PatrollingMap(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap, IReadOnlyList<Partition> partitions)
+        : this(vertices, CreatePaths(vertices, simulationMap), partitions)
         {
         }
 
@@ -33,14 +34,17 @@ namespace Maes.Map
         {
             Vertices = vertices;
             Paths = paths;
-            VerticesByPartition = new Dictionary<int, Vertex[]> { { 0, Vertices.ToArray() } };
+            Partitions = new List<Partition>
+            {
+                new Partition(0, vertices, vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
+            };
         }
 
-        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, Dictionary<int, Vertex[]> partitions)
+        private PatrollingMap(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> paths, IReadOnlyList<Partition> partitions)
         {
             Vertices = vertices;
             Paths = paths;
-            VerticesByPartition = partitions;
+            Partitions = partitions;
         }
 
         public PatrollingMap Clone()
@@ -61,7 +65,7 @@ namespace Maes.Map
                 }
             }
 
-            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, VerticesByPartition);
+            return new PatrollingMap(originalToCloned.Values.ToArray(), Paths, Partitions);
         }
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
@@ -74,6 +78,17 @@ namespace Maes.Map
             // HACK: Creating a slam map with robot constraints seems a bit hacky tbh :(
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;
+
+            return CreatePaths(vertices, coarseMap);
+        }
+
+        private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, CoarseGrainedMap coarseMap)
+        {
+            // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
+            // TODO: Of cause this requires specific code for that waypoint generation algorithm.
+
+            var startTime = Time.realtimeSinceStartup;
+
             var aStar = new MyAStar();
             var paths = new Dictionary<(int, int), IReadOnlyList<PathStep>>();
             foreach (var vertex in vertices)

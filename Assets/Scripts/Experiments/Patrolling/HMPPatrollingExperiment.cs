@@ -39,7 +39,7 @@ namespace Maes.Experiments.Patrolling
     {
         private void Start()
         {
-            const int robotCount = 3;
+            const int robotCount = 4;
             const int seed = 123;
             const int mapSize = 100;
             const string algoName = "HMPPatrollingAlgorithm";

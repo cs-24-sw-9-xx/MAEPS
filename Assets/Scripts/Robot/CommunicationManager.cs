@@ -77,7 +77,7 @@ namespace Maes.Robot
         private readonly RobotConstraints _robotConstraints;
         private readonly DebuggingVisualizer _visualizer;
 
-        // Messages that will sent during the next logic update
+        // Messages that will be sent during the next logic update
         private readonly List<Message> _queuedMessages = new();
 
         // Messages that were sent last tick and can now be read 
@@ -441,15 +441,15 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(List<Vector2Int> vertices)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(IEnumerable<Vertex> vertices)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count());
             Parallel.ForEach(vertices, vertex =>
                 {
-                    var bitmap = CalculateCommunicationZone(vertex);
+                    var bitmap = CalculateCommunicationZone(vertex.Position);
                     lock (vertexPositionsMultiThread)
                     {
-                        vertexPositionsMultiThread.Add(vertex, bitmap);
+                        vertexPositionsMultiThread.Add(vertex.Position, bitmap);
                     }
                 }
             );
@@ -479,7 +479,7 @@ namespace Maes.Robot
             return bitmap;
         }
 
-        // This method is an implementation of siddons algorithm which can be found in the following paper:
+        // This method is an implementation of Siddon's algorithm which can be found in the following paper:
         // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
         // https://doi.org/10.1118/1.595715
         public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end)

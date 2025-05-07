@@ -82,7 +82,7 @@ namespace Maes.Experiments.Patrolling
                         seed: 123,
                         numberOfRobots: robotCount,
                         spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: _ => new CognitiveCoordinated()),
+                        createAlgorithmDelegate: _ => new CognitiveCoordinatedGlobal()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
