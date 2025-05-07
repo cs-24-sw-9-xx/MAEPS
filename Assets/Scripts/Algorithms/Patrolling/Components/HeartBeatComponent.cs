@@ -1,3 +1,25 @@
+// Copyright 2025 MAEPS
+// 
+// This file is part of MAEPS
+// 
+// MAEPS is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the
+// Free Software Foundation, either version 3 of the License, or (at your option)
+// any later version.
+// 
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+// Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+//
+// Contributors 2025: 
+// Casper Nyvang Sørensen,
+// Christian Ziegler Sejersen,
+// Jakob Meyer Olsen
+// Mads Beyer Mogensen
 using System.Collections.Generic;
 
 using Maes.Robot;
@@ -43,18 +65,6 @@ namespace Maes.Algorithms.Patrolling.Components
             if (_robotHeartbeats.ContainsKey(robotId))
             {
                 _robotHeartbeats.Remove(robotId);
-            }
-        }
-
-        /// <summary>
-        /// Removes a robot from the heartbeat tracking system.
-        /// </summary>
-        /// <param name="robotId"></param>
-        public void RemoveRobot(int robotId)
-        {
-            if (RobotHeartbeats.ContainsKey(robotId))
-            {
-                RobotHeartbeats.Remove(robotId);
             }
         }
 
