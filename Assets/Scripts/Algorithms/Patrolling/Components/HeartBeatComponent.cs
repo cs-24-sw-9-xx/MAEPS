@@ -8,8 +8,8 @@ namespace Maes.Algorithms.Patrolling.Components
     {
         private readonly IRobotController _controller;
         private readonly int _logicTick;
-        public readonly Dictionary<int, HeartbeatMessage> RobotHeartbeats = new Dictionary<int, HeartbeatMessage>();
-
+        private readonly Dictionary<int, HeartbeatMessage> _robotHeartbeats = new Dictionary<int, HeartbeatMessage>();
+        public IReadOnlyDictionary<int, HeartbeatMessage> RobotHeartbeats => _robotHeartbeats;
         public int PreUpdateOrder => -300;
         public int PostUpdateOrder => -300;
 
@@ -38,9 +38,9 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <param name="robotId"></param>
         public void RemoveRobot(int robotId)
         {
-            if (RobotHeartbeats.ContainsKey(robotId))
+            if (_robotHeartbeats.ContainsKey(robotId))
             {
-                RobotHeartbeats.Remove(robotId);
+                _robotHeartbeats.Remove(robotId);
             }
         }
 
@@ -54,7 +54,7 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 if (message is HeartbeatMessage heartbeatMessage)
                 {
-                    RobotHeartbeats[heartbeatMessage.RobotId] = heartbeatMessage;
+                    _robotHeartbeats[heartbeatMessage.RobotId] = heartbeatMessage;
                 }
             }
         }
