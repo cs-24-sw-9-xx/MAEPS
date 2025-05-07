@@ -7,7 +7,6 @@ using Maes.Statistics.Trackers;
 using Maes.Statistics.Writer;
 using Maes.UI.SimulationInfoUIControllers;
 using Maes.UI.Visualizers.Patrolling;
-using Maes.Utilities;
 
 using UnityEngine;
 
@@ -69,16 +68,14 @@ namespace Maes.Simulation.Patrolling
         protected override void CreateStatisticsFile()
         {
             Debug.Log("Creating statistics file");
-            var folderPath =
-                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{TimeUtilities.GetCurrentTimeUTC()}";
-            Directory.CreateDirectory(folderPath);
+            Directory.CreateDirectory(StatisticsFolderPath);
 
-            var patrollingFilename = Path.Join(folderPath, "patrolling");
+            var patrollingFilename = Path.Join(StatisticsFolderPath, "patrolling");
             new PatrollingCsvDataWriter(this, patrollingFilename).CreateCsvFile();
 
             foreach (var (point, snapShots) in PatrollingTracker.WaypointSnapShots)
             {
-                var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
+                var waypointFilename = Path.Join(StatisticsFolderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
             // Todo: Save Graph

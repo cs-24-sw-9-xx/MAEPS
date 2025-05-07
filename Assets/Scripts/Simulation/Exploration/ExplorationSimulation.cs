@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 
 using Maes.Algorithms.Exploration;
@@ -34,6 +35,7 @@ namespace Maes.Simulation.Exploration
 
         protected override void CreateStatisticsFile()
         {
+            Directory.CreateDirectory(StatisticsFolderPath);
             var resultForFileName = "e-c";
             if (ExplorationTracker.SnapShots.Any())
             {

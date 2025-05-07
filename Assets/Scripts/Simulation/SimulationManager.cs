@@ -99,10 +99,10 @@ namespace Maes.Simulation
 
         private void PrependExperimentFolderNameToStatisticsFileName()
         {
-            var experimentName = "experiment-start-time-" + TimeUtilities.GetCurrentTimeUTC();
+            var experimentName = "experiment-" + TimeUtilities.GetCurrentTimeUTC();
             foreach (var item in InitialScenarios)
             {
-                item.StatisticsFileName = $"/{experimentName}/{item.StatisticsFileName}";
+                item.StatisticsFileName = $"{experimentName}/{item.StatisticsFileName}";
             }
         }
 
