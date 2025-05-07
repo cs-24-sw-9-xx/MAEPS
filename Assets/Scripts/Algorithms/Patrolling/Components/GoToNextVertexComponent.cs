@@ -53,6 +53,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingMap _patrollingMap;
         private readonly InitialVertexToPatrolDelegate _initialVertexToPatrolDelegate;
         public Vector2Int TargetPosition { get; private set; }
+        private AbortingTask? _abortingTask;
 
         /// <summary>
         /// Delegate that specifies the next vertex to travel to.
@@ -113,6 +114,12 @@ namespace Maes.Algorithms.Patrolling.Components
                     continue;
                 }
 
+                if (_abortingTask != null)
+                {
+                    vertex = _abortingTask.Value.TargetVertex;
+                    _abortingTask = null;
+                }
+
                 // Follow the path.
                 // Go to the next vertex
                 targetVertex = _nextVertexDelegate(vertex);
@@ -138,11 +145,12 @@ namespace Maes.Algorithms.Patrolling.Components
                 }
             }
         }
+
         private Vertex GetClosestVertexDefault()
         {
             var robotPartition = _controller.AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
-            return vertices.GetClosestVertex(_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false));
+            return vertices.GetClosestVertex(target => _controller.EstimateDistanceToTarget(target) ?? int.MaxValue);
         }
 
 
@@ -151,6 +159,11 @@ namespace Maes.Algorithms.Patrolling.Components
             TargetPosition = target;
             while (true)
             {
+                if (_abortingTask != null)
+                {
+                    yield break;
+                }
+
                 yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: false);
 
                 var relativePosition = GetRelativePositionTo(target);
@@ -185,6 +198,12 @@ namespace Maes.Algorithms.Patrolling.Components
                 return path;
             }
             return new Queue<PathStep>(_patrollingMap.Paths[(currentVertex.Id, targetVertex.Id)]);
+        }
+
+        public void AbortCurrentTask(AbortingTask abortingTask)
+        {
+            _abortingTask = abortingTask;
+            TargetPosition = abortingTask.TargetVertex.Position;
         }
     }
 }

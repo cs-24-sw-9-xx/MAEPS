@@ -14,6 +14,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         public Robot2DController Controller = null!;
         public Vector2Int TargetTile;
         public bool TargetReached;
+        public readonly TicksTracker TicksTracker = new();
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
@@ -25,15 +26,17 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
+            TicksTracker.Visited(Controller.SlamMap.CoarseMap.GetCurrentPosition(), Tick);
             while (true)
             {
-                if (!IsDestinationReached(TargetTile))
+                if (!IsDestinationReached(TargetTile) && !TargetReached)
                 {
                     Controller.PathAndMoveTo(TargetTile);
                     Tick++;
                 }
-                else
+                else if (!TargetReached)
                 {
+                    TicksTracker.Visited(TargetTile, Tick);
                     TargetReached = true;
                 }
 

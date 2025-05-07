@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
@@ -119,7 +120,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public void AddRobot(int robotId, HMPPatrollingAlgorithm algorithm)
             {
                 _observedRobotVertices[robotId] = new HashSet<int>();
-                algorithm.SubscribeOnReachVertex(vertexId =>
+                algorithm.SubscribeOnReachVertex((vertexId, _) =>
                 {
                     _observedRobotVertices[robotId].Add(vertexId);
                 });
@@ -186,6 +187,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
             {
                 _algorithm.SubscribeOnReachVertex(onReachVertex);
+            }
+
+            public void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo)
+            {
+
             }
 
             public IEnumerable<WaitForCondition> PreUpdateLogic()

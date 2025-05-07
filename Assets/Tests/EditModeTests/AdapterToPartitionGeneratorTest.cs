@@ -66,7 +66,7 @@ namespace Tests.EditModeTests
             var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, coarseMap, (_, _) => null);
+            generator.SetMaps(patrollingMap, coarseMap);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0, 1 });
 
@@ -101,7 +101,7 @@ namespace Tests.EditModeTests
             var coarseMap = slamMap.CoarseMap;
             var patrollingMap = new PatrollingMap(vertices, simulationMap);
             var generator = new AdapterToPartitionGenerator(PartitioningGenerator);
-            generator.SetMaps(patrollingMap, coarseMap, (_, _) => null);
+            generator.SetMaps(patrollingMap, coarseMap);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 0 });
 

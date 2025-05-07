@@ -29,9 +29,8 @@ namespace Tests.EditModeTests
             var robotConstraints = new RobotConstraints(mapKnown: true);
             var coarseMap = new SlamMap(simulationMap, robotConstraints, 0).CoarseMap;
             var generator = new PartitionGeneratorWithMeetingPoint(new TestPartitionGenerator(verticesByPartitionId));
-            var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
-            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+            generator.SetMaps(patrollingMap, coarseMap);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2 });
 
@@ -53,9 +52,8 @@ namespace Tests.EditModeTests
             var robotConstraints = new RobotConstraints(mapKnown: true);
             var coarseMap = new SlamMap(simulationMap, robotConstraints, 0).CoarseMap;
             var generator = new PartitionGeneratorWithMeetingPoint(new TestPartitionGenerator(verticesByPartitionId));
-            var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
-            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+            generator.SetMaps(patrollingMap, coarseMap);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2, 3 });
 
@@ -80,9 +78,8 @@ namespace Tests.EditModeTests
             var robotConstraints = new RobotConstraints(mapKnown: true);
             var coarseMap = new SlamMap(simulationMap, robotConstraints, 0).CoarseMap;
             var generator = new PartitionGeneratorWithMeetingPoint(new TestPartitionGenerator(verticesByPartitionId));
-            var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
-            generator.SetMaps(patrollingMap, coarseMap, (s, e) => estimationTravel.EstimateTime(s, e));
+            generator.SetMaps(patrollingMap, coarseMap);
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2, 3, 4 });
 

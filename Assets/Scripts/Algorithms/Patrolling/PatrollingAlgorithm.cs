@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Robot;
 
@@ -53,6 +54,7 @@ namespace Maes.Algorithms.Patrolling
         protected int _logicTicks { get; private set; } = -1;
 
         protected event OnReachVertex? OnReachVertexHandler;
+        protected event OnTrackInfo? OnTrackInfoHandler;
 
         protected abstract IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap);
 
@@ -115,10 +117,20 @@ namespace Maes.Algorithms.Patrolling
             OnReachVertexHandler += onReachVertex;
         }
 
+        public void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo)
+        {
+            OnTrackInfoHandler += onTrackInfo;
+        }
+
+        protected void TrackInfo(ITrackInfo objectToLog)
+        {
+            OnTrackInfoHandler?.Invoke(objectToLog);
+        }
+
         public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)
         {
             TargetVertex = nextVertex;
-            OnReachVertexHandler?.Invoke(vertex.Id);
+            OnReachVertexHandler?.Invoke(vertex.Id, vertex.Position);
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {
