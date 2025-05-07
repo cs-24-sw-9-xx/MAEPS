@@ -75,7 +75,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private void CreateAndEnqueueScenario()
         {
-            _maes = new PatrollingSimulator();
 
             var robotConstraints = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
@@ -94,7 +93,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
             var mapConfig = new BuildingMapConfig(123, widthInTiles: MapSize, heightInTiles: MapSize, brokenCollisionMap: false);
 
-            _maes.EnqueueScenario(
+            var scenarios = new[] {(
                 new PatrollingSimulationScenario(
                     seed: Seed,
                     totalCycles: TotalCycles,
@@ -109,7 +108,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
                     patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
-            );
+            )};
+
+            _maes = new PatrollingSimulator(scenarios);
         }
 
         private class TrackerVertices

@@ -29,7 +29,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public OverEstimateTestStraightPath(float relativeMoveSpeed)
         {
-            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true);
+            _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
         }
 
         [SetUp]
@@ -47,8 +47,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                         return algorithm;
                     }));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
         }

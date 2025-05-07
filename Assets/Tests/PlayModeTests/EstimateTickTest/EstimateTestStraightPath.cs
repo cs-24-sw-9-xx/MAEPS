@@ -47,8 +47,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                         return algorithm;
                     }));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
         }

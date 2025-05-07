@@ -205,6 +205,7 @@ namespace Maes.Simulation
 
         public void UpdateDebugInfo()
         {
+#if !UNITY_SERVER
             if (_selectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
@@ -223,6 +224,7 @@ namespace Maes.Simulation
             {
                 SimInfoUIController.UpdateTagDebugInfo(_selectedTag.GetDebugInfo());
             }
+#endif
         }
 
         public virtual void OnSimulationFinished()

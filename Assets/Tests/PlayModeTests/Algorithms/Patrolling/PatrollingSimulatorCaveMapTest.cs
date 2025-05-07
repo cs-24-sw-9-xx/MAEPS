@@ -20,7 +20,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
 
         private void InitializeTestingSimulator()
         {
-            _maes = new MySimulator();
             var random = new System.Random(12345);
             var mapSize = 50;
 
@@ -32,7 +31,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
             const int robotCount = 1;
             var spawningPosList = ScenarioBuilderUtilities.GenerateRandomSpawningPositions(random, mapSize, robotCount);
 
-            _maes.EnqueueScenario(
+            var scenarios = new[] {(
                 new MySimulationScenario(
                     seed: 123,
                     totalCycles: 4,
@@ -45,7 +44,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-RandomRobotSpawn")
-            );
+            )};
+
+            _maes = new MySimulator(scenarios);
+
             _simulation = _maes.SimulationManager.CurrentSimulation;
         }
 

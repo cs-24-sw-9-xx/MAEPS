@@ -56,7 +56,7 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
             var random = new System.Random(12345);
             const int seed = 123;
             const int cycles = 100;
@@ -112,7 +112,7 @@ namespace Maes.Experiments.Patrolling
                             switch (mapConfig)
                             {
                                 case Tile[,]:
-                                    simulator.EnqueueScenario(
+                                    scenarios.Add(
                                         new MySimulationScenario(
                                             seed: seed,
                                             totalCycles: cycles,
@@ -124,14 +124,14 @@ namespace Maes.Experiments.Patrolling
                                                 suggestedStartingPoint: pos,
                                                 numberOfRobots: robotCount,
                                                 createAlgorithmDelegate: _ => redisAlg),
-                                            mapSpawner: generator => generator.GenerateMap(mapConfig as Tile[,], seed,
+                                            mapSpawner: generator => generator.GenerateMap((Tile[,])mapConfig, seed,
                                                 brokenCollisionMap: false),
                                             robotConstraints: robotConstraints,
                                             statisticsFileName: $"{redisName}-seed-{seed}-map-{mapName}-partitions-{partitions}-comms-{constraintName}-robots-{robotCount}-SpawnApart")
                                     );
                                     break;
                                 case CaveMapConfig:
-                                    simulator.EnqueueScenario(
+                                    scenarios.Add(
                                         new MySimulationScenario(
                                             seed: seed,
                                             totalCycles: cycles,
@@ -148,7 +148,7 @@ namespace Maes.Experiments.Patrolling
                                     );
                                     break;
                                 case BuildingMapConfig:
-                                    simulator.EnqueueScenario(
+                                    scenarios.Add(
                                         new MySimulationScenario(
                                             seed: seed,
                                             totalCycles: cycles,
@@ -170,6 +170,8 @@ namespace Maes.Experiments.Patrolling
                     }
                 }
             }
+
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }
