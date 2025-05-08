@@ -45,10 +45,6 @@ namespace Maes.Algorithms.Patrolling.Components
             }
 
             var randomPartitionId = _partitionIds[_random.Next(0, amountOfPartitions)];
-            if (_controller.AssignedPartition == randomPartitionId)
-            {
-                return;
-            }
             _controller.AssignedPartition = randomPartitionId;
         }
     }
