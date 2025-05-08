@@ -120,7 +120,7 @@ namespace Maes.Experiments.Patrolling
                                             robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
-                                                numberOfRobots: 8,
+                                                numberOfRobots: robotCount,
                                                 createAlgorithmDelegate: _ => redisAlg),
                                             mapSpawner: generator => generator.GenerateMap((Tile[,])mapConfig, seed,
                                                 brokenCollisionMap: false),
