@@ -75,7 +75,9 @@ namespace Maes.Simulation.Patrolling
 
             foreach (var (point, snapShots) in PatrollingTracker.WaypointSnapShots)
             {
-                var waypointFilename = Path.Join(StatisticsFolderPath, $"waypoint_{point.x}_{point.y}");
+                var waypointFolderPath = Path.Join(StatisticsFolderPath, "waypoints/");
+                Directory.CreateDirectory(waypointFolderPath);
+                var waypointFilename = Path.Join(waypointFolderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
             // Todo: Save Graph
