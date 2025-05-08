@@ -59,10 +59,7 @@ namespace Maes.Algorithms.Patrolling
                 var elapsed = Time.realtimeSinceStartup - startTime;
                 Debug.Log($"Patrolling cycle created in {elapsed} s. Cycle length: {_patrollingCycle.Count}");
                 Debug.Log($"Patrolling cycle: {string.Join(", ", _patrollingCycle.Select(v => v.Id))}");
-                if (_patrollingCycle.Count == 0)
-                {
-                    throw new System.ArgumentOutOfRangeException("Patrolling cycle is empty.");
-                }
+                Debug.Assert(_patrollingCycle.Count > 0, "Patrolling cycle is empty.");
             }
             return NextVertexInCycle(currentVertex);
         }
@@ -78,10 +75,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected float[,] EstimatedDistanceMatrix(IReadOnlyList<Vertex> vertices)
         {
-            if (vertices.Max(v => v.Id) >= _patrollingMap.Vertices.Count)
-            {
-                throw new System.Exception($"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
-            }
+            Debug.Assert(vertices.Max(v => v.Id) < _patrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
 
             var distanceMatrix = new float[vertices.Count, vertices.Count];
             foreach (var v1 in vertices)

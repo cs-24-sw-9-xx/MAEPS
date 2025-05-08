@@ -51,10 +51,16 @@ namespace Maes.Algorithms.Patrolling
             return solution.Select(id => verticesInPartition.Single(v => v.Id == id)).ToList();
         }
 
-        public class Edge
+        private readonly struct Edge
         {
-            public int From, To;
-            public float Weight;
+            public Edge(int from, int to, float weight)
+            {
+                From = from;
+                To = to;
+                Weight = weight;
+            }
+            public readonly int From, To;
+            public readonly float Weight;
         }
 
         /// <summary>
@@ -140,7 +146,7 @@ namespace Maes.Algorithms.Patrolling
             var mst = new List<Edge>();
             for (var i = 1; i < n; i++)
             {
-                mst.Add(new Edge { From = parent[i], To = i, Weight = dist[parent[i], i] });
+                mst.Add(new Edge(from: parent[i], to: i, weight: dist[parent[i], i]));
             }
 
             return mst;
@@ -173,7 +179,7 @@ namespace Maes.Algorithms.Patrolling
 
                 if (bestV != -1)
                 {
-                    result.Add(new Edge { From = u, To = bestV, Weight = dist[u, bestV] });
+                    result.Add(new Edge(from: u, to: bestV, weight: dist[u, bestV]));
                     matched.Add(u);
                     matched.Add(bestV);
                 }
