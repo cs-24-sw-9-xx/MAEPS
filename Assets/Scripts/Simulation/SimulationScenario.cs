@@ -52,7 +52,7 @@ namespace Maes.Simulation
         public MapFactory MapSpawner { get; }
         public RobotFactory<TAlgorithm> RobotSpawner { get; }
         public RobotConstraints RobotConstraints { get; }
-        public string StatisticsFileName { get; }
+        public string StatisticsFileName { get; set; }
 
         public IFaultInjection? FaultInjection { get; }
 

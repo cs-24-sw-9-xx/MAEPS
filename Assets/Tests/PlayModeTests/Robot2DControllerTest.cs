@@ -74,8 +74,7 @@ namespace Tests.PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = new MySimulator(false);
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);

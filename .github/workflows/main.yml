@@ -115,6 +115,41 @@ jobs:
           name: Build-${{ matrix.targetPlatform }}
           path: build
 
+  build-server:
+    needs: setup
+    name: Build for Linux Server
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-StandaloneLinux64-Server-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-StandaloneLinux64-
+            Library-
+      - uses: actions/cache/restore@v4
+        with:
+          path: Assets/Packages
+          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneLinux64
+          projectPath: .
+          customParameters: -standaloneBuildSubtarget Server
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build-StandaloneLinux64-Server
+          path: build
+
   lint:
     name: Lint
     runs-on: ubuntu-latest

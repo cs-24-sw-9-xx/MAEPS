@@ -28,7 +28,7 @@ using Maes.Robot;
 using UnityEngine;
 
 
-namespace Maes.Algorithms.Patrolling.Components
+namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
     /// Component responsible for redistributing robots to different partitions.

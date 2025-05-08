@@ -96,6 +96,11 @@ namespace Maes.Simulation
         // Set by SetInfoUIController
         private SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> SimInfoUIController = null!;
 
+        /// <summary>
+        /// This is used to ensure there is a folder for statistics for the experiment and the scenario.
+        /// </summary>
+        protected string StatisticsFolderPath => $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}";
+
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
@@ -205,6 +210,7 @@ namespace Maes.Simulation
 
         public void UpdateDebugInfo()
         {
+#if !UNITY_SERVER
             if (_selectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
@@ -223,6 +229,7 @@ namespace Maes.Simulation
             {
                 SimInfoUIController.UpdateTagDebugInfo(_selectedTag.GetDebugInfo());
             }
+#endif
         }
 
         public virtual void OnSimulationFinished()

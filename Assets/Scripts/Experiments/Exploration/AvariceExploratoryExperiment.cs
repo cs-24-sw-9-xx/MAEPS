@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+
 using Maes.Algorithms.Exploration.Greed;
 using Maes.Algorithms.Exploration.Minotaur;
 using Maes.Map.Generators;
@@ -52,14 +54,15 @@ namespace Maes.Experiments.Exploration
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) =>
                     distanceThroughWalls <= 0);
 
-            var simulator = new MySimulator();
+
+            var scenarios = new List<MySimulationScenario>();
 
             var mapFromFile = PgmMapFileLoader.LoadMapFromFileIfPresent("blank_100.pgm");
             var random = new System.Random(1234);
             for (var i = 0; i < 10; i++)
             {
                 var val = random.Next(0, 1000000);
-                simulator.EnqueueScenario(new MySimulationScenario(val,
+                scenarios.Add(new MySimulationScenario(val,
                     mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
                     robotConstraints: los,
                     statisticsFileName: $"mino_blank_{val}",
@@ -68,7 +71,7 @@ namespace Maes.Experiments.Exploration
                         5,
                         new Vector2Int(0, 0),
                         _ => new MinotaurAlgorithm(los, 4))));
-                simulator.EnqueueScenario(new MySimulationScenario(val,
+                scenarios.Add(new MySimulationScenario(val,
                     mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
                     robotConstraints: los,
                     statisticsFileName: $"greed_blank_{val}",
@@ -80,7 +83,7 @@ namespace Maes.Experiments.Exploration
             }
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+            scenarios.Add(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                  buildingConfig,
@@ -91,6 +94,7 @@ namespace Maes.Experiments.Exploration
                 statisticsFileName: "delete-me",
                 robotConstraints: los));
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
 
             //simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);
