@@ -41,12 +41,12 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         public int PostUpdateOrder => -450;
 
-        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, int delay = 1)
+        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, int seed, int delay = 1)
         {
             _controller = controller;
             _partitionIds = vertices.Select(v => v.Partition).Distinct().ToList();
             _delay = delay;
-            _random = new Random();
+            _random = new Random(seed);
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
