@@ -23,6 +23,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Map;
+
 using UnityEngine;
 
 namespace Maes.Utilities
@@ -77,6 +79,13 @@ namespace Maes.Utilities
         public static int ManhattanDistance(Vector2Int v1, Vector2Int v2)
         {
             return Math.Abs(v1.x - v2.x) + Math.Abs(v1.y - v2.y);
+        }
+
+        public static float EuclideanDistance(Vertex vertexA, Vertex vertexB)
+        {
+            float dx = vertexA.Position.x - vertexB.Position.x;
+            float dy = vertexA.Position.y - vertexB.Position.y;
+            return MathF.Sqrt(dx * dx + dy * dy);
         }
     }
 }
