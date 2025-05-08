@@ -12,6 +12,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly IRobotController _controller;
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly int _delay;
+        private readonly Random _random;
         private readonly IReadOnlyDictionary<(int, int), float> _probabilityForPartitionSwitch;
 
         public int PreUpdateOrder => -450;
@@ -23,6 +24,7 @@ namespace Maes.Algorithms.Patrolling.Components
             _controller = controller;
             _partitionIds = vertices.Select(v => v.Partition).Distinct().ToList();
             _delay = delay;
+            _random = new Random();
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -36,14 +38,13 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private void SwitchPartition()
         {
-            var random = new Random();
             var amountOfPartitions = _partitionIds.Count;
             if (amountOfPartitions < 2)
             {
                 return;
             }
 
-            var randomPartitionId = _partitionIds[random.Next(0, amountOfPartitions - 1)];
+            var randomPartitionId = _partitionIds[_random.Next(0, amountOfPartitions)];
             if (_controller.AssignedPartition == randomPartitionId)
             {
                 return;
