@@ -58,7 +58,6 @@ namespace Maes.Experiments.Exploration
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
             var random = new System.Random(randomSeed);
             const int robotCount = 1;
             const int size = 75;
@@ -76,7 +75,7 @@ namespace Maes.Experiments.Exploration
                 spawningPosList.Add(new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)));
             }
 
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+            var scenarios = new MySimulationScenario[] {new(seed: 123,
                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                              robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                                                  collisionMap: buildingConfig,
@@ -85,8 +84,9 @@ namespace Maes.Experiments.Exploration
                                                                  spawnPositions: spawningPosList,
                                                                  createAlgorithmDelegate: algorithm),
                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnApart",
-                                                             robotConstraints: robotConstraints)
-            );
+                                                             robotConstraints: robotConstraints)};
+
+            var simulator = new MySimulator(scenarios);
 
             simulator.PressPlayButton(); // Instantly enter play mode
         }

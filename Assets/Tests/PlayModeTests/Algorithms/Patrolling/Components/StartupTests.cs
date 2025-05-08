@@ -22,13 +22,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
     {
         private PatrollingSimulator _simulator;
 
-        private List<TestingAlgorithm> _algorithms;
+        private readonly List<TestingAlgorithm> _algorithms = new();
 
-        [SetUp]
-        public void Setup()
+        private void Setup(IReadOnlyList<PatrollingSimulationScenario> scenarios)
         {
-            _simulator = new PatrollingSimulator();
-            _algorithms = new List<TestingAlgorithm>();
+            _simulator = new PatrollingSimulator(scenarios);
         }
 
         [TearDown]
@@ -41,7 +39,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         [Test(ExpectedResult = null)]
         public IEnumerator TestComponent()
         {
-            EnqueueScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), new Vector2Int(1, 8), new Vector2Int(15, 8));
+            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), new Vector2Int(1, 8), new Vector2Int(15, 8));
+            Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             // This waits an unknown amount of ticks
@@ -71,13 +70,13 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         }
 
 
-        private void EnqueueScenario(Bitmap bitmap, params Vector2Int[] robotPositions)
+        private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, params Vector2Int[] robotPositions)
         {
             var tilemap = Utilities.BitmapToTilemap(bitmap);
 
             var robotSpawnPositions = robotPositions.ToList();
 
-            _simulator.EnqueueScenario(new PatrollingSimulationScenario(
+            return new PatrollingSimulationScenario(
                 seed: 123,
                 totalCycles: 4,
                 stopAfterDiff: false,
@@ -93,7 +92,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
                 CreateRobotConstraints(),
                 patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
-            ));
+            );
         }
 
         private static RobotConstraints CreateRobotConstraints()

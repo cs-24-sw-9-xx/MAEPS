@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Robot;
@@ -45,7 +46,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots
         [SetUp]
         public void InitializeTestingSimulator()
         {
-            _maes = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
             for (var i = 0; i < _scenarioToRun; i++)
             {
                 var testingScenario = new MySimulationScenario(RandomSeed,
@@ -55,8 +56,10 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, _robotsToSpawn,
                         Vector2Int.zero, _ => new TestingAlgorithm()),
                     faultInjection: new DestroyRobotsRandomFaultInjection(RandomSeed, Probability, InvokeEvery, _robotsToDestroy));
-                _maes.EnqueueScenario(testingScenario);
+                scenarios.Add(testingScenario);
             }
+
+            _maes = new MySimulator(scenarios);
         }
 
         [TearDown]

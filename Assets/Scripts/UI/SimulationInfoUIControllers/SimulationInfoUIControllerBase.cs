@@ -62,6 +62,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void Start()
         {
+#if !UNITY_SERVER
             _stickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
 
             _robotControllerValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("RobotControllerValueLabel");
@@ -77,6 +78,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             });
 
             AfterStart();
+#endif
         }
 
         public virtual void ClearSelectedRobot()

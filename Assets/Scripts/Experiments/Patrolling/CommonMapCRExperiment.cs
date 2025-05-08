@@ -59,7 +59,8 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
+
             var random = new System.Random(12345);
 
             var algoName = "conscientious_reactive";
@@ -89,7 +90,7 @@ namespace Maes.Experiments.Patrolling
             {
                 var mapName = mapNames[mapIndex];
                 var val = random.Next(0, 1000000);
-                simulator.EnqueueScenario(
+                scenarios.Add(
                     new MySimulationScenario(
                         seed: val,
                         totalCycles: 4,
@@ -116,6 +117,7 @@ namespace Maes.Experiments.Patrolling
                 spawningPosList.Add(new Vector2Int(random.Next(-mapSizeX / 2, mapSizeX / 2), random.Next(-mapSizeY / 2, mapSizeY / 2)));
             }
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }

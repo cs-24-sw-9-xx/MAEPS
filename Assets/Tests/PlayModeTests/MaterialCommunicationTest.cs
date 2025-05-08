@@ -102,15 +102,17 @@ namespace Tests.PlayModeTests
 
         private void InitSimulator(MapFactory mapFactory,
             List<Vector2Int> robotSpawnPositions,
-                Dictionary<uint, Dictionary<TileType, float>> attenuationDictionary = null,
+            Dictionary<uint, Dictionary<TileType, float>> attenuationDictionary = null,
             RobotConstraints.SignalTransmissionSuccessCalculator transmissionSuccessCalculatorFunc = null
-            )
+        )
         {
             _robotTestAlgorithms = new List<TestingAlgorithm>();
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
                 hasFinishedSim: _ => false,
-                robotConstraints: new RobotConstraints(materialCommunication: true, calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc, attenuationDictionary: attenuationDictionary, slamRayTraceRange: 0, mapKnown: true),
+                robotConstraints: new RobotConstraints(materialCommunication: true,
+                    calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc,
+                    attenuationDictionary: attenuationDictionary, slamRayTraceRange: 0, mapKnown: true),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 2,
                     _ =>
                     {
@@ -119,8 +121,8 @@ namespace Tests.PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
+
             _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
 
             // The first robot will broadcast immediately

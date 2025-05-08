@@ -101,7 +101,6 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
 
-            var simulator = new MySimulator();
             var random = new System.Random(12345);
             var mapSize = 100;
 
@@ -117,8 +116,9 @@ namespace Maes.Experiments.Patrolling
                 spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
             }
 
-            simulator.EnqueueScenario(
-                new MySimulationScenario(
+            var scenarios = new MySimulationScenario[]
+            {
+                new(
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
@@ -130,11 +130,9 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
-            );
-
-            simulator.EnqueueScenario(
-                new MySimulationScenario(
+                    statisticsFileName:
+                    $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
+                new(
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
@@ -146,9 +144,11 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig2),
                     robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
-            );
+                    statisticsFileName:
+                    $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
+            };
 
+            var simulator = new MySimulator(scenarios);
 
             simulator.PressPlayButton(); // Instantly enter play mode
         }

@@ -34,9 +34,11 @@ namespace Maes.UI
 
         private void Awake()
         {
+#if !UNITY_SERVER
             s_instance = this;
             _tooltip = GetComponent<UIDocument>().rootVisualElement.Q<Label>("Tooltip");
             HideTooltip();
+#endif
         }
 
         private void ShowTooltip(string text)
@@ -52,20 +54,26 @@ namespace Maes.UI
 
         private void Update()
         {
+#if !UNITY_SERVER
             // Have the tooltip follow the mouse-pointer around.
             var mousePosition = Mouse.current.position.ReadValue();
             _tooltip.style.top = Screen.height - mousePosition.y;
             _tooltip.style.left = mousePosition.x;
+#endif
         }
 
         public static void ShowTooltip_Static(string text)
         {
+#if !UNITY_SERVER
             s_instance.ShowTooltip(text);
+#endif
         }
 
         public static void HideTooltip_Static()
         {
+#if !UNITY_SERVER
             s_instance.HideTooltip();
+#endif
         }
     }
 }
