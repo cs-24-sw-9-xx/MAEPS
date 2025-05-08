@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Robot;
-using Maes.Utilities;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
@@ -13,7 +13,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly IReadOnlyList<Vertex> _vertices;
         private readonly int _probabilityFactor;
         private readonly int _delay;
-        private readonly Dictionary<(int, int), float> _probabilityForPartitionSwitch = new();
+        private readonly IReadOnlyDictionary<(int, int), float> _probabilityForPartitionSwitch;
 
         public int PreUpdateOrder => -250;
 
@@ -25,7 +25,7 @@ namespace Maes.Algorithms.Patrolling.Components
             _vertices = vertices;
             _probabilityFactor = probabilityFactor;
             _delay = delay;
-            CalculateClosestDistanceToPartitions();
+            _probabilityForPartitionSwitch = CalculateClosestDistanceToPartitions(vertices);
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -52,17 +52,12 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        private void CalculateClosestDistanceToPartitions()
+        private Dictionary<(int, int), float> CalculateClosestDistanceToPartitions(IReadOnlyCollection<Vertex> vertices)
         {
-            var partitions = new Dictionary<int, HashSet<Vertex>>();
-            foreach (var vertex in _vertices)
-            {
-                if (!partitions.ContainsKey(vertex.Partition))
-                {
-                    partitions[vertex.Partition] = new HashSet<Vertex>();
-                }
-                partitions[vertex.Partition].Add(vertex);
-            }
+            var probabilityForPartitionSwitch = new Dictionary<(int, int), float>();
+            var partitions = _vertices
+                .GroupBy(v => v.Partition)
+                .ToDictionary(g => g.Key, g => new HashSet<Vertex>(g));
 
             foreach (var partitionA in partitions.Keys)
             {
@@ -73,22 +68,30 @@ namespace Maes.Algorithms.Patrolling.Components
                         continue;
                     }
 
-                    var minDistance = float.MaxValue;
-                    foreach (var vertexA in partitions[partitionA])
-                    {
-                        foreach (var vertexB in partitions[partitionB])
-                        {
-                            var distance = Geometry.EuclideanDistance(vertexA, vertexB);
-                            if (distance < minDistance)
-                            {
-                                minDistance = distance;
-                            }
-                        }
-                    }
+                    var minDistance = CalculateMinimumDistance(partitions, partitionA, partitionB);
                     var switchProbability = 1 / minDistance * _probabilityFactor;
-                    _probabilityForPartitionSwitch[(partitionA, partitionB)] = switchProbability;
+                    probabilityForPartitionSwitch[(partitionA, partitionB)] = switchProbability;
                 }
             }
+            return probabilityForPartitionSwitch;
+        }
+
+        private float CalculateMinimumDistance(Dictionary<int, HashSet<Vertex>> partitions, int partitionA, int partitionB)
+        {
+            var minDistance = float.MaxValue;
+            foreach (var vertexA in partitions[partitionA])
+            {
+                foreach (var vertexB in partitions[partitionB])
+                {
+                    var distance = _controller.TravelEstimator.EstimateDistance(vertexA.Position, vertexB.Position) ?? float.MaxValue;
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                    }
+                }
+            }
+
+            return minDistance;
         }
     }
 }
