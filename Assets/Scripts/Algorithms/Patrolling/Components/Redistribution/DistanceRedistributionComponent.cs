@@ -69,8 +69,13 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     }
 
                     var minDistance = CalculateMinimumDistance(partitions, partitionA, partitionB);
-                    var switchProbability = 1 / minDistance * _probabilityFactor;
-                    probabilityForPartitionSwitch[(partitionA, partitionB)] = switchProbability;
+                    if (minDistance > 0)
+                    {
+                        var switchProbability = 1 / minDistance * _probabilityFactor;
+                        probabilityForPartitionSwitch[(partitionA, partitionB)] = switchProbability;
+                        continue;
+                    }
+                    probabilityForPartitionSwitch[(partitionA, partitionB)] = 0;
                 }
             }
             return probabilityForPartitionSwitch;
