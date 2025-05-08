@@ -53,6 +53,8 @@ namespace Maes.Algorithms.Patrolling
 
         protected int _logicTicks { get; private set; } = -1;
 
+        public int LogicTicks => _logicTicks;
+
         protected event OnReachVertex? OnReachVertexHandler;
         protected event OnTrackInfo? OnTrackInfoHandler;
 

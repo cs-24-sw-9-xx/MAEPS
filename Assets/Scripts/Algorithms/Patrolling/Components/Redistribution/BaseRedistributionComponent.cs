@@ -25,38 +25,52 @@ using System.Collections.Generic;
 using Maes.Map;
 using Maes.Robot;
 
-using UnityEngine;
-
-
 namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
-    /// Component responsible for redistributing robots to different partitions.
+    /// Base class for redistribution components. It handles the communication between robots and the redistribution logic.
+    /// The derived classes should implement the logic for updating the redistribution tracker on success and failure.
     /// </summary>
-    public sealed class PartitionRedistributionComponent : IComponent
+    public abstract class BaseRedistributionComponent : IComponent
     {
         // The value is the Id of the Partition and the float is the probability of the robot to redistribute to that partition.
-        private readonly Dictionary<int, float> _redistributionTracker;
+        protected readonly Dictionary<int, float> _redistributionTracker;
         private readonly IRobotController _controller;
-        private Partition _currentPartition = null!;
+        protected Partition _currentPartition = null!;
         private readonly HashSet<int> _currentPartitionIntersection;
         private float _trackerUpdateTimestamp = 0f;
         private readonly PatrollingMap _map;
+        private readonly IPatrollingAlgorithm _algorithm;
         private readonly Dictionary<int, bool> _receivedCommunication;
+        private readonly System.Random _random;
+
+        /// <summary>
+        /// Method to be implemented by derived classes to update the redistribution tracker on failure.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void UpdateTrackerOnFailure(int partitionId);
+
+        /// <summary>
+        /// Method to be implemented by derived classes to update the redistribution tracker on success.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract void UpdateTrackerOnSuccess(int partitionId);
 
         /// <inheritdoc />
-        public int PreUpdateOrder => -200;
+        public int PreUpdateOrder => -50;
 
         /// <inheritdoc />
-        public int PostUpdateOrder => -200;
+        public int PostUpdateOrder => -50;
 
-        public PartitionRedistributionComponent(IRobotController controller, PatrollingMap map)
+        public BaseRedistributionComponent(IRobotController controller, PatrollingMap map, IPatrollingAlgorithm algorithm, int seed)
         {
             _controller = controller;
             _redistributionTracker = new Dictionary<int, float>();
             _currentPartitionIntersection = new HashSet<int>();
             _receivedCommunication = new Dictionary<int, bool>();
             _map = map;
+            _algorithm = algorithm;
+            _random = new System.Random(seed);
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -126,13 +140,13 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     {
                         if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
                         {
-                            _redistributionTracker[partitionId] = -_currentPartition.CommunicationRatio[partitionId];
-                            _trackerUpdateTimestamp = Time.realtimeSinceStartup;
+                            UpdateTrackerOnSuccess(partitionId);
+                            _trackerUpdateTimestamp = _algorithm.LogicTicks;
                             _receivedCommunication[partitionId] = false;
                         }
                         else
                         {
-                            _redistributionTracker[partitionId] = +_currentPartition.CommunicationRatio[partitionId];
+                            UpdateTrackerOnFailure(partitionId);
                             if (SwitchPartition(partitionId))
                             {
                                 return;
@@ -146,7 +160,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private bool SwitchPartition(int partitionId)
         {
-            var randomValue = Random.value;
+            var randomValue = (float)_random.NextDouble();
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
