@@ -43,7 +43,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
                         spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => algorithm),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn")
+                    robotConstraints: robotConstraints, statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{RobotCount}-RandomRobotSpawn",
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
             )};
 
             _maes = new MySimulator(scenarios);
@@ -203,6 +204,56 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling
         public IEnumerator Test_CognitiveCoordinatedVirtualStigmergy_BuildingMap()
         {
             var simulation = EnqueueBuildingMapScenario(new CognitiveCoordinatedVirtualStigmergy(RobotCount));
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_SingleCycleTSP_CaveMap()
+        {
+            var simulation = EnqueueCaveMapScenario(new SingleCycleTSP());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_SingleCycleTSP_BuildingMap()
+
+        {
+            var simulation = EnqueueCaveMapScenario(new SingleCycleTSP());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_SingleCycleChristofides_CaveMap()
+        {
+            var simulation = EnqueueCaveMapScenario(new SingleCycleChristofides());
+            _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
+            while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
+            {
+                yield return null;
+            }
+            Assert.True(simulation.HasFinishedSim(), $"Simulation did not finish under {MaxSimulatedLogicTicks} ticks, indicating the robot is stuck.");
+        }
+
+        [Test(ExpectedResult = null)]
+        public IEnumerator Test_SingleCycleChristofides_BuildingMap()
+
+        {
+            var simulation = EnqueueCaveMapScenario(new SingleCycleChristofides());
             _maes.SimulationManager.AttemptSetPlayState(Maes.UI.SimulationPlayState.FastAsPossible);
             while (!simulation.HasFinishedSim() && simulation.SimulatedLogicTicks < MaxSimulatedLogicTicks)
             {
