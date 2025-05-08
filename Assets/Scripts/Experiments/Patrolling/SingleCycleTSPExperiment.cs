@@ -57,7 +57,6 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
             var random = new System.Random(12345);
             var mapSize = 50;
 
@@ -70,8 +69,8 @@ namespace Maes.Experiments.Patrolling
                 spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
             }
 
-            simulator.EnqueueScenario(
-                new MySimulationScenario(
+            var scenarios = new List<MySimulationScenario>(){
+                new(
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
@@ -84,9 +83,10 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
-            );
-
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap
+                ),
+            };
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }
