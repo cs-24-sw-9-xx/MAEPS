@@ -25,6 +25,7 @@ using System.Collections.Generic;
 using Maes.Algorithms;
 using Maes.UI;
 using Maes.UI.SimulationInfoUIControllers;
+using Maes.Utilities;
 
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -83,6 +84,10 @@ namespace Maes.Simulation
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics2D.simulationMode = SimulationMode2D.Script;
 
+            // Group all scenarios into one experiment folder:
+            // data/experimentName/scenario_name/some_data_file.csv
+            PrependExperimentFolderNameToStatisticsFileName();
+
             // Adapt UI for ros mode
             if (GlobalSettings.IsRosMode)
             {
@@ -90,6 +95,15 @@ namespace Maes.Simulation
                 RemoveFastForwardButtonsFromControlPanel();
             }
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
+        }
+
+        private void PrependExperimentFolderNameToStatisticsFileName()
+        {
+            var experimentName = "experiment-" + TimeUtilities.GetCurrentTimeUTC();
+            foreach (var item in InitialScenarios)
+            {
+                item.StatisticsFileName = $"{experimentName}/{item.StatisticsFileName}";
+            }
         }
 
         private void RemoveFastForwardButtonsFromControlPanel()
