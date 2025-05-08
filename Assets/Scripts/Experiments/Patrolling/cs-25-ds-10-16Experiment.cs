@@ -56,8 +56,9 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
+
             var scenarios = new List<MySimulationScenario>();
-            var random = new System.Random(12345);
+
             const int seed = 123;
             const int cycles = 100;
 
@@ -99,8 +100,6 @@ namespace Maes.Experiments.Patrolling
                 
             };
 
-            var pos = new Vector2Int(0, 0);
-
             foreach (var robotCount in robotCounts)
             {
                 foreach (var partitions in partitionsCounts)
@@ -118,10 +117,9 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
-                                                suggestedStartingPoint: pos,
                                                 numberOfRobots: robotCount,
                                                 createAlgorithmDelegate: _ => redisAlg),
                                             mapSpawner: generator => generator.GenerateMap((Tile[,])mapConfig, seed,
@@ -137,7 +135,7 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsInBiggestRoom(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
                                                 numberOfRobots: robotCount,
@@ -154,10 +152,9 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
-                                                suggestedStartingPoint: pos,
                                                 numberOfRobots: robotCount,
                                                 createAlgorithmDelegate: _ => redisAlg),
                                             mapSpawner: generator => generator.GenerateMap((BuildingMapConfig)mapConfig),
