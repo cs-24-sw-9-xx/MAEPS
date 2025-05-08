@@ -25,7 +25,7 @@ using System.Linq;
 
 using Maes.Robot;
 
-namespace Maes.Algorithms.Patrolling.Components
+namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
     /// Global component responsible for managing robot redistribution across partitions and tracking heartbeats.
