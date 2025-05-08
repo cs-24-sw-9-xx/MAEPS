@@ -54,7 +54,7 @@ namespace Maes.Map.RobotSpawners
             _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
 
-        public List<MonaRobot> SpawnRobotsAPart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnRobotsApart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
         {
             var robots = new List<MonaRobot>();
 

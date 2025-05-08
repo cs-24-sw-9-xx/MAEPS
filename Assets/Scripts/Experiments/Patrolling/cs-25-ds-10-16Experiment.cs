@@ -117,7 +117,7 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsAPart(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
                                                 numberOfRobots: 8,
@@ -135,7 +135,7 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsAPart(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
                                                 numberOfRobots: robotCount,
@@ -152,7 +152,7 @@ namespace Maes.Experiments.Patrolling
                                             totalCycles: cycles,
                                             partitions: partitions,
                                             stopAfterDiff: false,
-                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsAPart(
+                                            robotSpawner: (map, spawner) => spawner.SpawnRobotsApart(
                                                 collisionMap: map,
                                                 seed: seed,
                                                 numberOfRobots: robotCount,
