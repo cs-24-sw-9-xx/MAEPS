@@ -55,7 +55,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 _movementComponent.AbortCurrentTask(new AbortingTask(targetVertex, true));
                 return;
             }
-            
+
             // Broadcast the message to other robots that this robot is going to the target vertex and the distance to the vertex.
             _controller.Broadcast(new GoingToVertexMessage(targetVertex.Position, distanceToVertex, _controller.Id));
         }

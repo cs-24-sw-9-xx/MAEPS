@@ -142,6 +142,19 @@ namespace Maes.Algorithms.Patrolling.Components
                     }
                 }
 
+                if (AbortingTask != null)
+                {
+                    var reachedByOther = AbortingTask.Value.ReachedByOther;
+                    AbortingTask = null;
+                    if (reachedByOther)
+                    {
+                        foreach (var condition in RecoverAfterOtherReachedTarget(path))
+                        {
+                            yield return condition;
+                        }
+                    }
+                }
+
                 // Move to the start of the path
                 foreach (var condition in MoveToPosition(path.Peek().Start))
                 {
