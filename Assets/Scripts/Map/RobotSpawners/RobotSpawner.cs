@@ -81,19 +81,17 @@ namespace Maes.Map.RobotSpawners
 
             for (var i = 0; i < numberOfRobots; i++)
             {
-                var newSpawn = possibleSpawnTiles[random.Next(0, possibleSpawnTiles.Count)];
+                Vector2Int newSpawn;
 
-                var isInList = spawnPositions.Contains(newSpawn);
-
-                while (isInList)
+                do
                 {
                     newSpawn = possibleSpawnTiles[random.Next(0, possibleSpawnTiles.Count)];
-
-                    isInList = spawnPositions.Contains(newSpawn);
                 }
+                while (spawnPositions.Contains(newSpawn));
 
                 spawnPositions.Add(newSpawn);
             }
+
 
             // ROS uses a rotated coordinate system, and the spawn points are given in ROS Coordinates
             if (GlobalSettings.IsRosMode)
