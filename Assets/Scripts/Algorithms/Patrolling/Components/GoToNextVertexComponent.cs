@@ -128,7 +128,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 _patrollingAlgorithm.OnReachTargetVertex(ApproachingVertex);
                 var path = GetPathStepsToVertex(ApproachingVertex, targetVertex);
                 ApproachingVertex = targetVertex;
-                
+
                 if (AbortingTask != null)
                 {
                     var reachedByOther = AbortingTask.Value.ReachedByOther;
