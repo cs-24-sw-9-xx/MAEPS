@@ -19,16 +19,16 @@ namespace Maes.Statistics.Patrolling
         [Index(6)]
         public int NumberOfRobots { get; }
 
-        public PatrollingSnapShot(int tick, float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
-            float averageWorstGraphIdleness, int completedCycles, int numberOfRobots,
-            bool? agentsInterconnected = null, float? biggestClusterPercentage = null) : base(tick,
+        public PatrollingSnapShot(int tick, bool? agentsInterconnected, float? biggestClusterPercentage,
+            float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
+            float averageGraphIdleness, int completedCycles, int numberOfRobots) : base(tick,
             agentsInterconnected, biggestClusterPercentage)
         {
             GraphIdleness = graphIdleness;
             WorstGraphIdleness = worstGraphIdleness;
             TotalDistanceTraveled = totalDistanceTraveled;
             CompletedCycles = completedCycles;
-            AverageGraphIdleness = averageWorstGraphIdleness;
+            AverageGraphIdleness = averageGraphIdleness;
             NumberOfRobots = numberOfRobots;
         }
     }
