@@ -39,9 +39,11 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
+
         public GlobalRedistributionComponent(IRobotController controller, int timeOut, int logicTick, HeartBeatComponent heartbeatComponent)
         {
             _controller = controller;
+            //TODO: FIX this to use the logic ticks from the algorithm
             _logicTick = logicTick;
             _heartbeatComponent = heartbeatComponent;
             _timeOut = timeOut + controller.Id;

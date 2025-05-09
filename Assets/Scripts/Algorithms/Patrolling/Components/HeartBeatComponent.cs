@@ -39,6 +39,7 @@ namespace Maes.Algorithms.Patrolling.Components
         public HeartBeatComponent(IRobotController controller, int logicTick, int delay = 1)
         {
             _controller = controller;
+            //TODO: FIX this to use the logic ticks from the algorithm
             _logicTick = logicTick;
             _delay = delay;
         }
