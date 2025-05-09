@@ -92,13 +92,14 @@ namespace Maes.Experiments.Exploration
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
 
+            var scenarios = new List<MySimulationScenario>();
+
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
                     { "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) },
                     { "minotaur", _ => new MinotaurAlgorithm(constraintsDict[constraintName], 2) },
                     { "greed", _ => new GreedAlgorithm() }
                 };
-            var simulator = new MySimulator();
             var random = new System.Random(1234);
             var randNumbers = new List<int>();
             for (var i = 0; i < 100; i++)
@@ -139,7 +140,7 @@ namespace Maes.Experiments.Exploration
 
                     if (robotCount == 5 && mapConfig.RandomSeed == 585462)
                     {
-                        simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                        scenarios.Add(new MySimulationScenario(seed: 123,
                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                 buildingConfig,
@@ -152,7 +153,7 @@ namespace Maes.Experiments.Exploration
                     }
                     else
                     {
-                        simulator.EnqueueScenario(
+                        scenarios.Add(
                         new MySimulationScenario(seed: 123,
                             mapSpawner: generator => generator.GenerateMap(mapConfig),
                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
@@ -170,7 +171,7 @@ namespace Maes.Experiments.Exploration
                         spawningPosHashSet.Add(new Vector2Int(random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2), random.Next(-mapConfig.HeightInTiles / 2, mapConfig.HeightInTiles / 2)));
                     }
 
-                    simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+                    scenarios.Add(new MySimulationScenario(seed: 123,
                                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
                                         collisionMap: buildingConfig,
@@ -185,7 +186,7 @@ namespace Maes.Experiments.Exploration
 
             //Just code to make sure we don't get too many maps of the last one in the experiment
             var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
-            simulator.EnqueueScenario(new MySimulationScenario(seed: 123,
+            scenarios.Add(new MySimulationScenario(seed: 123,
                 mapSpawner: generator => generator.GenerateMap(dumpMap),
                 robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                                                                     buildingConfig,
@@ -196,6 +197,7 @@ namespace Maes.Experiments.Exploration
                 statisticsFileName: $"delete-me",
                 robotConstraints: constraintsDict[constraintName]));
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
 
             //simulator.GetSimulationManager().AttemptSetPlayState(SimulationPlayState.FastAsPossible);

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Robot;
 
@@ -28,7 +29,7 @@ namespace Maes.Algorithms.Patrolling
         protected PatrollingMap _patrollingMap = null!;
 
         // Set by SetController
-        private Robot2DController _controller = null!;
+        protected Robot2DController _controller = null!;
 
         /// <summary>
         /// Allow NextVertex to return a vertex that is not from _vertices.
@@ -53,6 +54,7 @@ namespace Maes.Algorithms.Patrolling
         protected int _logicTicks { get; private set; } = -1;
 
         protected event OnReachVertex? OnReachVertexHandler;
+        protected event OnTrackInfo? OnTrackInfoHandler;
 
         protected abstract IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap);
 
@@ -113,6 +115,16 @@ namespace Maes.Algorithms.Patrolling
         public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
         {
             OnReachVertexHandler += onReachVertex;
+        }
+
+        public void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo)
+        {
+            OnTrackInfoHandler += onTrackInfo;
+        }
+
+        protected void TrackInfo(ITrackInfo objectToLog)
+        {
+            OnTrackInfoHandler?.Invoke(objectToLog);
         }
 
         public void OnReachTargetVertex(Vertex vertex, Vertex nextVertex)

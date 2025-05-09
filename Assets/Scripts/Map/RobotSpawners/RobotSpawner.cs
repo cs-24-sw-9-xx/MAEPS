@@ -54,6 +54,78 @@ namespace Maes.Map.RobotSpawners
             _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
 
+        public List<MonaRobot> SpawnRobotsApart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        {
+            var robots = new List<MonaRobot>();
+
+            // Get all spawnable tiles. We cannot spawn adjacent to a wall
+            var possibleSpawnTiles = new List<Vector2Int>();
+            for (var x = 0; x < collisionMap.WidthInTiles; x++)
+            {
+                for (var y = 0; y < collisionMap.HeightInTiles; y++)
+                {
+                    if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
+                    {
+                        possibleSpawnTiles.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            // Remove the edges to make sure the robots are not in a solid coarse tile
+            var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
+            possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
+
+            var spawnPositions = new List<Vector2Int>();
+
+            var random = new System.Random(seed);
+
+            for (var i = 0; i < numberOfRobots; i++)
+            {
+                Vector2Int newSpawn;
+
+                do
+                {
+                    newSpawn = possibleSpawnTiles[random.Next(0, possibleSpawnTiles.Count)];
+                }
+                while (spawnPositions.Contains(newSpawn));
+
+                spawnPositions.Add(newSpawn);
+            }
+
+
+            // ROS uses a rotated coordinate system, and the spawn points are given in ROS Coordinates
+            if (GlobalSettings.IsRosMode)
+            {
+                spawnPositions = spawnPositions.Select(FromRosCoord).ToList();
+            }
+
+            var robotId = 0;
+            var colors = ColorGenerator.GenerateColors(numberOfRobots);
+            for (var i = 0; i < spawnPositions.Count; i++)
+            {
+                var spawn = spawnPositions[i];
+                var spawnTile = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).First();
+
+                var robotSeed = seed + robotId;
+                var robot = CreateRobot(
+                    x: spawnTile.x,
+                    y: spawnTile.y,
+                    relativeSize: RobotConstraints.AgentRelativeSize,
+                    robotId: robotId,
+                    algorithm: createAlgorithmDelegate(robotSeed),
+                    collisionMap: collisionMap,
+                    seed: robotSeed,
+                    color: colors[i]
+                );
+                robots.Add(robot);
+
+                robotId++;
+            }
+
+
+            return robots;
+        }
+
         public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();

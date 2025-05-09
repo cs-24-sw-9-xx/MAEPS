@@ -28,7 +28,12 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
-    public class CollisionRecoveryComponent : IComponent
+    public interface ICollisionRecoveryComponent : IComponent
+    {
+        public bool DoingCollisionRecovery { get; }
+    }
+
+    public class CollisionRecoveryComponent : ICollisionRecoveryComponent
     {
         // How close the robot has to get to a point before it has arrived.
         private const float MinDistance = 0.25f;
@@ -36,7 +41,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
 
-        private bool _doingCollisionRecovery;
+        public bool DoingCollisionRecovery { get; private set; }
 
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
@@ -54,7 +59,7 @@ namespace Maes.Algorithms.Patrolling.Components
             {
                 if (_controller.IsCurrentlyColliding)
                 {
-                    _doingCollisionRecovery = true;
+                    DoingCollisionRecovery = true;
 
                     _controller.StopCurrentTask();
                     yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
@@ -76,13 +81,13 @@ namespace Maes.Algorithms.Patrolling.Components
                 }
 
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, true);
-                _doingCollisionRecovery = false;
+                DoingCollisionRecovery = false;
             }
         }
 
         public void DebugInfo(StringBuilder stringBuilder)
         {
-            if (_doingCollisionRecovery)
+            if (DoingCollisionRecovery)
             {
                 stringBuilder.Append("Doing collision avoidance\n");
             }

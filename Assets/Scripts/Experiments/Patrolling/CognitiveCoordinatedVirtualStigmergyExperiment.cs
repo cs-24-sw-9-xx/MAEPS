@@ -56,7 +56,8 @@ namespace Maes.Experiments.Patrolling
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true);
 
-            var simulator = new MySimulator();
+            var scenarios = new List<MySimulationScenario>();
+
             var random = new System.Random(12345);
             var mapSize = 100;
 
@@ -69,7 +70,7 @@ namespace Maes.Experiments.Patrolling
                 spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
             }
 
-            simulator.EnqueueScenario(
+            scenarios.Add(
                 new MySimulationScenario(
                     seed: 123,
                     totalCycles: 4,
@@ -85,6 +86,7 @@ namespace Maes.Experiments.Patrolling
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
             );
 
+            var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
     }

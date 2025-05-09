@@ -53,8 +53,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
                     Vector2Int.zero, _ => new TestingAlgorithm()),
                 faultInjection: new DestroyRobotsRandomFaultInjection(RandomSeed, Probability, InvokeEvery, _robotsToDestroy));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
         }
 

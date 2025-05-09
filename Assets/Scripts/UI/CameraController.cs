@@ -82,6 +82,7 @@ namespace Maes.UI
         // Start is called before the first frame update
         private void Start()
         {
+#if !UNITY_SERVER
             _simulationManager = simulationManagerObject.GetComponent<ISimulationManager>();
 
             _leftButton = uiDocument.rootVisualElement.Q<Button>("MoveLeftButton");
@@ -109,6 +110,7 @@ namespace Maes.UI
             newRotation = transform.rotation;
             CameraInitialization();
             stickyCam = false;
+#endif
         }
 
         private void HandleButton(Button button, Direction direction)
@@ -144,6 +146,7 @@ namespace Maes.UI
         // Update is called once per frame
         private void Update()
         {
+#if !UNITY_SERVER
             var mouseWorldPosition = GetMouseWorldPosition();
             if (mouseWorldPosition != null)
             {
@@ -171,6 +174,7 @@ namespace Maes.UI
                 }
                 _simulationManager.CurrentSimulation?.ClearVisualTags();
             }
+#endif
         }
 
         private void HandleCameraSelect()

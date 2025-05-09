@@ -33,19 +33,16 @@ namespace Maes.Utilities
         /// <summary>
         /// Gets the vertex closest to the robot.
         /// </summary>
-        /// <remarks>
-        /// TODO: This does not take walls into account so it might not pick the best waypoint.
-        /// </remarks>
         /// <returns>The closest vertex.</returns>
-        public static Vertex GetClosestVertex(this Vertex[] vertices, Vector2Int fromPosition)
+        public static Vertex GetClosestVertex<T>(this Vertex[] vertices, EstimateToTargetDelegate<T> estimateToTarget) where T : IComparable<T>
         {
             var closestVertex = vertices[0];
-            var closestDistance = Vector2Int.Distance(fromPosition, closestVertex.Position);
+            var closestDistance = estimateToTarget(closestVertex.Position);
 
             foreach (var vertex in vertices.AsSpan(1))
             {
-                var distance = Vector2Int.Distance(fromPosition, vertex.Position);
-                if (!(distance < closestDistance))
+                var distance = estimateToTarget(closestVertex.Position);
+                if (distance.CompareTo(closestDistance) >= 0)
                 {
                     continue;
                 }
@@ -56,5 +53,7 @@ namespace Maes.Utilities
 
             return closestVertex;
         }
+
+        public delegate T EstimateToTargetDelegate<out T>(Vector2Int toPosition);
     }
 }

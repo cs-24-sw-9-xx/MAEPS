@@ -1,5 +1,3 @@
-using System;
-using System.Globalization;
 using System.IO;
 
 using Maes.Algorithms.Patrolling;
@@ -70,16 +68,16 @@ namespace Maes.Simulation.Patrolling
         protected override void CreateStatisticsFile()
         {
             Debug.Log("Creating statistics file");
-            var folderPath =
-                $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", CultureInfo.InvariantCulture)}";
-            Directory.CreateDirectory(folderPath);
+            Directory.CreateDirectory(StatisticsFolderPath);
 
-            var patrollingFilename = Path.Join(folderPath, "patrolling");
+            var patrollingFilename = Path.Join(StatisticsFolderPath, "patrolling");
             new PatrollingCsvDataWriter(this, patrollingFilename).CreateCsvFile();
 
+            var waypointFolderPath = Path.Join(StatisticsFolderPath, "waypoints/");
+            Directory.CreateDirectory(waypointFolderPath);
             foreach (var (point, snapShots) in PatrollingTracker.WaypointSnapShots)
             {
-                var waypointFilename = Path.Join(folderPath, $"waypoint_{point.x}_{point.y}");
+                var waypointFilename = Path.Join(waypointFolderPath, $"waypoint_{point.x}_{point.y}");
                 new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
             }
             // Todo: Save Graph

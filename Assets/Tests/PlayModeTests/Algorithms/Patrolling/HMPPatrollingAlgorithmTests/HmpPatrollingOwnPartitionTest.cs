@@ -25,6 +25,7 @@ using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
@@ -74,7 +75,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private void CreateAndEnqueueScenario()
         {
-            _maes = new PatrollingSimulator();
 
             var robotConstraints = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
@@ -93,7 +93,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
             var mapConfig = new BuildingMapConfig(123, widthInTiles: MapSize, heightInTiles: MapSize, brokenCollisionMap: false);
 
-            _maes.EnqueueScenario(
+            var scenarios = new[] {(
                 new PatrollingSimulationScenario(
                     seed: Seed,
                     totalCycles: TotalCycles,
@@ -108,7 +108,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
                     patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
-            );
+            )};
+
+            _maes = new PatrollingSimulator(scenarios);
         }
 
         private class TrackerVertices
@@ -186,6 +188,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public void SubscribeOnReachVertex(OnReachVertex onReachVertex)
             {
                 _algorithm.SubscribeOnReachVertex(onReachVertex);
+            }
+
+            public void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo)
+            {
+
             }
 
             public IEnumerable<WaitForCondition> PreUpdateLogic()

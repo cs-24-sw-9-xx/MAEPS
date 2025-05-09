@@ -52,8 +52,7 @@ namespace Tests.PlayModeTests
                     _ => new TestingAlgorithm()
                     ));
 
-            _maes = new ExplorationSimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new ExplorationSimulator(new[] { testingScenario });
             _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
         }
 

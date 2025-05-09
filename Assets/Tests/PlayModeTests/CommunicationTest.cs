@@ -92,8 +92,7 @@ namespace Tests.PlayModeTests
                         return algorithm;
                     }));
 
-            _maes = new MySimulator();
-            _maes.EnqueueScenario(testingScenario);
+            _maes = new MySimulator(new[] { testingScenario });
             _explorationSimulation = _maes.SimulationManager.CurrentSimulation;
 
             // The first robot will broadcast immediatealy
