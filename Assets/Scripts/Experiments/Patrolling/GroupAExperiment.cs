@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
@@ -41,48 +42,46 @@ namespace Maes.Experiments.Patrolling
     /// </summary>
     internal class GroupAExperiment : MonoBehaviour
     {
-        private const int AmountOfCycles = 4;
-        private readonly List<int> _mapSizes = new() { 50, 100, 200 };
-        private readonly List<int> _seeds = new() { 123, };
-        private readonly List<int> _robotCounts = new() { 1, 4, 8, 16 };
-        private readonly Dictionary<string, CreateAlgorithmDelegate> _algorithms = new Dictionary<string, CreateAlgorithmDelegate>
+        public GroupAExperiment()
         {
-            {nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm()}
-        };
+            _algorithms.Add(nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm());
+            _algorithms.Add(nameof(RandomReactive), (_) => new RandomReactive(_seeds.First()));
+        }
+
+        private const int AmountOfCycles = 4; // Should be changed to 1000 for the final experiment
+        private readonly List<int> _mapSizes = new() { 50, 100, 150, 200 };
+        private readonly int _standardMapSize = 100;
+        private readonly List<int> _seeds = new() { 123, 123456 };
+        private readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
+        private readonly int _standardRobotCount = 8;
+        private readonly string _standardRobotConstraintName = "Standard";
+        private readonly RobotConstraints _standardRobotConstraints = CreateRobotConstraints();
+        private readonly Dictionary<string, CreateAlgorithmDelegate> _algorithms = new Dictionary<string, CreateAlgorithmDelegate>();
 
         private void Start()
         {
-            var robotConstraintsDict = new Dictionary<string, RobotConstraints>();
-            robotConstraintsDict["Standard"] = CreateRobotConstraints();
-
             var scenarios = new List<MySimulationScenario>();
-            foreach (var (algorithmName, algorithm) in _algorithms)
+            foreach (var seed in _seeds)
             {
-                foreach (var mapSize in _mapSizes)
+                foreach (var (algorithmName, algorithm) in _algorithms)
                 {
                     foreach (var robotCount in _robotCounts)
                     {
-                        foreach (var seed in _seeds)
-                        {
-                            var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-                            foreach (var (constraintName, constraint) in robotConstraintsDict)
-                            {
-                                var scenario = new MySimulationScenario(
-                                    seed: seed,
-                                    totalCycles: AmountOfCycles,
-                                    stopAfterDiff: false,
-                                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                                        collisionMap: buildingConfig,
-                                        seed: seed,
-                                        numberOfRobots: robotCount,
-                                        createAlgorithmDelegate: algorithm),
-                                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                    robotConstraints: constraint,
-                                    statisticsFileName:
-                                    $"{algorithmName}-seed-{seed}-size-{mapSize}-robots-{robotCount}-constraints-{constraintName}-SpawnApart");
-                                scenarios.Add(scenario);
-                            }
-                        }
+                        var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: _standardMapSize, heightInTiles: _standardMapSize, brokenCollisionMap: false);
+                        var caveMapConfig = new CaveMapConfig(seed, widthInTiles: _standardMapSize, heightInTiles: _standardMapSize, brokenCollisionMap: false);
+                        var scenarioBuilding = CreateScenario(seed, algorithmName, algorithm, robotCount, buildingMapConfig);
+                        var scenarioCave = CreateScenario(seed, algorithmName, algorithm, robotCount, caveMapConfig);
+                        scenarios.Add(scenarioBuilding);
+                        scenarios.Add(scenarioCave);
+                    }
+                    foreach (var mapSize in _mapSizes)
+                    {
+                        var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+                        var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+                        var scenarioBuilding = CreateScenario(seed, algorithmName, algorithm, _standardRobotCount, buildingMapConfig);
+                        var scenarioCave = CreateScenario(seed, algorithmName, algorithm, _standardRobotCount, caveMapConfig);
+                        scenarios.Add(scenarioBuilding);
+                        scenarios.Add(scenarioCave);
                     }
                 }
             }
@@ -92,7 +91,41 @@ namespace Maes.Experiments.Patrolling
             simulator.PressPlayButton(); // Instantly enter play mode
         }
 
-        private RobotConstraints CreateRobotConstraints(float senseNearbyAgentsRange = 5f, bool senseNearbyAgentsBlockedByWalls = true, float communicationDistanceThroughWalls = 3f)
+        private MySimulationScenario CreateScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, int robotCount, BuildingMapConfig mapConfig)
+        {
+            return new MySimulationScenario(
+                                        seed: seed,
+                                        totalCycles: AmountOfCycles,
+                                        stopAfterDiff: false,
+                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                                            collisionMap: buildingConfig,
+                                            seed: seed,
+                                            numberOfRobots: robotCount,
+                                            createAlgorithmDelegate: algorithm),
+                                        mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                        robotConstraints: _standardRobotConstraints,
+                                        statisticsFileName:
+                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{_standardRobotConstraintName}-BuldingMap-SpawnApart");
+        }
+
+        private MySimulationScenario CreateScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, int robotCount, CaveMapConfig mapConfig)
+        {
+            return new MySimulationScenario(
+                                        seed: seed,
+                                        totalCycles: AmountOfCycles,
+                                        stopAfterDiff: false,
+                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                                            collisionMap: buildingConfig,
+                                            seed: seed,
+                                            numberOfRobots: robotCount,
+                                            createAlgorithmDelegate: algorithm),
+                                        mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                        robotConstraints: _standardRobotConstraints,
+                                        statisticsFileName:
+                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{_standardRobotConstraintName}-CaveMap-SpawnApart");
+        }
+
+        private static RobotConstraints CreateRobotConstraints(float senseNearbyAgentsRange = 5f, bool senseNearbyAgentsBlockedByWalls = true, float communicationDistanceThroughWalls = 3f)
         {
             return new RobotConstraints(
                 senseNearbyAgentsRange: senseNearbyAgentsRange,
