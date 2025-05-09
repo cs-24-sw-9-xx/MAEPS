@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
@@ -41,14 +42,17 @@ namespace Maes.Experiments.Patrolling
     /// </summary>
     internal class GroupAExperiment : MonoBehaviour
     {
+        public GroupAExperiment()
+        {
+            _algorithms.Add(nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm());
+            _algorithms.Add(nameof(RandomReactive), (_) => new RandomReactive(_seeds.First()));
+        }
+
         private const int AmountOfCycles = 4;
         private readonly List<int> _mapSizes = new() { 50, 100, 200 };
-        private readonly List<int> _seeds = new() { 123, };
+        private readonly List<int> _seeds = new() { 123, 123456 };
         private readonly List<int> _robotCounts = new() { 1, 4, 8, 16 };
-        private readonly Dictionary<string, CreateAlgorithmDelegate> _algorithms = new Dictionary<string, CreateAlgorithmDelegate>
-        {
-            {nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm()}
-        };
+        private readonly Dictionary<string, CreateAlgorithmDelegate> _algorithms = new Dictionary<string, CreateAlgorithmDelegate>();
 
         private void Start()
         {
