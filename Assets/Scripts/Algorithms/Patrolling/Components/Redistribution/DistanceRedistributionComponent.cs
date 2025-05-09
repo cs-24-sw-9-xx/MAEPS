@@ -36,31 +36,31 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly int _probabilityFactor;
         private readonly int _delay;
         private readonly IReadOnlyDictionary<(int, int), float> _probabilityForPartitionSwitch;
+        private readonly Random _random;
 
         public int PreUpdateOrder => -251;
 
         public int PostUpdateOrder => -251;
 
-        public DistanceRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, int probabilityFactor, int delay = 1)
+        public DistanceRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, int probabilityFactor, int seed = 123, int delay = 1)
         {
             _controller = controller;
             _vertices = vertices;
             _probabilityFactor = probabilityFactor;
             _delay = delay;
             _probabilityForPartitionSwitch = CalculateClosestDistanceToPartitions(vertices);
+            _random = new Random(seed);
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            var random = new Random();
-
             while (true)
             {
                 foreach (var ((fromPartition, toPartition), probability) in _probabilityForPartitionSwitch)
                 {
                     if (_controller.AssignedPartition == fromPartition)
                     {
-                        var randomValue = (float)random.NextDouble();
+                        var randomValue = (float)_random.NextDouble();
 
                         if (randomValue < probability)
                         {
