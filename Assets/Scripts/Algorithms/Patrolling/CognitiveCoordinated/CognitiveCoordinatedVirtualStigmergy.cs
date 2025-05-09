@@ -57,7 +57,7 @@ namespace Maes.Algorithms.Patrolling
 
         private void UpdateLastTimeVisitedTick(int vertexId)
         {
-            _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertexId, _logicTicks);
+            _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertexId, LogicTicks);
         }
 
         public override void OccupyVertex(int robotId, Vertex vertex)

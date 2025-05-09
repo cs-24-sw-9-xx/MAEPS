@@ -175,6 +175,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public string AlgorithmName => _algorithm.AlgorithmName;
             public Vertex TargetVertex => _algorithm.TargetVertex;
             public Dictionary<int, Color32[]> ColorsByVertexId => _algorithm.ColorsByVertexId;
+
+            public int LogicTicks => throw new System.NotImplementedException();
+
             public void SetPatrollingMap(PatrollingMap map)
             {
                 _algorithm.SetPatrollingMap(map);

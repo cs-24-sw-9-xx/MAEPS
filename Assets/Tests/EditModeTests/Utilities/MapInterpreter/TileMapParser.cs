@@ -26,12 +26,21 @@
 using System;
 using System.Collections.Generic;
 
+using UnityEngine;
+
 namespace Tests.EditModeTests.Utilities.MapInterpreter
 {
     public class TileMapParser
     {
         public TileMapParser(string map, char delimiter = ';')
         {
+            // Check if editor is running under windows
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // Replace all \r\n with \n
+                map = map.Replace("\r\n", "\n");
+            }
+
             _lines = map.Split(delimiter, StringSplitOptions.RemoveEmptyEntries);
             Width = _lines[0].Length;
             Height = _lines.Length;

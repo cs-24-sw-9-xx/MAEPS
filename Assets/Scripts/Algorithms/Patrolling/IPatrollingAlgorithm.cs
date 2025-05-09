@@ -13,6 +13,8 @@ namespace Maes.Algorithms.Patrolling
     {
         string AlgorithmName { get; }
 
+        int LogicTicks { get; }
+
         /// <summary>
         /// Only to be used for visualization.
         /// </summary>
