@@ -48,6 +48,7 @@ namespace Maes.Algorithms.Patrolling
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
         public HMPPartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
         public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
                                                                            .VertexIds
@@ -60,6 +61,7 @@ namespace Maes.Algorithms.Patrolling
         private MeetingComponent _meetingComponent = null!;
         private MeetingObserverComponent _meetingObserverComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
+        private CollisionAvoidanceTargetSameVertexComponent _collisionAvoidanceTargetVertexComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
 
         private IRobotController _controller = null!;
@@ -74,9 +76,11 @@ namespace Maes.Algorithms.Patrolling
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => _logicTicks, EstimateTime, patrollingMap, _controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _meetingObserverComponent = new MeetingObserverComponent(-101, -101, _collisionRecoveryComponent, _goToNextVertexComponent, _meetingComponent);
+            _collisionAvoidanceTargetVertexComponent = new CollisionAvoidanceTargetSameVertexComponent(-101, -101, _goToNextVertexComponent, controller);
+            _meetingObserverComponent = new MeetingObserverComponent(-102, -102, _collisionRecoveryComponent, _goToNextVertexComponent, _meetingComponent);
 
-            return new IComponent[] { _partitionComponent, _meetingComponent, _meetingObserverComponent, _collisionRecoveryComponent, _goToNextVertexComponent };
+
+            return new IComponent[] { _partitionComponent, _meetingComponent, _collisionAvoidanceTargetVertexComponent, _meetingObserverComponent, _collisionRecoveryComponent, _goToNextVertexComponent };
         }
 
         private int? EstimateTime(Vector2Int start, Vector2Int target)

@@ -34,6 +34,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
     public sealed class PartitionedConscientiousReactive : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Test Partitioning Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
