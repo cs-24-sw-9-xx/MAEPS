@@ -51,7 +51,7 @@ namespace Maes.Algorithms.Patrolling
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
 
-        protected int _logicTicks { get; private set; } = -1;
+        public int LogicTicks { get; private set; } = -1;
 
         protected event OnReachVertex? OnReachVertexHandler;
         protected event OnTrackInfo? OnTrackInfoHandler;
@@ -134,7 +134,7 @@ namespace Maes.Algorithms.Patrolling
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {
-                vertex.VisitedAtTick(_logicTicks);
+                vertex.VisitedAtTick(LogicTicks);
             }
         }
 
@@ -144,7 +144,7 @@ namespace Maes.Algorithms.Patrolling
         {
             while (true)
             {
-                _logicTicks++;
+                LogicTicks++;
 
                 // Run components' PreUpdateLogic
                 // Stops if one has ShouldContinue = false
