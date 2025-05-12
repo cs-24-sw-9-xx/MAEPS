@@ -21,14 +21,13 @@
 // Jakob Meyer Olsen,
 //
 // Original repository: https://github.com/Molitany/MAES
-
-using System.Collections.Generic;
-
 using Maes.Algorithms.Patrolling;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
+
+using System.Collections.Generic;
 
 using UnityEngine;
 
@@ -70,8 +69,8 @@ namespace Maes.Experiments.Patrolling
             var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "Random-Redistribution-CR-Algo";
             const int robotCount = 4; // Change this to the desired number of robots
-           
-           // Scenario with 2 partitions
+
+            // Scenario with 2 partitions
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,

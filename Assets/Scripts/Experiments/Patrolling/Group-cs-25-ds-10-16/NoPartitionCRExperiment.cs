@@ -21,19 +21,18 @@
 // Jakob Meyer Olsen,
 //
 // Original repository: https://github.com/Molitany/MAES
-
-using System.Collections.Generic;
-
-using Maes.Algorithms.Patrolling;
-// using Maes.FaultInjections.DestroyRobots;
-using Maes.Map.Generators;
-using Maes.Robot;
 using Maes.Simulation.Patrolling;
-
-using UnityEngine;
 
 namespace Maes.Experiments.Patrolling
 {
+    using System.Collections.Generic;
+
+    using Maes.Algorithms.Patrolling;
+    using Maes.Map.Generators;
+    using Maes.Robot;
+
+    using UnityEngine;
+
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
@@ -69,7 +68,7 @@ namespace Maes.Experiments.Patrolling
 
             var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "No-Partition-CR-Algo";
-           
+
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
@@ -171,7 +170,7 @@ namespace Maes.Experiments.Patrolling
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{32}-SpawnTogether")
             );
-            
+
             var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
         }
