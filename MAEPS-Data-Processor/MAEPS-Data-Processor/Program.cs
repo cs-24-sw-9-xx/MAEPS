@@ -11,7 +11,19 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        Directory.SetCurrentDirectory(@"..\..\..\..\..\data");
+        // Change directory to the data folder
+        var directoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+        do
+        {
+            directoryInfo = directoryInfo.Parent;
+            if (directoryInfo == null)
+            {
+                throw new Exception("Could not find data folder");
+            }
+        } while (directoryInfo.Name != "MAEPS");
+        Console.WriteLine("Found data directory {0}", directoryInfo.FullName + "/data");
+        Directory.SetCurrentDirectory(directoryInfo.FullName + "/data");
+        
         foreach (var experimentDirectory in Directory.GetDirectories(Directory.GetCurrentDirectory()))
         {
             var summaries = new List<ExperimentSummary>();
