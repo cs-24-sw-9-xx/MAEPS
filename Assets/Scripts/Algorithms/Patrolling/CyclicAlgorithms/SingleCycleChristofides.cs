@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling
         /// <param name="startVertex"></param>
         protected override List<Vertex> CreatePatrollingCycle(Vertex startVertex)
         {
-            var verticesInPartition = _patrollingMap.Vertices.Where(v => v.Partition == startVertex.Partition).ToList();
+            var verticesInPartition = PatrollingMap.Vertices.Where(v => v.Partition == startVertex.Partition).ToList();
             var estimatedDistanceMatrix = EstimatedDistanceMatrix(verticesInPartition);
             var solution = Christofides(verticesInPartition, estimatedDistanceMatrix);
             return solution.Select(id => verticesInPartition.Single(v => v.Id == id)).ToList();

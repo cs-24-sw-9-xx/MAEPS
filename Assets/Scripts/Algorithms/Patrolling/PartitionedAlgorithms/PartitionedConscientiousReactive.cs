@@ -38,13 +38,13 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        private PartitionRedistributionComponent _redistributionComponent = null!;
+        private AdaptiveRedistributionFailureBasedComponent _redistributionComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new PartitionRedistributionComponent(controller, patrollingMap);
+            _redistributionComponent = new AdaptiveRedistributionFailureBasedComponent(controller, patrollingMap, this);
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _redistributionComponent };
         }

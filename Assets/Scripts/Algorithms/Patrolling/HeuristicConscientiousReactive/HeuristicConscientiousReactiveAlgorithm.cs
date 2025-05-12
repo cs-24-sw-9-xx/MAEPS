@@ -40,7 +40,6 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
         public override string AlgorithmName => "Heuristic Conscientious Reactive Algorithm";
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
-        private IRobotController _controller = null!;
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -48,7 +47,6 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
@@ -69,12 +67,12 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
         /// <returns></returns>
         private float DistanceEstimatorMethod(Vertex _, Vertex target)
         {
-            return _controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
+            return Controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
         }
 
         private float ActualDistanceMethod(Vertex source, Vertex target)
         {
-            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
+            if (PatrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
             {
                 return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
             }

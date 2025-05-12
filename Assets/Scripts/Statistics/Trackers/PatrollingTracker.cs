@@ -189,7 +189,7 @@ namespace Maes.Statistics.Trackers
 
         protected override void CreateSnapShot()
         {
-            SnapShots.Add(new PatrollingSnapShot(CurrentTick, CurrentGraphIdleness, WorstGraphIdleness,
+            SnapShots.Add(new PatrollingSnapShot(CurrentTick, null, null, CurrentGraphIdleness, WorstGraphIdleness,
                 TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
 
             foreach (var vertex in _vertices.Values)
