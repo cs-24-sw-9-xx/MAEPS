@@ -63,7 +63,6 @@ namespace Maes.Experiments.Patrolling
             var numberOfCycles = 10;
             var robotFailureRate = 0.05f;
             var robotFailureDuration = 1000;
-            var robotFailureCount = 2;
             var algo = new AdaptiveRedistributionSuccessBasedCRAlgo();
 
             var algoName = "Adaptive-Redistribution-Success-Based-CR-Algo";
@@ -72,6 +71,7 @@ namespace Maes.Experiments.Patrolling
             var caveConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             for (var robotCount = 1; robotCount <= 32; robotCount *= 2)
             {
+                var robotFailureCount = Mathf.Max(0, robotCount - 1);
                 var mapName = "BuildingMap";
                 var partitionNumber = 2;
 
