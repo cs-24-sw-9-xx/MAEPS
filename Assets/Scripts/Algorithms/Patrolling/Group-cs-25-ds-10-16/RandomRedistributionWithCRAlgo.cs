@@ -19,10 +19,11 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
-using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Map;
 using Maes.Robot;
+
 using System.Linq;
 
 namespace Maes.Algorithms.Patrolling
