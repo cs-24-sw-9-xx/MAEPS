@@ -113,8 +113,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
-                var atTicks = tickColorAssignment[vertexId] * globalMeetingIntervalTicks;
-                var meetingPoint = new MeetingPoint(vertexId, atTicks, startMeetingAfterTicks + atTicks, meetingRobotIds);
+                var meetingPoint = new MeetingPoint(vertexId, globalMeetingIntervalTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
                 foreach (var robotId in meetingRobotIds)
                 {
                     if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
