@@ -78,7 +78,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
 
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: _ => false,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, robotsToSpawn,
                     Vector2Int.zero, _ => new TestingAlgorithm((tick, _) => tracker.UpdateLogic(tick, spawner))),

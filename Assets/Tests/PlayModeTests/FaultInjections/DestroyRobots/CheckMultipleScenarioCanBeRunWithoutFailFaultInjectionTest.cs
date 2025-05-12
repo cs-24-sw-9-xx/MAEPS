@@ -51,7 +51,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots
             {
                 var testingScenario = new MySimulationScenario(RandomSeed,
                     mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                    hasFinishedSim: sim => sim.SimulatedLogicTicks > _robotsToSpawn,
+                    hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(sim => sim.SimulatedLogicTicks > _robotsToSpawn),
                     robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, _robotsToSpawn,
                         Vector2Int.zero, _ => new TestingAlgorithm()),

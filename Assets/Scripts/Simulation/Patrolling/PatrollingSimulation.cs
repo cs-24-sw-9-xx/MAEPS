@@ -54,16 +54,6 @@ namespace Maes.Simulation.Patrolling
         {
             return SelectedVertex != null;
         }
-        private bool _hasWrittenStats;
-
-        public override void OnSimulationFinished()
-        {
-            if (GlobalSettings.ShouldWriteCsvResults && !_hasWrittenStats)
-            {
-                CreateStatisticsFile();
-                _hasWrittenStats = true;
-            }
-        }
 
         protected override void CreateStatisticsFile()
         {

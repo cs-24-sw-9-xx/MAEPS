@@ -64,7 +64,7 @@ namespace Tests.PlayModeTests
         {
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: _ => false,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>

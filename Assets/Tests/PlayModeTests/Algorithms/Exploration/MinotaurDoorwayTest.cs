@@ -94,7 +94,7 @@ namespace Tests.PlayModeTests.Algorithms.Exploration
             var map = PgmMapFileLoader.LoadMapFromFileIfPresent(mapName + ".pgm");
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(map, RandomSeed),
-                hasFinishedSim: _ => false,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: constraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 1,
                     _ =>

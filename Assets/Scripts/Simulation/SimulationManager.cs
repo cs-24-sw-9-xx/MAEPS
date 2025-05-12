@@ -234,9 +234,14 @@ namespace Maes.Simulation
         // Calls update on all children of SimulationContainer that are of type SimulationUnit
         private bool UpdateSimulation()
         {
-            if (CurrentScenario != null && CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation))
+            if (CurrentScenario != null && CurrentSimulation != null && CurrentScenario.HasFinishedSim(CurrentSimulation, out var reason))
             {
-                CurrentSimulation.OnSimulationFinished();
+                if (!reason!.Value.Success)
+                {
+                    Debug.LogErrorFormat("Simulation did not complete successfully: {0}", reason.Value.Message);
+                }
+
+                CurrentSimulation.OnSimulationFinished(reason.Value.Success);
                 RemoveCurrentSimulation();
             }
 
