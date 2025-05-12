@@ -10,6 +10,7 @@ namespace Maes.Algorithms.Patrolling
     public sealed class CognitiveCoordinatedGlobal : CognitiveCoordinatedBase
     {
         public override string AlgorithmName => "Cognitive Coordinated (global knowledge) Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {

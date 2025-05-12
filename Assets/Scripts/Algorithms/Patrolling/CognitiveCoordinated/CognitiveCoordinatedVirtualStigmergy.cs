@@ -24,6 +24,7 @@ namespace Maes.Algorithms.Patrolling
 
         private readonly int _amountOfRobots;
         public override string AlgorithmName => "Cognitive Coordinated (virtual-stigmergy knowledge) Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
         private VirtualStigmergyComponent<int, int, OccupiedtilesVirtualStigmergy> _occupiedTilesVirtualStigmergyComponent = null!;
         private VirtualStigmergyComponent<int, int, VertexVirtualStigmergy> _vertexLastTimeVisitedVirtualStigmergyComponent = null!;
 

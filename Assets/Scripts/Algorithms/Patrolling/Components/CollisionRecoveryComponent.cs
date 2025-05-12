@@ -73,7 +73,7 @@ namespace Maes.Algorithms.Patrolling.Components
                         yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
                     }
 
-                    while (GetRelativePositionTo(_movementComponent.TargetPosition).Distance > MinDistance)
+                    while (GetRelativePositionTo(_movementComponent.TargetPosition).Distance > MinDistance && !(_movementComponent.AbortingTask?.ReachedByOther ?? false))
                     {
                         _controller.PathAndMoveTo(_movementComponent.TargetPosition, dependOnBrokenBehaviour: false);
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, false);

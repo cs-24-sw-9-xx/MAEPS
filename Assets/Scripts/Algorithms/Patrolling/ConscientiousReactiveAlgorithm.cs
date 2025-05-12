@@ -13,6 +13,7 @@ namespace Maes.Algorithms.Patrolling
     public sealed class ConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
         public override string AlgorithmName => "Conscientious Reactive Algorithm";
+        public override Vertex TargetVertex => _goToNextVertexComponent.ApproachingVertex;
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
