@@ -40,14 +40,16 @@ namespace Maes.Algorithms.Patrolling
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
+        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private RandomRedistributionComponent _redistributionComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
+            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, 1234, delay: 100);
 
-            return new IComponent[] { _goToNextVertexComponent, _redistributionComponent };
+            return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
 
         private static Vertex NextVertex(Vertex currentVertex)

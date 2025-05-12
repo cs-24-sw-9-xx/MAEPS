@@ -123,6 +123,7 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
+                    partitions: 4,
                     statisticsFileName:
                     $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
             };
