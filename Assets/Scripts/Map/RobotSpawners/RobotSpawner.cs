@@ -54,26 +54,12 @@ namespace Maes.Map.RobotSpawners
             _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
         }
 
-        public List<MonaRobot> SpawnRobotsApart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnRobotsApart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
 
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            var possibleSpawnTiles = new List<Vector2Int>();
-            for (var x = 0; x < collisionMap.WidthInTiles; x++)
-            {
-                for (var y = 0; y < collisionMap.HeightInTiles; y++)
-                {
-                    if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
-                    {
-                        possibleSpawnTiles.Add(new Vector2Int(x, y));
-                    }
-                }
-            }
-
-            // Remove the edges to make sure the robots are not in a solid coarse tile
-            var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
-            possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
+            var possibleSpawnTiles = PossibleSpawnTiles(collisionMap);
 
             var spawnPositions = new List<Vector2Int>();
 
@@ -99,31 +85,7 @@ namespace Maes.Map.RobotSpawners
                 spawnPositions = spawnPositions.Select(FromRosCoord).ToList();
             }
 
-            var robotId = 0;
-            var colors = ColorGenerator.GenerateColors(numberOfRobots);
-            for (var i = 0; i < spawnPositions.Count; i++)
-            {
-                var spawn = spawnPositions[i];
-                var spawnTile = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).First();
-
-                var robotSeed = seed + robotId;
-                var robot = CreateRobot(
-                    x: spawnTile.x,
-                    y: spawnTile.y,
-                    relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId,
-                    algorithm: createAlgorithmDelegate(robotSeed),
-                    collisionMap: collisionMap,
-                    seed: robotSeed,
-                    color: colors[i]
-                );
-                robots.Add(robot);
-
-                robotId++;
-            }
-
-
-            return robots;
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, spawnPositions, robots, dependOnBrokenBehavior);
         }
 
         public List<MonaRobot> SpawnRobotsAtPositions(List<Vector2Int> spawnPositions, SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
@@ -150,60 +112,49 @@ namespace Maes.Map.RobotSpawners
                 spawnPositions = spawnPositions.Select(FromRosCoord).ToList();
             }
 
-            // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            var possibleSpawnTiles = new List<Vector2Int>();
-            for (var x = 0; x < collisionMap.WidthInTiles; x++)
-            {
-                for (var y = 0; y < collisionMap.HeightInTiles; y++)
-                {
-                    if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
-                    {
-                        possibleSpawnTiles.Add(new Vector2Int(x, y));
-                    }
-                }
-            }
-
-            // Remove the edges to make sure the robots are not in a solid coarse tile
-            var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
-            possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
-
             // Offset suggested starting points
             if (dependOnBrokenBehavior)
             {
                 spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x - (int)collisionMap.ScaledOffset.x,
-                                                    pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
+                    pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
             }
             else
             {
                 spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x,
-                                                    pos.y)).ToList();
+                    pos.y)).ToList();
             }
 
-            var robotId = 0;
-            var colors = ColorGenerator.GenerateColors(spawnPositions.Count);
-            for (var i = 0; i < spawnPositions.Count; i++)
+            // Get all spawnable tiles. We cannot spawn adjacent to a wall
+            var possibleSpawnTiles = PossibleSpawnTiles(collisionMap);
+            var spawnTiles = new List<Vector2Int>();
+
+            for (var i = 0; i < numberOfRobots; i++)
             {
-                var spawn = spawnPositions[i];
-                var spawnTile = possibleSpawnTiles.OrderBy(tile => Vector2.Distance(tile, spawn)).First();
+                Vector2Int newSpawn = default;
+                var found = false;
 
-                var robotSeed = seed + robotId;
-                var robot = CreateRobot(
-                    x: spawnTile.x,
-                    y: spawnTile.y,
-                    relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: robotId,
-                    algorithm: createAlgorithmDelegate(robotSeed),
-                    collisionMap: collisionMap,
-                    seed: robotSeed,
-                    color: colors[i]
-                );
-                robots.Add(robot);
+                foreach (var tile in possibleSpawnTiles
+                             .OrderBy(c => ManhattanDistance(c, spawnPositions[i])))
+                {
+                    if (spawnTiles.Contains(tile))
+                    {
+                        continue;
+                    }
 
-                robotId++;
+                    newSpawn = tile;
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                {
+                    throw new Exception("No available unique spawn position found.");
+                }
+
+                spawnTiles.Add(newSpawn);
             }
 
-
-            return robots;
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, spawnTiles, robots, dependOnBrokenBehavior);
         }
 
         /// <summary>
@@ -215,7 +166,7 @@ namespace Maes.Map.RobotSpawners
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
-        public List<MonaRobot> SpawnRobotsInBiggestRoom(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnRobotsInBiggestRoom(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
 
@@ -243,30 +194,7 @@ namespace Maes.Map.RobotSpawners
                 return c1.x - c2.x;
             });
 
-
-            var colors = ColorGenerator.GenerateColors(numberOfRobots);
-            for (var i = 0; i < possibleSpawnTiles.Count; i++)
-            {
-                if (i == numberOfRobots)
-                {
-                    break;
-                }
-
-                var tile = possibleSpawnTiles[i];
-
-                robots.Add(CreateRobot(
-                    x: tile.x,
-                    y: tile.y,
-                    relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: i,
-                    algorithm: createAlgorithmDelegate(seed + i),
-                    collisionMap: collisionMap,
-                    seed: seed + i,
-                    color: colors[i]
-                ));
-            }
-
-            return robots;
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, possibleSpawnTiles, robots, dependOnBrokenBehavior);
         }
 
         /// <summary>
@@ -279,27 +207,11 @@ namespace Maes.Map.RobotSpawners
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
         /// <exception cref="ArgumentException">If not enough open tiles for the requested number of robots.</exception>
-        public List<MonaRobot> SpawnRobotsTogether(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, Vector2Int? suggestedStartingPoint, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnRobotsTogether(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, Vector2Int? suggestedStartingPoint, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
             // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            var possibleSpawnTiles = new List<Vector2Int>();
-
-            for (var x = 0; x < collisionMap.WidthInTiles; x++)
-            {
-                for (var y = 0; y < collisionMap.HeightInTiles; y++)
-                {
-                    if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
-                    {
-                        possibleSpawnTiles.Add(new Vector2Int(x, y));
-                    }
-
-                }
-            }
-
-            // Remove the edges to make sure the robots are not in a solid coarse tile
-            var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
-            possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
+            var possibleSpawnTiles = PossibleSpawnTiles(collisionMap);
 
             // If no suggestions made, simply spawn randomly
             var random = new System.Random(seed);
@@ -360,24 +272,7 @@ namespace Maes.Map.RobotSpawners
                 }
             }
 
-            var colors = ColorGenerator.GenerateColors(spawnTilesSelected.Count);
-            for (var i = 0; i < spawnTilesSelected.Count; i++)
-            {
-                var spawnTile = spawnTilesSelected[i];
-                var robot = CreateRobot(
-                    x: spawnTile.x,
-                    y: spawnTile.y,
-                    relativeSize: RobotConstraints.AgentRelativeSize,
-                    robotId: i,
-                    algorithm: createAlgorithmDelegate(seed + i),
-                    collisionMap: collisionMap,
-                    seed: seed + i,
-                    color: colors[i]
-                );
-                robots.Add(robot);
-            }
-
-            return robots;
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, spawnTilesSelected, robots, dependOnBrokenBehavior);
         }
 
         /// <summary>
@@ -389,7 +284,7 @@ namespace Maes.Map.RobotSpawners
         /// <param name="numberOfRobots">How many robots should be created. The map may not fit all robots, which would throw an exception</param>
         /// <param name="createAlgorithmDelegate">Used to inject the exploration algorithm into the robot controller</param>
         /// <returns>List of all robot game objects.</returns>
-        public List<MonaRobot> SpawnAtHallWayEnds(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate)
+        public List<MonaRobot> SpawnAtHallWayEnds(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
             var robots = new List<MonaRobot>();
 
@@ -420,6 +315,12 @@ namespace Maes.Map.RobotSpawners
             });
 
 
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, possibleSpawnTiles, robots, dependOnBrokenBehavior);
+        }
+
+        private List<MonaRobot> MonaRobots(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots,
+            CreateAlgorithmDelegate createAlgorithmDelegate, List<Vector2Int> possibleSpawnTiles, List<MonaRobot> robots, bool dependOnBrokenBehavior)
+        {
             var colors = ColorGenerator.GenerateColors(possibleSpawnTiles.Count);
             for (var i = 0; i < possibleSpawnTiles.Count; i++)
             {
@@ -431,8 +332,8 @@ namespace Maes.Map.RobotSpawners
                 var tile = possibleSpawnTiles[i];
 
                 robots.Add(CreateRobot(
-                    x: tile.x,
-                    y: tile.y,
+                    x: dependOnBrokenBehavior ? tile.x : tile.x - 0.5f, // adding 0.5 to stop robots spawning in walls
+                    y: dependOnBrokenBehavior ? tile.y : tile.y - 0.5f, // and not break tests
                     relativeSize: RobotConstraints.AgentRelativeSize,
                     robotId: i,
                     algorithm: createAlgorithmDelegate(seed + i),
@@ -522,6 +423,28 @@ namespace Maes.Map.RobotSpawners
             tfPublisher.m_RootGameObject = robot.transform.Find("base_footprint").gameObject;
             // Is disabled in awake, now enable component
             tfPublisher.enabled = true;
+        }
+
+        private static List<Vector2Int> PossibleSpawnTiles(SimulationMap<Tile> collisionMap)
+        {
+            var possibleSpawnTiles = new List<Vector2Int>();
+
+            for (var x = 0; x < collisionMap.WidthInTiles; x++)
+            {
+                for (var y = 0; y < collisionMap.HeightInTiles; y++)
+                {
+                    if (collisionMap.GetTileByLocalCoordinate(x, y).IsTrueForAll(tile => !Tile.IsWall(tile.Type)))
+                    {
+                        possibleSpawnTiles.Add(new Vector2Int(x, y));
+                    }
+
+                }
+            }
+
+            // Remove the edges to make sure the robots are not in a solid coarse tile
+            var edgeTiles = FindEdgeTiles(possibleSpawnTiles, true);
+            possibleSpawnTiles = possibleSpawnTiles.Except(edgeTiles).ToList();
+            return possibleSpawnTiles;
         }
 
         private static List<Vector2Int> FindEdgeTiles(List<Vector2Int> tiles, bool checkDiagonal)
