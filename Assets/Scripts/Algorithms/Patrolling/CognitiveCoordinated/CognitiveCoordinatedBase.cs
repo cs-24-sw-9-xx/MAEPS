@@ -28,11 +28,9 @@ namespace Maes.Algorithms.Patrolling
         // Set by CreateComponents
         protected GoToNextVertexComponent _goToNextVertexComponent = null!;
         protected CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        protected IRobotController _controller = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
@@ -61,7 +59,7 @@ namespace Maes.Algorithms.Patrolling
 
             var lastVertex = _currentPath.Last();
 
-            OccupyVertex(_controller.Id, lastVertex);
+            OccupyVertex(Controller.Id, lastVertex);
         }
 
         private Vertex HighestIdle(Vertex currentVertex)
@@ -69,7 +67,7 @@ namespace Maes.Algorithms.Patrolling
             var currentRobotPosition = currentVertex.Position;
 
             // excluding the vertices other agents are pathing towards and the current vertex
-            var availableVertices = GetUnoccupiedVertices(_controller.Id)
+            var availableVertices = GetUnoccupiedVertices(Controller.Id)
                 .Where(v => v != currentVertex)
                 .ToList();
 

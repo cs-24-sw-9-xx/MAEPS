@@ -75,7 +75,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected float[,] EstimatedDistanceMatrix(IReadOnlyList<Vertex> vertices)
         {
-            Debug.Assert(vertices.Max(v => v.Id) < _patrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
+            Debug.Assert(vertices.Max(v => v.Id) < PatrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
 
             var distanceMatrix = new float[vertices.Count, vertices.Count];
             foreach (var v1 in vertices)
@@ -88,7 +88,7 @@ namespace Maes.Algorithms.Patrolling
                     }
                     else
                     {
-                        distanceMatrix[v1.Id, v2.Id] = _controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position) ?? float.MaxValue;
+                        distanceMatrix[v1.Id, v2.Id] = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position) ?? float.MaxValue;
                     }
                 }
             }

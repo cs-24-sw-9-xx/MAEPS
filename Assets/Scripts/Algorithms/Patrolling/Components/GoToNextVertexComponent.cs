@@ -53,7 +53,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly PatrollingMap _patrollingMap;
         private readonly InitialVertexToPatrolDelegate _initialVertexToPatrolDelegate;
         public Vector2Int TargetPosition { get; private set; }
-        public Vertex ApproachingVertex { get; private set; }
+        public Vertex ApproachingVertex { get; private set; } = null!;
         private AbortingTask? _abortingTask;
 
         /// <summary>
