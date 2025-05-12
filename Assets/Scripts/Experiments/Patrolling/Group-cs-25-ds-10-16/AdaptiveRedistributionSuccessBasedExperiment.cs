@@ -23,7 +23,7 @@
 // Original repository: https://github.com/Molitany/MAES
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -53,7 +53,7 @@ namespace Maes.Experiments.Patrolling
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, _) => true,
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
                 robotCollisions: false);
 
             var scenarios = new List<MySimulationScenario>();
@@ -64,7 +64,7 @@ namespace Maes.Experiments.Patrolling
             var robotFailureRate = 0.05f;
             var robotFailureDuration = 1000;
             var robotFailureCount = 2;
-            var algo = new ConscientiousReactiveAlgorithm();
+            var algo = new AdaptiveRedistributionSuccessBasedCRAlgo();
 
             var algoName = "Adaptive-Redistribution-Success-Based-CR-Algo";
 

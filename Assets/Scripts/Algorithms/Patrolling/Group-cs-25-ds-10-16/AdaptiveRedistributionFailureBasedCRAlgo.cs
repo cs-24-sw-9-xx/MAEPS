@@ -21,7 +21,6 @@
 // Jakob Meyer Olsen,
 // 
 // Original repository: https://github.com/Molitany/MAES
-
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
@@ -31,9 +30,9 @@ using Maes.Robot;
 
 namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
 {
-    public sealed class PartitionedConscientiousReactive : PatrollingAlgorithm
+    public sealed class AdaptiveRedistributionFailureBasedCRAlgo : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Test Partitioning Algorithm";
+        public override string AlgorithmName => "Adaptive Redistribution Failure Based CR Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;

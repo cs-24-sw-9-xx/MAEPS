@@ -34,7 +34,7 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class GlobalRedistributionWithCRAlgo : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Random Redistribution Conscientious Reactive Algorithm";
+        public override string AlgorithmName => "Global Redistribution CR Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -44,9 +44,8 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            //TODO: FIX this to use the logic ticks from the algorithm
-            _heartbeatComponent = new HeartBeatComponent(controller, 1, delay: 90);
-            _redistributionComponent = new GlobalRedistributionComponent(controller, 100, 1, _heartbeatComponent);
+            _heartbeatComponent = new HeartBeatComponent(controller, this);
+            _redistributionComponent = new GlobalRedistributionComponent(controller, 100, this, _heartbeatComponent);
 
             return new IComponent[] { _goToNextVertexComponent, _redistributionComponent };
         }
