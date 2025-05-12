@@ -1,14 +1,20 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
+
+using Maes.Statistics.Patrolling;
+
+using ScottPlot;
 
 namespace MAEPS_Data_Processor;
 
 internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         Directory.SetCurrentDirectory(@"..\..\..\..\..\data");
         foreach (var experimentDirectory in Directory.GetDirectories(Directory.GetCurrentDirectory()))
         {
+            var summaries = new List<ExperimentSummary>();
             Console.WriteLine(experimentDirectory);
             foreach (var scenarioDirectory in Directory.GetDirectories(experimentDirectory))
             {
@@ -20,31 +26,69 @@ internal class Program
                 }
                 var data = CsvDataReader.ReadPatrollingCsv(Path.Combine(scenarioDirectory, "patrolling.csv"));
                 
-                var dataDict = new Dictionary<string, List<dynamic>>()
+                PlotWorstIdleness(scenarioDirectory, data);
+                PlotAverageIdleness(scenarioDirectory, data);
+                
+                var summary = new ExperimentSummary
                 {
-                    {"Tick", new List<dynamic>()},
-                    {"WorstGraphIdleness", new List<dynamic>()},
-                    {"AverageGraphIdleness", new List<dynamic>()}
+                    Algorithm = Path.GetFileName(scenarioDirectory),
+                    AverageIdleness = data.Last().AverageGraphIdleness,
+                    WorstIdleness = data.Max(ps => ps.WorstGraphIdleness),
+                    TotalDistanceTraveled = data.Last().TotalDistanceTraveled
                 };
-                
-                foreach (var item in data)
-                {
-                    dataDict["Tick"].Add(item.Tick);
-                    dataDict["WorstGraphIdleness"].Add(item.WorstGraphIdleness);
-                    dataDict["AverageGraphIdleness"].Add(item.AverageGraphIdleness);
-                }
-                
-
-                ScottPlot.Plot myPlot = new();
-                myPlot.Add.Scatter(dataDict["Tick"], dataDict["WorstGraphIdleness"]);
-
-                myPlot.Title("Worst Graph Idleness");
-                myPlot.XLabel("Tick");
-                myPlot.YLabel("Worst Graph Idleness");
-                
-
-                myPlot.Save(Path.Combine(scenarioDirectory, "test.pdf"), 1200, 600);
+                summaries.Add(summary);
+                GenerateSummary(scenarioDirectory, summaries.TakeLast(1));
             }
+            GenerateSummary(experimentDirectory, summaries);
+        }
+
+        void GenerateSummary(string path, IEnumerable
+            <ExperimentSummary> summaries)
+        {
+            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                HasHeaderRecord = true
+            };
+            
+            using var writer = new StreamWriter(Path.Combine(path, "summary.csv"));
+            using var csv = new CsvHelper.CsvWriter(writer, config);
+            // Write header and record
+            csv.WriteHeader<ExperimentSummary>();
+            csv.NextRecord();
+            foreach (var summary in summaries)
+            {
+                csv.WriteRecord(summary);
+                csv.NextRecord();
+            }
+
+        }
+
+        void PlotWorstIdleness(string path, List<PatrollingSnapShot> data)
+        {
+            Plot plot = new();
+            plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.WorstGraphIdleness).ToList());
+            
+            plot.Title("Worst Idleness");
+            plot.XLabel("Tick");
+            plot.YLabel("Worst Idleness");
+
+            var graphPath = Path.Combine(path, "WorstGraphIdleness.png");
+            Console.WriteLine("Saving to {0}", graphPath);
+            plot.Save(graphPath, 1200, 600);
+        }
+        
+        void PlotAverageIdleness(string path, List<PatrollingSnapShot> data)
+        {
+            Plot plot = new();
+            plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.AverageGraphIdleness).ToList());
+            
+            plot.Title("Average Idleness");
+            plot.XLabel("Tick");
+            plot.YLabel("Average Idleness");
+
+            var graphPath = Path.Combine(path, "AverageGraphIdleness.png");
+            Console.WriteLine("Saving to {0}", graphPath);
+            plot.Save(graphPath, 1200, 600);
         }
     }
 }
