@@ -29,7 +29,6 @@ namespace Maes.Algorithms.Patrolling
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _occupiedTilesVirtualStigmergyComponent = new VirtualStigmergyComponent<int, int, OccupiedtilesVirtualStigmergy>((_, localKnowledge, _) => localKnowledge, controller);
@@ -49,7 +48,7 @@ namespace Maes.Algorithms.Patrolling
                 else
                 {
                     // This is the case when the vertex was never visited by any robot (to this robots knowledge).
-                    result.Add((vertexId, _patrollingMap.Vertices.Single(v => v.Id == vertexId).LastTimeVisitedTick));
+                    result.Add((vertexId, PatrollingMap.Vertices.Single(v => v.Id == vertexId).LastTimeVisitedTick));
                 }
             }
             return result;
@@ -70,14 +69,14 @@ namespace Maes.Algorithms.Patrolling
         {
             return GetCurrentTileOccupancy()
                     .Where(p => p.Key != robotId)
-                    .Select(p => _patrollingMap.Vertices.Single(v => v.Id == p.Value))
+                    .Select(p => PatrollingMap.Vertices.Single(v => v.Id == p.Value))
                     .ToArray();
         }
 
         public override IEnumerable<Vertex> GetUnoccupiedVertices(int robotId)
         {
             var occupiedVertices = GetOccupiedVertices(robotId);
-            return _patrollingMap.Vertices.Except(occupiedVertices);
+            return PatrollingMap.Vertices.Except(occupiedVertices);
         }
 
         private Dictionary<int, int> GetCurrentTileOccupancy()

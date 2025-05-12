@@ -47,7 +47,7 @@ namespace Maes.Algorithms.Patrolling
         /// <param name="startVertex"></param>
         protected override List<Vertex> CreatePatrollingCycle(Vertex startVertex)
         {
-            var verticesInPartition = _patrollingMap.Vertices.Where(v => v.Partition == startVertex.Partition).ToList();
+            var verticesInPartition = PatrollingMap.Vertices.Where(v => v.Partition == startVertex.Partition).ToList();
             var bestPath = new List<Vertex>();
             var bestDistance = float.MaxValue;
             var estimatedDistanceMatrix = EstimatedDistanceMatrix(verticesInPartition);

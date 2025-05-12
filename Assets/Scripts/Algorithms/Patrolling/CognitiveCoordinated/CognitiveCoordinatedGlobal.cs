@@ -13,7 +13,6 @@ namespace Maes.Algorithms.Patrolling
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _controller = controller;
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, Coordinator.GlobalMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };

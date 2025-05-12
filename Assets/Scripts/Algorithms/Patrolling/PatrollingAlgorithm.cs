@@ -26,10 +26,10 @@ namespace Maes.Algorithms.Patrolling
         private PatrollingMap _globalMap = null!;
 
         // Set by SetPatrollingMap
-        protected PatrollingMap _patrollingMap = null!;
+        protected PatrollingMap PatrollingMap { get; private set; } = null!;
 
         // Set by SetController
-        protected Robot2DController _controller = null!;
+        protected Robot2DController Controller { get; private set; } = null!;
 
         /// <summary>
         /// Allow NextVertex to return a vertex that is not from _vertices.
@@ -83,26 +83,26 @@ namespace Maes.Algorithms.Patrolling
 
         public void SetController(Robot2DController controller)
         {
-            _controller = controller;
+            Controller = controller;
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (_patrollingMap != null)
+            if (PatrollingMap != null)
             {
-                SetComponents(CreateAllComponents(_controller, _patrollingMap));
+                SetComponents(CreateAllComponents(Controller, PatrollingMap));
             }
         }
 
         public void SetPatrollingMap(PatrollingMap map)
         {
-            _patrollingMap = map;
+            PatrollingMap = map;
 
             // Just to ensure we get no null reference exceptions.
             TargetVertex = map.Vertices[0];
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-            if (_controller != null)
+            if (Controller != null)
             {
-                SetComponents(CreateAllComponents(_controller, _patrollingMap));
+                SetComponents(CreateAllComponents(Controller, PatrollingMap));
             }
         }
 
@@ -258,7 +258,7 @@ namespace Maes.Algorithms.Patrolling
                     break;
                 case WaitForCondition.ConditionType.RobotStatus:
                     if (componentWaitForConditionState.ComponentWaitForCondition.Condition.RobotStatus ==
-                        _controller.Status)
+                        Controller.Status)
                     {
                         RunUpdateMethod(updateMethod, componentWaitForConditionState);
                     }

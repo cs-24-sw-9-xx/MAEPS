@@ -35,7 +35,6 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly int _delay;
         private readonly Random _random;
-        private readonly IReadOnlyDictionary<(int, int), float> _probabilityForPartitionSwitch;
 
         public int PreUpdateOrder => -450;
 

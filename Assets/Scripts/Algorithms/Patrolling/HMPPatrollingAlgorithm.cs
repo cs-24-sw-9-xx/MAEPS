@@ -51,7 +51,7 @@ namespace Maes.Algorithms.Patrolling
         public HMPPartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
         public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
                                                                            .VertexIds
-                                                                           .ToDictionary(vertexId => vertexId, _ => new[] { _controller.Color }) ?? new Dictionary<int, Color32[]>();
+                                                                           .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly IHMPPartitionGenerator _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
@@ -62,17 +62,14 @@ namespace Maes.Algorithms.Patrolling
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
 
-        private IRobotController _controller = null!;
-
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _controller = controller;
             _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap);
             _partitionGenerator.SetEstimates(EstimateTime, target => controller.EstimateTimeToTarget(target));
 
             _partitionComponent = new PartitionComponent(controller, _partitionGenerator);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, _controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _meetingObserverComponent = new MeetingObserverComponent(-101, -101, _collisionRecoveryComponent, _goToNextVertexComponent, _meetingComponent);
 
@@ -81,14 +78,14 @@ namespace Maes.Algorithms.Patrolling
 
         private int? EstimateTime(Vector2Int start, Vector2Int target)
         {
-            return _controller.TravelEstimator.OverEstimateTime(start, target);
+            return Controller.TravelEstimator.OverEstimateTime(start, target);
         }
 
         private Vertex GetInitialVertexToPatrol()
         {
-            var vertices = _patrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
+            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
 
-            return vertices.GetClosestVertex(target => _controller.EstimateTimeToTarget(target) ?? int.MaxValue);
+            return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target) ?? int.MaxValue);
         }
 
         private Vertex NextVertex(Vertex currentVertex)
@@ -101,7 +98,7 @@ namespace Maes.Algorithms.Patrolling
 
         private IEnumerable<ComponentWaitForCondition> ExchangeInformation(MeetingComponent.Meeting meeting)
         {
-            TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, _controller.Id));
+            TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, Controller.Id));
             foreach (var condition in _partitionComponent.ExchangeInformation())
             {
                 yield return condition;
@@ -110,7 +107,7 @@ namespace Maes.Algorithms.Patrolling
 
         private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobotIds)
         {
-            TrackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, missingRobotIds, _controller.Id));
+            TrackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, missingRobotIds, Controller.Id));
 
             foreach (var condition in _partitionComponent.OnMissingRobotAtMeeting(meeting, missingRobotIds))
             {
@@ -120,7 +117,7 @@ namespace Maes.Algorithms.Patrolling
 
         private float DistanceMethod(Vertex source, Vertex target)
         {
-            if (_patrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
+            if (PatrollingMap.Paths.TryGetValue((source.Id, target.Id), out var path))
             {
                 return path.Sum(p => Vector2Int.Distance(p.Start, p.End));
             }
