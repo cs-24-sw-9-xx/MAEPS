@@ -21,18 +21,18 @@
 // Jakob Meyer Olsen,
 //
 // Original repository: https://github.com/Molitany/MAES
+using System.Collections.Generic;
+
+using Maes.Algorithms.Patrolling;
+using Maes.FaultInjections.DestroyRobots;
+using Maes.Map.Generators;
+using Maes.Robot;
 using Maes.Simulation.Patrolling;
+
+using UnityEngine;
 
 namespace Maes.Experiments.Patrolling
 {
-    using System.Collections.Generic;
-
-    using Maes.Algorithms.Patrolling;
-    using Maes.Map.Generators;
-    using Maes.Robot;
-
-    using UnityEngine;
-
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
@@ -40,7 +40,6 @@ namespace Maes.Experiments.Patrolling
     {
         private void Start()
         {
-            var constraintName = "Global";
             var robotConstraints = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
@@ -62,114 +61,168 @@ namespace Maes.Experiments.Patrolling
             var random = new System.Random(seed);
             var mapSize = 100;
             var numberOfCycles = 10;
-            // var robotFailureRate = 0.05f;
-            // var robotFailureDuration = 1000;
-            // var robotFailureCount = 2;
+            var robotFailureRate = 0.05f;
+            var robotFailureDuration = 1000;
+            var robotFailureCount = 2;
+            var algo = new ConscientiousReactiveAlgorithm();
 
-            var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "No-Partition-CR-Algo";
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+            var mapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            var caveConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            for (var robotCount = 1; robotCount <= 32; robotCount *= 2)
+            {
+                var mapName = "BuildingMap";
+                var partitionNumber = 1;
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 1,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{1}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(mapConfig),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+                mapName = "CaveMap";
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 2,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{2}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(caveConfig),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+                mapName = "MapA";
+                var map = CommonMaps.MapAMap();
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 4,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{4}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+                mapName = "MapB";
+                map = CommonMaps.MapBMap();
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 8,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{8}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+                mapName = "IslandsMap";
+                map = CommonMaps.IslandsMap();
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 16,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{16}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
 
-            scenarios.Add(
-                new MySimulationScenario(
-                    seed: seed,
-                    totalCycles: numberOfCycles,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                        collisionMap: buildingConfig,
+                mapName = "CircularMap";
+                map = CommonMaps.CircularMap();
+                scenarios.Add(
+                    new MySimulationScenario(
                         seed: seed,
-                        numberOfRobots: 32,
-                        createAlgorithmDelegate: _ => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    partitions: 1,
-                    // faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{32}-SpawnTogether")
-            );
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
+
+                mapName = "CorridorMap";
+                map = CommonMaps.CorridorMap();
+                scenarios.Add(
+                    new MySimulationScenario(
+                        seed: seed,
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
+
+                mapName = "GridMap";
+                map = CommonMaps.GridMap();
+                scenarios.Add(
+                    new MySimulationScenario(
+                        seed: seed,
+                        totalCycles: numberOfCycles,
+                        stopAfterDiff: false,
+                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                            collisionMap: buildingConfig,
+                            seed: seed,
+                            numberOfRobots: robotCount,
+                            createAlgorithmDelegate: _ => algo),
+                        mapSpawner: generator => generator.GenerateMap(map, seed, brokenCollisionMap: false),
+                        partitions: 2,
+                        faultInjection: new DestroyRobotsRandomFaultInjection(seed, robotFailureRate, robotFailureDuration, robotFailureCount),
+                        robotConstraints: robotConstraints,
+                        statisticsFileName: $"{algoName}-robots-{robotCount}-map-{mapName}-Partitions-{partitionNumber}")
+                );
+            }
 
             var simulator = new MySimulator(scenarios);
             simulator.PressPlayButton(); // Instantly enter play mode
