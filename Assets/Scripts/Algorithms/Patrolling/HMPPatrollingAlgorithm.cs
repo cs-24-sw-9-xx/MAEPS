@@ -72,7 +72,7 @@ namespace Maes.Algorithms.Patrolling
 
             _partitionComponent = new PartitionComponent(controller, _partitionGenerator);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => _logicTicks, EstimateTime, patrollingMap, _controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, _controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _meetingObserverComponent = new MeetingObserverComponent(-101, -101, _collisionRecoveryComponent, _goToNextVertexComponent, _meetingComponent);
 
@@ -101,7 +101,7 @@ namespace Maes.Algorithms.Patrolling
 
         private IEnumerable<ComponentWaitForCondition> ExchangeInformation(MeetingComponent.Meeting meeting)
         {
-            TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, _logicTicks, _controller.Id));
+            TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, _controller.Id));
             foreach (var condition in _partitionComponent.ExchangeInformation())
             {
                 yield return condition;
