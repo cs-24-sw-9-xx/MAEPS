@@ -36,7 +36,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         protected override void UpdateTrackerOnFailure(int partitionId)
         {
-            _redistributionTracker[partitionId] = +_currentPartition.CommunicationRatio[partitionId];
+            _redistributionTracker[partitionId] += _currentPartition.CommunicationRatio[partitionId];
         }
 
         protected override void UpdateTrackerOnSuccess(int partitionId)
