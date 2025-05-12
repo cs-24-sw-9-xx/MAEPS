@@ -112,22 +112,49 @@ namespace Maes.Map.RobotSpawners
                 spawnPositions = spawnPositions.Select(FromRosCoord).ToList();
             }
 
-            // Get all spawnable tiles. We cannot spawn adjacent to a wall
-            var possibleSpawnTiles = PossibleSpawnTiles(collisionMap);
-
             // Offset suggested starting points
             if (dependOnBrokenBehavior)
             {
                 spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x - (int)collisionMap.ScaledOffset.x,
-                                                    pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
+                    pos.y - (int)collisionMap.ScaledOffset.y)).ToList();
             }
             else
             {
                 spawnPositions = spawnPositions.Select(pos => new Vector2Int(pos.x,
-                                                    pos.y)).ToList();
+                    pos.y)).ToList();
             }
 
-            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, spawnPositions, robots, dependOnBrokenBehavior);
+            // Get all spawnable tiles. We cannot spawn adjacent to a wall
+            var possibleSpawnTiles = PossibleSpawnTiles(collisionMap);
+            var spawnTiles = new List<Vector2Int>();
+
+            for (var i = 0; i < numberOfRobots; i++)
+            {
+                Vector2Int newSpawn = default;
+                var found = false;
+
+                foreach (var tile in possibleSpawnTiles
+                             .OrderBy(c => ManhattanDistance(c, spawnPositions[i])))
+                {
+                    if (spawnTiles.Contains(tile))
+                    {
+                        continue;
+                    }
+
+                    newSpawn = tile;
+                    found = true;
+                    break;
+                }
+
+                if (!found)
+                {
+                    throw new Exception("No available unique spawn position found.");
+                }
+
+                spawnTiles.Add(newSpawn);
+            }
+
+            return MonaRobots(collisionMap, seed, numberOfRobots, createAlgorithmDelegate, spawnTiles, robots, dependOnBrokenBehavior);
         }
 
         /// <summary>
