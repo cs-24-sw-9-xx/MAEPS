@@ -25,6 +25,7 @@ namespace Maes.Simulation.Patrolling
             string? statisticsFileName = null,
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
+            int maxLogicTicks = DefaultMaxLogicTicks,
             int partitions = 1)
             : base(seed,
                 robotSpawner,
@@ -32,7 +33,8 @@ namespace Maes.Simulation.Patrolling
                 mapSpawner,
                 robotConstraints,
                 statisticsFileName,
-                faultInjection)
+                faultInjection,
+                maxLogicTicks)
         {
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;

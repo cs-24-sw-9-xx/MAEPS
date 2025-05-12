@@ -41,7 +41,7 @@ using SsbAlgorithm = Maes.Algorithms.Exploration.SSB.SsbAlgorithm;
 namespace Maes
 {
     using CreateAlgorithmDelegate = RobotSpawner<IExplorationAlgorithm>.CreateAlgorithmDelegate;
-    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaDelegate<ExplorationSimulation>;
+    using MySimulationEndCriteriaDelegate = SimulationEndCriteriaInfallibleDelegate<ExplorationSimulation>;
     using MySimulationScenario = ExplorationSimulationScenario;
     using RobotFactory = RobotFactory<IExplorationAlgorithm>;
 
@@ -208,7 +208,7 @@ namespace Maes
 
                 scenarios.Enqueue(new MySimulationScenario(
                     seed: 0,
-                    hasFinishedSim: shouldEndSim,
+                    hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(shouldEndSim),
                     mapSpawner: mapSpawner,
                     robotSpawner: robotSpawner,
                     robotConstraints: constraints,
@@ -278,7 +278,7 @@ namespace Maes
                     {
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
-                            hasFinishedSim: shouldEndSim,
+                            hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(shouldEndSim),
                             mapSpawner: mapGenerator => mapGenerator.GenerateMap(buildingConfig),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                                 map,
@@ -290,7 +290,7 @@ namespace Maes
                         ));
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
-                            hasFinishedSim: shouldEndSim,
+                            hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(shouldEndSim),
                             mapSpawner: mapGenerator => mapGenerator.GenerateMap(caveConfig),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
                                 map,
@@ -359,7 +359,7 @@ namespace Maes
                 {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
-                        hasFinishedSim: hasFinishedFunc,
+                        hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(hasFinishedFunc),
                         mapSpawner: mapGenerator => mapGenerator.GenerateMap(buildingConfig),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                             map,
@@ -518,7 +518,7 @@ namespace Maes
                     {
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
-                            hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
+                            hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim),
                             mapSpawner: mapGenerator => mapGenerator.GenerateMap(buildingConfig),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                                 map,
@@ -530,7 +530,7 @@ namespace Maes
                         ));
                         scenarios.Enqueue(new MySimulationScenario(
                             seed: randomSeed,
-                            hasFinishedSim: algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim,
+                            hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(algorithmName == "TNF" ? shouldEndTnfSim : shouldEndSim),
                             mapSpawner: mapGenerator => mapGenerator.GenerateMap(caveConfig),
                             robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
                                 map,
@@ -601,7 +601,7 @@ namespace Maes
                 {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
-                        hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 20 * minute,
+                        hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 20 * minute),
                         mapSpawner: mapGenerator => mapGenerator.GenerateMap(buildingConfig),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                             map,
@@ -616,7 +616,7 @@ namespace Maes
                 {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
-                        hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 20 * minute,
+                        hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 20 * minute),
                         mapSpawner: mapGenerator => mapGenerator.GenerateMap(mapConfig),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
                             map,
@@ -700,7 +700,7 @@ namespace Maes
                 {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
-                        hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 60 * minute,
+                        hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 60 * minute),
                         mapSpawner: mapGenerator => mapGenerator.GenerateMap(buildingConfig),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                             map,
@@ -715,7 +715,7 @@ namespace Maes
                 {
                     scenarios.Enqueue(new MySimulationScenario(
                         seed: randomSeed,
-                        hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 20 * minute,
+                        hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 20 * minute),
                         mapSpawner: mapGenerator => mapGenerator.GenerateMap(mapConfig),
                         robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsTogether(
                             map,
@@ -771,7 +771,7 @@ namespace Maes
 
                 scenarios.Enqueue(new MySimulationScenario(
                     seed: randomSeed,
-                    hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 60 * minute,
+                    hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 60 * minute),
                     mapSpawner: mapGenerator => mapGenerator.GenerateMap(caveConfig),
                     robotSpawner: (map, robotSpawner) => robotSpawner.SpawnRobotsInBiggestRoom(
                         map,
@@ -838,7 +838,7 @@ namespace Maes
 
             scenarios.Enqueue(new MySimulationScenario(
                 seed: randomSeed,
-                hasFinishedSim: simulation => simulation.SimulateTimeSeconds >= 60 * Minute,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(simulation => simulation.SimulateTimeSeconds >= 60 * Minute),
                 mapSpawner: generator => generator.GenerateMap(buildingConfig),
                 robotSpawner: (map, robotSpawner) => robotSpawner.SpawnAtHallWayEnds(
                     map,

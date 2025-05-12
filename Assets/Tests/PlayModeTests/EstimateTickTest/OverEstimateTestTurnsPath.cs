@@ -56,7 +56,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(mapConfig),
-                hasFinishedSim: _ => false,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: _robotConstraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>

@@ -17,14 +17,16 @@ namespace Maes.Simulation.Exploration
             RobotFactory<IExplorationAlgorithm>? robotSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
-            IFaultInjection? faultInjection = null)
+            IFaultInjection? faultInjection = null,
+            int maxLogicTicks = DefaultMaxLogicTicks)
             : base(seed,
                 robotSpawner ?? ((map, spawner) => spawner.SpawnRobotsTogether(map, seed, 1, Vector2Int.zero, robotSeed => new RandomExplorationAlgorithm(robotSeed))),
                 hasFinishedSim,
                 mapSpawner,
                 robotConstraints,
                 statisticsFileName,
-                faultInjection)
+                faultInjection,
+                maxLogicTicks)
         {
         }
     }

@@ -46,7 +46,7 @@ namespace Tests.PlayModeTests
         {
             var testingScenario = new ExplorationSimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: _ => false,
+                hasFinishedSim: ExplorationSimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: new RobotConstraints(),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsInBiggestRoom(map, RandomSeed, 2,
                     _ => new TestingAlgorithm()

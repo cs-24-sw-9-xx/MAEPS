@@ -49,6 +49,6 @@ namespace Maes.Simulation
 
         void UpdateDebugInfo();
 
-        void OnSimulationFinished();
+        void OnSimulationFinished(bool success);
     }
 }

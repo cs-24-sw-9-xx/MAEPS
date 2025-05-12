@@ -232,9 +232,9 @@ namespace Maes.Simulation
 #endif
         }
 
-        public virtual void OnSimulationFinished()
+        public void OnSimulationFinished(bool success)
         {
-            if (GlobalSettings.ShouldWriteCsvResults)
+            if (success && GlobalSettings.ShouldWriteCsvResults)
             {
                 CreateStatisticsFile();
             }

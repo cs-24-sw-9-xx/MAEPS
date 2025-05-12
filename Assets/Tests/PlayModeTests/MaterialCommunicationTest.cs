@@ -109,7 +109,7 @@ namespace Tests.PlayModeTests
             _robotTestAlgorithms = new List<TestingAlgorithm>();
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
-                hasFinishedSim: _ => false,
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: new RobotConstraints(materialCommunication: true,
                     calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc,
                     attenuationDictionary: attenuationDictionary, slamRayTraceRange: 0, mapKnown: true),

@@ -38,8 +38,23 @@ namespace Maes.Simulation
     public delegate List<MonaRobot> RobotFactory<TAlgorithm>(SimulationMap<Tile> map, RobotSpawner<TAlgorithm> spawner) where TAlgorithm : IAlgorithm;
 
     // A function that returns true if the given simulation has been completed
-    public delegate bool SimulationEndCriteriaDelegate<TSimulation>(TSimulation simulationBase)
+    public delegate bool SimulationEndCriteriaDelegate<TSimulation>(TSimulation simulationBase, out SimulationEndCriteriaReason? reason)
         where TSimulation : ISimulation;
+
+    public delegate bool SimulationEndCriteriaInfallibleDelegate<TSimulation>(TSimulation simulationBase)
+        where TSimulation : ISimulation;
+
+    public readonly struct SimulationEndCriteriaReason
+    {
+        public string Message { get; }
+        public bool Success { get; }
+
+        public SimulationEndCriteriaReason(string message, bool success)
+        {
+            Message = message;
+            Success = success;
+        }
+    }
 
     // Contains all information needed for simulating a single simulation scenario
     // (One map, one type of robots)
@@ -47,6 +62,8 @@ namespace Maes.Simulation
     where TSimulation : ISimulation
     where TAlgorithm : IAlgorithm
     {
+        public const int DefaultMaxLogicTicks = 100000;
+
         public readonly SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim;
 
         public MapFactory MapSpawner { get; }
@@ -56,6 +73,11 @@ namespace Maes.Simulation
 
         public IFaultInjection? FaultInjection { get; }
 
+        /// <summary>
+        /// How many ticks before the scenario is marked as stuck.
+        /// </summary>
+        public int MaxLogicTicks { get; }
+
         protected SimulationScenario(
             int seed,
             RobotFactory<TAlgorithm> robotSpawner,
@@ -63,16 +85,55 @@ namespace Maes.Simulation
             MapFactory? mapSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
-            IFaultInjection? faultInjection = null
+            IFaultInjection? faultInjection = null,
+            int maxLogicTicks = DefaultMaxLogicTicks
             )
         {
-            HasFinishedSim = hasFinishedSim ?? (simulation => simulation.HasFinishedSim());
+            MaxLogicTicks = maxLogicTicks;
+            HasFinishedSim = hasFinishedSim ?? DefaultHasFinishedSim;
             // Default to generating a cave map when no map generator is specified
             MapSpawner = mapSpawner ?? (generator => generator.GenerateMap(new CaveMapConfig(seed)));
             RobotSpawner = robotSpawner;
             RobotConstraints = robotConstraints ?? new RobotConstraints();
             StatisticsFileName = statisticsFileName ?? $"statistics_{DateTime.Now.ToShortDateString().Replace('/', '-')}_{DateTime.Now.ToLongTimeString().Replace(' ', '-').Replace(':', '-')}";
             FaultInjection = faultInjection;
+        }
+
+        public static SimulationEndCriteriaDelegate<TSimulation> InfallibleToFallibleSimulationEndCriteria(
+            SimulationEndCriteriaInfallibleDelegate<TSimulation> @delegate)
+        {
+            return ((TSimulation simulation, out SimulationEndCriteriaReason? reason) =>
+            {
+                var value = @delegate(simulation);
+                if (value)
+                {
+                    reason = new SimulationEndCriteriaReason("Success", true);
+                }
+                else
+                {
+                    reason = null;
+                }
+
+                return value;
+            });
+        }
+
+        private bool DefaultHasFinishedSim(TSimulation simulation, out SimulationEndCriteriaReason? reason)
+        {
+            if (simulation.HasFinishedSim())
+            {
+                reason = new SimulationEndCriteriaReason("Success", true);
+                return true;
+            }
+
+            if (simulation.SimulatedLogicTicks > MaxLogicTicks)
+            {
+                reason = new SimulationEndCriteriaReason("Max ticks reached (stuck?)", false);
+                return true;
+            }
+
+            reason = null;
+            return false;
         }
     }
 }
