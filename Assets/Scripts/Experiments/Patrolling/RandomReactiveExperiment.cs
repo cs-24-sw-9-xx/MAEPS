@@ -143,20 +143,13 @@ namespace Maes.Experiments.Patrolling
                                                                              statisticsFileName: $"{algorithmName}-seed-{mapConfig.RandomSeed}-size-{size}-comms-{constraintName}-robots-{robotCount}-SpawnTogether")
                             );
 
-                            var spawningPosList = new List<Vector2Int>();
-                            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-                            {
-                                spawningPosList.Add(new Vector2Int(random.Next(-size / 2, size / 2), random.Next(-size / 2, size / 2)));
-                            }
-
                             scenarios.Add(new MySimulationScenario(seed: 123,
                                                                              totalCycles: 3,
                                                                              stopAfterDiff: true,
-                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                                                                             robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                                                                                  collisionMap: buildingConfig,
                                                                                  seed: 123,
                                                                                  numberOfRobots: robotCount,
-                                                                                 spawnPositions: spawningPosList,
                                                                                  createAlgorithmDelegate: algorithm),
                                                                              mapSpawner: generator => generator.GenerateMap(mapConfig),
                                                                              robotConstraints: robotConstraints,

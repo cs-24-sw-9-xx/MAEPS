@@ -107,14 +107,8 @@ namespace Maes.Experiments.Patrolling
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var mapConfig2 = new BuildingMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
-            var spawningPosList = new List<Vector2Int>();
-            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-            {
-                spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
-            }
 
             var scenarios = new MySimulationScenario[]
             {
@@ -122,30 +116,15 @@ namespace Maes.Experiments.Patrolling
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName:
                     $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
-                new(
-                    seed: 123,
-                    totalCycles: 4,
-                    stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
-                        collisionMap: buildingConfig,
-                        seed: 123,
-                        numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
-                        createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
-                    mapSpawner: generator => generator.GenerateMap(mapConfig2),
-                    robotConstraints: robotConstraints,
-                    statisticsFileName:
-                    $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
             };
 
             var simulator = new MySimulator(scenarios);
