@@ -280,7 +280,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// <summary>
         /// Checks if a key exists in the local knowledge
         /// </summary>
-        /// <param name="key">The key to check existance for.</param>
+        /// <param name="key">The key to check existence for.</param>
         /// <returns><see langword="true"/> if the key exists otherwise <see langword="false"/></returns>
         /// <remarks>This does not communicate with neighbors.</remarks>
         public bool Has(TKey key)
@@ -289,6 +289,18 @@ namespace Maes.Algorithms.Patrolling.Components
             // Should it ask the swarm like Get? or should it just check the local knowledge?
             // I have implemented it using the local knowledge just as Size.
             return _localKnowledge.ContainsKey(key);
+        }
+
+        /// <summary>
+        /// This sends all information in the stigmergy to anybody in range.
+        /// </summary>
+        /// <remarks>This is pretty wasteful, only do this if you must.</remarks>
+        public void SendAll()
+        {
+            foreach (var (key, valueInfo) in _localKnowledge)
+            {
+                BroadcastMessage(VirtualStigmergyMessage.CreatePutMessage(key, valueInfo.Value, valueInfo.Timestamp, valueInfo.RobotId));
+            }
         }
 
         public void DebugInfo(StringBuilder stringBuilder)
