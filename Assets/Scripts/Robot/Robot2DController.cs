@@ -362,11 +362,6 @@ namespace Maes.Robot
             return CommunicationManager.ReadMessages(_robot);
         }
 
-        public List<KeyValuePair<int, object>> ReceiveBroadcastWithId()
-        {
-            return CommunicationManager.ReadMessagesWithId(_robot);
-        }
-
         public IRobotController.DetectedWall? DetectWall(float globalAngle)
         {
 #if DEBUG

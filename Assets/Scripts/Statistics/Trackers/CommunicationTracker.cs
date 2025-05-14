@@ -22,18 +22,17 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using static Maes.Robot.CommunicationManager;
-
 namespace Maes.Statistics.Trackers
 {
     public sealed class CommunicationTracker
     {
         public readonly Dictionary<int, bool> InterconnectionSnapShot = new();
         public readonly Dictionary<int, float> BiggestClusterPercentageSnapshots = new();
-        public Dictionary<(int, int), CommunicationInfo>? AdjacencyMatrixRef;
+        public readonly Dictionary<int, int> SentMessageCountSnapshots = new();
+        public readonly Dictionary<int, int> ReceivedMessageCountSnapshots = new();
         public List<HashSet<int>>? CommunicationGroups = null;
 
-        public void CreateSnapshot(int tick)
+        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
         {
             if (tick == 0)
             {
@@ -42,6 +41,7 @@ namespace Maes.Statistics.Trackers
 
             CreateInterconnectedSnapShot(tick);
             CreateClusterSizeSnapShot(tick);
+            CreateMessageCountSnapshot(tick, receivedMessageCount, sentMessageCount);
         }
 
         private void CreateClusterSizeSnapShot(int tick)
@@ -73,7 +73,7 @@ namespace Maes.Statistics.Trackers
 
         private void CreateInterconnectedSnapShot(int tick)
         {
-            if (AdjacencyMatrixRef != null && CommunicationGroups != null)
+            if (CommunicationGroups != null)
             {
                 if (AreAllAgentsConnected())
                 {
@@ -91,6 +91,12 @@ namespace Maes.Statistics.Trackers
             {
                 return CommunicationGroups.Count == 1;
             }
+        }
+
+        private void CreateMessageCountSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
+        {
+            ReceivedMessageCountSnapshots[tick] = receivedMessageCount;
+            SentMessageCountSnapshots[tick] = sentMessageCount;
         }
     }
 }
