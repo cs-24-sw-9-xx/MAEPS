@@ -111,22 +111,16 @@ namespace Maes.Experiments.Patrolling
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize);
             var algoName = "conscientious_reactive";
             const int robotCount = 5;
-            var spawningPosList = new List<Vector2Int>();
-            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-            {
-                spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
-            }
 
             scenarios.Add(
                 new MySimulationScenario(
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,

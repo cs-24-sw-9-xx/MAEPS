@@ -74,29 +74,23 @@ namespace Maes.Experiments.Patrolling
 
             var constraintName = "Global";
             var robotConstraints = constraintsDict[constraintName];
-            var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var mapConfig2 = new CaveMapConfig(124, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            var buildingMapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            var caveMapConfig = new CaveMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = nameof(HeuristicConscientiousReactiveAlgorithm);
             const int robotCount = 1;
-            var spawningPosList = new List<Vector2Int>();
-            for (var amountOfSpawns = 0; amountOfSpawns < robotCount; amountOfSpawns++)
-            {
-                spawningPosList.Add(new Vector2Int(random.Next(-mapSize / 2, mapSize / 2), random.Next(-mapSize / 2, mapSize / 2)));
-            }
 
             scenarios.Add(
                 new MySimulationScenario(
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig),
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                    mapSpawner: generator => generator.GenerateMap(buildingMapConfig),
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (randomSeed) => new HeuristicConscientiousReactiveAlgorithm(randomSeed)),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    statisticsFileName: $"{algoName}-seed-{buildingMapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                     robotConstraints: robotConstraints
                 )
             );
@@ -106,14 +100,13 @@ namespace Maes.Experiments.Patrolling
                     seed: 123,
                     totalCycles: 4,
                     stopAfterDiff: false,
-                    mapSpawner: generator => generator.GenerateMap(mapConfig2),
-                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsAtPositions(
+                    mapSpawner: generator => generator.GenerateMap(caveMapConfig),
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        spawnPositions: spawningPosList,
                         createAlgorithmDelegate: (randomSeed) => new HeuristicConscientiousReactiveAlgorithm(randomSeed)),
-                    statisticsFileName: $"{algoName}-seed-{mapConfig2.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    statisticsFileName: $"{algoName}-seed-{caveMapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
                     robotConstraints: robotConstraints
                 )
             );
