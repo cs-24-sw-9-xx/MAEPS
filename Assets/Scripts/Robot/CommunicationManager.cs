@@ -176,7 +176,11 @@ namespace Maes.Robot
                     continue;
                 }
 
-                var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
+                if (!_adjacencyMatrix!.TryGetValue((message.Sender.id, receiver.id), out var communicationTrace))
+                {
+                    continue;
+                }
+
                 // If the transmission probability is above the specified threshold then the message will be sent
                 // otherwise it is discarded
                 if (communicationTrace.TransmissionSuccessful)

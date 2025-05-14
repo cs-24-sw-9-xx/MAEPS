@@ -29,18 +29,16 @@ namespace Maes.Algorithms.Patrolling.Components
     public class HeartBeatComponent : IComponent
     {
         private readonly IRobotController _controller;
-        private readonly int _logicTick;
-        private readonly int _delay;
+        private readonly IPatrollingAlgorithm _algorithm;
         private readonly Dictionary<int, HeartbeatMessage> _robotHeartbeats = new Dictionary<int, HeartbeatMessage>();
         public IReadOnlyDictionary<int, HeartbeatMessage> RobotHeartbeats => _robotHeartbeats;
         public int PreUpdateOrder => -300;
         public int PostUpdateOrder => -300;
 
-        public HeartBeatComponent(IRobotController controller, int logicTick, int delay = 1)
+        public HeartBeatComponent(IRobotController controller, IPatrollingAlgorithm algorithm)
         {
             _controller = controller;
-            _logicTick = logicTick;
-            _delay = delay;
+            _algorithm = algorithm;
         }
 
         /// <summary>
@@ -50,9 +48,9 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             while (true)
             {
-                _controller.Broadcast(new HeartbeatMessage(_controller.Id, _logicTick, _controller.AssignedPartition));
+                _controller.Broadcast(new HeartbeatMessage(_controller.Id, _algorithm.LogicTicks, _controller.AssignedPartition));
                 ProcessHeartbeatMessages();
-                yield return ComponentWaitForCondition.WaitForLogicTicks(_delay, shouldContinue: true);
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
 
