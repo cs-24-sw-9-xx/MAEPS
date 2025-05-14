@@ -56,7 +56,7 @@ namespace Maes.Algorithms.Patrolling
         private readonly IHMPPartitionGenerator _partitionGenerator;
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
-        private PartitionComponent _partitionComponent = null!;
+        private HMPPartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
         private MeetingObserverComponent _meetingObserverComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
@@ -67,7 +67,7 @@ namespace Maes.Algorithms.Patrolling
             _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap);
             _partitionGenerator.SetEstimates(EstimateTime, target => controller.EstimateTimeToTarget(target));
 
-            _partitionComponent = new PartitionComponent(controller, _partitionGenerator);
+            _partitionComponent = new HMPPartitionComponent(controller, _partitionGenerator);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
