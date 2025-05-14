@@ -9,9 +9,10 @@ using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
-    public sealed class PartitionComponent : IComponent
+    public class PartitionComponent<T> : IComponent
+        where T : PartitionInfo
     {
-        public PartitionComponent(IRobotController controller, IPartitionGenerator<HMPPartitionInfo> partitionGenerator)
+        public PartitionComponent(IRobotController controller, IPartitionGenerator<T> partitionGenerator)
         {
             _robotId = controller.Id;
             _partitionGenerator = partitionGenerator;
@@ -21,23 +22,23 @@ namespace Maes.Algorithms.Patrolling.Components
         public int PostUpdateOrder => -900;
 
         private readonly int _robotId;
-        private readonly IPartitionGenerator<HMPPartitionInfo> _partitionGenerator;
+        private readonly IPartitionGenerator<T> _partitionGenerator;
 
-        private StartupComponent<IReadOnlyDictionary<int, HMPPartitionInfo>, PartitionComponent> _startupComponent = null!;
-        private VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
+        protected StartupComponent<IReadOnlyDictionary<int, T>, PartitionComponent<T>> _startupComponent = null!;
+        protected VirtualStigmergyComponent<int, T, PartitionComponent<T>> _virtualStigmergyComponent = null!;
 
-        public HMPPartitionInfo? PartitionInfo { get; private set; }
+        public T? PartitionInfo { get; private set; }
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, HMPPartitionInfo>, PartitionComponent>(controller, _partitionGenerator.GeneratePartitions);
+            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, T>, PartitionComponent<T>>(controller, _partitionGenerator.GeneratePartitions);
             _virtualStigmergyComponent =
-                new VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>(OnConflict, controller);
+                new VirtualStigmergyComponent<int, T, PartitionComponent<T>>(OnConflict, controller);
 
             return new IComponent[] { _startupComponent, _virtualStigmergyComponent };
         }
 
-        private static VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>.ValueInfo OnConflict(int key, VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>.ValueInfo localvalueinfo, VirtualStigmergyComponent<int, HMPPartitionInfo, PartitionComponent>.ValueInfo incomingvalueinfo)
+        private static VirtualStigmergyComponent<int, T, PartitionComponent<T>>.ValueInfo OnConflict(int key, VirtualStigmergyComponent<int, T, PartitionComponent<T>>.ValueInfo localvalueinfo, VirtualStigmergyComponent<int, T, PartitionComponent<T>>.ValueInfo incomingvalueinfo)
         {
             if (localvalueinfo.RobotId < incomingvalueinfo.RobotId)
             {
@@ -61,24 +62,6 @@ namespace Maes.Algorithms.Patrolling.Components
                 PartitionInfo = partitionInfo!;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
-        }
-
-        public IEnumerable<ComponentWaitForCondition> ExchangeInformation()
-        {
-            foreach (var robotId in _startupComponent.DiscoveredRobots)
-            {
-                _virtualStigmergyComponent.TryGet(robotId, out var _);
-            }
-
-            yield return ComponentWaitForCondition.WaitForLogicTicks(2, shouldContinue: false);
-        }
-
-        public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobots)
-        {
-            // TODO: Implement the logic for when some other robots are not at the meeting point
-            Debug.Log("Some robots are not at the meeting point");
-
-            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
     }
 }
