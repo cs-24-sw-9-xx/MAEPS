@@ -25,6 +25,8 @@ using System.Linq;
 
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
@@ -33,16 +35,16 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
     public sealed class GlobalRedistributionComponent : IComponent
     {
         private readonly IRobotController _controller;
-        private readonly int _logicTick;
+        private readonly IPatrollingAlgorithm _algorithm;
         private readonly HeartBeatComponent _heartbeatComponent;
         private readonly int _timeOut;
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
-        public GlobalRedistributionComponent(IRobotController controller, int timeOut, int logicTick, HeartBeatComponent heartbeatComponent)
+        public GlobalRedistributionComponent(IRobotController controller, int timeOut, IPatrollingAlgorithm algorithm, HeartBeatComponent heartbeatComponent)
         {
             _controller = controller;
-            _logicTick = logicTick;
+            _algorithm = algorithm;
             _heartbeatComponent = heartbeatComponent;
             _timeOut = timeOut + controller.Id;
         }
@@ -65,14 +67,13 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         /// </summary>
         private void CheckHeartbeats()
         {
-            var partitionNeedRobots = _heartbeatComponent.RobotHeartbeats
-                .Where(heartbeat => heartbeat.Value.LogicTick < _logicTick - _timeOut)
-                .Select(heartbeat => heartbeat.Value.PartitionId);
+            var outdatedHeartbeats = _heartbeatComponent.RobotHeartbeats.Values
+                .Where(heartbeat => heartbeat.LogicTick < _algorithm.LogicTicks - _timeOut).ToList();
 
-            foreach (var partitionId in partitionNeedRobots)
+            foreach (var heartbeat in outdatedHeartbeats)
             {
-                _heartbeatComponent.RemoveRobot(partitionId);
-                RedistributeRobot(partitionId);
+                _heartbeatComponent.RemoveRobot(heartbeat.RobotId);
+                RedistributeRobot(heartbeat.PartitionId);
             }
         }
 
@@ -82,8 +83,9 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private void RedistributeRobot(int newPartition)
         {
             var bestPartitionToMoveRobotFrom = GetPartitionWithMostHeartbeats();
-            if (bestPartitionToMoveRobotFrom == _controller.AssignedPartition && IsLowestIdInPartition(_controller.Id))
+            if (bestPartitionToMoveRobotFrom == _controller.AssignedPartition && IsLowestIdInPartition())
             {
+                Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
                 _controller.AssignedPartition = newPartition;
             }
         }
@@ -97,11 +99,11 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                 .FirstOrDefault()?.Key;
         }
 
-        private bool IsLowestIdInPartition(int partitionId)
+        private bool IsLowestIdInPartition()
         {
             var robotsInPartition = _heartbeatComponent.RobotHeartbeats
                 .Values
-                .Where(heartbeat => heartbeat.PartitionId == partitionId);
+                .Where(heartbeat => heartbeat.PartitionId == _controller.AssignedPartition);
 
             if (!robotsInPartition.Any())
             {
@@ -109,7 +111,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             }
 
             var lowestRobotId = robotsInPartition.Min(heartbeat => heartbeat.RobotId);
-            return _controller.Id == lowestRobotId;
+            return _controller.Id < lowestRobotId;
         }
     }
 }
