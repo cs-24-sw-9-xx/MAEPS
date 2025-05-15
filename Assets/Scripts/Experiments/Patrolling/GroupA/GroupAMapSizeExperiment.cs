@@ -41,7 +41,7 @@ namespace Maes.Experiments.Patrolling
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
-            foreach (var seed in GroupAParameters.SeedGenerator(5))
+            foreach (var seed in GroupAParameters.SeedGenerator())
             {
                 foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                 {

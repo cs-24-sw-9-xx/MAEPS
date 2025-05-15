@@ -69,6 +69,7 @@ namespace Maes.Experiments.Patrolling
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
         public const int StandardMapSize = 200;
         public const int StandardRobotCount = 8;
+        public const int StandardSeedCount = 100;
 
         public static readonly string StandardRobotConstraintName = "Standard";
 
@@ -95,7 +96,7 @@ namespace Maes.Experiments.Patrolling
                 materialCommunication: true);
         }
 
-        public static IEnumerable<int> SeedGenerator(int seedCount)
+        public static IEnumerable<int> SeedGenerator(int seedCount = StandardSeedCount)
         {
             var seeds = new List<int>();
             for (var i = 0; i < seedCount; i++)
