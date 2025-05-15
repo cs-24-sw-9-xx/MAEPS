@@ -269,7 +269,7 @@ namespace Tests.PlayModeTests
             var cellOffset = (int)Math.Round(actualDistance / _robot.Controller.SlamMap.CoarseMap.CellSize);
             var coarseMapTargetPosition = coarseMapStartingPosition + new Vector2Int(0, cellOffset);
 
-            var estimatedDistance = _robot.Controller.EstimateDistanceToTarget(coarseMapTargetPosition);
+            var estimatedDistance = _robot.Controller.EstimateDistanceToTarget(coarseMapTargetPosition, dependOnBrokenBehaviour: false);
 
             const float maximumDeviation = 0.5f;
             Assert.AreEqual(actualDistance, estimatedDistance, maximumDeviation);

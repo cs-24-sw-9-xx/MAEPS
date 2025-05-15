@@ -110,7 +110,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             {
                 foreach (var vertexB in partitions[partitionB])
                 {
-                    var distance = _controller.TravelEstimator.EstimateDistance(vertexA.Position, vertexB.Position) ?? float.MaxValue;
+                    var distance = _controller.TravelEstimator.EstimateDistance(vertexA.Position, vertexB.Position, dependOnBrokenBehaviour: false) ?? float.MaxValue;
                     if (distance < minDistance)
                     {
                         minDistance = distance;
