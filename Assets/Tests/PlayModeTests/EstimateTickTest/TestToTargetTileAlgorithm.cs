@@ -43,6 +43,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
+            _startPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
             while (true)
             {
                 if (!IsDestinationReached(TargetTile) && !TargetReached)
@@ -62,8 +64,6 @@ namespace Tests.PlayModeTests.EstimateTickTest
         public void SetController(Robot2DController controller)
         {
             Controller = controller;
-            _startPosition = controller.SlamMap.CoarseMap.GetCurrentPosition();
-            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
         }
 
         public string GetDebugInfo()
