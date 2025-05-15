@@ -12,17 +12,28 @@ namespace Editor
         private const string RunScriptName = "run.sh";
         private const string RunHeadlessScriptName = "run-headless.sh";
 
+        private const string ExecutableNamePlaceholder = "@EXECUTABLE_NAME";
+
         public void OnPostprocessBuild(BuildReport report)
         {
-            var projectPath = Directory.GetParent(Application.dataPath)!.ToString();
+            var dataPath = Application.dataPath;
+            var projectPath = Directory.GetParent(dataPath)!.ToString();
 
             var outputDir = Directory.GetParent(report.summary.outputPath)!.ToString();
+            var executableName = Path.GetFileName(report.summary.outputPath);
 
             var runScriptPath = Path.Join(projectPath, "run-scripts", RunScriptName);
             var runHeadlessScriptPath = Path.Join(projectPath, "run-scripts", RunHeadlessScriptName);
 
-            File.Copy(runScriptPath, Path.Join(outputDir, RunScriptName), true);
-            File.Copy(runHeadlessScriptPath, Path.Join(outputDir, RunHeadlessScriptName), true);
+            var runScriptFileContent = File.ReadAllText(runScriptPath);
+            var runHeadlessScriptFileContent = File.ReadAllText(runHeadlessScriptPath);
+
+            runScriptFileContent = runScriptFileContent.Replace(ExecutableNamePlaceholder, executableName);
+            runHeadlessScriptFileContent =
+                runHeadlessScriptFileContent.Replace(ExecutableNamePlaceholder, executableName);
+
+            File.WriteAllText(Path.Join(outputDir, RunScriptName), runScriptFileContent);
+            File.WriteAllText(Path.Join(outputDir, RunHeadlessScriptName), runHeadlessScriptFileContent);
         }
 
         public int callbackOrder { get; }
