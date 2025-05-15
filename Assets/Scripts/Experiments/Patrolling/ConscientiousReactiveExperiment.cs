@@ -66,7 +66,7 @@ namespace Maes.Experiments.Patrolling
             var mapSize = 100;
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
-            const int robotCount = 1;
+            const int robotCount = 4;
 
             var scenarios = new MySimulationScenario[]
             {
