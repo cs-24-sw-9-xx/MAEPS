@@ -20,7 +20,7 @@ namespace Maes.Map
 
         public IReadOnlyCollection<Vertex> Neighbors => _neighbors;
 
-        public int LastTimeVisitedTick { get; private set; }
+        public int LastTimeVisitedTick { get; set; }
 
         public int NumberOfVisits { get; private set; }
 

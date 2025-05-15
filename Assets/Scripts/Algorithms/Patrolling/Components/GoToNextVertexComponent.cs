@@ -106,22 +106,32 @@ namespace Maes.Algorithms.Patrolling.Components
                     // The robot has been assigned to another partition. We need to find the closest vertex in the new partition.
                     targetVertex = _nextVertexDelegate(_initialVertexToPatrolDelegate());
                     TargetPosition = targetVertex.Position;
-                    while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance)
+                    do
                     {
                         _controller.PathAndMoveTo(targetVertex.Position, dependOnBrokenBehaviour: false);
+                        if (_controller.IsCurrentlyColliding)
+                        {
+                            _controller.StopCurrentTask();
+                            break;
+                        }
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-                    }
+                    } while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance);
                     _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
                     continue;
                 }
 
                 if (_abortingTask != null)
                 {
-                    while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance)
+                    do
                     {
                         _controller.PathAndMoveTo(ApproachingVertex.Position, dependOnBrokenBehaviour: false);
+                        if (_controller.IsCurrentlyColliding)
+                        {
+                            _controller.StopCurrentTask();
+                            break;
+                        }
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-                    }
+                    } while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance);
                     _abortingTask = null;
                 }
 
