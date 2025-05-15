@@ -95,12 +95,20 @@ namespace Maes.Robot
 
         private int _localTickCounter;
 
-        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix;
+        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix = null;
 
         private List<HashSet<int>>? _communicationGroups;
 
         private float _robotRelativeSize;
         private readonly Vector2 _offset;
+
+        private int _receivedMessagesThisTick;
+        private int _receivedMessagesLastTick;
+
+        private int _sentMessagesThisTick;
+        private int _sentMessagesLastTick;
+
+        private readonly HashSet<MonaRobot> _robotsCalledReadMessagesThisTick = new();
 
         public readonly CommunicationTracker CommunicationTracker;
 
@@ -161,6 +169,7 @@ namespace Maes.Robot
         public void BroadcastMessage(MonaRobot sender, in object messageContents)
         {
             _queuedMessages.Add(new Message(messageContents, sender, sender.transform.position));
+            _sentMessagesThisTick++;
         }
 
         // Returns a list of messages sent by other robots
@@ -193,38 +202,9 @@ namespace Maes.Robot
                 }
             }
 
-            return messages;
-        }
-
-        // Returns a list of messages and ids sent by other robots in a kvp
-        public List<KeyValuePair<int, object>> ReadMessagesWithId(MonaRobot receiver)
-        {
-            PopulateAdjacencyMatrix();
-            var messages = new List<KeyValuePair<int, object>>();
-            foreach (var message in _readableMessages)
+            if (_robotsCalledReadMessagesThisTick.Add(receiver))
             {
-                // The robot will not receive its own messages
-                if (message.Sender.id == receiver.id)
-                {
-                    continue;
-                }
-
-                var communicationTrace = _adjacencyMatrix![(message.Sender.id, receiver.id)];
-                // If the transmission probability is above the specified threshold then the message will be sent
-                // otherwise it is discarded
-                if (!communicationTrace.TransmissionSuccessful)
-                {
-                    continue;
-                }
-
-                var kvp = new KeyValuePair<int, object>(message.Sender.id, message.Contents);
-
-                messages.Add(kvp);
-
-                if (GlobalSettings.DrawCommunication)
-                {
-                    _visualizer.AddCommunicationTrail(message.Sender, receiver);
-                }
+                _receivedMessagesThisTick += messages.Count;
             }
 
             return messages;
@@ -250,6 +230,15 @@ namespace Maes.Robot
             _queuedMessages.Clear();
             _localTickCounter++;
 
+            _receivedMessagesLastTick = _receivedMessagesThisTick;
+            _receivedMessagesThisTick = 0;
+
+            _sentMessagesLastTick = _sentMessagesThisTick;
+            _sentMessagesThisTick = 0;
+
+            _robotsCalledReadMessagesThisTick.Clear();
+
+
             if (GlobalSettings.PopulateAdjacencyAndComGroupsEveryTick)
             {
                 PopulateAdjacencyMatrix();
@@ -265,11 +254,10 @@ namespace Maes.Robot
 
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                CommunicationTracker.AdjacencyMatrixRef = _adjacencyMatrix;
                 _communicationGroups ??= GetCommunicationGroups();
 
                 CommunicationTracker.CommunicationGroups = _communicationGroups;
-                CommunicationTracker.CreateSnapshot(_localTickCounter);
+                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
             }
 
             _adjacencyMatrix = null;
@@ -303,7 +291,7 @@ namespace Maes.Robot
                 return;
             }
 
-            _adjacencyMatrix = new Dictionary<(int, int), CommunicationInfo>();
+            _adjacencyMatrix = new();
 
             foreach (var r1 in _robots)
             {

@@ -61,13 +61,12 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new MoveToTargetTileAlgorithm();
+                        var algorithm = new MoveToTargetTileAlgorithm(_targetTile);
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
 
-            _maes = new MySimulator(new[] { testingScenario }, autoMaxSpeedInBatchMode: false);
-            _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.Paused);
+            _maes = new MySimulator(new[] { testingScenario });
             _simulationBase = _maes.SimulationManager.CurrentSimulation ?? throw new InvalidOperationException("CurrentSimulation is null");
             _robot = _simulationBase.Robots[0];
         }
@@ -82,14 +81,6 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [Test(ExpectedResult = null)]
         public IEnumerator EstimateTicksToTile_TurnsPath()
         {
-            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(_targetTile);
-            if (expectedEstimatedTicks == null)
-            {
-                Assert.Fail("Not able to make a route to the target tile");
-            }
-
-            _testAlgorithm.TargetTile = _targetTile;
-
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
@@ -97,10 +88,15 @@ namespace Tests.PlayModeTests.EstimateTickTest
             {
                 yield return null;
             }
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
+            {
+                Assert.Fail("Not able to make a route to the target tile");
+            }
+            Assert.Less(_testAlgorithm.Tick, 10000, "The algorithm didn't reach the target tile before timeout");
 
             var actualTicks = _testAlgorithm.Tick;
 
-            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
+            var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
         }
     }
