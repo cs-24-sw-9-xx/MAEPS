@@ -30,66 +30,49 @@ namespace Maes.Statistics.Trackers
         public readonly Dictionary<int, float> BiggestClusterPercentageSnapshots = new();
         public readonly Dictionary<int, int> SentMessageCountSnapshots = new();
         public readonly Dictionary<int, int> ReceivedMessageCountSnapshots = new();
-        public List<HashSet<int>>? CommunicationGroups = null;
 
-        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
+        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount, HashSet<HashSet<int>> communicationGroups)
         {
             if (tick == 0)
             {
                 return;
             }
 
-            CreateInterconnectedSnapShot(tick);
-            CreateClusterSizeSnapShot(tick);
+            CreateInterconnectedSnapShot(tick, communicationGroups);
+            CreateClusterSizeSnapShot(tick, communicationGroups);
             CreateMessageCountSnapshot(tick, receivedMessageCount, sentMessageCount);
         }
 
-        private void CreateClusterSizeSnapShot(int tick)
+        private void CreateClusterSizeSnapShot(int tick, HashSet<HashSet<int>> communicationGroups)
         {
-            if (CommunicationGroups == null)
-            {
-                return;
-            }
-
-            if (CommunicationGroups.Count == 0)
+            if (communicationGroups.Count == 0)
             {
                 return;
             }
 
             // if we have exactly one group, then every agent must be in it!
-            if (CommunicationGroups.Count == 1)
+            if (communicationGroups.Count == 1)
             {
                 BiggestClusterPercentageSnapshots[tick] = 100.0f;
             }
             else
             {
-                // Supposed to sort descending
-                CommunicationGroups.Sort((e1, e2) => e2.Count.CompareTo(e1.Count));
-                var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) => sum + e1.Count);
-                var percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * 100f;
+                var totalRobots = communicationGroups.Sum(g => g.Count);
+                var biggestCluster = communicationGroups.Select(g => g.Count).Max();
+                var percentage = (float)biggestCluster / (float)totalRobots * 100f;
                 BiggestClusterPercentageSnapshots[tick] = percentage;
             }
         }
 
-        private void CreateInterconnectedSnapShot(int tick)
+        private void CreateInterconnectedSnapShot(int tick, HashSet<HashSet<int>> communicationGroups)
         {
-            if (CommunicationGroups != null)
+            if (communicationGroups.Count == 1)
             {
-                if (AreAllAgentsConnected())
-                {
-                    InterconnectionSnapShot[tick] = true;
-                }
-                else
-                {
-                    InterconnectionSnapShot[tick] = false;
-                }
+                InterconnectionSnapShot[tick] = true;
             }
-
-            return;
-
-            bool AreAllAgentsConnected()
+            else
             {
-                return CommunicationGroups.Count == 1;
+                InterconnectionSnapShot[tick] = false;
             }
         }
 

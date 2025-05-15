@@ -99,7 +99,7 @@ namespace Maes.Robot
         private readonly Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = new();
 
         private bool _communicationGroupsComputed = false;
-        private List<HashSet<int>> _communicationGroups = new();
+        private readonly HashSet<HashSet<int>> _communicationGroups = new();
 
         private float _robotRelativeSize;
         private readonly Vector2 _offset;
@@ -264,8 +264,7 @@ namespace Maes.Robot
             {
                 PopulateCommunicationGroups();
 
-                CommunicationTracker.CommunicationGroups = _communicationGroups;
-                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
+                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick, _communicationGroups);
             }
         }
 
@@ -325,13 +324,13 @@ namespace Maes.Robot
             }
 
             _communicationGroupsComputed = true;
-            
+
             PopulateAdjacencyMatrix();
 
             for (var i = 0; i < _robots.Count; i++)
             {
                 var r1 = _robots[i];
-                if (!_communicationGroups.Exists(g => g.Contains(r1.id)))
+                if (!_communicationGroups.Any(g => g.Contains(r1.id)))
                 {
                     _communicationGroups.Add(GetCommunicationGroup(r1.id));
                 }
