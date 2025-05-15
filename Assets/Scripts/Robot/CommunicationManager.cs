@@ -341,7 +341,7 @@ namespace Maes.Robot
             {
                 var currentKey = keys.Dequeue();
 
-                foreach (var (key, value) in _adjacencyMatrix!)
+                foreach (var (key, value) in _adjacencyMatrix)
                 {
                     if (key.Item1 != currentKey || !value.TransmissionSuccessful || resultSet.Contains(key.Item2))
                     {

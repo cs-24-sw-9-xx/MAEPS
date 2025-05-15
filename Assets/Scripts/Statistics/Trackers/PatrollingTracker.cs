@@ -171,6 +171,11 @@ namespace Maes.Statistics.Trackers
             }
         }
 
+        protected override void UpdateCoverageStatus(MonaRobot robot)
+        {
+            // Don't do anything
+        }
+
         private void SetTotalDistanceTraveled(List<MonaRobot> robots)
         {
             float sum = 0;
@@ -211,12 +216,6 @@ namespace Maes.Statistics.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new WaypointHeatMapVisualizationMode());
-        }
-
-        public void ShowAllRobotCoverageHeatMap()
-        {
-            _visualizer.meshRenderer.enabled = true;
-            SetVisualizationMode(new PatrollingCoverageHeatMapVisualizationMode(_map));
         }
 
         public void ShowNone()

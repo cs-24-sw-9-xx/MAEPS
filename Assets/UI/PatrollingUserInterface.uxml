@@ -26,7 +26,6 @@
                     <engine:GroupBox text="All Robots" class="visualization-groupbox">
                         <engine:Button text="None" name="AllRobotsNoneButton" />
                         <engine:Button text="Waypoint&#10;Heatmap" name="AllRobotsWaypointHeatMapButton" />
-                        <engine:Button text="Coverage&#10;Heatmap" name="AllRobotsCoverageHeatMapButton" />
                         <engine:Button text="Highlight&#10;Robots" name="AllRobotsHighlightRobotsButton" />
                         <engine:Button text="Vertices&apos; colors" name="AllRobotsShowVerticesColorsButton" />
                     </engine:GroupBox>
