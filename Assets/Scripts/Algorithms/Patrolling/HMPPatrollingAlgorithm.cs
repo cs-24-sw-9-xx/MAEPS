@@ -58,7 +58,6 @@ namespace Maes.Algorithms.Patrolling
 
         private HMPPartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
-        private MeetingObserverComponent _meetingObserverComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
 
@@ -71,9 +70,8 @@ namespace Maes.Algorithms.Patrolling
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _meetingObserverComponent = new MeetingObserverComponent(-101, -101, _collisionRecoveryComponent, _goToNextVertexComponent, _meetingComponent);
 
-            return new IComponent[] { _partitionComponent, _meetingComponent, _meetingObserverComponent, _collisionRecoveryComponent, _goToNextVertexComponent };
+            return new IComponent[] { _partitionComponent, _meetingComponent, _collisionRecoveryComponent, _goToNextVertexComponent };
         }
 
         private int? EstimateTime(Vector2Int start, Vector2Int target)
