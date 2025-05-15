@@ -149,7 +149,10 @@ namespace Maes.Algorithms.Patrolling
             {
                 _seenVerticesByPartition[partitionId] = new HashSet<int>();
             }
-            _seenVerticesByPartition[partitionId].Add(vertex.Id);
+            if (!_seenVerticesByPartition[partitionId].Contains(vertex.Id))
+            {
+                _seenVerticesByPartition[partitionId].Add(vertex.Id);
+            }
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {

@@ -88,9 +88,14 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private int GetPartitionWithHighestIdleness()
         {
+            if (!_algorithm.PartitionIdleness.Any())
+            {
+                Debug.LogWarning("PartitionIdleness is empty. No partition to redistribute to.");
+                return _controller.AssignedPartition; // Return current partition if no other is available
+            }
             return _algorithm.PartitionIdleness
                 .OrderByDescending(kvp => kvp.Value)
-                .FirstOrDefault().Key;
+                .First().Key;
         }
 
         /// <summary>
