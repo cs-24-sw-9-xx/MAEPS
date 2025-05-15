@@ -19,6 +19,7 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
+
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;

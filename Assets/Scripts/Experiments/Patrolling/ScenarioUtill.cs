@@ -1,29 +1,28 @@
-// Copyright 2025 MAES
+// Copyright 2025 MAEPS
 // 
-// This file is part of MAES
+// This file is part of MAEPS
 // 
-// MAES is free software: you can redistribute it and/or modify it under
+// MAEPS is free software: you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the
 // Free Software Foundation, either version 3 of the License, or (at your option)
 // any later version.
 // 
-// MAES is distributed in the hope that it will be useful, but WITHOUT
+// MAEPS is distributed in the hope that it will be useful, but WITHOUT
 // ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
 // Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License along
-// with MAES. If not, see http://www.gnu.org/licenses/.
-// 
-// Contributors: 
+// with MAEPS. If not, see http://www.gnu.org/licenses/.
+//
+// Contributors 2025: 
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
-// Jakob Meyer Olsen,
 // Henrik van Peet,
+// Jakob Meyer Olsen,
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
-// 
-// Original repository: https://github.com/Molitany/MAES
+
 using System.Collections.Generic;
 
 using Maes.FaultInjections;
@@ -60,7 +59,8 @@ namespace Maes.Experiments.Patrolling
                                             collisionMap: buildingConfig,
                                             seed: seed,
                                             numberOfRobots: robotCount,
-                                            createAlgorithmDelegate: algorithm),
+                                            createAlgorithmDelegate: algorithm,
+                                            dependOnBrokenBehavior: false),
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
@@ -79,13 +79,35 @@ namespace Maes.Experiments.Patrolling
                                             collisionMap: buildingConfig,
                                             seed: seed,
                                             numberOfRobots: robotCount,
-                                            createAlgorithmDelegate: algorithm),
+                                            createAlgorithmDelegate: algorithm,
+                                            dependOnBrokenBehavior: false),
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-partitions-{partitionNumber}-SpawnApart");
+        }
+
+        private static PatrollingSimulationScenario CreateCommonMapsScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, Tile[,] mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, IFaultInjection? faultInjection)
+        {
+            return new PatrollingSimulationScenario(
+                                        seed: seed,
+                                        totalCycles: cycles,
+                                        stopAfterDiff: false,
+                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
+                                            collisionMap: buildingConfig,
+                                            seed: seed,
+                                            numberOfRobots: robotCount,
+                                            createAlgorithmDelegate: algorithm,
+                                            dependOnBrokenBehavior: false),
+                                        mapSpawner: generator => generator.GenerateMap(mapConfig, seed,
+                                                brokenCollisionMap: false),
+                                        robotConstraints: robotConstraints,
+                                        faultInjection: faultInjection,
+                                        partitions: partitionNumber,
+                                        statisticsFileName:
+                                        $"{algorithmName}-map-{mapName}-seed-{seed}-robots-{robotCount}-partitions-{partitionNumber}-SpawnApart");
         }
     }
 
