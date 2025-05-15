@@ -32,8 +32,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
         }
 
-        [SetUp]
-        public void InitializeTestingSimulator()
+        public void InitializeTestingSimulator(Vector2Int parameter, bool isOffset)
         {
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
@@ -42,7 +41,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new MoveToTargetTileAlgorithm();
+                        var algorithm = new MoveToTargetTileAlgorithm(parameter, isOffset);
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
@@ -62,15 +61,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [Test(ExpectedResult = null)]
         public IEnumerator EstimateTicksToTile_TestOverEstimate_StraightPath()
         {
-            var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            var targetTile = robotCurrentPosition + new Vector2Int(10, 0);
-            var expectedEstimatedTicks = _robot.Controller.OverEstimateTimeToTarget(targetTile);
-            if (expectedEstimatedTicks == null)
-            {
-                Assert.Fail("Not able to make a route to the target tile");
-            }
-
-            _testAlgorithm.TargetTile = targetTile;
+            var offset = new Vector2Int(10, 0);
+            InitializeTestingSimulator(offset, true);
 
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
@@ -80,9 +72,15 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 yield return null;
             }
 
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
+            {
+                Assert.Fail("Not able to make a route to the target tile");
+            }
+            Assert.Less(_testAlgorithm.Tick, 10000, "The algorithm didn't reach the target tile before timeout");
+
             var actualTicks = _testAlgorithm.Tick;
-            Assert.GreaterOrEqual(expectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
-            Debug.Log("Over estimate with " + (expectedEstimatedTicks.Value - actualTicks) + " ticks");
+            Assert.GreaterOrEqual(_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
+            Debug.Log("Over estimate with " + (_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks) + " ticks");
         }
     }
 }
