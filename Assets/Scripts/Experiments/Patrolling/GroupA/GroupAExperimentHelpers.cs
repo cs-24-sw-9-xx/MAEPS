@@ -38,7 +38,7 @@ namespace Maes.Experiments.Patrolling
         {
             return new MySimulationScenario(
                                         seed: seed,
-                                        totalCycles: GroupAParameters.AmountOfCycles,
+                                        totalCycles: GroupAParameters.StandardAmountOfCycles,
                                         stopAfterDiff: false,
                                         robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                                             collisionMap: buildingConfig,
@@ -56,7 +56,7 @@ namespace Maes.Experiments.Patrolling
         {
             return new MySimulationScenario(
                                        seed: seed,
-                                       totalCycles: GroupAParameters.AmountOfCycles,
+                                       totalCycles: GroupAParameters.StandardAmountOfCycles,
                                        stopAfterDiff: false,
                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                                            collisionMap: buildingConfig,

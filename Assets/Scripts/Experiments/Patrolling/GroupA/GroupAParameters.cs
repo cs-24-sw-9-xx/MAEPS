@@ -20,6 +20,7 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
+using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
@@ -37,25 +38,35 @@ namespace Maes.Experiments.Patrolling
 {
     internal static class GroupAParameters
     {
-        public static readonly Dictionary<string, (PatrollingMapFactory?, CreateAlgorithmDelegate)> StandardAlgorithms = new()
+        /// <summary>
+        /// Supply the function with the robot count and it will return the patrolling map factory and the algorithm.
+        /// </summary>
+        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> StandardAlgorithms = new()
         {
-            { nameof(ConscientiousReactiveAlgorithm), (null, (_) => new ConscientiousReactiveAlgorithm()) },
+            { nameof(ConscientiousReactiveAlgorithm), (_) => (null, (_) => new ConscientiousReactiveAlgorithm()) },
+
+            // ConscientiousReactiveAlgorithm with partitioning
+            { nameof(ConscientiousReactiveAlgorithm), (_) => ((map) =>
+                PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, 1, StandardRobotConstraints),
+                 (_) => new ConscientiousReactiveAlgorithm()) },
+    
             // The map is different for each seed, so the algorithm can just use the same seed for all maps.
-            { nameof(RandomReactive), (null, (_) => new RandomReactive(1)) },
+            { nameof(RandomReactive), (_) => (null, (_) => new RandomReactive(1)) },
 
             // Algorithms that use all-waypoint-connected-maps
-            { nameof(HeuristicConscientiousReactiveAlgorithm), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HeuristicConscientiousReactiveAlgorithm()) },
-            { nameof(SingleCycleChristofides), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
+            { nameof(HeuristicConscientiousReactiveAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HeuristicConscientiousReactiveAlgorithm()) },
+            { nameof(SingleCycleChristofides), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
 
             // Algorithms that use all-waypoint-connected-maps and partitioning
-            { nameof(PartitionedHeuristicConscientiousReactive), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new PartitionedHeuristicConscientiousReactive(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))) },
-            { nameof(HMPPatrollingAlgorithm), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
+            { nameof(PartitionedHeuristicConscientiousReactive), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new PartitionedHeuristicConscientiousReactive(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))) },
+            { nameof(HMPPatrollingAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
             (
                 new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
             ))
             },
         };
-        public const int AmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
+
+        public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
         public const int StandardMapSize = 200;
         public const int StandardRobotCount = 8;
 
