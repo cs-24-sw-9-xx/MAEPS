@@ -162,6 +162,11 @@ namespace Maes.Simulation
                     AttemptSetPlayState(SimulationPlayState.Step);
                 }
             }
+
+            if (CurrentSimulation != null)
+            {
+                UpdateStatisticsUI();
+            }
 #endif
 
             if (CurrentSimulation == null)
@@ -265,8 +270,6 @@ namespace Maes.Simulation
             {
                 CurrentSimulation.LogicUpdate();
                 _physicsTicksSinceUpdate = 0;
-                UpdateStatisticsUI();
-
 
                 // If the simulator is in step mode, then automatically pause after logic step has been performed
                 if (PlayState == SimulationPlayState.Step)
@@ -292,11 +295,9 @@ namespace Maes.Simulation
 
         private void UpdateStatisticsUI()
         {
-#if !UNITY_SERVER
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
             CurrentSimulation?.UpdateDebugInfo();
             CurrentSimulation?.Tracker.UIUpdate();
-#endif
         }
 
         public void RemoveCurrentSimulation()
