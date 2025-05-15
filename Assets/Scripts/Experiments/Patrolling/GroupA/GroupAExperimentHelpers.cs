@@ -67,7 +67,7 @@ namespace Maes.Experiments.Patrolling
                                        mapSpawner: generator => generator.GenerateMap(mapConfig),
                                        robotConstraints: robotConstraints,
                                        statisticsFileName:
-                                       $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-BuldingMap-SpawnApart",
+                                       $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-CaveMap-SpawnApart",
                                        patrollingMapFactory: patrollingMapFactory);
         }
 
