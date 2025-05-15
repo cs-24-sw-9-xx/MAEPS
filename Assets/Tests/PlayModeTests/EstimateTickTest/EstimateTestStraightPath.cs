@@ -32,8 +32,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             _robotConstraints = new RobotConstraints(relativeMoveSpeed: relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0);
         }
 
-        [SetUp]
-        public void InitializeTestingSimulator()
+        public void InitializeTestingSimulator(Vector2Int parameter, bool isOffset)
         {
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
@@ -42,7 +41,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new MoveToTargetTileAlgorithm();
+                        var algorithm = new MoveToTargetTileAlgorithm(parameter, isOffset);
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
@@ -62,15 +61,15 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [Test(ExpectedResult = null)]
         public IEnumerator EstimateTicksToTile_StraightPath()
         {
+            var offset = new Vector2Int(10, 0);
+            InitializeTestingSimulator(offset, true);
             var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            var targetTile = robotCurrentPosition + new Vector2Int(10, 0);
+            var targetTile = robotCurrentPosition + offset;
             var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(targetTile);
             if (expectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
             }
-
-            _testAlgorithm.TargetTile = targetTile;
 
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);

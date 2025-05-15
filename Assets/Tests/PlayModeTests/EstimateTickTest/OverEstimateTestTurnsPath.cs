@@ -61,7 +61,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
                     {
-                        var algorithm = new MoveToTargetTileAlgorithm();
+                        var algorithm = new MoveToTargetTileAlgorithm(_targetTile);
                         _testAlgorithm = algorithm;
                         return algorithm;
                     }));
@@ -86,12 +86,10 @@ namespace Tests.PlayModeTests.EstimateTickTest
                 Assert.Fail("Not able to make a route to the target tile");
             }
 
-            _testAlgorithm.TargetTile = _targetTile;
-
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
-            while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
+            while (!_testAlgorithm.TargetReached)
             {
                 yield return null;
             }
