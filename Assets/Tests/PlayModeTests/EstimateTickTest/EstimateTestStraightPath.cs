@@ -78,6 +78,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             {
                 yield return null;
             }
+            Assert.Less(_testAlgorithm.Tick, 10000, "The algorithm didn't reach the target tile before timeout");
 
             var actualTicks = _testAlgorithm.Tick;
 
