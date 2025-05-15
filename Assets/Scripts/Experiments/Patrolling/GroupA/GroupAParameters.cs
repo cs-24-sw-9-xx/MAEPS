@@ -47,7 +47,7 @@ namespace Maes.Experiments.Patrolling
 
             // ConscientiousReactiveAlgorithm with partitioning
             { nameof(ConscientiousReactiveAlgorithm)+ "+partitioning", (_) => ((map) =>
-                PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, 1, StandardRobotConstraints),
+                PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, 1, CreateRobotConstraints()),
                  (_) => new ConscientiousReactiveAlgorithm()) },
     
             // The map is different for each seed, so the algorithm can just use the same seed for all maps.
@@ -74,15 +74,10 @@ namespace Maes.Experiments.Patrolling
         public static readonly string StandardRobotConstraintName = "Standard";
 
         /// <summary>
-        /// LOS communication.
-        /// </summary>
-        public static readonly RobotConstraints StandardRobotConstraints = CreateRobotConstraints();
-
-        /// <summary>
         /// Creates the robot constraints for the patrolling algorithms.
         /// The default values use LOS communication.
         /// </summary>
-        public static RobotConstraints CreateRobotConstraints(float senseNearbyAgentsRange = 5f, bool senseNearbyAgentsBlockedByWalls = true, float communicationDistanceThroughWalls = 0f)
+        public static RobotConstraints CreateRobotConstraints(float communicationDistanceThroughWalls = 0f, float senseNearbyAgentsRange = 5f, bool senseNearbyAgentsBlockedByWalls = true)
         {
             return new RobotConstraints(
                 senseNearbyAgentsRange: senseNearbyAgentsRange,
