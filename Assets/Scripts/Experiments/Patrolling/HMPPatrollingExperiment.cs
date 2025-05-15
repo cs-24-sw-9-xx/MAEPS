@@ -51,6 +51,7 @@ namespace Maes.Experiments.Patrolling
                 mapKnown: true,
                 distributeSlam: false,
                 slamRayTraceRange: 0f,
+                robotCollisions: false,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls == 0f);
 
             var scenarios = new List<MySimulationScenario>();
