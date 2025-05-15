@@ -22,12 +22,39 @@
 
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
+using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
+using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
+using Maes.Simulation.Patrolling;
+
+using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
 
 namespace Maes.Experiments.Patrolling
 {
     internal static class GroupAParameters
     {
+        public static readonly Dictionary<string, (PatrollingMapFactory?, CreateAlgorithmDelegate)> StandardAlgorithms = new()
+        {
+            { nameof(ConscientiousReactiveAlgorithm), (null, (_) => new ConscientiousReactiveAlgorithm()) },
+            // The map is different for each seed, so the algorithm can just use the same seed for all maps.
+            { nameof(RandomReactive), (null, (_) => new RandomReactive(1)) },
+
+            // Algorithms that use all-waypoint-connected-maps
+            { nameof(HeuristicConscientiousReactiveAlgorithm), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HeuristicConscientiousReactiveAlgorithm()) },
+            { nameof(SingleCycleChristofides), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
+
+            // Algorithms that use all-waypoint-connected-maps and partitioning
+            { nameof(PartitionedHeuristicConscientiousReactive), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new PartitionedHeuristicConscientiousReactive(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))) },
+            { nameof(HMPPatrollingAlgorithm), (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
+            (
+                new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
+            ))
+            },
+        };
         public const int AmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
         public const int StandardMapSize = 200;
         public const int StandardRobotCount = 8;

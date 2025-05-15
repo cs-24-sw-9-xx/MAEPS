@@ -22,16 +22,12 @@
 
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling;
-using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
 
 namespace Maes.Experiments.Patrolling
 {
-    using static Maes.Map.RobotSpawners.RobotSpawner<IPatrollingAlgorithm>;
-
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
@@ -40,32 +36,18 @@ namespace Maes.Experiments.Patrolling
     /// </summary>
     internal class GroupARobotCountExperiment : MonoBehaviour
     {
-        public GroupARobotCountExperiment()
-        {
-            _genericAlgorithms.Add(nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm());
-            _genericAlgorithms.Add(nameof(HeuristicConscientiousReactiveAlgorithm), (_) => new HeuristicConscientiousReactiveAlgorithm());
-            _genericAlgorithms.Add(nameof(SingleCycleChristofides), (_) => new SingleCycleChristofides());
-            _genericAlgorithms.Add(nameof(RandomReactive), (_) => new RandomReactive(1)); // The map is different for each seed, so the algorithm can just use the same seed for all maps.
-            // Todo add robots to run in a partitioned map.
-        }
-
         private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
-
-        /// <summary>
-        /// These are run both on a partitioned map and a non-partitioned map.
-        /// </summary>
-        private static readonly Dictionary<string, CreateAlgorithmDelegate> _genericAlgorithms = new();
 
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(5))
             {
-                foreach (var (algorithmName, algorithm) in _genericAlgorithms)
+                foreach (var (algorithmName, (patrollingMapFactory, algorithm)) in GroupAParameters.StandardAlgorithms)
                 {
                     foreach (var robotCount in _robotCounts)
                     {
-                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, robotCount, GroupAParameters.StandardMapSize));
+                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, GroupAParameters.StandardMapSize));
                     }
                 }
             }
