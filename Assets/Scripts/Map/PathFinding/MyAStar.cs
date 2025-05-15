@@ -105,18 +105,40 @@ namespace Maes.Map.PathFinding
                 var traversalVelocity = Velocity.FromMetersPerSecond(1);
 
                 var grid = Grid.CreateGridWithLateralAndDiagonalConnections(gridSize, cellSize, traversalVelocity);
+                Func<Vector2Int, bool> isSolid = beOptimistic ? pathFindingMap.IsOptimisticSolid : pathFindingMap.IsSolid;
                 for (var x = 0; x < width; x++)
                 {
                     for (var y = 0; y < height; y++)
                     {
-                        if (beOptimistic ? pathFindingMap.IsOptimisticSolid(new Vector2Int(x, y)) : pathFindingMap.IsSolid(new Vector2Int(x, y)))
+                        if (isSolid(new Vector2Int(x, y)))
                         {
                             var gridPosition = new GridPosition(x, y);
                             grid.DisconnectNode(gridPosition);
                             grid.RemoveDiagonalConnectionsIntersectingWithNode(gridPosition);
                         }
+                        // Penalize all tiles close to a wall
+                        else if (
+                            isSolid(new Vector2Int(x - 1, y))
+                            || isSolid(new Vector2Int(x + 1, y))
+                            || isSolid(new Vector2Int(x, y - 1))
+                            || isSolid(new Vector2Int(x, y + 1))
+                            || isSolid(new Vector2Int(x - 1, y - 1))
+                            || isSolid(new Vector2Int(x + 1, y - 1))
+                            || isSolid(new Vector2Int(x - 1, y + 1))
+                            || isSolid(new Vector2Int(x + 1, y + 1))
+                        )
+                        {
+                            var gridPosition = new GridPosition(x, y);
+                            var node = grid.GetNode(gridPosition);
+
+                            foreach (var incoming in node.Incoming)
+                            {
+                                incoming.TraversalVelocity = Velocity.FromMetersPerSecond(0.5f);
+                            }
+                        }
                     }
                 }
+
 
                 if (beOptimistic)
                 {
