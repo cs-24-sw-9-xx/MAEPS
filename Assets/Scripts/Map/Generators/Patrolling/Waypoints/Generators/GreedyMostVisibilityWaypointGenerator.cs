@@ -31,6 +31,7 @@ using Maes.Utilities;
 
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -124,6 +125,134 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
+        }
+
+        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility_Improved(Bitmap map, float maxDistance = 0f)
+        {
+            var precomputedVisibilities = new Dictionary<Vector2Int, Bitmap>();
+            // Calculate visibility for each tile
+            for (var x = 0; x < map.Width; x++)
+            {
+                for (var y = 0; y < map.Height; y++)
+                {
+                    if (map.Contains(x, y))
+                    {
+                        continue;
+                    }
+
+                    var tile = new Vector2Int(x, y);
+
+                    // Calculate visibility for the current tile
+                    precomputedVisibilities[tile] = VisibilityOfPoint(map, maxDistance, x, y, tile);
+                }
+            }
+            return precomputedVisibilities;
+        }
+
+        private static Bitmap VisibilityOfPoint(Bitmap map, float maxDistance, int x_start, int y_start, Vector2Int tile)
+        {
+            var visibility = new Bitmap(map.Width, map.Height);
+            var unexplored = new Queue<(int x, int y, int incX, int incY)>();
+            unexplored.Enqueue((x_start, y_start, 1, 1));
+            unexplored.Enqueue((x_start, y_start, -1, 1));
+            unexplored.Enqueue((x_start, y_start, 1, -1));
+            unexplored.Enqueue((x_start, y_start, -1, -1));
+            while (unexplored.Count > 0)
+            {
+                var (x, y, incX, incY) = unexplored.Dequeue();
+
+                if (x < 0 || x >= map.Width || y < 0 || y >= map.Height)
+                {
+                    continue;
+                }
+
+                // If it is a wall, skip it
+                if (map.Contains(x, y))
+                {
+                    continue;
+                }
+
+                // If it is already explored and cannot lead to unexplored tiles, skip it
+                if (visibility.Contains(x, y) && x != x_start && y != y_start)
+                {
+                    continue;
+                }
+
+                // If it is out of range, skip it
+                if (maxDistance != 0f && x * x + y * y > maxDistance * maxDistance)
+                {
+                    continue;
+                }
+
+                // Check line of sight
+                //if (!HasLineOfSight(map.Width, map.Height, x_start, y_start, x, y, map))
+                //{
+                //    continue;
+                //}
+
+                visibility.Set(x, y);
+                unexplored.Enqueue((x + incX, y, incX, incY));
+                unexplored.Enqueue((x, y + incY, incX, incY));
+            }
+            return visibility;
+        }
+
+        public static bool HasLineOfSight(
+                int width,
+                int height,
+                int originX,
+                int originY,
+                int endX,
+                int endY,
+                Bitmap map)
+        {
+            var x = originX;
+            var y = originY;
+
+            var diffX = endX - originX;
+            var diffY = endY - originY;
+
+            var stepX = math.sign(diffX);
+            var stepY = math.sign(diffY);
+
+            var angle = (float)math.atan2(-diffY, diffX);
+
+            var cosAngle = (float)math.cos(angle);
+            var sinAngle = (float)math.sin(angle);
+
+            var tMaxX = 0.5f / cosAngle;
+            var tMaxY = 0.5f / sinAngle;
+
+            var tDeltaX = tMaxX * 2.0f;
+            var tDeltaY = tMaxY * 2.0f;
+
+            var manhattanDistance = math.abs(diffX) + math.abs(diffY);
+
+            for (var t = 0; t < manhattanDistance; t++)
+            {
+                if (math.abs(tMaxX) < math.abs(tMaxY))
+                {
+                    tMaxX += tDeltaX;
+                    x += stepX;
+                }
+                else
+                {
+                    tMaxY += tDeltaY;
+                    y += stepY;
+                }
+
+                if (x < 0 || y < 0 || x >= width || y >= height)
+                {
+                    return false;
+                }
+
+                if (map.Contains(x, y))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)

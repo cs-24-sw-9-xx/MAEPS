@@ -42,6 +42,8 @@ namespace Tests.EditModeTests.Benchmarks
             Assert.Greater(result!.Count, 0);
         }
 
+        // Make benchmark for the visibility computation of the improved algorithm
+
         private const string Map = "" +
             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
             "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +

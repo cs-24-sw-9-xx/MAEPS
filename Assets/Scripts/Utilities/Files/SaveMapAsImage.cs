@@ -6,7 +6,7 @@ namespace Maes.Utilities.Files
 {
     public static class SaveAsImage
     {
-        public static void SaveVisibleTiles(HashSet<Vector2Int> pointsOfInterest, Vector2Int startPoint, bool optimized, Bitmap map)
+        public static void SaveVisibleTiles(Vector2Int startPoint, bool optimized, Bitmap map, HashSet<Vector2Int> pointsOfInterest = null)
         {
             var texture = new Texture2D(map.Width, map.Height);
             for (var x = 0; x < map.Width; x++)
@@ -19,15 +19,17 @@ namespace Maes.Utilities.Files
                     }
                     else
                     {
-
                         texture.SetPixel(x, y, Color.white);
                     }
                 }
             }
 
-            foreach (var point in pointsOfInterest)
+            if (pointsOfInterest != null)
             {
-                texture.SetPixel(point.x, point.y, Color.black);
+                foreach (var point in pointsOfInterest)
+                {
+                    texture.SetPixel(point.x, point.y, Color.black);
+                }
             }
 
             texture.SetPixel(startPoint.x, startPoint.y, Color.red);
