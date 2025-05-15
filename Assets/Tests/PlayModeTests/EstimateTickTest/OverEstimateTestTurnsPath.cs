@@ -89,7 +89,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
-            while (!_testAlgorithm.TargetReached)
+            while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
             {
                 yield return null;
             }
