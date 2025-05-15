@@ -46,7 +46,7 @@ namespace Maes.Experiments.Patrolling
             { nameof(ConscientiousReactiveAlgorithm), (_) => (null, (_) => new ConscientiousReactiveAlgorithm()) },
 
             // ConscientiousReactiveAlgorithm with partitioning
-            { nameof(ConscientiousReactiveAlgorithm), (_) => ((map) =>
+            { nameof(ConscientiousReactiveAlgorithm)+ "+partitioning", (_) => ((map) =>
                 PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, 1, StandardRobotConstraints),
                  (_) => new ConscientiousReactiveAlgorithm()) },
     
