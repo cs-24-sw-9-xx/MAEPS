@@ -26,7 +26,6 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private Button _allRobotsNoneButton = null!;
         private Button _allRobotsWaypointHeatMapButton = null!;
-        private Button _allRobotsCoverageHeatMapButton = null!;
         private Button _allRobotsHighlightRobotsButton = null!;
         private Button _allRobotsShowVerticesColorsButton = null!;
 
@@ -41,7 +40,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         protected override Button[] MapVisualizationToggleGroup => new[] {
             _allRobotsNoneButton,
             _allRobotsWaypointHeatMapButton,
-            _allRobotsCoverageHeatMapButton,
             _allRobotsHighlightRobotsButton,
             _allRobotsShowVerticesColorsButton,
             _selectedRobotTargetWaypointButton,
@@ -60,7 +58,6 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             _allRobotsNoneButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsNoneButton");
             _allRobotsWaypointHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsWaypointHeatMapButton");
-            _allRobotsCoverageHeatMapButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsCoverageHeatMapButton");
             _allRobotsHighlightRobotsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsHighlightRobotsButton");
             _allRobotsShowVerticesColorsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("AllRobotsShowVerticesColorsButton");
 
@@ -76,8 +73,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             _allRobotsNoneButton.RegisterCallback<ClickEvent>(AllRobotsNoneButtonClicked);
 
             _allRobotsWaypointHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsWaypointHeatMapButtonClicked);
-
-            _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
 
             _allRobotsHighlightRobotsButton.RegisterCallback<ClickEvent>(AllRobotsHighlightRobotsButtonClicked);
 
@@ -104,9 +99,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 case WaypointHeatMapVisualizationMode:
                     SelectVisualizationButton(_allRobotsWaypointHeatMapButton);
-                    break;
-                case PatrollingCoverageHeatMapVisualizationMode:
-                    SelectVisualizationButton(_allRobotsCoverageHeatMapButton);
                     break;
                 case NoneVisualizationMode:
                     SelectVisualizationButton(_allRobotsNoneButton);
@@ -195,11 +187,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         private void AllRobotsWaypointHeatMapButtonClicked(ClickEvent _)
         {
             ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowWaypointHeatMap());
-        }
-
-        private void AllRobotsCoverageHeatMapButtonClicked(ClickEvent _)
-        {
-            ExecuteAndRememberMapVisualizationModification(sim => sim.PatrollingTracker.ShowAllRobotCoverageHeatMap());
         }
 
         private void AllRobotsHighlightRobotsButtonClicked(ClickEvent _)
