@@ -95,7 +95,8 @@ namespace Maes.Robot
 
         private int _localTickCounter;
 
-        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix = null;
+        private bool _adjacencyMatrixComputed = false;
+        private readonly Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = new();
 
         private List<HashSet<int>>? _communicationGroups;
 
@@ -230,6 +231,9 @@ namespace Maes.Robot
             _queuedMessages.Clear();
             _localTickCounter++;
 
+            _adjacencyMatrix.Clear();
+            _adjacencyMatrixComputed = false;
+
             _receivedMessagesLastTick = _receivedMessagesThisTick;
             _receivedMessagesThisTick = 0;
 
@@ -260,7 +264,6 @@ namespace Maes.Robot
                 CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
             }
 
-            _adjacencyMatrix = null;
             _communicationGroups = null;
         }
 
@@ -286,21 +289,28 @@ namespace Maes.Robot
 
         private void PopulateAdjacencyMatrix()
         {
-            if (_adjacencyMatrix != null)
+            if (_adjacencyMatrixComputed)
             {
                 return;
             }
 
-            _adjacencyMatrix = new();
+            _adjacencyMatrixComputed = true;
 
-            foreach (var r1 in _robots)
+            for (var i = 0; i < _robots.Count; i++)
             {
-                foreach (var r2 in _robots)
+                for (var j = i + 1; j < _robots.Count; j++)
                 {
-                    if (r1.id != r2.id)
-                    {
-                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
-                    }
+                    var r1 = _robots[i];
+                    var r2 = _robots[j];
+                    var communication = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
+
+                    var reverseCommunication = new CommunicationInfo(communication.Distance,
+                        (communication.Angle + 180f) % 360f, communication.WallCellsDistance,
+                        communication.RegularCellsDistance, communication.TransmissionSuccessful,
+                        communication.SignalStrength);
+
+                    _adjacencyMatrix[(r1.id, r2.id)] = communication;
+                    _adjacencyMatrix[(r2.id, r1.id)] = reverseCommunication;
                 }
             }
         }
