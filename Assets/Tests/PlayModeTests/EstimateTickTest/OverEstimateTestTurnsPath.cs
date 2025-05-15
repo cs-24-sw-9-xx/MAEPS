@@ -80,17 +80,17 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [Test(ExpectedResult = null)]
         public IEnumerator EstimateTicksToTile_TestOverEstimate_TurnsPath()
         {
-            if (_testAlgorithm.ExpectedEstimatedTicks == null)
-            {
-                Assert.Fail("Not able to make a route to the target tile");
-            }
-
             _maes.PressPlayButton();
             _maes.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
             while (!_testAlgorithm.TargetReached && _testAlgorithm.Tick < 10000)
             {
                 yield return null;
+            }
+
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
+            {
+                Assert.Fail("Not able to make a route to the target tile");
             }
             Assert.Less(_testAlgorithm.Tick, 10000, "The algorithm didn't reach the target tile before timeout");
 
