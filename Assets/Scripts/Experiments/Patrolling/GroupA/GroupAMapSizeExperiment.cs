@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Simulation.Patrolling;
+using Maes.UI;
 
 using UnityEngine;
 
@@ -58,6 +59,7 @@ namespace Maes.Experiments.Patrolling
             var simulator = new MySimulator(scenarios);
 
             simulator.PressPlayButton(); // Instantly enter play mode
+            simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
         }
     }
 }
