@@ -31,6 +31,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         public Robot2DController Controller = null!;
         public Vector2Int TargetTile => _useOffset ? _startPosition + _offset : _targetTile;
         public bool TargetReached;
+        public float? ExpectedEstimatedTicks;
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
@@ -62,6 +63,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         {
             Controller = controller;
             _startPosition = controller.SlamMap.CoarseMap.GetCurrentPosition();
+            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
         }
 
         public string GetDebugInfo()

@@ -63,10 +63,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         {
             var offset = new Vector2Int(10, 0);
             InitializeTestingSimulator(offset, true);
-            var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            var targetTile = robotCurrentPosition + offset;
-            var expectedEstimatedTicks = _robot.Controller.OverEstimateTimeToTarget(targetTile);
-            if (expectedEstimatedTicks == null)
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
             }
@@ -81,8 +78,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
             Assert.Less(_testAlgorithm.Tick, 10000, "The algorithm didn't reach the target tile before timeout");
 
             var actualTicks = _testAlgorithm.Tick;
-            Assert.GreaterOrEqual(expectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
-            Debug.Log("Over estimate with " + (expectedEstimatedTicks.Value - actualTicks) + " ticks");
+            Assert.GreaterOrEqual(_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
+            Debug.Log("Over estimate with " + (_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks) + " ticks");
         }
     }
 }

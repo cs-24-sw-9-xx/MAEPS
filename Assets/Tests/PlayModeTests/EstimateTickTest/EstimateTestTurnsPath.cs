@@ -81,8 +81,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [Test(ExpectedResult = null)]
         public IEnumerator EstimateTicksToTile_TurnsPath()
         {
-            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(_targetTile);
-            if (expectedEstimatedTicks == null)
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
             }
@@ -98,7 +97,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
+            var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
         }
     }

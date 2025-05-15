@@ -63,10 +63,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         {
             var offset = new Vector2Int(10, 0);
             InitializeTestingSimulator(offset, true);
-            var robotCurrentPosition = _testAlgorithm.Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            var targetTile = robotCurrentPosition + offset;
-            var expectedEstimatedTicks = _robot.Controller.EstimateTimeToTarget(targetTile);
-            if (expectedEstimatedTicks == null)
+            if (_testAlgorithm.ExpectedEstimatedTicks == null)
             {
                 Assert.Fail("Not able to make a route to the target tile");
             }
@@ -82,7 +79,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var actualTicks = _testAlgorithm.Tick;
 
-            var diff = Mathf.Abs((float)(actualTicks - expectedEstimatedTicks.Value) / expectedEstimatedTicks.Value);
+            var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
         }
     }
