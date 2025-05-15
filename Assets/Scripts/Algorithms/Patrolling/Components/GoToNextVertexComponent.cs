@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private const float MinDistance = 0.25f;
 
         // How small the angle to the target has to be before it is pointing in the direction.
-        private const float MinAngle = 1.5f;
+        private const float MinAngle = 0.5f;
 
         private readonly NextVertexDelegate _nextVertexDelegate;
         private readonly PatrollingAlgorithm _patrollingAlgorithm;
@@ -165,7 +165,19 @@ namespace Maes.Algorithms.Patrolling.Components
                     yield break;
                 }
 
-                yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, shouldContinue: false);
+                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+
+                // Do our own collision recovery when colliding with walls
+                if (_controller.Status != RobotStatus.Idle && !_controller.IsCurrentlyColliding)
+                {
+                    continue;
+                }
+
+                if (_controller.IsCurrentlyColliding)
+                {
+                    _controller.StopCurrentTask();
+                    yield return ComponentWaitForCondition.WaitForRobotStatus(RobotStatus.Idle, false);
+                }
 
                 var relativePosition = GetRelativePositionTo(target);
                 if (relativePosition.Distance <= MinDistance)
