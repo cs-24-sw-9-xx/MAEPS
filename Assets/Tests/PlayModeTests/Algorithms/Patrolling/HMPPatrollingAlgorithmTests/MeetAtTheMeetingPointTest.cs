@@ -23,18 +23,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     {
         private PatrollingSimulator _simulator;
         private readonly RobotConstraints _robotConstraints = new(
-            senseNearbyAgentsRange: 5f,
-            senseNearbyAgentsBlockedByWalls: true,
-            automaticallyUpdateSlam: true,
-            slamUpdateIntervalInTicks: 1,
-            slamSynchronizeIntervalInTicks: 10,
-            slamPositionInaccuracy: 0.2f,
             mapKnown: true,
             distributeSlam: false,
-            slamRayTraceRange: 7f,
-            relativeMoveSpeed: 1f,
-            agentRelativeSize: 0.6f,
-            calculateSignalTransmissionProbability: (totalDistance, distanceThroughWalls) => distanceThroughWalls == 0.0 && totalDistance <= 5.0f);
+            slamRayTraceRange: 0f,
+            robotCollisions: false,
+            calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls == 0f);
 
 
         [TearDown]
