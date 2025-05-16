@@ -76,7 +76,7 @@ namespace Tests.EditModeTests
             var (start, end, map) = new StartEndLocationSimulationMapBuilder(stringMap).Build();
             var communicationManager = new CommunicationManager(map, _robotConstraints, null);
 
-            var result = communicationManager.CommunicationBetweenPoints(start, end);
+            var result = communicationManager.CommunicationBetweenPoints(start, end, _robotConstraints.TransmitPower);
 
             Assert.AreEqual(distance, result.WallCellsDistance, 0.01f);
         }

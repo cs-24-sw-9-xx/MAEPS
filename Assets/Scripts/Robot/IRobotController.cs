@@ -177,7 +177,7 @@ namespace Maes.Robot
         /// Receives all broadcast data sent by nearby robots the previous logic tick
         /// </summary>
         /// <returns> a list of message objects of any type </returns>
-        List<object> ReceiveBroadcast();
+        List<object> ReceiveBroadcast(float? signalStrength = null);
 
         /// <summary>
         /// Deposits the given tag into the environment at the current position of the robot.

@@ -357,9 +357,9 @@ namespace Maes.Robot
             CommunicationManager.BroadcastMessage(_robot, data);
         }
 
-        public List<object> ReceiveBroadcast()
+        public List<object> ReceiveBroadcast(float? signalStrength = null)
         {
-            return CommunicationManager.ReadMessages(_robot);
+            return CommunicationManager.ReadMessages(_robot, signalStrength);
         }
 
         public IRobotController.DetectedWall? DetectWall(float globalAngle)

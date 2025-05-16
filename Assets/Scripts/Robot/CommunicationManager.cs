@@ -173,9 +173,9 @@ namespace Maes.Robot
         }
 
         // Returns a list of messages sent by other robots
-        public List<object> ReadMessages(MonaRobot receiver)
+        public List<object> ReadMessages(MonaRobot receiver, float? signalStrength = null)
         {
-            PopulateAdjacencyMatrix();
+            PopulateAdjacencyMatrix(signalStrength);
             var messages = new List<object>();
             foreach (var message in _readableMessages)
             {
@@ -284,7 +284,7 @@ namespace Maes.Robot
             // No physics update needed
         }
 
-        private void PopulateAdjacencyMatrix()
+        private void PopulateAdjacencyMatrix(float? signalStrength = null)
         {
             if (_adjacencyMatrix != null)
             {
@@ -299,7 +299,10 @@ namespace Maes.Robot
                 {
                     if (r1.id != r2.id)
                     {
-                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
+                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints(
+                            (Vector2)r1.transform.position - _offset,
+                            (Vector2)r2.transform.position - _offset,
+                            signalStrength ?? _robotConstraints.TransmitPower);
                     }
                 }
             }
@@ -460,7 +463,7 @@ namespace Maes.Robot
             {
                 for (var y = 0; y < height; y++)
                 {
-                    var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f));
+                    var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f), _robotConstraints.TransmitPower);
                     if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
                     {
                         bitmap.Set(x, y);
@@ -474,7 +477,7 @@ namespace Maes.Robot
         // This method is an implementation of Siddon's algorithm which can be found in the following paper:
         // Siddon, R. L. (1985). Fast calculation of the exact radiological path for a three‐dimensional CT array
         // https://doi.org/10.1118/1.595715
-        public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end)
+        public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end, float signalStrength)
         {
             var x1 = start.x;
             var y1 = start.y;
@@ -483,8 +486,6 @@ namespace Maes.Robot
             var xDiff = x2 - x1;
             var yDiff = y2 - y1;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
-
-            var signalStrength = _robotConstraints.TransmitPower;
 
             if (lineLength == 0)
             {
