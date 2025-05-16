@@ -35,18 +35,25 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class RandomRedistributionWithCRAlgo : PatrollingAlgorithm
     {
+        public RandomRedistributionWithCRAlgo(int seed, int probabilityFactor)
+        {
+            _seed = seed;
+            _probabilityFactor = probabilityFactor;
+        }
         public override string AlgorithmName => "Random Redistribution Conscientious Reactive Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private RandomRedistributionComponent _redistributionComponent = null!;
+        private readonly int _seed;
+        private readonly int _probabilityFactor;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, 1234, delay: 100);
+            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, seed: _seed, probabilityFactor: _probabilityFactor);
 
             return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
