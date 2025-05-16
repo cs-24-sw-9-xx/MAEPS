@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -14,6 +15,8 @@ using Maes.UI.Visualizers.Patrolling;
 using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 
 using UnityEngine;
+
+using ThreadPriority = System.Threading.ThreadPriority;
 
 namespace Maes.Statistics.Trackers
 {
@@ -36,6 +39,8 @@ namespace Maes.Statistics.Trackers
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
 
+        private readonly BlockingCollection<(PatrollingSnapshot, WaypointSnapshot[])> _snapshots = new();
+
         private readonly Dictionary<int, CsvDataWriter<WaypointSnapshot>> _waypointSnapShots;
 
         private readonly Dictionary<int, VertexDetails> _vertices;
@@ -46,6 +51,8 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
+
+        private readonly Thread _writerThread;
         
         private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
 
@@ -73,6 +80,42 @@ namespace Maes.Statistics.Trackers
              
             _waypointSnapShots =
                 _vertices.Values.ToDictionary(k => k.Vertex.Id, k => new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath, $"{k.Vertex.Position.x}_{k.Vertex.Position.y}")));
+
+            _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
+            _writerThread.Start();
+        }
+
+        private void WriterThread()
+        {
+            try
+            {
+                while (true)
+                {
+                    var snapshots = _snapshots.Take();
+
+                    _patrollingSnapshotWriter.AddRecord(snapshots.Item1);
+
+                    for (var i = 0; i < snapshots.Item2.Length; i++)
+                    {
+                        _waypointSnapShots[i].AddRecord(snapshots.Item2[i]);
+                    }
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // BlockingCollection.Take throws this exception when CompleteAdding() has been called and there are no items in the collection.
+                // What a stupid exception to throw.
+            }
+            
+            // Well we are done now so finish up.
+            _patrollingSnapshotWriter.Finish();
+            _patrollingSnapshotWriter.Dispose();
+
+            foreach (var csvWriter in _waypointSnapShots.Values)
+            {
+                csvWriter.Finish();
+                csvWriter.Dispose();
+            }
         }
 
         public void OnReachedVertex(int vertexId)
@@ -99,14 +142,9 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
-            _patrollingSnapshotWriter.Finish();
-            _patrollingSnapshotWriter.Dispose();
-
-            foreach (var csvWriter in _waypointSnapShots.Values)
-            {
-                csvWriter.Finish();
-                csvWriter.Dispose();
-            }
+            _snapshots.CompleteAdding();
+            _writerThread.Join();
+            _snapshots.Dispose();
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)
@@ -173,13 +211,20 @@ namespace Maes.Statistics.Trackers
 
         protected override void CreateSnapShot(CommunicationSnapshot communicationSnapshot)
         {
-            _patrollingSnapshotWriter.AddRecord(new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
-            
-            foreach (var vertex in _vertices.Values)
+            var patrollingSnapshot =
+                new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness,
+                    TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots);
+
+            var waypointSnapshots = new WaypointSnapshot[_vertices.Count];
+
+            for (var i = 0; i < waypointSnapshots.Length; i++)
             {
-                _waypointSnapShots[vertex.Vertex.Id].AddRecord(new WaypointSnapshot(CurrentTick,
-                    CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+                var vertex = _vertices[i].Vertex;
+                waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
+                    vertex.NumberOfVisits);
             }
+            
+            _snapshots.Add((patrollingSnapshot, waypointSnapshots));
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
