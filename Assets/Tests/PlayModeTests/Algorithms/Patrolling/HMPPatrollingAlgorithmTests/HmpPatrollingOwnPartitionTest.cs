@@ -77,19 +77,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
         {
 
             var robotConstraints = new RobotConstraints(
-                senseNearbyAgentsRange: 5f,
-                senseNearbyAgentsBlockedByWalls: true,
-                automaticallyUpdateSlam: true,
-                slamUpdateIntervalInTicks: 1,
-                slamSynchronizeIntervalInTicks: 10,
-                slamPositionInaccuracy: 0.2f,
                 mapKnown: true,
                 distributeSlam: false,
-                environmentTagReadRange: 100f,
-                slamRayTraceRange: 7f,
-                relativeMoveSpeed: 1f,
-                agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: (_, _) => true);
+                slamRayTraceRange: 0f,
+                robotCollisions: false,
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls == 0f);
 
             var mapConfig = new BuildingMapConfig(123, widthInTiles: MapSize, heightInTiles: MapSize, brokenCollisionMap: false);
 

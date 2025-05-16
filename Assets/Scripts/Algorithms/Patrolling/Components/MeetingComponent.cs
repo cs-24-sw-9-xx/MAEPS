@@ -20,7 +20,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         public MeetingComponent(int preUpdateOrder, int postUpdateOrder,
             Func<int> getLogicTick, EstimateTimeDelegate estimateTime,
-            PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
+            PatrollingMap patrollingMap, IRobotController controller, PartitionComponent<HMPPartitionInfo> partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
             IMovementComponent movementComponent)
         {
@@ -46,7 +46,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
-        private readonly PartitionComponent _partitionComponent;
+        private readonly PartitionComponent<HMPPartitionInfo> _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
         private Meeting _nextMeeting;

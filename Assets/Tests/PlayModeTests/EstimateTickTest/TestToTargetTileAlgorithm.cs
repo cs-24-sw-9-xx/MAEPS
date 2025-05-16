@@ -10,10 +10,28 @@ namespace Tests.PlayModeTests.EstimateTickTest
 {
     public class MoveToTargetTileAlgorithm : IExplorationAlgorithm
     {
+        public MoveToTargetTileAlgorithm(Vector2Int parameter, bool isOffset = false)
+        {
+            if (isOffset)
+            {
+                _offset = parameter;
+            }
+            else
+            {
+                _targetTile = parameter;
+            }
+            _useOffset = isOffset;
+        }
+
+        private readonly bool _useOffset;
+        private Vector2Int _offset;
+        private Vector2Int _targetTile;
+        private Vector2Int _startPosition;
         public int Tick { get; private set; }
         public Robot2DController Controller = null!;
-        public Vector2Int TargetTile;
+        public Vector2Int TargetTile => _useOffset ? _startPosition + _offset : _targetTile;
         public bool TargetReached;
+        public float? ExpectedEstimatedTicks;
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
         {
@@ -25,9 +43,11 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
+            _startPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
+            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile, dependOnBrokenBehaviour: false);
             while (true)
             {
-                if (!IsDestinationReached(TargetTile))
+                if (!IsDestinationReached(TargetTile) && !TargetReached)
                 {
                     Controller.PathAndMoveTo(TargetTile);
                     Tick++;

@@ -31,7 +31,7 @@ using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning
 {
-    public class PartitionInfo : IEquatable<PartitionInfo>
+    public class PartitionInfo : IEquatable<PartitionInfo>, ICloneable<PartitionInfo>
     {
         public PartitionInfo(int robotId, IReadOnlyCollection<int> vertexIds)
         {
@@ -82,6 +82,12 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         {
             return !Equals(left, right);
         }
+
+        PartitionInfo ICloneable<PartitionInfo>.Clone()
+        {
+            // This class is immutable, therefore we can just return this.
+            return this;
+        }
     }
 
     public sealed class HMPPartitionInfo : PartitionInfo, IEquatable<HMPPartitionInfo>, ICloneable<HMPPartitionInfo>
@@ -93,12 +99,6 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         }
 
         public IReadOnlyList<MeetingPoint> MeetingPoints { get; }
-
-        public HMPPartitionInfo Clone()
-        {
-            // This class is immutable, therefore we can just return this.
-            return this;
-        }
 
         public bool Equals(HMPPartitionInfo other)
         {
@@ -113,6 +113,18 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public override int GetHashCode()
         {
             return HashCode.Combine(base.GetHashCode(), MeetingPoints);
+        }
+
+        public object Clone()
+        {
+            // This class is immutable, therefore we can just return this.
+            return this;
+        }
+
+        HMPPartitionInfo ICloneable<HMPPartitionInfo>.Clone()
+        {
+            // This class is immutable, therefore we can just return this.
+            return this;
         }
 
         public static bool operator ==(HMPPartitionInfo? left, HMPPartitionInfo? right)

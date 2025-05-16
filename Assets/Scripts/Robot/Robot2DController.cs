@@ -362,11 +362,6 @@ namespace Maes.Robot
             return CommunicationManager.ReadMessages(_robot);
         }
 
-        public List<KeyValuePair<int, object>> ReceiveBroadcastWithId()
-        {
-            return CommunicationManager.ReadMessagesWithId(_robot);
-        }
-
         public IRobotController.DetectedWall? DetectWall(float globalAngle)
         {
 #if DEBUG
@@ -494,47 +489,28 @@ namespace Maes.Robot
             }
         }
 
-        /// <summary>
-        /// Estimates the time of arrival for the robot to reach the specified destination.
-        /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
-        /// </summary>
-        /// <param name="target">the target that the path should end at.</param>
-        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
-        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        /// <inheritdoc/>
+        public int? EstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
             var approxPosition = SlamMap.CoarseMap.GetApproximatePosition();
             var position = Vector2Int.FloorToInt(approxPosition);
-            return TravelEstimator.EstimateTime(position, target, acceptPartialPaths, beOptimistic);
+            return TravelEstimator.EstimateTime(position, target, acceptPartialPaths, beOptimistic, dependOnBrokenBehaviour);
         }
 
-        /// <summary>
-        /// Estimates the time of arrival for the robot to reach the specified destination.
-        /// This this estimation is overestimated from the expected time.
-        /// Uses the path from PathAndMoveTo and the robots max speed (RobotConstraints.RelativeMoveSpeed) to calculate the ETA.
-        /// </summary>
-        /// <param name="target">the target that the path should end at.</param>
-        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
-        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public int? OverEstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        /// <inheritdoc/>
+        public int? OverEstimateTimeToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
             var approxPosition = SlamMap.CoarseMap.GetApproximatePosition();
             var position = Vector2Int.FloorToInt(approxPosition);
-            return TravelEstimator.OverEstimateTime(position, target, acceptPartialPaths, beOptimistic);
+            return TravelEstimator.OverEstimateTime(position, target, acceptPartialPaths, beOptimistic, dependOnBrokenBehaviour);
         }
 
-        /// <summary>
-        /// Estimates the distance for robot to reach the specified destination.
-        /// Uses the path from PathAndMoveTo to calculate distance.
-        /// </summary>
-        /// <param name="target">the target that the path should end at.</param>
-        /// <param name="acceptPartialPaths">if <b>true</b>, returns the distance of the path getting the closest to the target, if no full path can be found.</param>
-        /// <param name="beOptimistic">if <b>true</b>, treats unseen tiles as open in the path finding algorithm. Treats unseen tiles as solid otherwise.</param>
-        public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true)
+        /// <inheritdoc/>
+        public float? EstimateDistanceToTarget(Vector2Int target, bool acceptPartialPaths = false, bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
         {
             var approxPosition = SlamMap.CoarseMap.GetApproximatePosition();
             var position = Vector2Int.FloorToInt(approxPosition);
-            return TravelEstimator.EstimateDistance(position, target, acceptPartialPaths, beOptimistic);
+            return TravelEstimator.EstimateDistance(position, target, acceptPartialPaths, beOptimistic, dependOnBrokenBehaviour);
         }
 
         /// <summary>

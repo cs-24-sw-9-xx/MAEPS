@@ -70,11 +70,6 @@ namespace Maes.Map
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, SimulationMap<Tile> simulationMap)
         {
-            // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
-            // TODO: Of cause this requires specific code for that waypoint generation algorithm.
-
-            var startTime = Time.realtimeSinceStartup;
-
             // HACK: Creating a slam map with robot constraints seems a bit hacky tbh :(
             var slamMap = new SlamMap(simulationMap, new RobotConstraints(mapKnown: true), 0);
             var coarseMap = slamMap.CoarseMap;

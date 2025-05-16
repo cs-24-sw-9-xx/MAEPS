@@ -67,7 +67,7 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
         /// <returns></returns>
         private float DistanceEstimatorMethod(Vertex _, Vertex target)
         {
-            return Controller.EstimateDistanceToTarget(target.Position) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
+            return Controller.EstimateDistanceToTarget(target.Position, dependOnBrokenBehaviour: false) ?? throw new Exception($"Distance estimation must not be null. Check if the target is reachable. VertexId: {target.Id}, x:{target.Position.x}, y:{target.Position.y}");
         }
 
         private float ActualDistanceMethod(Vertex source, Vertex target)
