@@ -31,6 +31,8 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Collections.Generic;
+
 using Maes.Algorithms.Patrolling;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -47,7 +49,10 @@ namespace Maes.Experiments.Patrolling
     {
         private void Start()
         {
-            var robotConstraints = new RobotConstraints(
+            var constraintsDict = new Dictionary<string, RobotConstraints>();
+
+            //var constraintsGlobalCommunication = new RobotConstraints(
+            constraintsDict["Global"] = new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
                 automaticallyUpdateSlam: true,
@@ -63,7 +68,44 @@ namespace Maes.Experiments.Patrolling
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
                 materialCommunication: true);
 
+            //var constraintsMaterials = new RobotConstraints(
+            constraintsDict["Material"] = new RobotConstraints(
+                senseNearbyAgentsRange: 5f,
+                senseNearbyAgentsBlockedByWalls: true,
+                automaticallyUpdateSlam: true,
+                slamUpdateIntervalInTicks: 1,
+                slamSynchronizeIntervalInTicks: 10,
+                slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
+                distributeSlam: false,
+                environmentTagReadRange: 100.0f,
+                slamRayTraceRange: 7f,
+                relativeMoveSpeed: 1f,
+                agentRelativeSize: 0.6f,
+                materialCommunication: true
+            );
+
+            //var constraintsLOS = new RobotConstraints(
+            constraintsDict["LOS"] = new RobotConstraints(
+                senseNearbyAgentsRange: 5f,
+                senseNearbyAgentsBlockedByWalls: true,
+                automaticallyUpdateSlam: true,
+                slamUpdateIntervalInTicks: 1,
+                slamSynchronizeIntervalInTicks: 10,
+                slamPositionInaccuracy: 0.2f,
+                mapKnown: true,
+                distributeSlam: false,
+                environmentTagReadRange: 100.0f,
+                slamRayTraceRange: 7f,
+                relativeMoveSpeed: 1f,
+                agentRelativeSize: 0.6f,
+                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 0);
+
+            var random = new System.Random(12345);
             var mapSize = 100;
+
+            var constraintName = "Global";
+            var robotConstraints = constraintsDict[constraintName];
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
             const int robotCount = 1;
@@ -82,7 +124,7 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName:
-                    $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-Material-robots-{robotCount}-SpawnTogether"),
+                    $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether"),
             };
 
             var simulator = new MySimulator(scenarios);

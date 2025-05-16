@@ -88,7 +88,7 @@ namespace Maes.Algorithms.Patrolling
                     }
                     else
                     {
-                        distanceMatrix[v1.Id, v2.Id] = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position, dependOnBrokenBehaviour: false) ?? float.MaxValue;
+                        distanceMatrix[v1.Id, v2.Id] = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position) ?? float.MaxValue;
                     }
                 }
             }

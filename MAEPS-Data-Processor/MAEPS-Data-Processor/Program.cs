@@ -46,10 +46,7 @@ internal class Program
                     Algorithm = Path.GetFileName(scenarioDirectory),
                     AverageIdleness = data.Last().AverageGraphIdleness,
                     WorstIdleness = data.Max(ps => ps.WorstGraphIdleness),
-                    TotalDistanceTraveled = data.Last().TotalDistanceTraveled,
-                    TotalCycles = data.Last().CompletedCycles,
-                    NumberOfRobotsStart = data.First().NumberOfRobots,
-                    NumberOfRobotsEnd = data.Last().NumberOfRobots
+                    TotalDistanceTraveled = data.Last().TotalDistanceTraveled
                 };
                 summaries.Add(summary);
                 GenerateSummary(scenarioDirectory, summaries.TakeLast(1));
@@ -82,24 +79,20 @@ internal class Program
         {
             Plot plot = new();
             plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.WorstGraphIdleness).ToList());
-
-            AddDeadRobotsVerticalLines(data, plot);
-
+            
             plot.Title("Worst Idleness");
             plot.XLabel("Tick");
             plot.YLabel("Worst Idleness");
 
             var graphPath = Path.Combine(path, "WorstGraphIdleness.png");
-            plot.Save(graphPath, 1200, 600);
             Console.WriteLine("Saving to {0}", graphPath);
+            plot.Save(graphPath, 1200, 600);
         }
         
         void PlotAverageIdleness(string path, List<PatrollingSnapShot> data)
         {
             Plot plot = new();
             plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.AverageGraphIdleness).ToList());
-            
-            AddDeadRobotsVerticalLines(data, plot);
             
             plot.Title("Average Idleness");
             plot.XLabel("Tick");
@@ -108,19 +101,6 @@ internal class Program
             var graphPath = Path.Combine(path, "AverageGraphIdleness.png");
             Console.WriteLine("Saving to {0}", graphPath);
             plot.Save(graphPath, 1200, 600);
-        }
-    }
-
-    private static void AddDeadRobotsVerticalLines(List<PatrollingSnapShot> data, Plot plot)
-    {
-        var deadRobots = data.GroupBy(ps => ps.NumberOfRobots).ToList();
-        foreach (var group in deadRobots.Skip(1))
-        {
-            var line = plot.Add.VerticalLine(group.First().Tick, 1, Color.FromColor(System.Drawing.Color.Red), LinePattern.Dashed);
-            if (group == deadRobots.Last())
-            {
-                line.LegendText = "Dead Robots";
-            }
         }
     }
 }

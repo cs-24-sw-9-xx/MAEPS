@@ -89,9 +89,9 @@ namespace Maes.Robot
         }
 
         public int? OverEstimateTime(Vector2Int start, Vector2Int target, bool acceptPartialPaths = false,
-            bool beOptimistic = true, bool dependOnBrokenBehaviour = true)
+            bool beOptimistic = true)
         {
-            var estimate = EstimateTime(start, target, acceptPartialPaths, beOptimistic, dependOnBrokenBehaviour);
+            var estimate = EstimateTime(start, target, acceptPartialPaths, beOptimistic);
             if (estimate == null)
             {
                 return null;

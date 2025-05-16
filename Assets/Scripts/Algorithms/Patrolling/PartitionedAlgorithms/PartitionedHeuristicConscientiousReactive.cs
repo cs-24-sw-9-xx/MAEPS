@@ -48,7 +48,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
         {
             var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
 
-            return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
+            return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target) ?? int.MaxValue);
         }
 
         private Vertex NextVertex(Vertex currentVertex)

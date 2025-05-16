@@ -48,6 +48,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             StartPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
             ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
             TicksTracker.Visited(new Vertex(0, StartPosition), Tick);
+
             while (true)
             {
                 if (!IsDestinationReached(TargetTile) && !TargetReached)

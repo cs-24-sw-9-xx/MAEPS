@@ -19,6 +19,8 @@
 // Casper Nyvang Sørensen,
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen,
+// 
+// Original repository: https://github.com/Molitany/MAES
 
 using System.Linq;
 
@@ -29,13 +31,9 @@ using Maes.Robot;
 
 namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
 {
-    /// <summary>
-    /// Original implementation of the Conscientious Reactive Algorithm of https://doi.org/10.1007/3-540-36483-8_11.
-    /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
-    /// </summary>
-    public sealed class AdaptiveRedistributionFailureBasedCRAlgo : PatrollingAlgorithm
+    public sealed class PartitionedConscientiousReactive : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Adaptive Redistribution Failure Based CR Algorithm";
+        public override string AlgorithmName => "Test Partitioning Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;

@@ -11,11 +11,5 @@ public class ExperimentSummary
     
     [CsvHelper.Configuration.Attributes.Format("F2")]
     public float TotalDistanceTraveled { get; set; }
-    
-    public int TotalCycles { get; set; }
-    
-    public int NumberOfRobotsStart { get; set; }
-
-    public int NumberOfRobotsEnd { get; set; }
 
 }

@@ -151,7 +151,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             var robotPartition = _controller.AssignedPartition;
             var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
-            return vertices.GetClosestVertex(target => _controller.EstimateDistanceToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
+            return vertices.GetClosestVertex(target => _controller.EstimateDistanceToTarget(target) ?? int.MaxValue);
         }
 
 

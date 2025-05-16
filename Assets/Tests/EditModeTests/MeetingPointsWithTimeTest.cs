@@ -57,11 +57,11 @@ namespace Tests.EditModeTests
             var estimationTravel = new TravelEstimator(coarseMap, robotConstraints);
 
             generator.SetMaps(patrollingMap, coarseMap);
-            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e, dependOnBrokenBehaviour: false), _ => 0);
+            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e), _ => 0);
 
 
 
-            var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position, dependOnBrokenBehaviour: false)!.Value;
+            var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
             var expectedGlobalTimeToNextMeeting = 2 * 3 * estimateTicks;
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2 });
@@ -94,9 +94,9 @@ namespace Tests.EditModeTests
             const int tickToFartestPartition = 48;
 
             generator.SetMaps(patrollingMap, coarseMap);
-            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e, dependOnBrokenBehaviour: false), _ => tickToFartestPartition);
+            generator.SetEstimates((s, e) => estimationTravel.EstimateTime(s, e), _ => tickToFartestPartition);
 
-            var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position, dependOnBrokenBehaviour: false)!.Value;
+            var estimateTicks = estimationTravel.EstimateTime(vertices[2].Position, vertices[4].Position)!.Value;
             var expectedGlobalTimeToNextMeeting = 2 * 3 * estimateTicks;
 
             var partitions = generator.GeneratePartitions(new HashSet<int> { 1, 2, 3 });
