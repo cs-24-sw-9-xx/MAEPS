@@ -51,7 +51,18 @@ namespace Maes.Algorithms.Patrolling
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPreUpdateStates = new();
         private readonly Dictionary<IEnumerator<ComponentWaitForCondition>, ComponentWaitForConditionState> _componentPostUpdateStates = new();
 
+        // Tracks seen vertices per partition
+        private readonly Dictionary<int, HashSet<int>> _seenVerticesByPartition = new();
+
         public int LogicTicks { get; private set; } = -1;
+        public Dictionary<int, double> PartitionIdleness =>
+                // Group vertices by partition and calculate average idleness for each partition
+                PatrollingMap.Vertices
+                    .GroupBy(v => v.Partition)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.Average(v => LogicTicks - v.LastTimeVisitedTick)
+                    );
 
         protected event OnReachVertex? OnReachVertexHandler;
         protected event OnTrackInfo? OnTrackInfoHandler;
@@ -132,10 +143,32 @@ namespace Maes.Algorithms.Patrolling
             TargetVertex = nextVertex;
             OnReachVertexHandler?.Invoke(vertex.Id);
 
+            // Mark as seen in current partition
+            var partitionId = Controller.AssignedPartition;
+            if (!_seenVerticesByPartition.ContainsKey(partitionId))
+            {
+                _seenVerticesByPartition[partitionId] = new HashSet<int>();
+            }
+            if (!_seenVerticesByPartition[partitionId].Contains(vertex.Id))
+            {
+                _seenVerticesByPartition[partitionId].Add(vertex.Id);
+            }
+
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
             {
                 vertex.VisitedAtTick(LogicTicks);
             }
+        }
+
+        /// <summary>
+        /// Resets the seen vertices for a specific partition.
+        /// This is useful for algorithms that need to reset the seen vertices for a specific partition.
+        /// For example, if a robot has finished patrolling a partition and is now moving to another partition.
+        /// </summary>
+        /// <param name="partitionId"></param>
+        public void ResetSeenVerticesForPartition(int partitionId)
+        {
+            _seenVerticesByPartition[partitionId] = new HashSet<int>();
         }
 
         /// <inheritdoc />
@@ -305,6 +338,23 @@ namespace Maes.Algorithms.Patrolling
         }
 
         protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
+
+        internal bool HasSeenAllInPartition(int assignedPartition)
+        {
+            if (!_seenVerticesByPartition.ContainsKey(assignedPartition))
+            {
+                return false;
+            }
+
+            // Get all vertex IDs in the partition
+            var partitionVertexIds = PatrollingMap.Vertices
+                .Where(v => v.Partition == assignedPartition)
+                .Select(v => v.Id)
+                .ToHashSet();
+
+            // Check if all have been seen
+            return partitionVertexIds.SetEquals(_seenVerticesByPartition[assignedPartition]);
+        }
 
         private sealed class ComponentWaitForConditionState
         {

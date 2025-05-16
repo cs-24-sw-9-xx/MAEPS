@@ -35,13 +35,13 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
     public sealed class GlobalRedistributionComponent : IComponent
     {
         private readonly IRobotController _controller;
-        private readonly IPatrollingAlgorithm _algorithm;
+        private readonly PatrollingAlgorithm _algorithm;
         private readonly HeartBeatComponent _heartbeatComponent;
         private readonly int _timeOut;
         public int PreUpdateOrder => -100;
         public int PostUpdateOrder => -100;
 
-        public GlobalRedistributionComponent(IRobotController controller, int timeOut, IPatrollingAlgorithm algorithm, HeartBeatComponent heartbeatComponent)
+        public GlobalRedistributionComponent(IRobotController controller, int timeOut, PatrollingAlgorithm algorithm, HeartBeatComponent heartbeatComponent)
         {
             _controller = controller;
             _algorithm = algorithm;
@@ -57,10 +57,46 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             while (true)
             {
                 CheckHeartbeats();
+                RedistributeRobotIfLastSurvivor();
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
 
+        private void RedistributeRobotIfLastSurvivor()
+        {
+            // Only check after some ticks to avoid early moves
+            if (_algorithm.LogicTicks > 1000)
+            {
+                // If we are the only robot left
+                if (_heartbeatComponent.RobotHeartbeats.Count == 0)
+                {
+                    // Check if we have finished our current partition
+                    if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
+                    {
+                        // Find the partition with the highest idleness
+                        var partitionWithHighestIdleness = GetPartitionWithHighestIdleness();
+                        if (partitionWithHighestIdleness != _controller.AssignedPartition)
+                        {
+                            Debug.Log($"Robot {_controller.Id} is the last survivor and will move to partition {partitionWithHighestIdleness} (highest idleness)");
+                            _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
+                            _controller.AssignedPartition = partitionWithHighestIdleness;
+                        }
+                    }
+                }
+            }
+        }
+
+        private int GetPartitionWithHighestIdleness()
+        {
+            if (!_algorithm.PartitionIdleness.Any())
+            {
+                Debug.LogWarning("PartitionIdleness is empty. No partition to redistribute to.");
+                return _controller.AssignedPartition; // Return current partition if no other is available
+            }
+            return _algorithm.PartitionIdleness
+                .OrderByDescending(kvp => kvp.Value)
+                .First().Key;
+        }
 
         /// <summary>
         /// Checks for robots that have not sent a heartbeat within the threshold and removes them.
@@ -86,6 +122,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             if (bestPartitionToMoveRobotFrom == _controller.AssignedPartition && IsLowestIdInPartition())
             {
                 Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
+                _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 _controller.AssignedPartition = newPartition;
             }
         }
