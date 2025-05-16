@@ -41,7 +41,7 @@ namespace Maes.Utilities
 
             foreach (var vertex in vertices.AsSpan(1))
             {
-                var distance = estimateToTarget(closestVertex.Position);
+                var distance = estimateToTarget(vertex.Position);
                 if (distance.CompareTo(closestDistance) >= 0)
                 {
                     continue;
