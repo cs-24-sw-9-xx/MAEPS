@@ -24,13 +24,13 @@ namespace Maes.Statistics.Writer
         {
             _tempPath = $"{filename}.INCOMPLETE";
             _path = $"{filename}.csv";
-            
+
             _streamWriter = new StreamWriter(_tempPath);
             _csvWriter = new CsvWriter(_streamWriter, new CsvConfiguration(CultureInfo.InvariantCulture)
             {
                 Delimiter = delimiter
             });
-            
+
             // Write the header immediately
             _csvWriter.WriteHeader<TSnapShot>();
             _csvWriter.NextRecord();
@@ -56,9 +56,9 @@ namespace Maes.Statistics.Writer
             {
                 File.Delete(_path);
             }
-            
+
             File.Move(_tempPath, _path);
-            
+
             _finished = true;
         }
 
@@ -71,7 +71,7 @@ namespace Maes.Statistics.Writer
                 {
                     return;
                 }
-                
+
                 try
                 {
                     _csvWriter.Dispose();
@@ -80,10 +80,10 @@ namespace Maes.Statistics.Writer
                 {
                     Debug.Log("CSVDataWriter: ignoring object disposed exception. Probably due to unity domain reload weirdness!");
                 }
-                
+
                 File.Delete(_tempPath);
             }
-            
+
             GC.SuppressFinalize(this);
         }
 

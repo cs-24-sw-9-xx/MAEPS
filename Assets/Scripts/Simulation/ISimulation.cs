@@ -28,7 +28,7 @@ namespace Maes.Simulation
         List<MonaRobot> Robots { get; }
 
         int NumberOfActiveRobots { get; }
-        
+
         CommunicationManager CommunicationManager { get; }
 
         void SetSelectedRobot(MonaRobot? newSelectedRobot);

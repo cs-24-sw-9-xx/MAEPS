@@ -44,7 +44,7 @@ namespace Tests.PlayModeTests
     public class MaterialCommunicationTest
     {
         private bool _hasFinished;
-        
+
         private const int MapWidth = 50, MapHeight = 50;
         private const int RandomSeed = 123;
         private MySimulator _maes;

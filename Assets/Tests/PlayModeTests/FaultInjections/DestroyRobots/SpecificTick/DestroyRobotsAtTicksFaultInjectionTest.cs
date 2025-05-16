@@ -69,7 +69,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
         }
 
         private bool _hasFinished;
-        
+
         private const int RandomSeed = 123;
         private MySimulator _maes;
         private ExplorationSimulation _simulationBase;

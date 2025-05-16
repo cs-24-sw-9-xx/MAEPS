@@ -4,8 +4,8 @@ namespace Maes.Statistics.Snapshots
 {
     public readonly struct ExplorationSnapshot
     {
-        public CommunicationSnapshot CommunicationSnapshot {get;}
-        
+        public CommunicationSnapshot CommunicationSnapshot { get; }
+
         [Index(1)]
         public float Explored { get; }
         [Index(2)]

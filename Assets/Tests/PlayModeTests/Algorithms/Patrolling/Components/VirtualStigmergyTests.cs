@@ -54,14 +54,14 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         {
             _simulator.Destroy();
             _algorithms.Clear();
-            
+
         }
 
         [Test(ExpectedResult = null)]
         public IEnumerator TestDirectCommunication()
         {
             var hasFinished = false;
-            
+
             var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), 100, _ => hasFinished, new Vector2Int(1, 8), new Vector2Int(15, 8));
             Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
@@ -112,7 +112,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             Assert.AreEqual("ayo", testValue4);
 
             hasFinished = true;
-            
+
             while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
             {
                 yield return null;
@@ -123,7 +123,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         public IEnumerator TestTransitiveCommunication()
         {
             var hasFinished = false;
-            
+
             var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(24, 16), 16, _ => hasFinished, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
             Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
@@ -153,7 +153,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             Assert.AreEqual("ayo", testValue2);
 
             hasFinished = true;
-            
+
             while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
             {
                 yield return null;
@@ -213,7 +213,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             Assert.AreEqual("ayo", testValue);
 
             hasFinished = true;
-            
+
             while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
             {
                 yield return null;

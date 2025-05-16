@@ -22,7 +22,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     public class MeetAtTheMeetingPointTest
     {
         private bool _hasFinished;
-        
+
         private PatrollingSimulator _simulator;
         private readonly RobotConstraints _robotConstraints = new(
             mapKnown: true,
@@ -47,7 +47,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
         private PatrollingSimulation EnqueueScenario(string mapString, int robotCount, int totalCycles, int spawnAtVertexId, int seed = 1)
         {
             _hasFinished = false;
-            
+
             var (simulationMap, patrollingMap, verticesByPartitionId) = new PartitionSimulationMapBuilder(mapString, AllConnectedWaypointConnector.ConnectVertices, '\n').Build();
 
             const string algoName = "HMPPatrollingAlgorithm";
@@ -109,7 +109,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
             meetingTracker.AssertMeetingHasBeenHeld(meetingPoints, meetingTimes);
             Assert.AreEqual(expectedNumberOfExchangeInfoAtMeetingTrackInfos, meetingTracker.NumberOfExchangeInfoAtMeetingTrackInfos, "Number of exchanged information is not equal to 2.");
-            
+
             _hasFinished = true;
             while (!(_simulator.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

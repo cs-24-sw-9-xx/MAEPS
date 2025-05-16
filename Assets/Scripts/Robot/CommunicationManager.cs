@@ -324,7 +324,7 @@ namespace Maes.Robot
             }
 
             _communicationGroupsComputed = true;
-            
+
             PopulateAdjacencyMatrix();
 
             for (var i = 0; i < _robots.Count; i++)

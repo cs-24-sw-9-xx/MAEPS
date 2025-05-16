@@ -20,7 +20,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
     public class EstimateTestStraightPath
     {
         private bool _hasFinished;
-        
+
         private const int RandomSeed = 123;
         private const float DiffRatio = 0.25f;
         private MySimulator _maes;
@@ -84,7 +84,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

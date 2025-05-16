@@ -99,7 +99,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             var actualTicks = _testAlgorithm.Tick;
             Assert.GreaterOrEqual(_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
             Debug.Log("Over estimate with " + (_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks) + " ticks");
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

@@ -1,14 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-using CsvHelper;
-
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
-using Maes.Simulation;
 using Maes.Statistics.Snapshots;
-using Maes.Statistics.Writer;
 using Maes.UI.Visualizers;
 
 namespace Maes.Statistics.Trackers
@@ -37,7 +33,7 @@ namespace Maes.Statistics.Trackers
         protected TVisualizationMode _currentVisualizationMode = null!;
 
         private readonly CoverageCalculator.MiniTileConsumer _preCoverageTileConsumerDelegate;
-        
+
         private readonly CommunicationManager _communicationManager;
 
         protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper, CommunicationManager communicationManager)
@@ -51,7 +47,7 @@ namespace Maes.Statistics.Trackers
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
-            
+
             _communicationManager = communicationManager;
         }
 

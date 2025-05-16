@@ -29,7 +29,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
     public class DestroyRobotsRandomEveryTickFaultInjectionTest
     {
         private bool _hasFinished;
-        
+
         private const float Probability = 1f;
         private const int RandomSeed = 123;
         private const int InvokeEvery = 1;
@@ -91,7 +91,7 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
 
             // Assert that the robots are destroyed
             Assert.AreEqual(expectedNumberOfRobotsAfterDestroyed, _simulationBase.RobotSpawner.transform.childCount);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

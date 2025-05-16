@@ -53,7 +53,7 @@ namespace Maes.Statistics.Trackers
         private int _lastCycle;
 
         private readonly Thread _writerThread;
-        
+
         private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
@@ -71,13 +71,13 @@ namespace Maes.Statistics.Trackers
             _currentVisualizationMode = new NoneVisualizationMode();
 
             Directory.CreateDirectory(statisticsFolderPath);
-             var patrollingFilename = Path.Join(statisticsFolderPath, "patrolling");
-             _patrollingSnapshotWriter = new CsvDataWriter<PatrollingSnapshot>(patrollingFilename);
-             
-             
+            var patrollingFilename = Path.Join(statisticsFolderPath, "patrolling");
+            _patrollingSnapshotWriter = new CsvDataWriter<PatrollingSnapshot>(patrollingFilename);
+
+
             var waypointFolderPath = Path.Join(statisticsFolderPath, "waypoints/");
             Directory.CreateDirectory(waypointFolderPath);
-             
+
             _waypointSnapShots =
                 _vertices.Values.ToDictionary(k => k.Vertex.Id, k => new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath, $"{k.Vertex.Position.x}_{k.Vertex.Position.y}")));
 
@@ -106,7 +106,7 @@ namespace Maes.Statistics.Trackers
                 // BlockingCollection.Take throws this exception when CompleteAdding() has been called and there are no items in the collection.
                 // What a stupid exception to throw.
             }
-            
+
             // Well we are done now so finish up.
             _patrollingSnapshotWriter.Finish();
             _patrollingSnapshotWriter.Dispose();
@@ -223,7 +223,7 @@ namespace Maes.Statistics.Trackers
                 waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
                     vertex.NumberOfVisits);
             }
-            
+
             _snapshots.Add((patrollingSnapshot, waypointSnapshots));
         }
 

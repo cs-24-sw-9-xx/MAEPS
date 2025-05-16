@@ -5,7 +5,7 @@ namespace Maes.Statistics.Snapshots
     public readonly struct PatrollingSnapshot
     {
         public CommunicationSnapshot CommunicationSnapshot { get; }
-        
+
         [Index(1)]
         public float GraphIdleness { get; }
         [Index(2)]

@@ -39,7 +39,7 @@ namespace Maes.Statistics.Trackers
 
             var interconnected = CalculateInterconnected(communicationGroups);
             var biggestClusterSizePercentage = CalculateBiggestClusterSizePercentage(communicationGroups);
-            
+
             LatestSnapshot = new CommunicationSnapshot(tick, interconnected, biggestClusterSizePercentage, receivedMessageCount, sentMessageCount);
         }
 

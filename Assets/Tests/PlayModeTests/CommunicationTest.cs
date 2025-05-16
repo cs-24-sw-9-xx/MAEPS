@@ -196,7 +196,7 @@ namespace Tests.PlayModeTests
             }
 
             Assert.IsNull(receivedMessage);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {
@@ -226,7 +226,7 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual(foundWallDistance, 0f, 0.001f);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {
@@ -264,7 +264,7 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual(actualDistance, transmissionDistance, 0.001f);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {
@@ -300,7 +300,7 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual((float)wallThickness, foundWallDistance, 0.1f * wallThickness);
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

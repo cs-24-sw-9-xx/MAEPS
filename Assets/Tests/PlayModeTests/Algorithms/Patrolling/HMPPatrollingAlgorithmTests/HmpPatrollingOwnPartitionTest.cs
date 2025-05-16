@@ -73,7 +73,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             }
 
             Assert.IsTrue(_trackerVertices.IsRobotPatrollingOwnPartition, "Robots are not patrolling their own partition or not visited all its vertices.");
-            
+
             _hasFinished = true;
             while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
             {

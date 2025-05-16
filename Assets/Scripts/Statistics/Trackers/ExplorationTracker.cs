@@ -60,9 +60,9 @@ namespace Maes.Statistics.Trackers
         private readonly float _traceIntervalDegrees;
 
         private readonly RayTracingMap<Cell>.CellFunction _shouldContinueFromCellDelegate;
-        
+
         private readonly CsvDataWriter<ExplorationSnapshot> _snapShotWriter;
-        
+
 
         public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints, ExplorationSimulationScenario scenario)
             : base(collisionMap, explorationVisualizer, constraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
@@ -79,7 +79,7 @@ namespace Maes.Statistics.Trackers
             _traceIntervalDegrees = 360f / _traces;
 
             _shouldContinueFromCellDelegate = ShouldContinueFromCell;
-            
+
             var path = $"{GlobalSettings.StatisticsOutPutPath}{scenario.StatisticsFileName}";
             _snapShotWriter = new CsvDataWriter<ExplorationSnapshot>(path);
         }

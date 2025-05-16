@@ -63,7 +63,7 @@ namespace Maes.Simulation
         } = null!;
 
         public int NumberOfActiveRobots => RobotSpawner.transform.childCount;
-        
+
         public bool HasFinished { get; private set; }
 
         public abstract TVisualizer Visualizer { get; }
@@ -129,7 +129,7 @@ namespace Maes.Simulation
 
             CommunicationManager.SetRobotReferences(Robots);
             FaultInjection = scenario.FaultInjection;
-            
+
             Directory.CreateDirectory(StatisticsFolderPath);
         }
 
@@ -240,7 +240,7 @@ namespace Maes.Simulation
         public void OnSimulationFinished(bool success)
         {
             HasFinished = true;
-            
+
             if (success && GlobalSettings.ShouldWriteCsvResults)
             {
                 Tracker.FinishStatistics();
