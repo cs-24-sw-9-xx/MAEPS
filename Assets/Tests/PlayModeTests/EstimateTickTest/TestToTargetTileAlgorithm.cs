@@ -44,7 +44,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         public IEnumerable<WaitForCondition> UpdateLogic()
         {
             _startPosition = Controller.SlamMap.CoarseMap.GetCurrentPosition();
-            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile);
+            ExpectedEstimatedTicks = Controller.OverEstimateTimeToTarget(TargetTile, dependOnBrokenBehaviour: false);
             while (true)
             {
                 if (!IsDestinationReached(TargetTile) && !TargetReached)

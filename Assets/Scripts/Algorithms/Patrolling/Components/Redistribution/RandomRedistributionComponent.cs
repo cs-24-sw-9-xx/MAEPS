@@ -35,9 +35,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly int _delay;
         private readonly Random _random;
-
         public int PreUpdateOrder => -450;
-
         public int PostUpdateOrder => -450;
 
         public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, int seed, int delay = 1)
