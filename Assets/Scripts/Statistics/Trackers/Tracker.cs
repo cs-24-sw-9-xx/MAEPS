@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
 
+using CsvHelper;
+
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Simulation;
+using Maes.Statistics.Snapshots;
+using Maes.Statistics.Writer;
 using Maes.UI.Visualizers;
 
 namespace Maes.Statistics.Trackers
@@ -32,8 +37,10 @@ namespace Maes.Statistics.Trackers
         protected TVisualizationMode _currentVisualizationMode = null!;
 
         private readonly CoverageCalculator.MiniTileConsumer _preCoverageTileConsumerDelegate;
+        
+        private readonly CommunicationManager _communicationManager;
 
-        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper)
+        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper, CommunicationManager communicationManager)
         {
             _visualizer = visualizer;
             _constraints = constraints;
@@ -44,6 +51,8 @@ namespace Maes.Statistics.Trackers
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
+            
+            _communicationManager = communicationManager;
         }
 
         public virtual void UIUpdate()
@@ -83,10 +92,13 @@ namespace Maes.Statistics.Trackers
                 && CurrentTick != 0
                 && CurrentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                CreateSnapShot();
+                var latestSnapshot = _communicationManager.CommunicationTracker.LatestSnapshot;
+                CreateSnapShot(latestSnapshot);
             }
             CurrentTick++;
         }
+
+        public abstract void FinishStatistics();
 
         protected virtual void OnBeforeLogicUpdate(List<MonaRobot> robots) { }
         protected virtual void OnLogicUpdate(List<MonaRobot> robots) { }
@@ -101,7 +113,7 @@ namespace Maes.Statistics.Trackers
             }
         }
 
-        protected abstract void CreateSnapShot();
+        protected abstract void CreateSnapShot(CommunicationSnapshot communicationSnapshot);
 
         protected virtual void SetVisualizationMode(TVisualizationMode newMode)
         {

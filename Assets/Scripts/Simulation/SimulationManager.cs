@@ -163,7 +163,7 @@ namespace Maes.Simulation
                 }
             }
 
-            if (CurrentSimulation != null)
+            if (CurrentSimulation != null && CurrentSimulation.SimulatedLogicTicks != 0)
             {
                 UpdateStatisticsUI();
             }

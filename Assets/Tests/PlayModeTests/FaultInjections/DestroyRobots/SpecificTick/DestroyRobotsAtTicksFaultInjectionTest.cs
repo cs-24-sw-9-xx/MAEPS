@@ -68,17 +68,20 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
             }
         }
 
+        private bool _hasFinished;
+        
         private const int RandomSeed = 123;
         private MySimulator _maes;
         private ExplorationSimulation _simulationBase;
 
         private void InitializeTestingSimulator(int robotsToSpawn, int[] robotsToDestroyAtTicks, string testCaseName)
         {
+            _hasFinished = false;
             var tracker = new DestroyTrackerTest(robotsToDestroyAtTicks, robotsToSpawn, testCaseName);
 
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, robotsToSpawn,
                     Vector2Int.zero, _ => new TestingAlgorithm((tick, _) => tracker.UpdateLogic(tick, spawner))),
@@ -144,6 +147,12 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.SpecificTick
 
             // Assert that the robots are destroyed
             Assert.AreEqual(expectedNumberOfRobotsAfterDestroyed, _simulationBase.RobotSpawner.transform.childCount);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

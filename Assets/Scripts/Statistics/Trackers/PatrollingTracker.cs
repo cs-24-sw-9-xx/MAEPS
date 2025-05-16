@@ -1,18 +1,19 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
-using Maes.Statistics.Patrolling;
+using Maes.Statistics.Snapshots;
+using Maes.Statistics.Writer;
 using Maes.UI.Visualizers.Patrolling;
 using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 
 using UnityEngine;
-
-using XCharts.Runtime;
 
 namespace Maes.Statistics.Trackers
 {
@@ -32,19 +33,10 @@ namespace Maes.Statistics.Trackers
 
         public float? AverageGraphDiffLastTwoCyclesProportion { get; private set; }
 
-        public BaseChart Chart { get; set; } = null!;
-
-        public DataZoom Zoom { get; set; } = null!;
-
-        public int PlottingFrequency = 50;
-
-        private int _lastPlottedSnapshot;
-
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
 
-        public readonly List<PatrollingSnapShot> SnapShots = new();
-        public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
+        private readonly Dictionary<int, CsvDataWriter<WaypointSnapshot>> _waypointSnapShots;
 
         private readonly Dictionary<int, VertexDetails> _vertices;
         private VertexVisualizer? _selectedVertex;
@@ -54,24 +46,33 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
-        private readonly SimulationMap<Tile> _collisionMap;
+        
+        private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints,
-            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
+            PatrollingMap map, string statisticsFolderPath) : base(collisionMap, visualizer, scenario.RobotConstraints,
+            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
             Simulation = simulation;
             _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
             TotalCycles = scenario.TotalCycles;
-            WaypointSnapShots =
-                _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
-            _collisionMap = collisionMap;
+
+            Directory.CreateDirectory(statisticsFolderPath);
+             var patrollingFilename = Path.Join(statisticsFolderPath, "patrolling");
+             _patrollingSnapshotWriter = new CsvDataWriter<PatrollingSnapshot>(patrollingFilename);
+             
+             
+            var waypointFolderPath = Path.Join(statisticsFolderPath, "waypoints/");
+            Directory.CreateDirectory(waypointFolderPath);
+             
+            _waypointSnapShots =
+                _vertices.Values.ToDictionary(k => k.Vertex.Id, k => new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath, $"{k.Vertex.Position.x}_{k.Vertex.Position.y}")));
         }
 
         public void OnReachedVertex(int vertexId)
@@ -96,37 +97,15 @@ namespace Maes.Statistics.Trackers
             }
         }
 
-        // Hack: Cursed way of updating ui using unitys update event.
-        public override void UIUpdate()
+        public override void FinishStatistics()
         {
-            base.UIUpdate();
-            // TODO: Fix graph data limit.
-            if (Chart != null && Chart.gameObject.activeSelf && SnapShots.Count > 0)
-            {
-                //Update zoom to only follow the most recent data.
-                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
-                {
-                    Zoom.start = 50;
-                    Zoom.end = 100;
-                }
+            _patrollingSnapshotWriter.Finish();
+            _patrollingSnapshotWriter.Dispose();
 
-                for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
-                {
-                    if (SnapShots[i].Tick % PlottingFrequency == 0)
-                    {
-                        Chart.AddData(0, SnapShots[i].Tick, SnapShots[i].WorstGraphIdleness);
-                        Chart.AddData(1, SnapShots[i].Tick, SnapShots[i].GraphIdleness);
-                        Chart.AddData(2, SnapShots[i].Tick, SnapShots[i].AverageGraphIdleness);
-                        Chart.AddData(3, SnapShots[i].Tick, SnapShots[i].TotalDistanceTraveled);
-                    }
-                }
-
-                _lastPlottedSnapshot = SnapShots.Count;
-                Chart.RefreshDataZoom();
-            }
-            else
+            foreach (var csvWriter in _waypointSnapShots.Values)
             {
-                _lastPlottedSnapshot = 0;
+                csvWriter.Finish();
+                csvWriter.Dispose();
             }
         }
 
@@ -192,14 +171,13 @@ namespace Maes.Statistics.Trackers
             _selectedRobot = robot;
         }
 
-        protected override void CreateSnapShot()
+        protected override void CreateSnapShot(CommunicationSnapshot communicationSnapshot)
         {
-            SnapShots.Add(new PatrollingSnapShot(CurrentTick, null, null, CurrentGraphIdleness, WorstGraphIdleness,
-                TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
-
+            _patrollingSnapshotWriter.AddRecord(new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness, TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
+            
             foreach (var vertex in _vertices.Values)
             {
-                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick,
+                _waypointSnapShots[vertex.Vertex.Id].AddRecord(new WaypointSnapshot(CurrentTick,
                     CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
             }
         }
@@ -293,41 +271,6 @@ namespace Maes.Statistics.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(Simulation.Robots));
-        }
-
-        public void InitIdleGraph()
-        {
-            Chart.RemoveData();
-            var xAxis = Chart.EnsureChartComponent<XAxis>();
-            xAxis.splitNumber = 10;
-            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-            xAxis.type = Axis.AxisType.Value;
-
-            var yAxis = Chart.EnsureChartComponent<YAxis>();
-            yAxis.splitNumber = 10;
-            yAxis.type = Axis.AxisType.Value;
-            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-
-            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
-            worstIdlenessSeries.symbol.size = 2;
-
-            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
-            currentIdlenessSeries.symbol.size = 2;
-
-            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
-            averageIdlenessSeries.symbol.size = 2;
-
-            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
-            totalDistanceTraveledSeries.symbol.size = 2;
-
-            Chart.EnsureChartComponent<Legend>();
-
-            Zoom.enable = true;
-            Zoom.filterMode = DataZoom.FilterMode.Filter;
-            Zoom.start = 0;
-            Zoom.end = 100;
-
-            Chart.RefreshChart();
         }
 
         public void SetVisualizedVertex(VertexVisualizer? newSelectedVertex)

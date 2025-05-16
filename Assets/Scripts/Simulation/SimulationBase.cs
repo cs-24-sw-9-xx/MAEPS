@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+using System.IO;
 
 using Maes.Algorithms;
 using Maes.FaultInjections;
@@ -62,6 +63,8 @@ namespace Maes.Simulation
         } = null!;
 
         public int NumberOfActiveRobots => RobotSpawner.transform.childCount;
+        
+        public bool HasFinished { get; private set; }
 
         public abstract TVisualizer Visualizer { get; }
 
@@ -126,6 +129,8 @@ namespace Maes.Simulation
 
             CommunicationManager.SetRobotReferences(Robots);
             FaultInjection = scenario.FaultInjection;
+            
+            Directory.CreateDirectory(StatisticsFolderPath);
         }
 
         public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)
@@ -234,13 +239,13 @@ namespace Maes.Simulation
 
         public void OnSimulationFinished(bool success)
         {
+            HasFinished = true;
+            
             if (success && GlobalSettings.ShouldWriteCsvResults)
             {
-                CreateStatisticsFile();
+                Tracker.FinishStatistics();
             }
         }
-
-        protected virtual void CreateStatisticsFile() { }
 
         public void ShowAllTags()
         {
@@ -272,6 +277,7 @@ namespace Maes.Simulation
             return worldPosition;
         }
 
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
@@ -308,5 +314,6 @@ namespace Maes.Simulation
             Gizmos.DrawLine(new Vector3(0, -width, -0.01f), new Vector3(0, width, -0.01f));
             Gizmos.DrawLine(new Vector3(-height, 0, -0.01f), new Vector3(height, 0, -0.01f));
         }
+#endif
     }
 }

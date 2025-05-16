@@ -25,6 +25,7 @@ using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 using Maes.Utilities;
@@ -53,12 +54,15 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
         {
             _simulator.Destroy();
             _algorithms.Clear();
+            
         }
 
         [Test(ExpectedResult = null)]
         public IEnumerator TestDirectCommunication()
         {
-            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), 100, new Vector2Int(1, 8), new Vector2Int(15, 8));
+            var hasFinished = false;
+            
+            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(16, 16), 100, _ => hasFinished, new Vector2Int(1, 8), new Vector2Int(15, 8));
             Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
@@ -106,12 +110,21 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             Assert.AreEqual(1, algorithm2.VirtualStigmergyComponent.Size);
             Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue4));
             Assert.AreEqual("ayo", testValue4);
+
+            hasFinished = true;
+            
+            while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
         public IEnumerator TestTransitiveCommunication()
         {
-            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(24, 16), 16, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
+            var hasFinished = false;
+            
+            var scenario = CreateScenario(BitmapUtilities.CreateEmptyBitmap(24, 16), 16, _ => hasFinished, new Vector2Int(1, 8), new Vector2Int(15, 8), new Vector2Int(23, 8));
             Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
@@ -138,18 +151,26 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
             Assert.AreEqual(1, algorithm3.VirtualStigmergyComponent.Size);
             Assert.IsTrue(algorithm3.VirtualStigmergyComponent.TryGetNonSending("test", out var testValue2));
             Assert.AreEqual("ayo", testValue2);
+
+            hasFinished = true;
+            
+            while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
         public IEnumerator TestSpottyCommunication()
         {
+            var hasFinished = false;
             var semiWalledMap = BitmapUtilities.CreateEmptyBitmap(16, 16);
             for (var i = 0; i < 8; i++)
             {
                 semiWalledMap.Set(8, i);
             }
 
-            var scenario = CreateScenario(semiWalledMap, 100, new Vector2Int(5, 8), new Vector2Int(11, 8));
+            var scenario = CreateScenario(semiWalledMap, 100, _ => hasFinished, new Vector2Int(5, 8), new Vector2Int(11, 8));
             Setup(new[] { scenario });
             _simulator.SimulationManager.AttemptSetPlayState(SimulationPlayState.FastAsPossible);
 
@@ -190,10 +211,17 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
             Assert.IsTrue(algorithm2.VirtualStigmergyComponent.TryGet("test", out var testValue));
             Assert.AreEqual("ayo", testValue);
+
+            hasFinished = true;
+            
+            while (!(_simulator.SimulationManager?.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
 
-        private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, float communicationRange, params Vector2Int[] robotPositions)
+        private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, float communicationRange, SimulationEndCriteriaInfallibleDelegate<PatrollingSimulation> hasFinished, params Vector2Int[] robotPositions)
         {
             var tilemap = Utilities.BitmapToTilemap(bitmap);
 
@@ -211,6 +239,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
                         return algorithm;
                     }, dependOnBrokenBehavior: false),
+                hasFinishedSim: PatrollingSimulationScenario.InfallibleToFallibleSimulationEndCriteria(hasFinished),
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
                 CreateRobotConstraints(communicationRange),
                 patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)

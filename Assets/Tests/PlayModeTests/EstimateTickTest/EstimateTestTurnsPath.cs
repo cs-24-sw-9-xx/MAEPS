@@ -31,6 +31,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
     public class EstimateTestTurnsPath
     {
+        private bool _hasFinished;
+        
         private const int RandomSeed = 123;
         private const float DiffRatio = 0.23f;
         private MySimulator _maes;
@@ -49,6 +51,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [SetUp]
         public void InitializeTestingSimulator()
         {
+            _hasFinished = false;
             const int randomSeed = 12345;
             var random = new System.Random(randomSeed);
             const int size = 75;
@@ -56,7 +59,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(mapConfig),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: _robotConstraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
@@ -98,6 +101,12 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
+            
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

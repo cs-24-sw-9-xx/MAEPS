@@ -27,6 +27,8 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
     [TestFixture(10)]
     public class DestroyRobotsRandomZeroProbabilityFaultInjectionTest
     {
+        private bool _hasFinished;
+        
         private const float Probability = 0;
         private const int RandomSeed = 123;
         private const int InvokeEvery = 1;
@@ -42,9 +44,10 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
         [SetUp]
         public void InitializeTestingSimulator()
         {
+            _hasFinished = false;
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: new RobotConstraints(mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, _robotsToSpawn,
                     Vector2Int.zero, _ => new TestingAlgorithm()),
@@ -75,6 +78,12 @@ namespace Tests.PlayModeTests.FaultInjections.DestroyRobots.Random
 
             // Assert that no robots are destroyed
             Assert.AreEqual(expectedRobotsAtEnd, _simulationBase.RobotSpawner.transform.childCount);
+            
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

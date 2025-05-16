@@ -6,6 +6,8 @@ namespace Maes.Statistics.Trackers
 {
     public interface ITracker
     {
+        void FinishStatistics();
+        
         void UIUpdate();
 
         void LogicUpdate(List<MonaRobot> robots);

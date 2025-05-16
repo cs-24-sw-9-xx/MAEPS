@@ -90,7 +90,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
                         return algorithm;
                     }, dependOnBrokenBehavior: false),
                 mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
-                CreateRobotConstraints(),
+                robotConstraints: CreateRobotConstraints(),
                 patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
             );
         }

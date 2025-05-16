@@ -43,6 +43,8 @@ namespace Tests.PlayModeTests
 
     public class MaterialCommunicationTest
     {
+        private bool _hasFinished;
+        
         private const int MapWidth = 50, MapHeight = 50;
         private const int RandomSeed = 123;
         private MySimulator _maes;
@@ -106,10 +108,11 @@ namespace Tests.PlayModeTests
             RobotConstraints.SignalTransmissionSuccessCalculator transmissionSuccessCalculatorFunc = null
         )
         {
+            _hasFinished = false;
             _robotTestAlgorithms = new List<TestingAlgorithm>();
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: mapFactory,
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: new RobotConstraints(materialCommunication: true,
                     calculateSignalTransmissionProbability: transmissionSuccessCalculatorFunc,
                     attenuationDictionary: attenuationDictionary, slamRayTraceRange: 0, mapKnown: true),
@@ -178,6 +181,12 @@ namespace Tests.PlayModeTests
             }
 
             Assert.AreEqual(sentMessage, receivedMessage);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
@@ -228,6 +237,12 @@ namespace Tests.PlayModeTests
             }
 
             Assert.IsNull(receivedMessage);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
@@ -252,6 +267,12 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual(foundWallDistance, 0f, 0.001f);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
@@ -284,6 +305,12 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual(actualDistance, transmissionDistance, 0.001f);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [Test(ExpectedResult = null)]
@@ -313,6 +340,12 @@ namespace Tests.PlayModeTests
 
             // Assert that the signal is said to travel through 1 meter/unit of wall
             Assert.AreEqual((float)wallThickness, foundWallDistance, 0.1f * wallThickness);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

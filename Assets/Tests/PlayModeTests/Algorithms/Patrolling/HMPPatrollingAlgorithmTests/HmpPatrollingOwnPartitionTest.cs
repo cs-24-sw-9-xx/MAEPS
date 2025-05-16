@@ -50,6 +50,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
         private const int TotalCycles = 3;
         private TrackerVertices _trackerVertices;
 
+        private bool _hasFinished = false;
+
         [TearDown]
         public void ClearSimulator()
         {
@@ -71,10 +73,17 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             }
 
             Assert.IsTrue(_trackerVertices.IsRobotPatrollingOwnPartition, "Robots are not patrolling their own partition or not visited all its vertices.");
+            
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         private void CreateAndEnqueueScenario()
         {
+            _hasFinished = false;
 
             var robotConstraints = new RobotConstraints(
                 mapKnown: true,
@@ -90,6 +99,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     seed: Seed,
                     totalCycles: TotalCycles,
                     stopAfterDiff: false,
+                    hasFinishedSim: PatrollingSimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,
                         seed: Seed,
