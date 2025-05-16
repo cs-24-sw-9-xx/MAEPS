@@ -5,8 +5,6 @@ using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
 
-using UnityEngine;
-
 namespace Maes.Algorithms.Patrolling
 {
     /// <summary>
@@ -56,7 +54,7 @@ namespace Maes.Algorithms.Patrolling
             return result;
         }
 
-        private void UpdateLastTimeVisitedTick(int vertexId, Vector2Int _)
+        private void UpdateLastTimeVisitedTick(int vertexId)
         {
             _vertexLastTimeVisitedVirtualStigmergyComponent.Put(vertexId, LogicTicks);
         }

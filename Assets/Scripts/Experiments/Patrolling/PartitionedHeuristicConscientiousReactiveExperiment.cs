@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;

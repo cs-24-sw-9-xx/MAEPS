@@ -63,18 +63,23 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _partitionGenerator.SetMaps(patrollingMap, controller.SlamMap.CoarseMap);
-            _partitionGenerator.SetEstimates(EstimateTime, target => controller.EstimateTimeToTarget(target));
+            _partitionGenerator.SetEstimates(EstimateTime, EstimateTimeToTarget);
 
             _partitionComponent = new HMPPartitionComponent(controller, _partitionGenerator);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
-        }
 
-        private int? EstimateTime(Vector2Int start, Vector2Int target)
-        {
-            return Controller.TravelEstimator.OverEstimateTime(start, target);
+            int? EstimateTimeToTarget(Vector2Int target)
+            {
+                return Controller.EstimateTimeToTarget(target);
+            }
+
+            int? EstimateTime(Vector2Int start, Vector2Int target)
+            {
+                return Controller.TravelEstimator.OverEstimateTime(start, target);
+            }
         }
 
         private Vertex GetInitialVertexToPatrol()
