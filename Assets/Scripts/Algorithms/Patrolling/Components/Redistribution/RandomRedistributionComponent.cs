@@ -66,11 +66,6 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             }
 
             var availablePartitions = _partitionIds.Where(id => id != _controller.AssignedPartition).ToList();
-            if (availablePartitions.Count == 0)
-            {
-                return;
-            }
-
             var randomPartitionId = availablePartitions[_random.Next(availablePartitions.Count)];
             Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId}");
             _controller.AssignedPartition = randomPartitionId;
