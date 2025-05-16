@@ -29,16 +29,20 @@ namespace Maes.Map.PathFinding
 {
     public interface IPathFinder
     {
+        public Vector2Int[]? GetPath<TMap>(Vector2Int startCoordinate, Vector2Int targetCoordinate,
+            TMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+            where TMap : IPathFindingMap;
 
-        public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false);
-
-        public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false);
+        public Vector2Int[]? GetOptimisticPath<TMap>(Vector2Int startCoordinate, Vector2Int targetCoordinate, TMap pathFindingMap, bool acceptPartialPaths = false)
+            where TMap : IPathFindingMap;
 
         public PathStep[] PathToSteps(Vector2Int[] path);
 
-        public Vector2Int? GetNearestTileFloodFill(IPathFindingMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null);
+        public Vector2Int? GetNearestTileFloodFill<TMap>(TMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
+            where TMap : IPathFindingMap;
 
-        public Vector2Int? IsAnyNeighborStatus(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, SlamTileStatus status, bool optimistic = false);
+        public Vector2Int? IsAnyNeighborStatus<TMap>(Vector2Int targetCoordinate, TMap pathFindingMap, SlamTileStatus status, bool optimistic = false)
+            where TMap : IPathFindingMap;
 
     }
 }
