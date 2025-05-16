@@ -79,9 +79,6 @@ namespace Maes.Map
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, CoarseGrainedMap coarseMap)
         {
-            // TODO: Skip this if we can use the breath first search stuff from WatchmanRouteSolver.
-            // TODO: Of cause this requires specific code for that waypoint generation algorithm.
-
             var startTime = Time.realtimeSinceStartup;
 
             var aStar = new MyAStar();

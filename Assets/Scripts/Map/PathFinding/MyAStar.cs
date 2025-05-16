@@ -26,17 +26,11 @@ using System.Runtime.CompilerServices;
 
 using Maes.Utilities;
 
-using Roy_T.AStar.Paths;
-using Roy_T.AStar.Primitives;
-
 using Unity.Mathematics;
 
 using UnityEngine;
 
 using static Maes.Map.SlamMap;
-
-using Grid = Roy_T.AStar.Grids.Grid;
-using Size = Roy_T.AStar.Primitives.Size;
 
 namespace Maes.Map.PathFinding
 {
@@ -79,104 +73,17 @@ namespace Maes.Map.PathFinding
             }
         }
 
-
-        private Grid? _cachedGrid = null;
-        private Grid? _cachedOptimisticGrid = null;
-        private int _lastUpdateTick = 0;
-        private readonly PathFinder _pathFinder = new();
-
-        public Vector2Int[]? GetNonBrokenPath(Vector2Int startCoordinate, Vector2Int targetCoordinate,
-            IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetNonBrokenPath<TMap>(Vector2Int startCoordinate, Vector2Int targetCoordinate,
+            TMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+        where TMap : IPathFindingMap
         {
-            if (_lastUpdateTick != pathFindingMap.LastUpdateTick)
-            {
-                _cachedGrid = null;
-                _cachedOptimisticGrid = null;
-            }
-
-            if (beOptimistic ? _cachedOptimisticGrid == null : _cachedGrid == null)
-            {
-                _lastUpdateTick = pathFindingMap.LastUpdateTick;
-                var width = pathFindingMap.Width;
-                var height = pathFindingMap.Height;
-
-                var gridSize = new GridSize(width, height);
-                var cellSize = new Size(Distance.FromMeters(1), Distance.FromMeters(1));
-                var traversalVelocity = Velocity.FromMetersPerSecond(1);
-
-                var grid = Grid.CreateGridWithLateralAndDiagonalConnections(gridSize, cellSize, traversalVelocity);
-                Func<Vector2Int, bool> isSolid = beOptimistic ? pathFindingMap.IsOptimisticSolid : pathFindingMap.IsSolid;
-                for (var x = 0; x < width; x++)
-                {
-                    for (var y = 0; y < height; y++)
-                    {
-                        if (isSolid(new Vector2Int(x, y)))
-                        {
-                            var gridPosition = new GridPosition(x, y);
-                            grid.DisconnectNode(gridPosition);
-                            grid.RemoveDiagonalConnectionsIntersectingWithNode(gridPosition);
-                        }
-                        // Penalize all tiles close to a wall
-                        else if (
-                            isSolid(new Vector2Int(x - 1, y))
-                            || isSolid(new Vector2Int(x + 1, y))
-                            || isSolid(new Vector2Int(x, y - 1))
-                            || isSolid(new Vector2Int(x, y + 1))
-                            || isSolid(new Vector2Int(x - 1, y - 1))
-                            || isSolid(new Vector2Int(x + 1, y - 1))
-                            || isSolid(new Vector2Int(x - 1, y + 1))
-                            || isSolid(new Vector2Int(x + 1, y + 1))
-                        )
-                        {
-                            var gridPosition = new GridPosition(x, y);
-                            var node = grid.GetNode(gridPosition);
-
-                            foreach (var incoming in node.Incoming)
-                            {
-                                incoming.TraversalVelocity = Velocity.FromMetersPerSecond(0.5f);
-                            }
-                        }
-                    }
-                }
-
-
-                if (beOptimistic)
-                {
-                    _cachedOptimisticGrid = grid;
-                }
-                else
-                {
-                    _cachedGrid = grid;
-                }
-            }
-
-            var paths = _pathFinder.FindPath(new GridPosition(startCoordinate.x, startCoordinate.y),
-                new GridPosition(targetCoordinate.x, targetCoordinate.y), beOptimistic ? _cachedOptimisticGrid : _cachedGrid);
-
-            var tilePath = new Vector2Int[paths.Edges.Count + 1];
-
-            for (var i = 0; i < paths.Edges.Count; i++)
-            {
-                if (i == 0)
-                {
-                    var pos = paths.Edges[0].Start.Position;
-                    tilePath[0] = new Vector2Int((int)pos.X, (int)pos.Y);
-                }
-
-                var position = paths.Edges[i].End.Position;
-                tilePath[i + 1] = new Vector2Int((int)position.X, (int)position.Y);
-            }
-
-            if (paths.Edges.Count == 0 || (paths.Type == PathType.ClosestApproach && !acceptPartialPaths))
-            {
-                return null;
-            }
-
-            return tilePath;
+            var path = NewAStar.FindPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic);
+            return path?.ToArray();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector2Int[]? GetOptimisticPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetOptimisticPath<TMap>(Vector2Int startCoordinate, Vector2Int targetCoordinate, TMap pathFindingMap, bool acceptPartialPaths = false)
+            where TMap : IPathFindingMap
         {
             return GetPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: true, acceptPartialPaths: acceptPartialPaths);
         }
@@ -184,7 +91,8 @@ namespace Maes.Map.PathFinding
         private readonly PriorityQueue<AStarTile, float> _getPathCandidates = new();
         private readonly Dictionary<Vector2Int, AStarTile> _getPathBestCandidateOnTile = new();
 
-        public Vector2Int[]? GetPath(Vector2Int startCoordinate, Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+        public Vector2Int[]? GetPath<TMap>(Vector2Int startCoordinate, Vector2Int targetCoordinate, TMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
+            where TMap : IPathFindingMap
         {
             if (!pathFindingMap.BrokenCollisionMap)
             {
@@ -317,7 +225,8 @@ namespace Maes.Map.PathFinding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsSolid(Vector2Int coord, IPathFindingMap map, bool optimistic)
+        private static bool IsSolid<TMap>(Vector2Int coord, TMap map, bool optimistic)
+            where TMap : IPathFindingMap
         {
             return optimistic
                 ? map.IsOptimisticSolid(coord)
@@ -415,7 +324,8 @@ namespace Maes.Map.PathFinding
             }
         }
 
-        public Vector2Int? GetNearestTileFloodFill(IPathFindingMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
+        public Vector2Int? GetNearestTileFloodFill<TMap>(TMap pathFindingMap, Vector2Int targetCoordinate, SlamTileStatus lookupStatus, HashSet<Vector2Int>? excludedTiles = null)
+            where TMap : IPathFindingMap
         {
             var targetQueue = new Queue<Vector2Int>();
             var visitedTargetsList = new HashSet<Vector2Int>();
@@ -457,7 +367,8 @@ namespace Maes.Map.PathFinding
             return null;
         }
 
-        public Vector2Int? IsAnyNeighborStatus(Vector2Int targetCoordinate, IPathFindingMap pathFindingMap, SlamTileStatus status, bool optimistic = false)
+        public Vector2Int? IsAnyNeighborStatus<TMap>(Vector2Int targetCoordinate, TMap pathFindingMap, SlamTileStatus status, bool optimistic = false)
+            where TMap : IPathFindingMap
         {
             foreach (var dir in CardinalDirection.CardinalDirections)
             {
