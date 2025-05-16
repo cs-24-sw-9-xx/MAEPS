@@ -1,11 +1,11 @@
 using CsvHelper.Configuration.Attributes;
 
-using Maes.Statistics.Communication;
-
-namespace Maes.Statistics.Patrolling
+namespace Maes.Statistics.Snapshots
 {
-    public sealed class PatrollingSnapShot : CommunicationSnapShot
+    public readonly struct PatrollingSnapshot
     {
+        public CommunicationSnapshot CommunicationSnapshot { get; }
+
         [Index(1)]
         public float GraphIdleness { get; }
         [Index(2)]
@@ -19,11 +19,11 @@ namespace Maes.Statistics.Patrolling
         [Index(6)]
         public int NumberOfRobots { get; }
 
-        public PatrollingSnapShot(int tick, bool? agentsInterconnected, float? biggestClusterPercentage,
+        public PatrollingSnapshot(CommunicationSnapshot communicationSnapshot,
             float graphIdleness, int worstGraphIdleness, float totalDistanceTraveled,
-            float averageGraphIdleness, int completedCycles, int numberOfRobots) : base(tick,
-            agentsInterconnected, biggestClusterPercentage)
+            float averageGraphIdleness, int completedCycles, int numberOfRobots)
         {
+            CommunicationSnapshot = communicationSnapshot;
             GraphIdleness = graphIdleness;
             WorstGraphIdleness = worstGraphIdleness;
             TotalDistanceTraveled = totalDistanceTraveled;

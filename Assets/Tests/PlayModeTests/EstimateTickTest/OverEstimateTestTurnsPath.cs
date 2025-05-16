@@ -31,6 +31,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
     public class OverEstimateTestTurnsPath
     {
+        private bool _hasFinished;
         private const int RandomSeed = 123;
         private const float DiffRatio = 0.23f;
         private MySimulator _maes;
@@ -49,6 +50,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
         [SetUp]
         public void InitializeTestingSimulator()
         {
+            _hasFinished = false;
             const int randomSeed = 12345;
             var random = new System.Random(randomSeed);
             const int size = 75;
@@ -56,7 +58,7 @@ namespace Tests.PlayModeTests.EstimateTickTest
             var mapConfig = new BuildingMapConfig(randVal, widthInTiles: size, heightInTiles: size);
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: generator => generator.GenerateMap(mapConfig),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: _robotConstraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
@@ -97,6 +99,12 @@ namespace Tests.PlayModeTests.EstimateTickTest
             var actualTicks = _testAlgorithm.Tick;
             Assert.GreaterOrEqual(_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks, 0, "The algorithm does not overestimate the time to reach the target tile");
             Debug.Log("Over estimate with " + (_testAlgorithm.ExpectedEstimatedTicks.Value - actualTicks) + " ticks");
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

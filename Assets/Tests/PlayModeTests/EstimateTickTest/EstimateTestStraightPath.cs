@@ -19,6 +19,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
     [TestFixture(1.5f)]
     public class EstimateTestStraightPath
     {
+        private bool _hasFinished;
+
         private const int RandomSeed = 123;
         private const float DiffRatio = 0.25f;
         private MySimulator _maes;
@@ -34,9 +36,10 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
         public void InitializeTestingSimulator(Vector2Int parameter, bool isOffset)
         {
+            _hasFinished = false;
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: _robotConstraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
@@ -81,6 +84,12 @@ namespace Tests.PlayModeTests.EstimateTickTest
 
             var diff = Mathf.Abs((float)(actualTicks - _testAlgorithm.ExpectedEstimatedTicks.Value) / _testAlgorithm.ExpectedEstimatedTicks.Value);
             Assert.LessOrEqual(diff, DiffRatio);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

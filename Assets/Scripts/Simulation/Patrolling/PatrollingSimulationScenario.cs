@@ -20,6 +20,7 @@ namespace Maes.Simulation.Patrolling
             int totalCycles,
             bool stopAfterDiff,
             RobotFactory<IPatrollingAlgorithm> robotSpawner,
+            SimulationEndCriteriaDelegate<PatrollingSimulation>? hasFinishedSim = null,
             MapFactory? mapSpawner = null,
             RobotConstraints? robotConstraints = null,
             string? statisticsFileName = null,
@@ -29,7 +30,7 @@ namespace Maes.Simulation.Patrolling
             int partitions = 1)
             : base(seed,
                 robotSpawner,
-                null,
+                hasFinishedSim,
                 mapSpawner,
                 robotConstraints,
                 statisticsFileName,

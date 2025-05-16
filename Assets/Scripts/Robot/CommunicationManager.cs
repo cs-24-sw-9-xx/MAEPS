@@ -95,9 +95,11 @@ namespace Maes.Robot
 
         private int _localTickCounter;
 
-        private Dictionary<(int, int), CommunicationInfo>? _adjacencyMatrix = null;
+        private bool _adjacencyMatrixComputed = false;
+        private readonly Dictionary<(int, int), CommunicationInfo> _adjacencyMatrix = new();
 
-        private List<HashSet<int>>? _communicationGroups;
+        private bool _communicationGroupsComputed = false;
+        private readonly HashSet<HashSet<int>> _communicationGroups = new();
 
         private float _robotRelativeSize;
         private readonly Vector2 _offset;
@@ -230,6 +232,12 @@ namespace Maes.Robot
             _queuedMessages.Clear();
             _localTickCounter++;
 
+            _adjacencyMatrix.Clear();
+            _adjacencyMatrixComputed = false;
+
+            _communicationGroups.Clear();
+            _communicationGroupsComputed = false;
+
             _receivedMessagesLastTick = _receivedMessagesThisTick;
             _receivedMessagesThisTick = 0;
 
@@ -242,7 +250,7 @@ namespace Maes.Robot
             if (GlobalSettings.PopulateAdjacencyAndComGroupsEveryTick)
             {
                 PopulateAdjacencyMatrix();
-                _communicationGroups = GetCommunicationGroups();
+                PopulateCommunicationGroups();
             }
 
             if (_robotConstraints.AutomaticallyUpdateSlam // Are we using slam?
@@ -254,19 +262,15 @@ namespace Maes.Robot
 
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                _communicationGroups ??= GetCommunicationGroups();
+                PopulateCommunicationGroups();
 
-                CommunicationTracker.CommunicationGroups = _communicationGroups;
-                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
+                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick, _communicationGroups);
             }
-
-            _adjacencyMatrix = null;
-            _communicationGroups = null;
         }
 
         private void SynchronizeSlamMaps(int tick)
         {
-            _communicationGroups = GetCommunicationGroups();
+            PopulateCommunicationGroups();
 
             foreach (var group in _communicationGroups)
             {
@@ -286,39 +290,51 @@ namespace Maes.Robot
 
         private void PopulateAdjacencyMatrix()
         {
-            if (_adjacencyMatrix != null)
+            if (_adjacencyMatrixComputed)
             {
                 return;
             }
 
-            _adjacencyMatrix = new();
+            _adjacencyMatrixComputed = true;
 
-            foreach (var r1 in _robots)
+            for (var i = 0; i < _robots.Count; i++)
             {
-                foreach (var r2 in _robots)
+                for (var j = i + 1; j < _robots.Count; j++)
                 {
-                    if (r1.id != r2.id)
-                    {
-                        _adjacencyMatrix[(r1.id, r2.id)] = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
-                    }
+                    var r1 = _robots[i];
+                    var r2 = _robots[j];
+                    var communication = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
+
+                    var reverseCommunication = new CommunicationInfo(communication.Distance,
+                        (communication.Angle + 180f) % 360f, communication.WallCellsDistance,
+                        communication.RegularCellsDistance, communication.TransmissionSuccessful,
+                        communication.SignalStrength);
+
+                    _adjacencyMatrix[(r1.id, r2.id)] = communication;
+                    _adjacencyMatrix[(r2.id, r1.id)] = reverseCommunication;
                 }
             }
         }
 
-        private List<HashSet<int>> GetCommunicationGroups()
+        private void PopulateCommunicationGroups()
         {
-            PopulateAdjacencyMatrix();
-
-            var groups = new List<HashSet<int>>();
-            foreach (var r1 in _robots)
+            if (_communicationGroupsComputed)
             {
-                if (!groups.Exists(g => g.Contains(r1.id)))
-                {
-                    groups.Add(GetCommunicationGroup(r1.id));
-                }
+                return;
             }
 
-            return groups;
+            _communicationGroupsComputed = true;
+
+            PopulateAdjacencyMatrix();
+
+            for (var i = 0; i < _robots.Count; i++)
+            {
+                var r1 = _robots[i];
+                if (!_communicationGroups.Any(g => g.Contains(r1.id)))
+                {
+                    _communicationGroups.Add(GetCommunicationGroup(r1.id));
+                }
+            }
         }
 
         private HashSet<int> GetCommunicationGroup(int robotId)
@@ -331,7 +347,7 @@ namespace Maes.Robot
             {
                 var currentKey = keys.Dequeue();
 
-                foreach (var (key, value) in _adjacencyMatrix!)
+                foreach (var (key, value) in _adjacencyMatrix)
                 {
                     if (key.Item1 != currentKey || !value.TransmissionSuccessful || resultSet.Contains(key.Item2))
                     {

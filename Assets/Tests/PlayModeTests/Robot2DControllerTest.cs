@@ -45,6 +45,7 @@ namespace Tests.PlayModeTests
     [TestFixture(0.5f)]
     public class Robot2DControllerTest
     {
+        private bool _hasFinished;
 
         private const int RandomSeed = 123;
         private MySimulator _maes;
@@ -62,9 +63,10 @@ namespace Tests.PlayModeTests
 
         private void InitializeTestingSimulator(TestingAlgorithm.CustomUpdateFunction customUpdateFunction)
         {
+            _hasFinished = false;
             var testingScenario = new MySimulationScenario(RandomSeed,
                 mapSpawner: StandardTestingConfiguration.EmptyCaveMapSpawner(RandomSeed),
-                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
+                hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => _hasFinished),
                 robotConstraints: new RobotConstraints(relativeMoveSpeed: _relativeMoveSpeed, mapKnown: true, slamRayTraceRange: 0),
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map, RandomSeed, 1,
                     Vector2Int.zero, _ =>
@@ -130,6 +132,12 @@ namespace Tests.PlayModeTests
             const float maximumDeviation = 0.1f;
             var targetPositionDelta = (expectedEndingPosition - endingPosition).magnitude;
             Assert.LessOrEqual(targetPositionDelta, maximumDeviation);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [UnityTest]
@@ -166,6 +174,12 @@ namespace Tests.PlayModeTests
             const float maximumDeviation = 0.7f;
             var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
             Assert.AreEqual(movementDistance, actualTraveledDistance, maximumDeviation);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [UnityTest]
@@ -204,6 +218,12 @@ namespace Tests.PlayModeTests
             const float maximumDeviation = 0.7f;
             var actualTraveledDistance = _robot.Controller.TotalDistanceTraveled;
             Assert.AreEqual(movementDistance * 2, actualTraveledDistance, maximumDeviation);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [UnityTest]
@@ -254,6 +274,12 @@ namespace Tests.PlayModeTests
             var actualAngle = _robot.transform.rotation.eulerAngles.z;
             const float maximumDeviationDegrees = 0.5f;
             Assert.AreEqual(expectedAngle, actualAngle, maximumDeviationDegrees);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [UnityTest]
@@ -274,7 +300,11 @@ namespace Tests.PlayModeTests
             const float maximumDeviation = 0.5f;
             Assert.AreEqual(actualDistance, estimatedDistance, maximumDeviation);
 
-            yield return null;
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
 
         [UnityTest]
@@ -326,6 +356,12 @@ namespace Tests.PlayModeTests
 
             var maximumDeviation = 3 + (int)Math.Floor(actualDistance / 5f);
             Assert.AreEqual(doneTick, estimatedTime, maximumDeviation);
+
+            _hasFinished = true;
+            while (!(_maes.SimulationManager.CurrentSimulation?.HasFinished ?? true))
+            {
+                yield return null;
+            }
         }
     }
 }

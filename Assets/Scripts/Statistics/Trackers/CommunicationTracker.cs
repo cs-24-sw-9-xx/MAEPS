@@ -22,81 +22,50 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Statistics.Snapshots;
+
 namespace Maes.Statistics.Trackers
 {
     public sealed class CommunicationTracker
     {
-        public readonly Dictionary<int, bool> InterconnectionSnapShot = new();
-        public readonly Dictionary<int, float> BiggestClusterPercentageSnapshots = new();
-        public readonly Dictionary<int, int> SentMessageCountSnapshots = new();
-        public readonly Dictionary<int, int> ReceivedMessageCountSnapshots = new();
-        public List<HashSet<int>>? CommunicationGroups = null;
+        public CommunicationSnapshot LatestSnapshot { get; private set; }
 
-        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
+        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount, HashSet<HashSet<int>> communicationGroups)
         {
             if (tick == 0)
             {
                 return;
             }
 
-            CreateInterconnectedSnapShot(tick);
-            CreateClusterSizeSnapShot(tick);
-            CreateMessageCountSnapshot(tick, receivedMessageCount, sentMessageCount);
+            var interconnected = CalculateInterconnected(communicationGroups);
+            var biggestClusterSizePercentage = CalculateBiggestClusterSizePercentage(communicationGroups);
+
+            LatestSnapshot = new CommunicationSnapshot(tick, interconnected, biggestClusterSizePercentage, receivedMessageCount, sentMessageCount);
         }
 
-        private void CreateClusterSizeSnapShot(int tick)
+        private float CalculateBiggestClusterSizePercentage(HashSet<HashSet<int>> communicationGroups)
         {
-            if (CommunicationGroups == null)
+            if (communicationGroups.Count == 0)
             {
-                return;
-            }
-
-            if (CommunicationGroups.Count == 0)
-            {
-                return;
+                return 0f;
             }
 
             // if we have exactly one group, then every agent must be in it!
-            if (CommunicationGroups.Count == 1)
+            if (communicationGroups.Count == 1)
             {
-                BiggestClusterPercentageSnapshots[tick] = 100.0f;
+                return 100.0f;
             }
             else
             {
-                // Supposed to sort descending
-                CommunicationGroups.Sort((e1, e2) => e2.Count.CompareTo(e1.Count));
-                var totalRobots = CommunicationGroups.Aggregate(0, (sum, e1) => sum + e1.Count);
-                var percentage = (float)CommunicationGroups[0].Count / (float)totalRobots * 100f;
-                BiggestClusterPercentageSnapshots[tick] = percentage;
+                var totalRobots = communicationGroups.Sum(g => g.Count);
+                var biggestCluster = communicationGroups.Select(g => g.Count).Max();
+                return (float)biggestCluster / (float)totalRobots * 100f;
             }
         }
 
-        private void CreateInterconnectedSnapShot(int tick)
+        private bool CalculateInterconnected(HashSet<HashSet<int>> communicationGroups)
         {
-            if (CommunicationGroups != null)
-            {
-                if (AreAllAgentsConnected())
-                {
-                    InterconnectionSnapShot[tick] = true;
-                }
-                else
-                {
-                    InterconnectionSnapShot[tick] = false;
-                }
-            }
-
-            return;
-
-            bool AreAllAgentsConnected()
-            {
-                return CommunicationGroups.Count == 1;
-            }
-        }
-
-        private void CreateMessageCountSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
-        {
-            ReceivedMessageCountSnapshots[tick] = receivedMessageCount;
-            SentMessageCountSnapshots[tick] = sentMessageCount;
+            return communicationGroups.Count == 1;
         }
     }
 }
