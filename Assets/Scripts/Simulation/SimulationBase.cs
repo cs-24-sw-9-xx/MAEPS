@@ -20,6 +20,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+using System.IO;
 
 using Maes.Algorithms;
 using Maes.FaultInjections;
@@ -126,6 +127,8 @@ namespace Maes.Simulation
 
             CommunicationManager.SetRobotReferences(Robots);
             FaultInjection = scenario.FaultInjection;
+
+            Directory.CreateDirectory(StatisticsFolderPath);
         }
 
         public void SetInfoUIController(SimulationInfoUIControllerBase<TSimulation, TAlgorithm, TScenario> infoUIController)
@@ -234,13 +237,15 @@ namespace Maes.Simulation
 
         public void OnSimulationFinished(bool success)
         {
+            if (success)
+            {
+                Debug.LogFormat("Simulation finished in {0} ticks", SimulatedLogicTicks);
+            }
             if (success && GlobalSettings.ShouldWriteCsvResults)
             {
-                CreateStatisticsFile();
+                Tracker.FinishStatistics();
             }
         }
-
-        protected virtual void CreateStatisticsFile() { }
 
         public void ShowAllTags()
         {
@@ -270,6 +275,11 @@ namespace Maes.Simulation
         public Vector2 WorldCoordinateToSlamPosition(Vector2 worldPosition)
         {
             return worldPosition;
+        }
+
+        private void OnDestroy()
+        {
+            Tracker.Dispose();
         }
 
         private void OnDrawGizmos()

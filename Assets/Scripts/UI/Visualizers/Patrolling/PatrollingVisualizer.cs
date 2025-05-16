@@ -42,9 +42,9 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
-        public void CreateVisualizers(Dictionary<int, VertexDetails> vertexDetails, PatrollingMap patrollingMap)
+        public void CreateVisualizers(VertexDetails[] vertexDetails, PatrollingMap patrollingMap)
         {
-            foreach (var (_, vertexDetail) in vertexDetails)
+            foreach (var vertexDetail in vertexDetails)
             {
                 var vertex = vertexDetail.Vertex;
 
