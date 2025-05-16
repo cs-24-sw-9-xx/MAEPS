@@ -1,25 +1,28 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading;
 
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
-using Maes.Statistics.Patrolling;
+using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Patrolling;
 using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 
 using UnityEngine;
 
+using ThreadPriority = System.Threading.ThreadPriority;
+
 namespace Maes.Statistics.Trackers
 {
     public sealed class PatrollingTracker : Tracker<PatrollingVisualizer, IPatrollingVisualizationMode>
     {
-        private PatrollingSimulation Simulation { get; }
         public int WorstGraphIdleness { get; private set; }
 
-        // TODO: TotalDistanceTraveled is not set any where in the code, don't know how to calculate it yet
         public float TotalDistanceTraveled { get; private set; }
 
         public float CurrentGraphIdleness { get; private set; }
@@ -30,13 +33,11 @@ namespace Maes.Statistics.Trackers
 
         public float? AverageGraphDiffLastTwoCyclesProportion { get; private set; }
 
-        //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
 
-        public readonly List<PatrollingSnapShot> SnapShots = new();
-        public readonly Dictionary<Vector2Int, List<WaypointSnapShot>> WaypointSnapShots;
+        private readonly PatrollingSimulation _simulation;
 
-        private readonly Dictionary<int, VertexDetails> _vertices;
+        private readonly VertexDetails[] _vertices;
         private VertexVisualizer? _selectedVertex;
 
         private float _totalGraphIdleness;
@@ -45,43 +46,118 @@ namespace Maes.Statistics.Trackers
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
 
+        private readonly BlockingCollection<(PatrollingSnapshot, WaypointSnapshot[])> _snapshots = new();
+
+        private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
+        private readonly CsvDataWriter<WaypointSnapshot>[] _waypointSnapShots;
+
+        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly Thread _writerThread;
+
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map) : base(collisionMap, visualizer, scenario.RobotConstraints,
-            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
+            PatrollingMap map, string statisticsFolderPath) : base(collisionMap, visualizer, scenario.RobotConstraints,
+            tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
-            Simulation = simulation;
-            _vertices = map.Vertices.ToDictionary(vertex => vertex.Id, vertex => new VertexDetails(vertex));
+            _simulation = simulation;
+            _vertices = new VertexDetails[map.Vertices.Count];
+            for (var i = 0; i < _vertices.Length; i++)
+            {
+                _vertices[i] = new VertexDetails(map.Vertices[i]);
+                Debug.Assert(_vertices[i].Vertex.Id == i);
+            }
+
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
             TotalCycles = scenario.TotalCycles;
-            WaypointSnapShots =
-                _vertices.Values.ToDictionary(k => k.Vertex.Position, _ => new List<WaypointSnapShot>());
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
+
+            Directory.CreateDirectory(statisticsFolderPath);
+            var patrollingFilename = Path.Join(statisticsFolderPath, "patrolling");
+            _patrollingSnapshotWriter = new CsvDataWriter<PatrollingSnapshot>(patrollingFilename);
+
+
+            var waypointFolderPath = Path.Join(statisticsFolderPath, "waypoints/");
+            Directory.CreateDirectory(waypointFolderPath);
+
+            _waypointSnapShots = _vertices.Select(v =>
+                new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath,
+                    $"{v.Vertex.Position.x}_{v.Vertex.Position.y}"))).ToArray();
+
+            _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
+            _writerThread.Start(_cancellationTokenSource.Token);
+        }
+
+        private void WriterThread(object cancellationTokenObject)
+        {
+            var cancellationToken = (CancellationToken)cancellationTokenObject;
+            try
+            {
+                while (true)
+                {
+                    var (patrollingSnapshot, waypointSnapshots) = _snapshots.Take(cancellationToken);
+
+                    _patrollingSnapshotWriter.AddRecord(patrollingSnapshot);
+
+                    for (var i = 0; i < waypointSnapshots.Length; i++)
+                    {
+                        _waypointSnapShots[i].AddRecord(waypointSnapshots[i]);
+                    }
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                // BlockingCollection.Take throws this exception when CompleteAdding() has been called and there are no items in the collection.
+                // What a stupid exception to throw.
+
+                // Well we are done now so finish up.
+                _patrollingSnapshotWriter.Finish();
+                _patrollingSnapshotWriter.Dispose();
+
+                foreach (var csvWriter in _waypointSnapShots)
+                {
+                    csvWriter.Finish();
+                    csvWriter.Dispose();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // We got cancelled on twitter.
+                // Don't write the statistics as retaliation.
+                _patrollingSnapshotWriter.Dispose();
+
+                foreach (var csvWriter in _waypointSnapShots)
+                {
+                    csvWriter.Dispose();
+                }
+            }
         }
 
         public void OnReachedVertex(int vertexId)
         {
-            if (!_vertices.TryGetValue(vertexId, out var vertexDetails))
-            {
-                throw new InvalidOperationException("Invalid vertex");
-            }
+            var vertexDetails = _vertices[vertexId];
 
-            var atTick = Simulation.SimulatedLogicTicks;
+            var atTick = _simulation.SimulatedLogicTicks;
 
             var idleness = atTick - vertexDetails.Vertex.LastTimeVisitedTick;
             vertexDetails.MaxIdleness = Mathf.Max(vertexDetails.MaxIdleness, idleness);
             vertexDetails.Vertex.VisitedAtTick(atTick);
 
             WorstGraphIdleness = Mathf.Max(WorstGraphIdleness, vertexDetails.MaxIdleness);
-            CurrentCycle = _vertices.Values.Select(v => v.Vertex.NumberOfVisits).Min();
+            CurrentCycle = _vertices.Select(v => v.Vertex.NumberOfVisits).Min();
 
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
                 _visualizer.ShowDefaultColor(vertexDetails.Vertex);
             }
+        }
+
+        public override void FinishStatistics()
+        {
+            _snapshots.CompleteAdding();
+            _writerThread.Join();
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)
@@ -91,7 +167,7 @@ namespace Maes.Statistics.Trackers
             var graphIdlenessSum = 0;
             foreach (var vertex in _vertices)
             {
-                var idleness = CurrentTick - vertex.Value.Vertex.LastTimeVisitedTick;
+                var idleness = CurrentTick - vertex.Vertex.LastTimeVisitedTick;
                 if (worstGraphIdleness < idleness)
                 {
                     worstGraphIdleness = idleness;
@@ -101,7 +177,7 @@ namespace Maes.Statistics.Trackers
             }
 
             WorstGraphIdleness = worstGraphIdleness;
-            CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Count;
+            CurrentGraphIdleness = (float)graphIdlenessSum / _vertices.Length;
             _totalGraphIdleness += CurrentGraphIdleness;
 
             if (_lastCycle != CurrentCycle)
@@ -145,22 +221,28 @@ namespace Maes.Statistics.Trackers
             _selectedRobot = robot;
         }
 
-        protected override void CreateSnapShot()
+        protected override void CreateSnapShot(CommunicationSnapshot communicationSnapshot)
         {
-            SnapShots.Add(new PatrollingSnapShot(CurrentTick, null, null, CurrentGraphIdleness, WorstGraphIdleness,
-                TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, Simulation.NumberOfActiveRobots));
+            var patrollingSnapshot =
+                new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness,
+                    TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, _simulation.NumberOfActiveRobots);
 
-            foreach (var vertex in _vertices.Values)
+            var waypointSnapshots = new WaypointSnapshot[_vertices.Length];
+
+            for (var i = 0; i < waypointSnapshots.Length; i++)
             {
-                WaypointSnapShots[vertex.Vertex.Position].Add(new WaypointSnapShot(CurrentTick,
-                    CurrentTick - vertex.Vertex.LastTimeVisitedTick, vertex.Vertex.NumberOfVisits));
+                var vertex = _vertices[i].Vertex;
+                waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
+                    vertex.NumberOfVisits);
             }
+
+            _snapshots.Add((patrollingSnapshot, waypointSnapshots));
         }
 
         protected override void SetVisualizationMode(IPatrollingVisualizationMode newMode)
         {
             _visualizer.ResetWaypointsColor();
-            _visualizer.ResetRobotHighlighting(Simulation.Robots, _selectedRobot);
+            _visualizer.ResetRobotHighlighting(_simulation.Robots, _selectedRobot);
             _visualizer.ResetCellColor();
             base.SetVisualizationMode(newMode);
         }
@@ -181,13 +263,13 @@ namespace Maes.Statistics.Trackers
         {
             _selectedRobot = null;
             _visualizer.meshRenderer.enabled = false;
-            SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(Simulation.Robots));
+            SetVisualizationMode(new AllRobotsHighlightingVisualizationMode(_simulation.Robots));
             SetRobotHighlightingSize(4f);
         }
 
         private void SetRobotHighlightingSize(float highlightingSize)
         {
-            foreach (var robot in Simulation.Robots)
+            foreach (var robot in _simulation.Robots)
             {
                 robot.outLine.OutlineWidth = highlightingSize;
             }
@@ -245,7 +327,7 @@ namespace Maes.Statistics.Trackers
         public void ShowAllRobotsVerticesColors()
         {
             _visualizer.meshRenderer.enabled = false;
-            SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(Simulation.Robots));
+            SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(_simulation.Robots));
         }
 
         public void SetVisualizedVertex(VertexVisualizer? newSelectedVertex)
@@ -259,6 +341,19 @@ namespace Maes.Statistics.Trackers
             {
                 // Revert to none visualization when vertex is deselected
                 ShowNone();
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                _cancellationTokenSource.Cancel();
+                _writerThread.Join();
+                _cancellationTokenSource.Dispose();
+                _snapshots.Dispose();
             }
         }
     }

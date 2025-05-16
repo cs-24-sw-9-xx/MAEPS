@@ -185,8 +185,10 @@ namespace Maes.Robot
             var rightWheelMoveDirection = Vector3.Dot(forward, rightWheelVelocityVector) < 0 ? -1f : 1f;
 
             // Animate rotating wheels to match movement of the robot
+#if !UNITY_SERVER
             AnimateWheelRotation(LeftWheel, leftWheelMoveDirection, leftWheelVelocityVector.magnitude);
             AnimateWheelRotation(RightWheel, rightWheelMoveDirection, rightWheelVelocityVector.magnitude);
+#endif
 
             _previousLeftWheelPosition = LeftWheel.position;
             _previousRightWheelPosition = RightWheel.position;
