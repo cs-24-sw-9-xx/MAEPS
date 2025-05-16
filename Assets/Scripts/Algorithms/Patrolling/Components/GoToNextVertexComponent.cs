@@ -117,7 +117,11 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 if (_abortingTask != null)
                 {
-                    ApproachingVertex = _abortingTask.Value.TargetVertex;
+                    while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance)
+                    {
+                        _controller.PathAndMoveTo(ApproachingVertex.Position, dependOnBrokenBehaviour: false);
+                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+                    }
                     _abortingTask = null;
                 }
 
@@ -217,6 +221,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             _abortingTask = abortingTask;
             TargetPosition = abortingTask.TargetVertex.Position;
+            ApproachingVertex = abortingTask.TargetVertex;
         }
     }
 }
