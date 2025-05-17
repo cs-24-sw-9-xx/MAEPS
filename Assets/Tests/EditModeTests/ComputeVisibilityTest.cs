@@ -341,14 +341,22 @@ namespace Tests.EditModeTests
                 files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
                 Assert.AreEqual(1, files.Length, "Cache folder should only contain one file");
                 var cachedVisibility = files[0];
-                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-0.json", "Cache file should have the correct name");
+                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-maxDist0-index0.json", "Cache file should have the correct name");
 
                 // Cache hit, it should read from the cache and not add any new files to the cache
                 VisibilityCache.ComputeVisibilityCached(bitmap, 0);
                 files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
                 Assert.AreEqual(1, files.Length, "Cache folder should only contain one file");
-                // Check the file name, if it overwrites the file, it would use 1 as cache index
-                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-0.json", "Cache file should have the correct name");
+                // Check the file name, if it has overwritten the previous file, it would use 1 as cache index
+                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-maxDist0-index0.json", "Cache file should have the correct name");
+
+                // Add a new map to the cache, check that it used the next index
+                var newMap = BitmapUtilities.BitmapFromString("X");
+                VisibilityCache.ComputeVisibilityCached(newMap, 0);
+                files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
+                Assert.AreEqual(2, files.Length, "Cache folder should contain two files");
+                var newCachedVisibility = files[1];
+                Assert.AreEqual(newCachedVisibility, "MapCache/visibility-1X1-maxDist0-index1.json", "Cache file should have the correct name");
             }
         }
     }

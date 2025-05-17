@@ -62,7 +62,7 @@ namespace Maes.Map.Generators.Patrolling
             }
 
             var json = JsonUtility.ToJson(visibilities);
-            var filename = $"visibility-{map.Width}X{map.Height}-{maxDistance}.json";
+            var filename = $"visibility-{map.Width}X{map.Height}-maxDist{maxDistance}-index{_cacheIndex++}.json";
             var path = System.IO.Path.Combine(GlobalSettings.MapCacheLocation, filename);
 
             System.IO.Directory.CreateDirectory(GlobalSettings.MapCacheLocation);
