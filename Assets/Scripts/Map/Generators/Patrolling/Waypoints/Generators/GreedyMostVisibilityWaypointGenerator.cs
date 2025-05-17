@@ -29,9 +29,6 @@ using System.Linq;
 using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Utilities;
 
-using Unity.Collections;
-using Unity.Jobs;
-
 using UnityEngine;
 
 namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
@@ -55,7 +52,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         /// <returns></returns>
         public static HashSet<Vector2Int> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
         {
-            var precomputedVisibility = ComputeVisibility(map, maxDistance);
+            var precomputedVisibility = VisibilityCache.ComputeVisibilityCached(map, maxDistance);
             return ComputeVertexCoordinates(map, precomputedVisibility);
         }
 
@@ -124,76 +121,6 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
-        }
-
-        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)
-        {
-            var startTime = Time.realtimeSinceStartup;
-
-            var nativeMap = map.ToNativeArray();
-            var nativeVisibilities = new NativeArray<ulong>[map.Width];
-
-            for (var i = 0; i < nativeVisibilities.Length; i++)
-            {
-                nativeVisibilities[i] = new NativeArray<ulong>(nativeMap.Length * map.Height, Allocator.TempJob, NativeArrayOptions.ClearMemory);
-            }
-
-            var jobs = new JobHandle[map.Width];
-
-            // Outermost loop parallelized to improve performance
-            for (var x = 0; x < map.Width; x++)
-            {
-                var job = new VisibilityJob()
-                {
-                    Width = map.Width,
-                    Height = map.Height,
-                    X = x,
-                    Map = nativeMap,
-                    Visibility = nativeVisibilities[x],
-                    MaxDistance = maxDistance,
-                };
-
-                jobs[x] = job.Schedule();
-            }
-
-            foreach (var job in jobs)
-            {
-                job.Complete();
-            }
-
-            var precomputedVisibilities = new Dictionary<Vector2Int, Bitmap>();
-
-            for (var i = 0; i < nativeVisibilities.Length; i++)
-            {
-                var bitmaps = Bitmap.FromNativeArray(map.Width, map.Height, nativeMap.Length, nativeVisibilities[i]);
-                for (var y = 0; y < map.Height; y++)
-                {
-                    var bitmap = bitmaps[y];
-                    if (bitmap.Any)
-                    {
-                        var tile = new Vector2Int(i, y);
-                        precomputedVisibilities[tile] = bitmap;
-                    }
-                    else
-                    {
-                        bitmap.Dispose();
-                    }
-                }
-
-                nativeVisibilities[i].Dispose();
-            }
-
-
-            nativeMap.Dispose();
-
-
-            // To debug the ComputeVisibility method, use the following utility method to save as image
-            // SaveAsImage.SaveVisibileTiles();
-
-            Debug.LogFormat("Compute visibility took {0} seconds", Time.realtimeSinceStartup - startTime);
-
-
-            return precomputedVisibilities;
         }
     }
 }

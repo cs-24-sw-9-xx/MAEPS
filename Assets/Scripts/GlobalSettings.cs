@@ -42,6 +42,7 @@ namespace Maes
         // Statistics
         public static readonly bool ShouldWriteCsvResults = true;
         public static readonly string StatisticsOutPutPath = "data/";
+        public static readonly string MapCacheLocation = "MapCache/";
         public static readonly int TicksPerStatsSnapShot = 1;
         public static readonly bool PopulateAdjacencyAndComGroupsEveryTick;
 

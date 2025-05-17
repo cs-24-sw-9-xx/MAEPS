@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-using Maes.Map.Generators.Patrolling.Waypoints.Generators;
+using Maes.Map.Generators.Patrolling;
 using Maes.Utilities;
 
 using NUnit.Framework;
@@ -286,7 +286,7 @@ namespace Tests.EditModeTests
         {
             using (var bitmap = BitmapUtilities.BitmapFromString(Map))
             {
-                var waypoints = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
+                var waypoints = VisibilityCache.ComputeVisibility(bitmap);
 
                 // Check that there are no waypoints inside the wall
                 foreach (var (waypoint, _) in waypoints)
@@ -316,5 +316,40 @@ namespace Tests.EditModeTests
             }
         }
 
+        [Test]
+        [Explicit]
+        public void CachedVisibilityTest()
+        {
+            using (var bitmap = BitmapUtilities.BitmapFromString(Map))
+            {
+                // Clear the cache folder
+                System.IO.Directory.CreateDirectory(Maes.GlobalSettings.MapCacheLocation);
+                var files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
+                foreach (var file in files)
+                {
+                    System.IO.File.Delete(file);
+                }
+
+                // Write a file to the cache folder, to imitate old cache data
+                var oldCacheDataFile = System.IO.Path.Combine(Maes.GlobalSettings.MapCacheLocation, "visibility-1.json");
+                System.IO.File.WriteAllText(oldCacheDataFile, "Old cache data");
+                files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
+                Assert.AreEqual(1, files.Length, "Cache folder should only contain one file");
+
+                // Check if the first use of the cache causes it to clear the cache of old data and add the new map to the cache
+                VisibilityCache.ComputeVisibilityCached(bitmap, 0);
+                files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
+                Assert.AreEqual(1, files.Length, "Cache folder should only contain one file");
+                var cachedVisibility = files[0];
+                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-0.json", "Cache file should have the correct name");
+
+                // Cache hit, it should read from the cache and not add any new files to the cache
+                VisibilityCache.ComputeVisibilityCached(bitmap, 0);
+                files = System.IO.Directory.GetFiles(Maes.GlobalSettings.MapCacheLocation);
+                Assert.AreEqual(1, files.Length, "Cache folder should only contain one file");
+                // Check the file name, if it overwrites the file, it would use 1 as cache index
+                Assert.AreEqual(cachedVisibility, "MapCache/visibility-101X101-0.json", "Cache file should have the correct name");
+            }
+        }
     }
 }
