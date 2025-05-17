@@ -236,7 +236,10 @@ namespace Maes.Statistics.Trackers
         {
             foreach (var robot in Simulation.Robots)
             {
-                robot.outLine.OutlineWidth = highlightingSize;
+                if (robot.Outline != null)
+                {
+                    robot.Outline.OutlineWidth = highlightingSize;
+                }
             }
         }
 

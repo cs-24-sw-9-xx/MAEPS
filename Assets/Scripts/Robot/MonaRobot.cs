@@ -37,8 +37,9 @@ namespace Maes.Robot
     {
         public Transform leftWheelTransform = null!;
         public Transform rightWheelTransform = null!;
-        public Outline outLine = null!;
         public int id = -1;
+
+        public Outline? Outline { get; private set; }
 
         // Set by Awake
         public ISimulation Simulation { get; private set; } = null!;
@@ -86,6 +87,15 @@ namespace Maes.Robot
             var rigidBody = GetComponent<Rigidbody2D>();
             Controller = new Robot2DController(rigidBody, transform, leftWheelTransform, rightWheelTransform, this);
             Simulation = GameObject.Find("SimulationManager").GetComponent<ISimulationManager>().CurrentSimulation ?? throw new InvalidOperationException("No current simulation");
+
+#if !UNITY_SERVER
+            if (!Application.isBatchMode)
+            {
+                Outline = gameObject.AddComponent<Outline>();
+                Outline.OutlineColor = UnityEngine.Color.red;
+                Outline.OutlineWidth = 3;
+            }
+#endif
         }
 
         private WaitForCondition _preUpdateLogicWaitForCondition = WaitForCondition.ContinueUpdateLogic();
@@ -243,13 +253,27 @@ namespace Maes.Robot
 
         public void ShowOutline(Color? color = null)
         {
-            outLine.enabled = true;
-            outLine.OutlineColor = color ?? Color;
+#if !UNITY_SERVER
+            if (Outline == null)
+            {
+                return;
+            }
+
+            Outline.enabled = true;
+            Outline.OutlineColor = color ?? Color;
+#endif
         }
 
         public void HideOutline()
         {
-            outLine.enabled = false;
+#if !UNITY_SERVER
+            if (Outline == null)
+            {
+                return;
+            }
+
+            Outline.enabled = false;
+#endif
         }
     }
 }
