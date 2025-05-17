@@ -46,13 +46,7 @@ namespace Maes.Map.RobotSpawners
         // Set by SimulationBase
         public RobotConstraints RobotConstraints = null!;
 
-        // Set by Awake
-        private GameObject _robotPrefab = null!;
-
-        public void Awake()
-        {
-            _robotPrefab = Resources.Load<GameObject>("MaesRobot2D");
-        }
+        public GameObject robotPrefab = null!;
 
         public List<MonaRobot> SpawnRobotsApart(SimulationMap<Tile> collisionMap, int seed, int numberOfRobots, CreateAlgorithmDelegate createAlgorithmDelegate, bool dependOnBrokenBehavior = true)
         {
@@ -350,7 +344,7 @@ namespace Maes.Map.RobotSpawners
         protected virtual MonaRobot CreateRobot(float x, float y, float relativeSize, int robotId,
             TAlgorithm algorithm, SimulationMap<Tile> collisionMap, int seed, Color32 color)
         {
-            var robotGameObject = Instantiate(_robotPrefab, parent: transform);
+            var robotGameObject = Instantiate(robotPrefab, parent: transform);
             robotGameObject.name = $"robot{robotId}";
             if (!RobotConstraints.RobotCollisions)
             {
