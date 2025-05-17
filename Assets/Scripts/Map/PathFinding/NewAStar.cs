@@ -30,7 +30,17 @@ namespace Maes.Map.PathFinding
 {
     public static class NewAStar
     {
-        // TODO: Penalize direction changes
+        private const float TurningPenalty = 0.5f;
+
+        private static readonly Vector2Int Top = new Vector2Int(0, 1);
+        private static readonly Vector2Int TopRight = new Vector2Int(1, 1);
+        private static readonly Vector2Int Right = new Vector2Int(1, 0);
+        private static readonly Vector2Int BottomRight = new Vector2Int(1, -1);
+        private static readonly Vector2Int Bottom = new Vector2Int(0, -1);
+        private static readonly Vector2Int BottomLeft = new Vector2Int(-1, -1);
+        private static readonly Vector2Int Left = new Vector2Int(-1, 0);
+        private static readonly Vector2Int TopLeft = new Vector2Int(-1, 1);
+
         // TODO: Support partial paths
         public static List<Vector2Int>? FindPath<TMap>(Vector2Int start, Vector2Int goal, TMap map, bool beOptimistic)
             where TMap : IPathFindingMap
@@ -58,14 +68,16 @@ namespace Maes.Map.PathFinding
                     return ReconstructPath(cameFrom, current);
                 }
 
-                var top = new Vector2Int(current.x, current.y + 1);
-                var topRight = new Vector2Int(current.x + 1, current.y + 1);
-                var right = new Vector2Int(current.x + 1, current.y);
-                var bottomRight = new Vector2Int(current.x + 1, current.y - 1);
-                var bottom = new Vector2Int(current.x, current.y - 1);
-                var bottomLeft = new Vector2Int(current.x - 1, current.y - 1);
-                var left = new Vector2Int(current.x - 1, current.y);
-                var topLeft = new Vector2Int(current.x - 1, current.y + 1);
+                var currentParent = cameFrom.GetValueOrNull(current);
+
+                var top = current + Top;
+                var topRight = current + TopRight;
+                var right = current + Right;
+                var bottomRight = current + BottomRight;
+                var bottom = current + Bottom;
+                var bottomLeft = current + BottomLeft;
+                var left = current + Left;
+                var topLeft = current + TopLeft;
 
                 var wallTop = isSolid(top);
                 var wallTopRight = isSolid(topRight);
@@ -81,50 +93,58 @@ namespace Maes.Map.PathFinding
 
                 if (!wallTop)
                 {
-                    ProcessNeighbor(current, top, false, anyNeighboringWalls);
+                    ProcessNeighbor(current, top, currentParent, false, anyNeighboringWalls);
                 }
 
                 if (!wallTopRight && !wallTop && !wallRight)
                 {
-                    ProcessNeighbor(current, topRight, true, anyNeighboringWalls);
+                    ProcessNeighbor(current, topRight, currentParent, true, anyNeighboringWalls);
                 }
 
                 if (!wallRight)
                 {
-                    ProcessNeighbor(current, right, false, anyNeighboringWalls);
+                    ProcessNeighbor(current, right, currentParent, false, anyNeighboringWalls);
                 }
 
                 if (!wallBottomRight && !wallRight && !wallBottom)
                 {
-                    ProcessNeighbor(current, bottomRight, true, anyNeighboringWalls);
+                    ProcessNeighbor(current, bottomRight, currentParent, true, anyNeighboringWalls);
                 }
 
                 if (!wallBottom)
                 {
-                    ProcessNeighbor(current, bottom, false, anyNeighboringWalls);
+                    ProcessNeighbor(current, bottom, currentParent, false, anyNeighboringWalls);
                 }
 
                 if (!wallBottomLeft && !wallBottom && !wallLeft)
                 {
-                    ProcessNeighbor(current, bottomLeft, true, anyNeighboringWalls);
+                    ProcessNeighbor(current, bottomLeft, currentParent, true, anyNeighboringWalls);
                 }
 
                 if (!wallLeft)
                 {
-                    ProcessNeighbor(current, left, false, anyNeighboringWalls);
+                    ProcessNeighbor(current, left, currentParent, false, anyNeighboringWalls);
                 }
 
                 if (!wallTopLeft && !wallTop && !wallLeft)
                 {
-                    ProcessNeighbor(current, topLeft, true, anyNeighboringWalls);
+                    ProcessNeighbor(current, topLeft, currentParent, true, anyNeighboringWalls);
                 }
             }
 
             return null;
 
-            void ProcessNeighbor(Vector2Int current, Vector2Int neighbor, bool diagonal, bool neighboringWalls)
+            void ProcessNeighbor(Vector2Int current, Vector2Int neighbor, Vector2Int? currentParent, bool diagonal, bool neighboringWalls)
             {
-                var weight = (diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f);
+                var turningPenalty = 0f;
+                if (currentParent != null)
+                {
+                    var lastDirection = current - currentParent;
+                    var currentDirection = neighbor - current;
+                    turningPenalty = lastDirection == currentDirection ? 0f : TurningPenalty;
+                }
+
+                var weight = (diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f) + turningPenalty;
                 var tentativeGScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + weight;
                 var neighborGScore = gScore.GetValueOrDefault(neighbor, float.PositiveInfinity);
 
