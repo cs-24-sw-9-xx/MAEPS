@@ -31,6 +31,7 @@ using Maes.Utilities;
 
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 
 using UnityEngine;
 
@@ -124,6 +125,244 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
+        }
+
+        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility_Improved(Bitmap map, float maxDistance = 0f)
+        {
+            var startTime = Time.realtimeSinceStartup;
+            var precomputedVisibilities = new Dictionary<Vector2Int, Bitmap>();
+            // Calculate visibility for each tile
+            for (var x = 0; x < map.Width; x++)
+            {
+                for (var y = 0; y < map.Height; y++)
+                {
+                    if (map.Contains(x, y))
+                    {
+                        continue;
+                    }
+
+                    var tile = new Vector2Int(x, y);
+
+                    // Calculate visibility for the current tile
+                    // 140 sec
+                    //precomputedVisibilities[tile] = VisibilityOfPointSimple(map, maxDistance, tile);
+
+                    precomputedVisibilities[tile] = VisibilityOfPoint_Rim(map, maxDistance, tile);
+                    // xx sec
+                    //precomputedVisibilities[tile] = VisibilityOfPoint(map, maxDistance, x, y, tile);
+                }
+            }
+            var endTime = Time.realtimeSinceStartup;
+            Debug.LogFormat("Compute visibility improved took {0} seconds", endTime - startTime);
+            return precomputedVisibilities;
+        }
+
+        private static Bitmap VisibilityOfPointSimple(Bitmap map, float maxDistance, Vector2Int tile)
+        {
+            var visibility = new Bitmap(map.Width, map.Height);
+            for (var x = 0; x < map.Width; x++)
+            {
+                for (var y = 0; y < map.Height; y++)
+                {
+                    if (map.Contains(x, y))
+                    {
+                        continue;
+                    }
+                    // If it is out of range, skip it
+                    if (maxDistance != 0f && x * x + y * y > maxDistance * maxDistance)
+                    {
+                        continue;
+                    }
+
+                    // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                    var visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                    visibility.Union(visibilityResult);
+                    visibilityResult.Dispose();
+                }
+            }
+            return visibility;
+        }
+
+        private static Bitmap VisibilityOfPoint_Rim(Bitmap map, float maxDistance, Vector2Int tile)
+        {
+            var visibility = new Bitmap(map.Width, map.Height);
+            for (var x = 0; x < map.Width; x++)
+            {
+                var y = 0;
+                // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                var visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                visibility.Union(visibilityResult);
+                visibilityResult.Dispose();
+
+                y = map.Height - 1;
+
+                // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                visibility.Union(visibilityResult);
+                visibilityResult.Dispose();
+            }
+            for (var y = 0; y < map.Height; y++)
+            {
+                var x = 0;
+
+                // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                var visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                visibility.Union(visibilityResult);
+                visibilityResult.Dispose();
+
+                x = map.Width - 1;
+
+                // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                visibility.Union(visibilityResult);
+                visibilityResult.Dispose();
+            }
+            return visibility;
+        }
+
+        private sealed class Visitor
+        {
+            public Visitor(int x_start, int y_start)
+            {
+                this.x_start = x_start;
+                this.y_start = y_start;
+                _unexplored.Push((x_start, y_start, 1, 1));
+                _unexplored.Push((x_start, y_start, -1, 1));
+                _unexplored.Push((x_start, y_start, 1, -1));
+                _unexplored.Push((x_start, y_start, -1, -1));
+            }
+            private readonly int x_start;
+            private readonly int y_start;
+            private readonly Stack<(int x, int y, int incX, int incY)> _unexplored = new Stack<(int x, int y, int incX, int incY)>();
+            private readonly HashSet<(int x, int y)> _visited = new HashSet<(int x, int y)>();
+            public bool IsEmpty => _unexplored.Count == 0;
+            public (int x, int y, int incX, int incY) GetNext()
+            {
+                var item = _unexplored.Pop();
+                _visited.Add((item.x, item.y));
+                return item;
+            }
+
+            public void AddToUnexplored((int x, int y, int incX, int incY) item)
+            {
+                if (_visited.Contains((item.x, item.y)) && !(item.x == x_start || item.y == y_start))
+                {
+                    return;
+                }
+                _unexplored.Push(item);
+            }
+        }
+        private static Bitmap VisibilityOfPoint(Bitmap map, float maxDistance, int x_start, int y_start, Vector2Int tile)
+        {
+            var visibility = new Bitmap(map.Width, map.Height);
+            var tracker = new Visitor(x_start, y_start);
+            while (tracker.IsEmpty == false)
+            {
+                var (x, y, incX, incY) = tracker.GetNext();
+
+                if (x < 0 || x >= map.Width || y < 0 || y >= map.Height)
+                {
+                    continue;
+                }
+
+                // If it is a wall, skip it
+                if (map.Contains(x, y))
+                {
+                    continue;
+                }
+
+                /*
+                visibility.Set(x, y);
+                tracker.AddToUnexplored((x + incX, y, incX, incY));
+                tracker.AddToUnexplored((x, y + incY, incX, incY));
+                */
+
+                //visibility.Set(x, y);
+                // Draw line from tile to (x, y), and add all tiles the line passes through to the visibility bitmap
+                var visibilityResult = HasLineOfSight(map.Width, map.Height, tile.x, tile.y, x, y, maxDistance, map);
+                visibility.Union(visibilityResult);
+                if (visibilityResult.Count != 0)
+                {
+                    tracker.AddToUnexplored((x + incX, y, incX, incY));
+                    tracker.AddToUnexplored((x, y + incY, incX, incY));
+                }
+                visibilityResult.Dispose();
+            }
+            return visibility;
+        }
+
+        public static Bitmap HasLineOfSight(
+                int width,
+                int height,
+                int originX,
+                int originY,
+                int endX,
+                int endY,
+                float maxDistance,
+                Bitmap map)
+        {
+            var visibilityBitmap = new Bitmap(width, height);
+            int x = originX;
+            int y = originY;
+
+            int diffX = endX - originX;
+            int diffY = endY - originY;
+
+            int stepX = math.sign(diffX);
+            int stepY = math.sign(diffY);
+
+            float angle = Mathf.Atan2(-diffY, diffX);
+
+            float cosAngle = Mathf.Cos(angle);
+            float sinAngle = Mathf.Sin(angle);
+
+            float tMaxX = 0.5f / cosAngle;
+            float tMaxY = 0.5f / sinAngle;
+
+            float tDeltaX = tMaxX * 2.0f;
+            float tDeltaY = tMaxY * 2.0f;
+
+            int manhattanDistance = math.abs(diffX) + math.abs(diffY);
+            if (maxDistance != 0f)
+            {
+                int distX = originX - x;
+                int distY = originY - y;
+                if (distX * distX + distY * distY > maxDistance * maxDistance)
+                {
+                    visibilityBitmap.Set(x, y);
+                }
+            }
+
+            for (int t = 0; t < manhattanDistance; t++)
+            {
+                if (math.abs(tMaxX) < math.abs(tMaxY))
+                {
+                    tMaxX += tDeltaX;
+                    x += stepX;
+                }
+                else
+                {
+                    tMaxY += tDeltaY;
+                    y += stepY;
+                }
+
+                if (maxDistance != 0f)
+                {
+                    int distX = originX - x;
+                    int distY = originY - y;
+                    if (distX * distX + distY * distY > maxDistance * maxDistance)
+                    {
+                        return visibilityBitmap;
+                    }
+                }
+
+                if (map.Contains(x, y))
+                {
+                    return visibilityBitmap;
+                }
+                visibilityBitmap.Set(x, y);
+            }
+            return visibilityBitmap;
         }
 
         internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)

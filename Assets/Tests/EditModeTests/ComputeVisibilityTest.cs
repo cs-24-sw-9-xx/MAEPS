@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Utilities;
+using Maes.Utilities.Files;
 
 using NUnit.Framework;
 
@@ -316,5 +317,27 @@ namespace Tests.EditModeTests
             }
         }
 
+        [Test]
+        [Explicit]
+        public void EnsureEqualWaypointsTest()
+        {
+            using (var bitmap = BitmapUtilities.BitmapFromString(Map))
+            {
+                var visibility = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
+                var visibilityImprovement = GreedyMostVisibilityWaypointGenerator.ComputeVisibility_Improved(bitmap);
+
+                foreach (var (tile, expectedVisibility) in visibility)
+                {
+                    Assert.True(visibilityImprovement.ContainsKey(tile), "Waypoint is missing in second method at {0}!", tile);
+                    var actual = visibilityImprovement[tile];
+                    if (tile.x == 2 && tile.y == 2)
+                    {
+                        SaveAsImage.SaveVisibleTiles(tile, false, expectedVisibility);
+                        SaveAsImage.SaveVisibleTiles(tile, true, actual);
+                    }
+                    Assert.AreEqual(expectedVisibility, actual, "Waypoint does not have the same visibility at {0}!", tile);
+                }
+            }
+        }
     }
 }
