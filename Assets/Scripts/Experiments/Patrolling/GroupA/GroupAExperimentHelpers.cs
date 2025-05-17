@@ -50,7 +50,8 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         statisticsFileName:
                                         $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-BuildingMap-SpawnApart",
-                                        patrollingMapFactory: patrollingMapFactory);
+                                        patrollingMapFactory: patrollingMapFactory,
+                                        maxLogicTicks: GroupAParameters.StandardAmountOfCycles * MySimulationScenario.DefaultMaxLogicTicks);
         }
 
         public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, CaveMapConfig mapConfig, int robotCount, RobotConstraints robotConstraints)
@@ -68,7 +69,8 @@ namespace Maes.Experiments.Patrolling
                                        robotConstraints: robotConstraints,
                                        statisticsFileName:
                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-CaveMap-SpawnApart",
-                                       patrollingMapFactory: patrollingMapFactory);
+                                       patrollingMapFactory: patrollingMapFactory,
+                                       maxLogicTicks: GroupAParameters.StandardAmountOfCycles * MySimulationScenario.DefaultMaxLogicTicks);
         }
 
         public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f)
