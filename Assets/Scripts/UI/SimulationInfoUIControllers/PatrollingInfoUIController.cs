@@ -7,15 +7,11 @@ using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-using XCharts.Runtime;
-
 
 namespace Maes.UI.SimulationInfoUIControllers
 {
     public sealed class PatrollingInfoUIController : SimulationInfoUIControllerBase<PatrollingSimulation, IPatrollingAlgorithm, PatrollingSimulationScenario>
     {
-        public BaseChart chart = null!;
-
         // Set by AfterStart
         private ProgressBar _patrollingCyclesProgressBar = null!;
 
@@ -33,9 +29,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         private Button _selectedRobotTargetWaypointButton = null!;
         private Button _selectedRobotShowVerticesColorsButton = null!;
         private Button _selectedRobotCommunicationRangeButton = null!;
-
-        private Toggle _graphShowToggle = null!;
-        private IntegerField _graphTicksPerUpdateField = null!;
 
         protected override Button[] MapVisualizationToggleGroup => new[] {
             _allRobotsNoneButton,
@@ -66,9 +59,6 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotShowVerticesColorsButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotShowVerticesColorsButton");
             _selectedRobotCommunicationRangeButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotCommunicationRangeButton");
 
-            _graphShowToggle = modeSpecificUiDocument.rootVisualElement.Q<Toggle>("GraphShowToggle");
-            _graphTicksPerUpdateField = modeSpecificUiDocument.rootVisualElement.Q<IntegerField>("GraphTicksPerUpdateField");
-
 
             _allRobotsNoneButton.RegisterCallback<ClickEvent>(AllRobotsNoneButtonClicked);
 
@@ -86,11 +76,7 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotCommunicationRangeButton.RegisterCallback<ClickEvent>(SelectedRobotCommunicationRangeClicked);
 
 
-            _graphShowToggle.RegisterValueChangedCallback(ToggleGraph);
-
             SelectVisualizationButton(_allRobotsNoneButton);
-
-            _graphTicksPerUpdateField.RegisterValueChangedCallback(GraphTicksPerUpdateFieldChanged);
         }
 
         private void OnMapVisualizationModeChanged(IPatrollingVisualizationMode mode)
@@ -130,9 +116,6 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
             if (newSimulation != null)
             {
-                newSimulation.PatrollingTracker.Chart = chart;
-                newSimulation.PatrollingTracker.Zoom = chart.EnsureChartComponent<DataZoom>();
-                newSimulation.PatrollingTracker.InitIdleGraph();
                 newSimulation.PatrollingTracker.OnVisualizationModeChanged += OnMapVisualizationModeChanged;
                 _mostRecentMapVisualizationModification?.Invoke(newSimulation);
             }
@@ -205,19 +188,6 @@ namespace Maes.UI.SimulationInfoUIControllers
 
                 sim.PatrollingTracker.ShowTargetWaypointSelected();
             });
-        }
-
-        private void ToggleGraph(ChangeEvent<bool> changeEvent)
-        {
-            chart.gameObject.SetActive(changeEvent.newValue);
-        }
-
-        private void GraphTicksPerUpdateFieldChanged(ChangeEvent<int> changeEvent)
-        {
-            if (changeEvent.newValue > 0)
-            {
-                Simulation!.PatrollingTracker.PlottingFrequency = changeEvent.newValue;
-            }
         }
 
         private void SelectedRobotShowVerticesColorsClicked(ClickEvent _)

@@ -12,8 +12,6 @@ using Maes.UI.Visualizers.Patrolling.VisualizationModes;
 
 using UnityEngine;
 
-using XCharts.Runtime;
-
 namespace Maes.Statistics.Trackers
 {
     public sealed class PatrollingTracker : Tracker<PatrollingVisualizer, IPatrollingVisualizationMode>
@@ -32,14 +30,6 @@ namespace Maes.Statistics.Trackers
 
         public float? AverageGraphDiffLastTwoCyclesProportion { get; private set; }
 
-        public BaseChart Chart { get; set; } = null!;
-
-        public DataZoom Zoom { get; set; } = null!;
-
-        public int PlottingFrequency = 50;
-
-        private int _lastPlottedSnapshot;
-
         //TODO: TotalCycles is not set any where in the code
         public int TotalCycles { get; }
 
@@ -54,7 +44,6 @@ namespace Maes.Statistics.Trackers
         private int _lastAmountOfTicksSinceLastCycle;
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
-        private readonly SimulationMap<Tile> _collisionMap;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
@@ -71,7 +60,6 @@ namespace Maes.Statistics.Trackers
 
             _visualizer.meshRenderer.enabled = false;
             _currentVisualizationMode = new NoneVisualizationMode();
-            _collisionMap = collisionMap;
         }
 
         public void OnReachedVertex(int vertexId)
@@ -93,40 +81,6 @@ namespace Maes.Statistics.Trackers
             if (_currentVisualizationMode is PatrollingTargetWaypointVisualizationMode)
             {
                 _visualizer.ShowDefaultColor(vertexDetails.Vertex);
-            }
-        }
-
-        // Hack: Cursed way of updating ui using unitys update event.
-        public override void UIUpdate()
-        {
-            base.UIUpdate();
-            // TODO: Fix graph data limit.
-            if (Chart != null && Chart.gameObject.activeSelf && SnapShots.Count > 0)
-            {
-                //Update zoom to only follow the most recent data.
-                if (Zoom.start < 50 && Chart.series[0].data.Count >= 200)
-                {
-                    Zoom.start = 50;
-                    Zoom.end = 100;
-                }
-
-                for (var i = _lastPlottedSnapshot; i < SnapShots.Count; i++)
-                {
-                    if (SnapShots[i].Tick % PlottingFrequency == 0)
-                    {
-                        Chart.AddData(0, SnapShots[i].Tick, SnapShots[i].WorstGraphIdleness);
-                        Chart.AddData(1, SnapShots[i].Tick, SnapShots[i].GraphIdleness);
-                        Chart.AddData(2, SnapShots[i].Tick, SnapShots[i].AverageGraphIdleness);
-                        Chart.AddData(3, SnapShots[i].Tick, SnapShots[i].TotalDistanceTraveled);
-                    }
-                }
-
-                _lastPlottedSnapshot = SnapShots.Count;
-                Chart.RefreshDataZoom();
-            }
-            else
-            {
-                _lastPlottedSnapshot = 0;
             }
         }
 
@@ -293,41 +247,6 @@ namespace Maes.Statistics.Trackers
         {
             _visualizer.meshRenderer.enabled = false;
             SetVisualizationMode(new AllRobotsShowVerticesColorsVisualizationMode(Simulation.Robots));
-        }
-
-        public void InitIdleGraph()
-        {
-            Chart.RemoveData();
-            var xAxis = Chart.EnsureChartComponent<XAxis>();
-            xAxis.splitNumber = 10;
-            xAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-            xAxis.type = Axis.AxisType.Value;
-
-            var yAxis = Chart.EnsureChartComponent<YAxis>();
-            yAxis.splitNumber = 10;
-            yAxis.type = Axis.AxisType.Value;
-            yAxis.minMaxType = Axis.AxisMinMaxType.MinMaxAuto;
-
-            var worstIdlenessSeries = Chart.AddSerie<Line>("Worst");
-            worstIdlenessSeries.symbol.size = 2;
-
-            var currentIdlenessSeries = Chart.AddSerie<Line>("Current");
-            currentIdlenessSeries.symbol.size = 2;
-
-            var averageIdlenessSeries = Chart.AddSerie<Line>("Average");
-            averageIdlenessSeries.symbol.size = 2;
-
-            var totalDistanceTraveledSeries = Chart.AddSerie<Line>("Distance");
-            totalDistanceTraveledSeries.symbol.size = 2;
-
-            Chart.EnsureChartComponent<Legend>();
-
-            Zoom.enable = true;
-            Zoom.filterMode = DataZoom.FilterMode.Filter;
-            Zoom.start = 0;
-            Zoom.end = 100;
-
-            Chart.RefreshChart();
         }
 
         public void SetVisualizedVertex(VertexVisualizer? newSelectedVertex)
