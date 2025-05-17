@@ -80,6 +80,7 @@ CodeCoverage/
 InitTestScene*
 *.csv
 /data
+/MapCache/*
 /MinotaurExperiment
 /TnfExperiment
 /MAEPS-Data-Processor/MAEPS-Data-Processor/bin
