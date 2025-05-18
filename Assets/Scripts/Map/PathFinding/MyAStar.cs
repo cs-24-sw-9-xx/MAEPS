@@ -77,7 +77,7 @@ namespace Maes.Map.PathFinding
             TMap pathFindingMap, bool beOptimistic = false, bool acceptPartialPaths = false)
         where TMap : IPathFindingMap
         {
-            var path = NewAStar.FindPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic);
+            var path = NewAStar.FindPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic, dependOnBrokenBehaviour: false);
             return path?.ToArray();
         }
 
@@ -97,6 +97,11 @@ namespace Maes.Map.PathFinding
             if (!pathFindingMap.BrokenCollisionMap)
             {
                 return GetNonBrokenPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic: beOptimistic, acceptPartialPaths: acceptPartialPaths);
+            }
+
+            if (!acceptPartialPaths)
+            {
+                return NewAStar.FindPath(startCoordinate, targetCoordinate, pathFindingMap, beOptimistic, dependOnBrokenBehaviour: true)?.ToArray();
             }
 
             while (true)
