@@ -41,8 +41,6 @@ namespace Maes.Map.PathFinding
         private static readonly Vector2Int Left = new Vector2Int(-1, 0);
         private static readonly Vector2Int TopLeft = new Vector2Int(-1, 1);
 
-        // TODO: Support partial paths
-
         /// <summary>
         /// Find a path from <paramref name="start"/> to <paramref name="goal"/>.
         /// </summary>
@@ -50,13 +48,17 @@ namespace Maes.Map.PathFinding
         /// <param name="goal">The coordinate to find a path to.</param>
         /// <param name="map">The map to pathfind on.</param>
         /// <param name="beOptimistic">Whether or not to treat unseen tiles as walkable.</param>
+        /// <param name="acceptPartialPaths">Whether or not to return the path to the closest coordinate to the target if no path was found to the target.</param>
         /// <param name="dependOnBrokenBehaviour">The goal might be in a wall, allow pathing to it anyway.</param>
         /// <typeparam name="TMap">The type of <paramref name="map"/>.</typeparam>
         /// <returns>The path or <see langword="null"/> if no path was found.</returns>
-        public static List<Vector2Int>? FindPath<TMap>(Vector2Int start, Vector2Int goal, TMap map, bool beOptimistic, bool dependOnBrokenBehaviour)
+        public static List<Vector2Int>? FindPath<TMap>(Vector2Int start, Vector2Int goal, TMap map, bool beOptimistic, bool acceptPartialPaths, bool dependOnBrokenBehaviour)
             where TMap : IPathFindingMap
         {
             Func<Vector2Int, bool> isSolid = beOptimistic ? map.IsOptimisticSolid : map.IsSolid;
+
+            var closestDistance = float.PositiveInfinity;
+            var closest = Vector2Int.zero;
 
             var openList = new PriorityQueue<Vector2Int, float>();
 
@@ -143,6 +145,11 @@ namespace Maes.Map.PathFinding
                 }
             }
 
+            if (acceptPartialPaths && !float.IsPositiveInfinity(closestDistance))
+            {
+                return FindPath(start, closest, map, beOptimistic, acceptPartialPaths: false, dependOnBrokenBehaviour: false);
+            }
+
             return null;
 
             void ProcessNeighbor(Vector2Int current, Vector2Int neighbor, Vector2Int? currentParent, bool diagonal, bool neighboringWalls)
@@ -161,11 +168,18 @@ namespace Maes.Map.PathFinding
 
                 if (tentativeGScore < neighborGScore)
                 {
+                    var heuristic = Heuristic(neighbor, goal);
                     cameFrom[neighbor] = current;
                     gScore[neighbor] = tentativeGScore;
-                    fScore[neighbor] = gScore[current] + Heuristic(neighbor, goal);
+                    fScore[neighbor] = gScore[current] + heuristic;
 
                     openList.Enqueue(neighbor, fScore[neighbor]);
+
+                    if (acceptPartialPaths && (heuristic < closestDistance))
+                    {
+                        closestDistance = heuristic;
+                        closest = neighbor;
+                    }
                 }
             }
         }
