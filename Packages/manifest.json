@@ -3,7 +3,7 @@
     "com.chrisnolet.quickoutline": "git+https://github.com/cs-24-sw-9-xx/QuickOutline.git",
     "com.github-glitchenzo.nugetforunity": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
     "com.monitor1394.xcharts": "git+https://github.com/XCharts-Team/XCharts.git#v3.12.0",
-    "com.unity.burst": "1.8.19",
+    "com.unity.burst": "1.8.21",
     "com.unity.ide.rider": "3.0.35",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.inputsystem": "1.12.0",
