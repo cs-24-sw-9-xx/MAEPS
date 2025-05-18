@@ -42,7 +42,18 @@ namespace Maes.Map.PathFinding
         private static readonly Vector2Int TopLeft = new Vector2Int(-1, 1);
 
         // TODO: Support partial paths
-        public static List<Vector2Int>? FindPath<TMap>(Vector2Int start, Vector2Int goal, TMap map, bool beOptimistic)
+
+        /// <summary>
+        /// Find a path from <paramref name="start"/> to <paramref name="goal"/>.
+        /// </summary>
+        /// <param name="start">The coordinate to start from.</param>
+        /// <param name="goal">The coordinate to find a path to.</param>
+        /// <param name="map">The map to pathfind on.</param>
+        /// <param name="beOptimistic">Whether or not to treat unseen tiles as walkable.</param>
+        /// <param name="dependOnBrokenBehaviour">The goal might be in a wall, allow pathing to it anyway.</param>
+        /// <typeparam name="TMap">The type of <paramref name="map"/>.</typeparam>
+        /// <returns>The path or <see langword="null"/> if no path was found.</returns>
+        public static List<Vector2Int>? FindPath<TMap>(Vector2Int start, Vector2Int goal, TMap map, bool beOptimistic, bool dependOnBrokenBehaviour)
             where TMap : IPathFindingMap
         {
             Func<Vector2Int, bool> isSolid = beOptimistic ? map.IsOptimisticSolid : map.IsSolid;
@@ -91,42 +102,42 @@ namespace Maes.Map.PathFinding
                 var anyNeighboringWalls =
                     wallTop || wallTopRight || wallRight || wallBottomRight || wallBottom || wallBottomLeft || wallLeft || wallTopLeft;
 
-                if (!wallTop)
+                if (!wallTop || (dependOnBrokenBehaviour && top == goal))
                 {
                     ProcessNeighbor(current, top, currentParent, false, anyNeighboringWalls);
                 }
 
-                if (!wallTopRight && !wallTop && !wallRight)
+                if ((!wallTopRight || (dependOnBrokenBehaviour && topRight == goal)) && !wallTop && !wallRight)
                 {
                     ProcessNeighbor(current, topRight, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallRight)
+                if (!wallRight || (dependOnBrokenBehaviour && right == goal))
                 {
                     ProcessNeighbor(current, right, currentParent, false, anyNeighboringWalls);
                 }
 
-                if (!wallBottomRight && !wallRight && !wallBottom)
+                if ((!wallBottomRight || (dependOnBrokenBehaviour && bottomRight == goal)) && !wallRight && !wallBottom)
                 {
                     ProcessNeighbor(current, bottomRight, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallBottom)
+                if (!wallBottom || (dependOnBrokenBehaviour && bottom == goal))
                 {
                     ProcessNeighbor(current, bottom, currentParent, false, anyNeighboringWalls);
                 }
 
-                if (!wallBottomLeft && !wallBottom && !wallLeft)
+                if ((!wallBottomLeft || (dependOnBrokenBehaviour && bottomLeft == goal)) && !wallBottom && !wallLeft)
                 {
                     ProcessNeighbor(current, bottomLeft, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallLeft)
+                if (!wallLeft || (dependOnBrokenBehaviour && left == goal))
                 {
                     ProcessNeighbor(current, left, currentParent, false, anyNeighboringWalls);
                 }
 
-                if (!wallTopLeft && !wallTop && !wallLeft)
+                if ((!wallTopLeft || (dependOnBrokenBehaviour && topLeft == goal)) && !wallTop && !wallLeft)
                 {
                     ProcessNeighbor(current, topLeft, currentParent, true, anyNeighboringWalls);
                 }
