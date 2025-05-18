@@ -87,7 +87,7 @@ namespace Maes.Map
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    var path = aStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    var path = MyAStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = MyAStar.PathToStepsCheap(path);
 
                     paths.Add((vertex.Id, neighbor.Id), pathSteps);
