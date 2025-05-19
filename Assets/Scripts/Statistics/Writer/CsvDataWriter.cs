@@ -5,8 +5,6 @@ using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 
-using UnityEngine;
-
 namespace Maes.Statistics.Writer
 {
     public class CsvDataWriter<TSnapShot>
@@ -47,8 +45,6 @@ namespace Maes.Statistics.Writer
             });
 
             csv.WriteRecords(_snapShots);
-
-            Debug.Log($"Writing statistics to path: {_path}");
         }
 
         protected virtual void PrepareSnapShot(TSnapShot snapShot) { }
