@@ -20,9 +20,11 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
+using System;
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -73,7 +75,7 @@ namespace Maes.Experiments.Patrolling
                     {
                         foreach (var partition in _partitionNumbers)
                         {
-                            var faultInjection = new DestroyRobotsRandomFaultInjection(seed, RobotFailureRate, RobotFailureDuration, robotCount - 1);
+                            Func<IFaultInjection> faultInjection = () => new DestroyRobotsRandomFaultInjection(seed, RobotFailureRate, RobotFailureDuration, robotCount - 1);
                             scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, _algorithmName, Algorithm, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, faultInjection));
                         }
                     }
