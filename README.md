@@ -426,6 +426,12 @@ Further Scenes can be added for eventual new algorithms or configuration options
 
 This has been done so the individual scenes can be built seperately and run with the -batchmode arg for parallelisation. The `ExperimentBase` can also be used on its own to run specific simulations with the optional command.
 
+# CI
+The CI is documented in the [CI.md](CI.md) file.
+
+# Virtual Machine Setup
+A guide has been made for how to run experiments on a virtual machine, and how to run it on AAU Strato. See [Guide_VirtualMachine.md](Guide_VirtualMachine.md).
+
 # Contributors
 Philip Irming Holler - [philipholler94@gmail.com](mailto:philipholler94@gmail.com?subject=Regarding%20the%20MAES%20Project)
 
@@ -450,7 +456,3 @@ Jakob Meyer Olsen - [jakobmeyerolsen@gmail.com](mailto:jakobmeyerolsen@gmail.com
 Mads Beyer Mogensen -[mail@madsmogensen.dk](mailto:mail@madsmogensen.dk?subject=Regarding%20the%20MAEPS%20Project)
 
 Puvikaran Santhirasegaram - [puvikaransanthirasegaram@gmail.com](mailto:puvikaransanthirasegaram@gmail.com?subject=Regarding%20the%20MAEPS%20Project)
-
-# CI
-The CI is documented in the [CI.md](CI.md) file.
-
