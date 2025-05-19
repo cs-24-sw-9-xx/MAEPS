@@ -20,8 +20,10 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-StandaloneLinux64-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}-Test
           restore-keys: |
+            Library-StandaloneLinux64-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+            Library-StandaloneLinux64-
             Library-
 
       - name: Cache .NET tools
@@ -38,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-${{ matrix.targetPlatform.machine }}-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-${{ runner.os }}-${{ hashFiles('Assets/NuGet.config') }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -64,7 +66,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
           name: Test results (playmode)
           path: ${{ steps.testRunner.outputs.artifactsPath }}
   
@@ -104,7 +105,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-${{ matrix.targetPlatform.machine }}-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-${{ runner.os }}-${{ hashFiles('Assets/NuGet.config') }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -135,8 +136,6 @@ jobs:
   build-server:
     name: Build for Linux Server
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
 
@@ -162,7 +161,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-ubuntu-latest-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-$${{ runner.os }}-${{ hashFiles('Assets/NuGet.config') }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
