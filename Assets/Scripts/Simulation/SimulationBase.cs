@@ -20,7 +20,6 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
-using System.IO;
 
 using Maes.Algorithms;
 using Maes.FaultInjections;
@@ -100,7 +99,7 @@ namespace Maes.Simulation
         /// <summary>
         /// This is used to ensure there is a folder for statistics for the experiment and the scenario.
         /// </summary>
-        protected string StatisticsFolderPath => $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}";
+        protected string StatisticsFolderPath => $"{GlobalSettings.ExperimentOutPutPath}/{_scenario.StatisticsFileName}";
 
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
@@ -238,11 +237,6 @@ namespace Maes.Simulation
             if (success && GlobalSettings.ShouldWriteCsvResults)
             {
                 CreateStatisticsFile();
-            }
-            else if (!success && GlobalSettings.ShouldWriteCsvResults)
-            {
-                var errorLogFile = Path.Join(GlobalSettings.StatisticsOutPutPath, "failed_scenarios.txt");
-                File.AppendAllText(errorLogFile, $"{_scenario.StatisticsFileName}\n");
             }
         }
 
