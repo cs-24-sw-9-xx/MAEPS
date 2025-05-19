@@ -9,13 +9,21 @@ on:
  
 ### Refer to https://game.ci/docs/github/getting-started
 jobs:
-  setup:
-    name: Setup Packages
+  test:
+    permissions:
+      checks: write
+    name: Run all tests ✨
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
         with:
-          lfs: true
+          path: Library
+          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-
+
       - name: Cache .NET tools
         uses: actions/cache@v4
         with:
@@ -25,40 +33,24 @@ jobs:
           key: dotnet-tools-${{ runner.os }}-8.0
           restore-keys: |
             dotnet-tools-${{ runner.os }}
+
       - name: Cache Packages
         uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-${{ matrix.targetPlatform.machine }}-${{ hashFiles('Assets/NuGet.config') }}
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
       - name: Install NuGetForUnity.Cli
         run: dotnet tool install --global NuGetForUnity.Cli
+
       - name: Restore NuGet Packages for Unity Project
         run: nugetforunity restore .
 
-  test:
-    needs: setup
-    permissions:
-      checks: write
-    name: Run all tests ✨
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: true
-      - uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-          restore-keys: |
-            Library-
-      - uses: actions/cache/restore@v4
-        with:
-          path: Assets/Packages
-          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
       - uses: game-ci/unity-test-runner@v4
         id: testRunner
         env:
@@ -69,6 +61,7 @@ jobs:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: .
           customParameters: --burst-disable-compilation
+
       - uses: actions/upload-artifact@v4
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
@@ -77,54 +70,76 @@ jobs:
   
   
   build:
-    needs: setup
-    name: Build for ${{ matrix.targetPlatform }}
-    runs-on: ubuntu-latest
+    name: Build for ${{ matrix.targetPlatform.platform }}
+    runs-on: ${{ matrix.targetPlatform.machine }}
     strategy:
       fail-fast: false
       matrix:
         targetPlatform:
-          - StandaloneLinux64
-          - StandaloneWindows64
-          - StandaloneOSX
+          - { machine: ubuntu-latest, platform: StandaloneLinux64 }
+          - { machine: windows-latest, platform: StandaloneWindows64 }
+          - { machine: macos-latest, platform: StandaloneOSX }
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
+
       - uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ matrix.targetPlatform.platform }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Library-${{ matrix.targetPlatform }}-
+            Library-${{ matrix.targetPlatform.platform }}-
             Library-
-      - uses: actions/cache/restore@v4
+
+      - name: Cache .NET tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet/tools
+          key: dotnet-tools-${{ runner.os }}-8.0
+          restore-keys: |
+            dotnet-tools-${{ runner.os }}
+
+      - name: Cache Packages
+        uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-${{ matrix.targetPlatform.machine }}-${{ hashFiles('Assets/NuGet.config') }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install NuGetForUnity.Cli
+        run: dotnet tool install --global NuGetForUnity.Cli
+
+      - name: Restore NuGet Packages for Unity Project
+        run: nugetforunity restore .
+
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: ${{ matrix.targetPlatform }}
+          targetPlatform: ${{ matrix.targetPlatform.platform }}
           projectPath: .
+
       - uses: actions/upload-artifact@v4
         with:
-          name: Build-${{ matrix.targetPlatform }}
+          name: Build-${{ matrix.targetPlatform.platform }}
           path: build
 
+
   build-server:
-    needs: setup
     name: Build for Linux Server
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
+
       - uses: actions/cache@v4
         with:
           path: Library
@@ -132,10 +147,34 @@ jobs:
           restore-keys: |
             Library-StandaloneLinux64-
             Library-
-      - uses: actions/cache/restore@v4
+
+      - name: Cache .NET tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet/tools
+          key: dotnet-tools-${{ runner.os }}-8.0
+          restore-keys: |
+            dotnet-tools-${{ runner.os }}
+
+      - name: Cache Packages
+        uses: actions/cache@v4
         with:
           path: Assets/Packages
-          key: Packages-${{ hashFiles('Assets/NuGet.config') }}
+          key: Packages-ubuntu-latest-${{ hashFiles('Assets/NuGet.config') }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install NuGetForUnity.Cli
+        run: dotnet tool install --global NuGetForUnity.Cli
+
+      - name: Restore NuGet Packages for Unity Project
+        run: nugetforunity restore .
+
       - uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -145,10 +184,12 @@ jobs:
           targetPlatform: StandaloneLinux64
           projectPath: .
           customParameters: -standaloneBuildSubtarget Server
+
       - uses: actions/upload-artifact@v4
         with:
           name: Build-StandaloneLinux64-Server
           path: build
+
 
   lint:
     name: Lint
@@ -156,16 +197,20 @@ jobs:
     container: unityci/editor:ubuntu-6000.0.37f1-linux-il2cpp-3
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
       - name: Install NuGetForUnity.Cli
         run: |
           dotnet tool install --global NuGetForUnity.Cli
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
       - name: Restore NuGet Packages for Unity Project
         run: nugetforunity restore .
+
       - name: Generate Solution
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -175,8 +220,10 @@ jobs:
         run: |
           unity-editor -nographics -logFile /dev/stdout -quit -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD" -serial "$UNITY_SERIAL"
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
+
       - name: Format
         run: dotnet format MAEPS.sln --exclude "Assets/RosMessages/" --exclude "Assets/YamlDotNet/" --verify-no-changes
+
       - name: Check forbidden knowledge
         run: |
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Editor.ProjectAuditCI.AuditAndExport -quit
