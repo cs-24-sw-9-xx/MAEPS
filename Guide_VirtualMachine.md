@@ -133,8 +133,12 @@ chmod +x run-headless.sh // Only needed to run to give permission to run the scr
 ./run-headless.sh <EXPERIMENT> <INSTANCES>
 ```
 Here `<EXPERIMENT>` is the name of the experiment you want to run, and `<INSTANCES>` is the number of instances you want to run.
+`<EXPERIMENT>` should be in the format `<Namespace>.<ExperimentName>`, where `<Namespace>` is the namespace of the experiment relative to `Maes.Experiments`, and `<ExperimentName>` is the name/class of the experiment.
 
-
+Example: To run the experiment `HeuristicConscientiousReactiveExperiment` located in the namespace `Maes.Experiments.Patrolling` with 2 instances, you can use the following command:
+```bash
+./run-headless.sh Patrolling.HeuristicConscientiousReactiveExperiment 2
+```
 
 
 
