@@ -404,6 +404,16 @@ namespace Maes.Utilities
             }
         }
 
+        public Hash128 Hash()
+        {
+            var hash = new Hash128();
+            hash.Append(Width);
+            hash.Append(Height);
+            hash.Append(_bits, 0, _length);
+
+            return hash;
+        }
+
         /// <summary>
         /// Enumerates a Bitmap returning a <see cref="Vector2Int"/> for each bit set.
         /// </summary>

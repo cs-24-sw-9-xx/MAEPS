@@ -55,6 +55,18 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         /// <returns></returns>
         public static HashSet<Vector2Int> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
         {
+            return WaypointGeneratorCache<GreedyMostVisibilityWaypointGeneratorCacheKey>.Cached(
+                map,
+                () => VertexPositionsFromMapComputation(map, maxDistance),
+                hash =>
+                {
+                    hash.Append(maxDistance);
+                    return hash;
+                });
+        }
+
+        private static HashSet<Vector2Int> VertexPositionsFromMapComputation(Bitmap map, float maxDistance)
+        {
             var precomputedVisibility = ComputeVisibility(map, maxDistance);
             return ComputeVertexCoordinates(map, precomputedVisibility);
         }
@@ -195,5 +207,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 
             return precomputedVisibilities;
         }
+
+        private sealed class GreedyMostVisibilityWaypointGeneratorCacheKey { }
     }
 }
