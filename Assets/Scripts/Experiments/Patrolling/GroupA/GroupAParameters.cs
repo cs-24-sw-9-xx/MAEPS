@@ -88,6 +88,7 @@ namespace Maes.Experiments.Patrolling
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 0f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls,
+                robotCollisions: false,
                 materialCommunication: true);
         }
 
