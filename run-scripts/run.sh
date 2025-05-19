@@ -5,13 +5,19 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
+if ! command -v "ts" 2>&1 >/dev/null
+then
+    echo "ts could not be found. Install it with 'pacman -Suy moreutils'"
+    exit 1
+fi
+
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 limit=$2  # or set this from user input or arguments
 
-for ((i=0; i<limit; i++)); do
-    "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout --instances "$limit" --instanceid "$i" --experiment "$1" &
-done
+{ for ((i=0; i<limit; i++)); do
+    "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout --instances "$limit" --instanceid "$i" --experiment "$1" | ts "[%Y-%m-%d %H:%M:%S (instance $i)]"  &
+done } | tee output.log
 
 wait  # wait for all background processes to complete
