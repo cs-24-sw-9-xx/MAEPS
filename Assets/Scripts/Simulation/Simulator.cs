@@ -61,16 +61,15 @@ namespace Maes.Simulation
             // Run every 'instances' scenarios offset by 'instanceId'.
             else
             {
-                for (var i = 0; i < scenarios.Count; i++)
+                var scenariosPerInstance = scenarios.Count / instances;
+                var startOffset = instanceId * scenariosPerInstance;
+                var endOffset = instanceId == instances - 1 ? scenarios.Count : (instanceId + 1) * scenariosPerInstance;
+
+                for (var i = startOffset; i < endOffset; i++)
                 {
-                    if ((i + instanceId) % instances == 0)
-                    {
-                        EnqueueScenario(scenarios[i]);
-                    }
+                    EnqueueScenario(scenarios[i]);
                 }
             }
-
-
         }
 
         protected abstract GameObject LoadSimulatorGameObject();
