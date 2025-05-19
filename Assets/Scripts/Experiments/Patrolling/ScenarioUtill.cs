@@ -23,11 +23,14 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
+using System;
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling;
 using Maes.FaultInjections;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
@@ -37,13 +40,13 @@ namespace Maes.Experiments.Patrolling
 {
     public static class ScenarioUtil
     {
-        public static IEnumerable<PatrollingSimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, int robotCount, int mapSize, int cycles, RobotConstraints robotConstraints, int partitionNumber, IFaultInjection? faultInjection = null)
+        public static IEnumerable<PatrollingSimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, int robotCount, int mapSize, int cycles, RobotConstraints robotConstraints, int partitionNumber, Func<IFaultInjection> faultInjection)
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection);
-            var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection);
+            var scenarioBuilding = CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection());
+            var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection());
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
@@ -65,6 +68,7 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
+                                        maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-partitions-{partitionNumber}-SpawnApart");
         }
