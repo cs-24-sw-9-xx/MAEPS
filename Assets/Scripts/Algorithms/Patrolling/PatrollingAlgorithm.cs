@@ -145,13 +145,16 @@ namespace Maes.Algorithms.Patrolling
 
             // Mark as seen in current partition
             var partitionId = Controller.AssignedPartition;
-            if (!_seenVerticesByPartition.ContainsKey(partitionId))
+            if (vertex.Partition == partitionId)
             {
-                _seenVerticesByPartition[partitionId] = new HashSet<int>();
-            }
-            if (!_seenVerticesByPartition[partitionId].Contains(vertex.Id))
-            {
-                _seenVerticesByPartition[partitionId].Add(vertex.Id);
+                if (!_seenVerticesByPartition.ContainsKey(partitionId))
+                {
+                    _seenVerticesByPartition[partitionId] = new HashSet<int>();
+                }
+                if (!_seenVerticesByPartition[partitionId].Contains(vertex.Id))
+                {
+                    _seenVerticesByPartition[partitionId].Add(vertex.Id);
+                }
             }
 
             if (!AllowForeignVertices || (AllowForeignVertices && !_globalMap.Vertices.Contains(vertex)))
