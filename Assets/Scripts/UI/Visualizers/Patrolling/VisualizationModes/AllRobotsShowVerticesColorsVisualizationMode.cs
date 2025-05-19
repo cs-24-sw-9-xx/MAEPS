@@ -20,10 +20,9 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Accord.Math;
-
 using Maes.Algorithms.Patrolling;
 using Maes.Robot;
+using Maes.Utilities;
 
 using UnityEngine;
 
