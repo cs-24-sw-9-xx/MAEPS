@@ -45,7 +45,7 @@ namespace Maes.Experiments.Patrolling
         private static readonly List<int> _robotCounts = new() { 4, 8, 16, 32 };
         private CreateAlgorithmDelegate Algorithm => (_) => new GlobalRedistributionWithCRAlgo();
         private readonly string _algorithmName = "Global Redistribution CR Algorithm";
-        private const int NumberOfCycles = 10;
+        private const int NumberOfCycles = 100;
         private const float RobotFailureRate = 0.05f;
         private const int RobotFailureDuration = 1000;
         private static readonly RobotConstraints RobotConstraints = new(
