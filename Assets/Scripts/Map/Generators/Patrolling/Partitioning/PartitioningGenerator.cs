@@ -93,41 +93,6 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             return new PatrollingMap(allVertices, simulationMap, partitions);
         }
 
-        public static PatrollingMap MakePatrollingMapWithKMeansPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints)
-        {
-            var communicationManager =
-                new CommunicationManager(simulationMap, robotConstraints, new DebuggingVisualizer());
-            using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
-            var vertexPositionsList = vertexPositions.ToList();
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
-            var clusters = KMeansPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
-            var allVertices = new List<Vertex>();
-            var nextId = 0;
-            var partitionId = 0;
-            var partitions = new List<Partition>();
-
-            foreach (var cluster in clusters)
-            {
-                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster.Value, nextId);
-
-                // Assign the partition and color to each vertex in the cluster
-                var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
-                foreach (var vertex in vertices)
-                {
-                    vertex.Partition = partitionId;
-                    vertex.Color = clusterColor;
-                }
-
-                allVertices.AddRange(vertices);
-                nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions.Add(new Partition(partitionId, vertices, communicationManager.CalculateZones(vertices)));
-                partitionId++;
-            }
-            return new PatrollingMap(allVertices, simulationMap, partitions);
-        }
-
-
         // Construct the weighted adjacency matrix using Gaussian kernel
         public static Matrix<double> AdjacencyMatrix(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int amountOfVertices)
         {

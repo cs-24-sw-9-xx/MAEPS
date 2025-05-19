@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-using Accord.Math;
+using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {

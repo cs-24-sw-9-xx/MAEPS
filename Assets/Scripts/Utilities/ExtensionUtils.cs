@@ -21,6 +21,7 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Map.PathFinding;
@@ -95,6 +96,17 @@ namespace Maes.Utilities
             }
 
             return cellIndexToTriangleIndexes;
+        }
+
+        public static bool SetEquals<TKey, TValue>(this Dictionary<TKey, TValue> first, Dictionary<TKey, TValue> second)
+        {
+            return first.Count == second.Count && !first.Except(second).Any();
+        }
+
+        public static bool SetEquals<T>(this IEnumerable<T> first, IEnumerable<T> second)
+        {
+            // TODO: This is pretty slow
+            return new HashSet<T>(first).SetEquals(second);
         }
     }
 }
