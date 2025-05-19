@@ -243,7 +243,7 @@ namespace Maes.Simulation
             {
                 if (!reason!.Value.Success)
                 {
-                    Debug.LogErrorFormat("Simulation did not complete successfully: {0}", reason.Value.Message);
+                    Debug.LogErrorFormat("Simulation did not complete successfully: {0}, {1}", reason.Value.Message, CurrentScenario.StatisticsFileName);
                 }
 
                 CurrentSimulation.OnSimulationFinished(reason.Value.Success);
