@@ -114,7 +114,6 @@ namespace Maes.Statistics.Trackers
                 {
                     var cycleAvg = Math.Abs(_lastCycleAverageGraphIdleness - averageGraphIdlenessCycle) /
                                    _lastCycleAverageGraphIdleness;
-                    Debug.Log($"Average Graph Diff Last Two Cycles Proportion: {cycleAvg}");
                     AverageGraphDiffLastTwoCyclesProportion = cycleAvg;
                 }
 

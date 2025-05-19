@@ -414,6 +414,8 @@ namespace Maes.Robot
 
             _debugStringBuilder.AppendFormat("Is colliding: {0}\n", IsCurrentlyColliding);
 
+            _debugStringBuilder.AppendFormat("Partition: {0}\n", AssignedPartition);
+
             return _debugStringBuilder.ToString();
         }
 

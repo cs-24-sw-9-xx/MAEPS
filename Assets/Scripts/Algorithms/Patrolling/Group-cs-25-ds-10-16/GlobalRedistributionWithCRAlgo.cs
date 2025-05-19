@@ -50,7 +50,7 @@ namespace Maes.Algorithms.Patrolling
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
             _redistributionComponent = new GlobalRedistributionComponent(controller, 100, this, _heartbeatComponent);
 
-            return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
+            return new IComponent[] { _goToNextVertexComponent, _heartbeatComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
 
         private static Vertex NextVertex(Vertex currentVertex)
