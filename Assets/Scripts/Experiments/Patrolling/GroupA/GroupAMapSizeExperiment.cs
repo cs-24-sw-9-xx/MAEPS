@@ -44,11 +44,11 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator())
             {
-                foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
+                foreach (var mapSize in _mapSizes)
                 {
-                    var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
-                    foreach (var mapSize in _mapSizes)
+                    foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                     {
+                        var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
                         scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, mapSize));
                     }
                 }
