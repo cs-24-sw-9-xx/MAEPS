@@ -29,7 +29,7 @@ using UnityEngine;
 
 namespace Maes.Utilities
 {
-    [BurstCompile(FloatPrecision.Low, FloatMode.Default, CompileSynchronously = true)]
+    [BurstCompile(FloatPrecision.Low, FloatMode.Default, CompileSynchronously = true, DisableSafetyChecks = true, OptimizeFor = OptimizeFor.Performance)]
     public struct VisibilityJob : IJob
     {
         [ReadOnly]
