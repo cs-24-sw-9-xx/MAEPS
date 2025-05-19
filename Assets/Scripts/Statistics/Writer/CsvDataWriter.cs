@@ -36,7 +36,6 @@ namespace Maes.Statistics.Writer
                 csv.WriteRecord(snapShot);
                 csv.NextRecord();
             }
-            Debug.Log($"Writing statistics to path: {_path}");
         }
 
         public void CreateCsvFileNoPrepare(string separator = ",")
