@@ -21,3 +21,14 @@ limit=$2  # or set this from user input or arguments
 done } | tee output.log
 
 wait  # wait for all background processes to complete
+
+echo "All instances have shut down."
+
+grep "Simulation did not complete successfully" output.log > failed.log
+
+echo "Finished making output.log and failed.log"
+
+# Check if grep found any matches, print error message in red if it did
+if [ -s failed.log ]; then
+    echo -e "\e[31mSome simulations failed. Check failed.log for details.\e[0m"
+fi

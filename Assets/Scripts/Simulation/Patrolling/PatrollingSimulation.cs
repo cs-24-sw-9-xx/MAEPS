@@ -57,7 +57,7 @@ namespace Maes.Simulation.Patrolling
 
         protected override void CreateStatisticsFile()
         {
-            Debug.Log("Creating statistics file");
+            Debug.Log($"Creating statistics folder at {StatisticsFolderPath}");
             Directory.CreateDirectory(StatisticsFolderPath);
 
             var patrollingFilename = Path.Join(StatisticsFolderPath, "patrolling");
