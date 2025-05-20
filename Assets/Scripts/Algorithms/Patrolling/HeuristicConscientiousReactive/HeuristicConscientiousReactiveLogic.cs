@@ -49,6 +49,12 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 
         public Vertex NextVertex(Vertex currentVertex, IReadOnlyCollection<Vertex> neighbors)
         {
+            // If the current vertex has no neighbors, return it
+            if (neighbors.Count == 0)
+            {
+                return currentVertex;
+            }
+
             // Calculate the normalized idleness of the neighbors
             var normalizedIdleness = CalculateNormalizedIdleness(neighbors);
 
