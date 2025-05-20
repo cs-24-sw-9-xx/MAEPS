@@ -36,6 +36,7 @@ namespace Maes.UI.Visualizers.Exploration
         public static readonly Color32 WarmColor = new(200, 60, 60, 255);
         public static readonly Color32 ColdColor = new(50, 120, 180, 255);
 
+#if MAEPS_GUI
         public override void SetSimulationMap(SimulationMap<Cell> newMap)
         {
             //fixing map offset, but can't find why it needs 0.5 on both axes (hack)
@@ -43,6 +44,7 @@ namespace Maes.UI.Visualizers.Exploration
 
             base.SetSimulationMap(newMap);
         }
+#endif
 
         protected override Color32 InitializeCellColor(Cell cell)
         {

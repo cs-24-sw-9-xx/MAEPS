@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using System.Diagnostics;
+
 using Maes.Simulation;
 
 using UnityEngine;
@@ -38,6 +40,7 @@ namespace Maes.UI
         public Button FastAsPossibleButton { get; private set; } = null!;
         public Button StepButton { get; private set; } = null!;
 
+#if MAEPS_GUI
         private void Awake()
         {
             _simulationManager = GetComponent<ISimulationManager>();
@@ -55,7 +58,9 @@ namespace Maes.UI
             FastAsPossibleButton.RegisterCallback<ClickEvent>(FastAsPossible);
             StepButton.RegisterCallback<ClickEvent>(Step);
         }
+#endif
 
+        [Conditional("MAEPS_GUI")]
         public void UpdateButtonsUI(SimulationPlayState currentState)
         {
             // Do not change ui for the duration of the step

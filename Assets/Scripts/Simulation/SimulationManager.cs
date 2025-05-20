@@ -77,9 +77,11 @@ namespace Maes.Simulation
         // Runs once when starting the program
         private void Start()
         {
+#if MAEPS_GUI
             _physicsTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("PhysicsTicksValueLabel");
             _logicTicksValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("LogicTicksValueLabel");
             _simulatedTimeValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("SimulatedTimeValueLabel");
+#endif
 
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics2D.simulationMode = SimulationMode2D.Script;
@@ -139,9 +141,9 @@ namespace Maes.Simulation
             return PlayState;
         }
 
+#if MAEPS_GUI
         private void Update()
         {
-#if !UNITY_SERVER
             var keyboard = Keyboard.current;
             if (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed)
             {
@@ -163,15 +165,14 @@ namespace Maes.Simulation
                 }
             }
 
-            if (CurrentSimulation != null && CurrentSimulation.SimulatedLogicTicks != 0)
-            {
-                UpdateStatisticsUI();
-            }
-#endif
-
             if (CurrentSimulation == null)
             {
                 return;
+            }
+
+            if (CurrentSimulation.SimulatedLogicTicks != 0)
+            {
+                UpdateStatisticsUI();
             }
 
             var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
@@ -180,6 +181,7 @@ namespace Maes.Simulation
             _logicTicksValueLabel.text = CurrentSimulation.SimulatedLogicTicks.ToString();
             _simulatedTimeValueLabel.text = output;
         }
+#endif
 
         // This method is responsible for executing simulation updates at an appropriate speed, to provide simulation in
         // real time (or whatever speed setting is chosen)
@@ -292,7 +294,6 @@ namespace Maes.Simulation
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
         }
 
-
         private void UpdateStatisticsUI()
         {
             SimulationInfoUIController.UpdateStatistics(CurrentSimulation);
@@ -300,7 +301,7 @@ namespace Maes.Simulation
             CurrentSimulation?.Tracker.UIUpdate();
         }
 
-        public void RemoveCurrentSimulation()
+        private void RemoveCurrentSimulation()
         {
             Destroy(_simulationGameObject);
             CurrentScenario = null;
@@ -324,6 +325,5 @@ namespace Maes.Simulation
         {
             return CurrentScenario is not null;
         }
-
     }
 }

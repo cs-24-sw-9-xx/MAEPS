@@ -19,6 +19,8 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
+using System.Diagnostics;
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -32,14 +34,14 @@ namespace Maes.UI
 
         private static Tooltip s_instance = null!;
 
+#if MAEPS_GUI
         private void Awake()
         {
-#if !UNITY_SERVER
             s_instance = this;
             _tooltip = GetComponent<UIDocument>().rootVisualElement.Q<Label>("Tooltip");
             HideTooltip();
-#endif
         }
+#endif
 
         private void ShowTooltip(string text)
         {
@@ -52,28 +54,26 @@ namespace Maes.UI
             _tooltip.visible = false;
         }
 
+#if MAEPS_GUI
         private void Update()
         {
-#if !UNITY_SERVER
             // Have the tooltip follow the mouse-pointer around.
             var mousePosition = Mouse.current.position.ReadValue();
             _tooltip.style.top = Screen.height - mousePosition.y;
             _tooltip.style.left = mousePosition.x;
-#endif
         }
+#endif
 
+        [Conditional("MAEPS_GUI")]
         public static void ShowTooltip_Static(string text)
         {
-#if !UNITY_SERVER
             s_instance.ShowTooltip(text);
-#endif
         }
 
+        [Conditional("MAEPS_GUI")]
         public static void HideTooltip_Static()
         {
-#if !UNITY_SERVER
             s_instance.HideTooltip();
-#endif
         }
     }
 }
