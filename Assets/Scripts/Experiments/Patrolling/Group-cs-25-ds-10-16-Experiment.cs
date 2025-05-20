@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -67,14 +68,18 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in _seeds)
             {
-                foreach (var robotCount in _robotCounts)
+                foreach (var mapSize in _mapSizes)
                 {
-                    foreach (var mapSize in _mapSizes)
+                    foreach (var robotCount in _robotCounts)
                     {
                         foreach (var partition in _partitionNumbers)
                         {
-                            var faultInjection = new DestroyRobotsRandomFaultInjection(seed, RobotFailureRate, RobotFailureDuration, robotCount - 1);
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, _algorithmName, Algorithm, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, faultInjection));
+                            IFaultInjection FaultInjection()
+                            {
+                                return new DestroyRobotsRandomFaultInjection(seed, RobotFailureRate, RobotFailureDuration, robotCount - 1);
+                            }
+
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, _algorithmName, Algorithm, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, FaultInjection));
                         }
                     }
                 }

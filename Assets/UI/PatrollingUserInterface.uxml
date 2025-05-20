@@ -38,10 +38,6 @@
                 </engine:VisualElement>
             </engine:VisualElement>
         </engine:GroupBox>
-        <engine:GroupBox name="GraphGroupBox" text="Graph">
-            <engine:Toggle label="Show" value="false" name="GraphShowToggle" />
-            <engine:IntegerField label="Ticks per Update" value="50" name="GraphTicksPerUpdateField" />
-        </engine:GroupBox>
         <engine:GroupBox text="Status" name="StatusGroupBox">
             <engine:VisualElement style="flex-grow: 1; flex-direction: row;">
                 <engine:VisualElement style="flex-grow: 1;">

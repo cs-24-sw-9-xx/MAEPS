@@ -14,15 +14,8 @@
       "dependencies": {},
       "hash": "0d0e4af9c79d63224ae26f1a3e822300b1475da7"
     },
-    "com.monitor1394.xcharts": {
-      "version": "git+https://github.com/XCharts-Team/XCharts.git#v3.12.0",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "ad3a8f9ad87d0bf1ec85ca74c491e0ba62c0eb1c"
-    },
     "com.unity.burst": {
-      "version": "1.8.21",
+      "version": "1.8.19",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -173,12 +166,6 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
-    "com.unity.modules.assetbundle": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {}
-    },
     "com.unity.modules.hierarchycore": {
       "version": "1.0.0",
       "depth": 1,
@@ -193,7 +180,7 @@
     },
     "com.unity.modules.imgui": {
       "version": "1.0.0",
-      "depth": 0,
+      "depth": 1,
       "source": "builtin",
       "dependencies": {}
     },
@@ -225,12 +212,6 @@
         "com.unity.modules.jsonserialize": "1.0.0",
         "com.unity.modules.hierarchycore": "1.0.0"
       }
-    },
-    "com.unity.modules.unitywebrequest": {
-      "version": "1.0.0",
-      "depth": 0,
-      "source": "builtin",
-      "dependencies": {}
     }
   }
 }

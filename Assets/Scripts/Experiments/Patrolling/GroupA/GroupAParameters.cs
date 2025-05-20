@@ -46,9 +46,11 @@ namespace Maes.Experiments.Patrolling
             { nameof(ConscientiousReactiveAlgorithm), (_) => (null, (_) => new ConscientiousReactiveAlgorithm()) },
 
             // ConscientiousReactiveAlgorithm with partitioning
+            /*
             { nameof(ConscientiousReactiveAlgorithm)+ "+partitioning", (robotCount) => ((map) =>
                 PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, robotCount, CreateRobotConstraints()),
                  (_) => new ConscientiousReactiveAlgorithm()) },
+                 */
     
             // The map is different for each seed, so the algorithm can just use the same seed for all maps.
             { nameof(RandomReactive), (_) => (null, (_) => new RandomReactive(1)) },
@@ -88,6 +90,7 @@ namespace Maes.Experiments.Patrolling
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 0f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls,
+                robotCollisions: false,
                 materialCommunication: true);
         }
 

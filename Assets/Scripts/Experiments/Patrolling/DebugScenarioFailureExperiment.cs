@@ -34,23 +34,21 @@ namespace Maes.Experiments.Patrolling
 
     /// <summary>
     /// AAU group cs-25-ds-10-17
+    /// This fails every third scenario.
+    /// This way both building and cave maps are tested.
     /// </summary>
-    internal class GroupAMapSizeExperiment : MonoBehaviour
+    internal class DebugScenarioFailureExperiment : MonoBehaviour
     {
-        private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250, 300 };
-
         private void Start()
         {
+            var scenarioCounter = 0;
             var scenarios = new List<MySimulationScenario>();
-            foreach (var seed in GroupAParameters.SeedGenerator())
+            foreach (var seed in GroupAParameters.SeedGenerator(1))
             {
-                foreach (var mapSize in _mapSizes)
+                foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
-                    {
-                        var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
-                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, mapSize));
-                    }
+                    var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, 4, 100, shouldFail: scenarioCounter++ % 3 == 0));
                 }
             }
 

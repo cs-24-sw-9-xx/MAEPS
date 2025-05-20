@@ -24,8 +24,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Accord.Math;
-
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Utilities;
 

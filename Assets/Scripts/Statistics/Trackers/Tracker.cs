@@ -46,7 +46,7 @@ namespace Maes.Statistics.Trackers
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
         }
 
-        public virtual void UIUpdate()
+        public void UIUpdate()
         {
             _currentVisualizationMode.UpdateVisualization(_visualizer, CurrentTick);
         }

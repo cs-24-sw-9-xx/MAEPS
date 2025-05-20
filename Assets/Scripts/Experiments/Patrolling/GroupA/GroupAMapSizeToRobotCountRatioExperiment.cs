@@ -35,9 +35,10 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
-    internal class GroupAMapSizeExperiment : MonoBehaviour
+    internal class GroupAMapSizeToRobotCountRatioExperiment : MonoBehaviour
     {
         private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250, 300 };
+        private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
 
         private void Start()
         {
@@ -49,7 +50,10 @@ namespace Maes.Experiments.Patrolling
                     foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                     {
                         var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
-                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, mapSize));
+                        foreach (var robotCount in _robotCounts)
+                        {
+                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, mapSize));
+                        }
                     }
                 }
             }

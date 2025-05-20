@@ -28,7 +28,8 @@ namespace Maes.Algorithms.Patrolling
 
         private static Vertex NextVertex(Vertex currentVertex)
         {
-            return currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
+            // If the current vertex has no neighbors, return it
+            return currentVertex.Neighbors.Count == 0 ? currentVertex : currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
         }
     }
 }
