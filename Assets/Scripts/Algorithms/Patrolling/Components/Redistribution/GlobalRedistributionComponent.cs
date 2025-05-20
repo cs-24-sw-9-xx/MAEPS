@@ -119,7 +119,8 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private void RedistributeRobot(int newPartition)
         {
             var bestPartitionToMoveRobotFrom = GetPartitionWithMostHeartbeats();
-            if (bestPartitionToMoveRobotFrom == _controller.AssignedPartition && IsLowestIdInPartition())
+            var robotPartiton = _controller.AssignedPartition;
+            if (bestPartitionToMoveRobotFrom == robotPartiton && IsLowestIdInPartition())
             {
                 Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
                 _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
@@ -129,25 +130,63 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private int? GetPartitionWithMostHeartbeats()
         {
-            return _heartbeatComponent.RobotHeartbeats
-                .Values
-                .GroupBy(heartbeat => heartbeat.PartitionId)
-                .OrderByDescending(group => group.Count())
-                .FirstOrDefault()?.Key;
+            var partitionCounts = new Dictionary<int, int>();
+
+            // Count heartbeats for each partition
+            foreach (var heartbeat in _heartbeatComponent.RobotHeartbeats.Values)
+            {
+                if (partitionCounts.ContainsKey(heartbeat.PartitionId))
+                {
+                    partitionCounts[heartbeat.PartitionId]++;
+                }
+                else
+                {
+                    partitionCounts[heartbeat.PartitionId] = 1;
+                }
+            }
+
+            // Add self to own partition (since we don't register our own heartbeat)
+            if (partitionCounts.ContainsKey(_controller.AssignedPartition))
+            {
+                partitionCounts[_controller.AssignedPartition]++;
+            }
+            else
+            {
+                partitionCounts[_controller.AssignedPartition] = 1;
+            }
+
+            if (partitionCounts.Count == 0)
+            {
+                return null;
+            }
+
+            // Find the maximum count
+            var maxCount = partitionCounts.Values.Max();
+
+            // Select all partitions with the maximum count
+            var partitionsWithMax = partitionCounts
+                .Where(kvp => kvp.Value == maxCount)
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            // Return the lowest partition ID among those with the max count (deterministic)
+            return partitionsWithMax.Min();
         }
 
         private bool IsLowestIdInPartition()
         {
             var robotsInPartition = _heartbeatComponent.RobotHeartbeats
-                .Values
-                .Where(heartbeat => heartbeat.PartitionId == _controller.AssignedPartition);
+            .Values
+            .Where(heartbeat => heartbeat.PartitionId == _controller.AssignedPartition)
+            .Select(heartbeat => heartbeat.RobotId)
+            .ToList();
 
             if (!robotsInPartition.Any())
             {
                 return false; // No robots in the partition
             }
 
-            var lowestRobotId = robotsInPartition.Min(heartbeat => heartbeat.RobotId);
+            var lowestRobotId = robotsInPartition.Min();
             return _controller.Id < lowestRobotId;
         }
     }

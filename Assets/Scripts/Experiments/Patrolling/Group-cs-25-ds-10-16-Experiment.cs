@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
 using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Robot;
@@ -38,16 +39,17 @@ namespace Maes.Experiments.Patrolling
 
     internal class Group_CS_25_DS_10_16_Experiment : MonoBehaviour
     {
-        private static readonly List<int> _partitionNumbers = new() { 2, 4 };
-        private static readonly List<int> _mapSizes = new() { 100, 150, 200 };
-        private static readonly List<int> _seeds = new() { 123, 321, 132, 213, 231 };
+        private static readonly List<int> _partitionNumbers = new() { 2 };
+        private static readonly List<int> _mapSizes = new() { 100 };
+        private static readonly List<int> _seeds = new() { 1234567, 7654321, 12345678 };
         private static readonly List<int> _robotCounts = new() { 4, 8, 16, 32 };
-        private CreateAlgorithmDelegate Algorithm => (_) => new GlobalRedistributionWithCRAlgo();
-        private readonly string _algorithmName = "Global Redistribution CR Algorithm";
+        private CreateAlgorithmDelegate AlgorithmGlobalRedistributionWithCR => (_) => new GlobalRedistributionWithCRAlgo();
+        private CreateAlgorithmDelegate AlgorithmApdativeFailureBased => (_) => new AdaptiveRedistributionFailureBasedCRAlgo();
+        private CreateAlgorithmDelegate AlgorithmApdativeFailureSucess => (_) => new AdaptiveRedistributionSuccessBasedCRAlgo();
         private const int NumberOfCycles = 100;
         private const float RobotFailureRate = 0.05f;
         private const int RobotFailureDuration = 1000;
-        private static readonly RobotConstraints RobotConstraints = new(
+        private static readonly RobotConstraints GlobalRobotConstraints = new(
                 senseNearbyAgentsRange: 5f,
                 senseNearbyAgentsBlockedByWalls: true,
                 automaticallyUpdateSlam: true,
@@ -61,7 +63,26 @@ namespace Maes.Experiments.Patrolling
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true,
-                robotCollisions: false);
+                robotCollisions: false,
+                materialCommunication: false);
+
+        private static readonly RobotConstraints RobotConstraints = new(
+                        senseNearbyAgentsRange: 5f,
+                        senseNearbyAgentsBlockedByWalls: true,
+                        automaticallyUpdateSlam: true,
+                        slamUpdateIntervalInTicks: 1,
+                        slamSynchronizeIntervalInTicks: 10,
+                        slamPositionInaccuracy: 0.2f,
+                        mapKnown: true,
+                        distributeSlam: false,
+                        environmentTagReadRange: 100f,
+                        slamRayTraceRange: 7f,
+                        relativeMoveSpeed: 1f,
+                        agentRelativeSize: 0.6f,
+                        calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
+                        robotCollisions: false,
+                        materialCommunication: true);
+
 
         private void Start()
         {
@@ -78,8 +99,15 @@ namespace Maes.Experiments.Patrolling
                             {
                                 return new DestroyRobotsRandomFaultInjection(seed, RobotFailureRate, RobotFailureDuration, robotCount - 1);
                             }
+                            IPatrollingAlgorithm AlgorithmRandomRedis(int _)
+                            {
+                                return new RandomRedistributionWithCRAlgo(seed, 1000);
+                            }
 
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, _algorithmName, Algorithm, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Global Redistribution", AlgorithmGlobalRedistributionWithCR, robotCount, mapSize, NumberOfCycles, GlobalRobotConstraints, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Random Redis", AlgorithmRandomRedis, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Failure Based", AlgorithmApdativeFailureBased, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Success Based", AlgorithmApdativeFailureSucess, robotCount, mapSize, NumberOfCycles, RobotConstraints, partition, FaultInjection));
                         }
                     }
                 }

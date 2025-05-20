@@ -25,6 +25,8 @@ using System.Collections.Generic;
 using Maes.Map;
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
@@ -164,6 +166,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
+                Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId}");
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();

@@ -36,12 +36,32 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         protected override void UpdateTrackerOnFailure(int partitionId)
         {
+            if (!_redistributionTracker.ContainsKey(partitionId))
+            {
+                _redistributionTracker[partitionId] = 0;
+            }
             _redistributionTracker[partitionId] += _currentPartition.CommunicationRatio[partitionId];
         }
 
         protected override void UpdateTrackerOnSuccess(int partitionId)
         {
-            _redistributionTracker[partitionId] -= _currentPartition.CommunicationRatio[partitionId];
+            if (!_redistributionTracker.ContainsKey(partitionId))
+            {
+                _redistributionTracker[partitionId] = 0;
+            }
+
+            else
+            {
+                if (_redistributionTracker[partitionId] > 0)
+                {
+
+                    _redistributionTracker[partitionId] -= _currentPartition.CommunicationRatio[partitionId];
+                }
+                else
+                {
+                    _redistributionTracker[partitionId] = 0;
+                }
+            }
         }
     }
 }

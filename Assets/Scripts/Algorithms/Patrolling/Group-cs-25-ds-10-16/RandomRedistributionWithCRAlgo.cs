@@ -53,14 +53,14 @@ namespace Maes.Algorithms.Patrolling
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, seed: _seed, probabilityFactor: _probabilityFactor);
+            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, this, seed: _seed, probabilityFactor: _probabilityFactor);
 
             return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
 
         private static Vertex NextVertex(Vertex currentVertex)
         {
-            return currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
+            return currentVertex.Neighbors.Count == 0 ? currentVertex : currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
         }
     }
 }

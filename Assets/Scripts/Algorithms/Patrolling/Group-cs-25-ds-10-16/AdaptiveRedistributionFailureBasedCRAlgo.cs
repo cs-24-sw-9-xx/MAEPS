@@ -55,7 +55,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
 
         private static Vertex NextVertex(Vertex currentVertex)
         {
-            return currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
+            return currentVertex.Neighbors.Count == 0 ? currentVertex : currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
         }
     }
 
