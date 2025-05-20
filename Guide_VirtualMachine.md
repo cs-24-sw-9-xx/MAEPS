@@ -62,16 +62,17 @@ ssh -i <path_to_ssh_key> <username>@<ip_address>
 | <ip_address>      | the IP address of the instance you just launched. You can find the IP address in the Openstack dashboard under `Compute -> Instances`.                                                                         |
 
 ## Initial setup of the instance
-| Package | Reason                                                                         |
-|---------|--------------------------------------------------------------------------------|
-| `curl`  | Used to download the artifact                                                  |
-| `jq`    | Used to parse and extract data from the JSON response returned by GitHub's API |
-| `unzip` | Used to unzip the artifact                                                     |
-| `tmux`  | Used to run the experiments in background                                      |
+| Package    | Reason                                                                          |
+|------------|---------------------------------------------------------------------------------|
+| `curl`     | Used to download the artifact                                                   |
+| `jq`       | Used to parse and extract data from the JSON response returned by GitHub's API  |
+| `unzip`    | Used to unzip the artifact                                                      |
+| `tmux`     | Used to run the experiments in background                                       |
+| `moreutils`| Used `ts` for logging                                                           |
 
 1. Run the following command to install the required packages in Arch. If using other the Linux distribution, please install the required packages using the package manager of the Linux distribution.
 ```bash
-sudo pacman -Sy --noconfirm curl jq unzip tmux
+sudo pacman -Sy --noconfirm curl jq unzip tmux moreutils
 ```
 
 ## Download the latest build of StandaloneLinux64-Server
