@@ -42,7 +42,9 @@ namespace Maes.Statistics.Trackers
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
 
+#if MAEPS_GUI
             _visualizer.SetSimulationMap(_map);
+#endif
             _rayTracingMap = new RayTracingMap<Cell>(_map);
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);

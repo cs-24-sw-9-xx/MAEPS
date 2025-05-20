@@ -79,10 +79,9 @@ namespace Maes.UI
         private Button _zoomOutButton = null!;
 
 
-        // Start is called before the first frame update
+#if MAEPS_GUI
         private void Start()
         {
-#if !UNITY_SERVER
             _simulationManager = simulationManagerObject.GetComponent<ISimulationManager>();
 
             _leftButton = uiDocument.rootVisualElement.Q<Button>("MoveLeftButton");
@@ -108,10 +107,20 @@ namespace Maes.UI
             SingletonInstance = this;
             newPosition = transform.position;
             newRotation = transform.rotation;
-            CameraInitialization();
+
+            _cams = new List<CamAssembly>();
+            foreach (var c in GetComponentsInChildren<Camera>(includeInactive: true))
+            {
+                var ct = c.transform;
+                _cams.Add(new CamAssembly(ct.localPosition, -1 * ct.up, c));
+                c.gameObject.SetActive(false);
+            }
+
+            currentCam = _cams.Find(c => c.Camera.name == "Camera90").Camera;
+            currentCam.gameObject.SetActive(true);
             stickyCam = false;
-#endif
         }
+#endif
 
         private void HandleButton(Button button, Direction direction)
         {
@@ -129,24 +138,9 @@ namespace Maes.UI
             _buttonStates[direction] = false;
         }
 
-        private void CameraInitialization()
-        {
-            _cams = new List<CamAssembly>();
-            foreach (var c in GetComponentsInChildren<Camera>(includeInactive: true))
-            {
-                var ct = c.transform;
-                _cams.Add(new CamAssembly(ct.localPosition, -1 * ct.up, c));
-                c.gameObject.SetActive(false);
-            }
-
-            currentCam = _cams.Find(c => c.Camera.name == "Camera90").Camera;
-            currentCam.gameObject.SetActive(true);
-        }
-
-        // Update is called once per frame
+#if MAEPS_GUI
         private void Update()
         {
-#if !UNITY_SERVER
             var mouseWorldPosition = GetMouseWorldPosition();
             if (mouseWorldPosition != null)
             {
@@ -174,8 +168,8 @@ namespace Maes.UI
                 }
                 _simulationManager.CurrentSimulation?.ClearVisualTags();
             }
-#endif
         }
+#endif
 
         private void HandleCameraSelect()
         {
@@ -209,8 +203,6 @@ namespace Maes.UI
         private void ApplyMovement()
         {
             var t = transform;
-
-
             t.position = Vector3.Lerp(t.position, newPosition, Time.deltaTime * movementTime);
             t.rotation = Quaternion.Lerp(t.rotation, newRotation, Time.deltaTime * movementTime);
 

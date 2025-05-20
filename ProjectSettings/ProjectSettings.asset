@@ -585,7 +585,7 @@ PlayerSettings:
   webWasm2023: 0
   scriptingDefineSymbols:
     Server: ROS2
-    Standalone: ROS2
+    Standalone: ROS2;MAEPS_GUI
   additionalCompilerArguments:
     Server: []
     Standalone: []
@@ -597,7 +597,9 @@ PlayerSettings:
   il2cppCodeGeneration: {}
   il2cppStacktraceInformation:
     Standalone: 1
-  managedStrippingLevel: {}
+  managedStrippingLevel:
+    Server: 1
+    Standalone: 1
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 1
   allowUnsafeCode: 0

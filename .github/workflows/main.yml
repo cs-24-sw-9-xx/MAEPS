@@ -62,7 +62,7 @@ jobs:
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: .
-          customParameters: --burst-disable-compilation
+          customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
 
       - uses: actions/upload-artifact@v4
         with:
@@ -79,7 +79,7 @@ jobs:
         targetPlatform:
           - { machine: ubuntu-latest, platform: StandaloneLinux64 }
           - { machine: windows-latest, platform: StandaloneWindows64 }
-          # - { machine: macos-latest, platform: StandaloneOSX } # building on macos keeps reporting error because of licensing issues. In the future try and enable this again :)
+          - { machine: macos-latest, platform: StandaloneOSX }
     steps:
       - uses: actions/checkout@v4
 
@@ -126,6 +126,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform.platform }}
           projectPath: .
+          customParameters: -standaloneBuildSubtarget Player
 
       - uses: actions/upload-artifact@v4
         with:

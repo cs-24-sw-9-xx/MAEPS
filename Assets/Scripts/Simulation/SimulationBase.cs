@@ -213,7 +213,7 @@ namespace Maes.Simulation
 
         public void UpdateDebugInfo()
         {
-#if !UNITY_SERVER
+#if MAEPS_GUI
             if (_selectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
