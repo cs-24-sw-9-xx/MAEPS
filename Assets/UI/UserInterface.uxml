@@ -1,15 +1,5 @@
 <engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/style.uss?fileID=7433441132597879392&amp;guid=7c156309215ba8ef2a1604c503fc30ae&amp;type=3#style" />
-    <engine:VisualElement name="ExperimentController" class="background" style="flex-grow: 1; flex-direction: row; position: absolute; top: 0; left: 0;">
-        <engine:GroupBox name="RestartGroupBox" text="Restart">
-            <engine:Button text="Current" name="RestartCurrentButton" />
-            <engine:Button text="All" name="RestartAllButton" />
-        </engine:GroupBox>
-        <engine:GroupBox name="CreateNewGroupBox" text="Create New">
-            <engine:Button text="Make and Run" name="MakeAndRunButton" />
-            <engine:Button text="Create Batch" name="CreateBatchButton" />
-        </engine:GroupBox>
-    </engine:VisualElement>
     <engine:GroupBox name="TimeController" class="background" style="position: absolute; bottom: 0; align-self: center; padding-left: 3px; padding-top: 5px; padding-bottom: 5px; padding-right: 3px; flex-direction: row;">
         <engine:Button text="" tooltip="Pause" name="PauseButton" class="fa-button" />
         <engine:Button text="" tooltip="Play" name="PlayButton" class="fa-button" />
