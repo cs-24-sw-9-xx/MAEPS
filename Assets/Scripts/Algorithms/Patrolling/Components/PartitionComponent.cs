@@ -51,9 +51,10 @@ namespace Maes.Algorithms.Patrolling.Components
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _virtualStigmergyComponent.Put(_robotId, _startupComponent.Message[_robotId]);
-            // Wait for one logic tick before continuing to ensure the message is sent and received.
-            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+            foreach (var robotId in _startupComponent.DiscoveredRobots)
+            {
+                _virtualStigmergyComponent.Put(robotId, _startupComponent.Message[robotId]);
+            }
 
             while (true)
             {
