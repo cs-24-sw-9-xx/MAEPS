@@ -29,6 +29,8 @@ namespace Maes.Simulation
 
         int NumberOfActiveRobots { get; }
 
+        CommunicationManager CommunicationManager { get; }
+
         void SetSelectedRobot(MonaRobot? newSelectedRobot);
 
         // TODO: Remove this!

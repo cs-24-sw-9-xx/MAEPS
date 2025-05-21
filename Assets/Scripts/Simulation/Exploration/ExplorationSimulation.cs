@@ -1,10 +1,6 @@
-using System.IO;
-using System.Linq;
-
 using Maes.Algorithms.Exploration;
 using Maes.Algorithms.Exploration.TheNextFrontier;
 using Maes.Map.RobotSpawners;
-using Maes.Statistics.Exploration;
 using Maes.Statistics.Trackers;
 using Maes.UI.SimulationInfoUIControllers;
 using Maes.UI.Visualizers.Exploration;
@@ -25,25 +21,12 @@ namespace Maes.Simulation.Exploration
         {
             base.SetScenario(scenario);
 
-            ExplorationTracker = new ExplorationTracker(this, _collisionMap, explorationVisualizer, scenario.RobotConstraints);
+            ExplorationTracker = new ExplorationTracker(this, _collisionMap, explorationVisualizer, scenario.RobotConstraints, scenario);
         }
 
         public override bool HasFinishedSim()
         {
             return ExplorationTracker.ExploredProportion > 0.99f || SimulatedLogicTicks > 3600 * 10;
-        }
-
-        protected override void CreateStatisticsFile()
-        {
-            Directory.CreateDirectory(StatisticsFolderPath);
-            var resultForFileName = "e-c";
-            if (ExplorationTracker.SnapShots.Any())
-            {
-                resultForFileName = $"e{ExplorationTracker.SnapShots[^1].Explored}-c{ExplorationTracker.SnapShots[^1].Covered}";
-            }
-
-            var path = $"{GlobalSettings.StatisticsOutPutPath}{_scenario.StatisticsFileName}_{resultForFileName}";
-            new ExplorationCsvDataWriter(this, path).CreateCsvFile();
         }
 
         /// <summary>

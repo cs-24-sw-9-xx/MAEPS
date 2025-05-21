@@ -27,7 +27,7 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
-using Maes.Statistics.Exploration;
+using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Exploration;
 using Maes.UI.Visualizers.Exploration.VisualizationModes;
 
@@ -51,7 +51,6 @@ namespace Maes.Statistics.Trackers
         // where each mini-tile is composed of two triangles
         public float CoverageProportion => _coverageCalculator.CoverageProportion;
 
-        public readonly List<ExplorationSnapShot> SnapShots = new();
         private float _mostRecentDistance;
 
         private readonly List<(int, Cell)> _newlyExploredTriangles = new();
@@ -61,8 +60,11 @@ namespace Maes.Statistics.Trackers
 
         private readonly RayTracingMap<Cell>.CellFunction _shouldContinueFromCellDelegate;
 
-        public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints)
-            : base(collisionMap, explorationVisualizer, constraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)))
+        private readonly CsvDataWriter<ExplorationSnapshot> _snapShotWriter;
+
+
+        public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints, ExplorationSimulationScenario scenario)
+            : base(collisionMap, explorationVisualizer, constraints, tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
             Simulation = simulation;
             _collisionMap = collisionMap;
@@ -76,12 +78,14 @@ namespace Maes.Statistics.Trackers
             _traceIntervalDegrees = 360f / _traces;
 
             _shouldContinueFromCellDelegate = ShouldContinueFromCell;
+
+            var path = $"{GlobalSettings.StatisticsOutPutPath}{scenario.StatisticsFileName}";
+            _snapShotWriter = new CsvDataWriter<ExplorationSnapshot>(path);
         }
 
-        protected override void CreateSnapShot()
+        protected override void CreateSnapShot(CommunicationSnapshot communicationSnapshot)
         {
-            SnapShots.Add(new ExplorationSnapShot(CurrentTick, ExploredProportion, CoverageProportion,
-                _mostRecentDistance, Simulation.NumberOfActiveRobots));
+            _snapShotWriter.AddRecord(new ExplorationSnapshot(communicationSnapshot, ExploredProportion, CoverageProportion, _mostRecentDistance, Simulation.NumberOfActiveRobots));
         }
 
         private static float CalculateAverageDistance(List<MonaRobot> robots)
@@ -200,6 +204,12 @@ namespace Maes.Statistics.Trackers
             SetVisualizationMode(new SelectedRobotSlamMapVisualizationMode(_selectedRobot.Controller));
         }
 
+        public override void FinishStatistics()
+        {
+            _snapShotWriter.Finish();
+            _snapShotWriter.Dispose();
+        }
+
         protected override void OnBeforeLogicUpdate(List<MonaRobot> robots)
         {
             base.OnBeforeLogicUpdate(robots);
@@ -272,6 +282,16 @@ namespace Maes.Statistics.Trackers
             }
 
             return cell.IsExplorable;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                _snapShotWriter.Dispose();
+            }
         }
     }
 }

@@ -38,6 +38,17 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 {
     public static class GreedyMostVisibilityWaypointGenerator
     {
+        private static readonly Vector2Int Top = new Vector2Int(0, 1);
+        private static readonly Vector2Int TopRight = new Vector2Int(1, 1);
+        private static readonly Vector2Int Right = new Vector2Int(1, 0);
+        private static readonly Vector2Int BottomRight = new Vector2Int(1, -1);
+        private static readonly Vector2Int Bottom = new Vector2Int(0, -1);
+        private static readonly Vector2Int BottomLeft = new Vector2Int(-1, -1);
+        private static readonly Vector2Int Left = new Vector2Int(-1, 0);
+        private static readonly Vector2Int TopLeft = new Vector2Int(-1, 1);
+
+        private const float WallClosePenalty = 0.9f;
+
         public static PatrollingMap MakePatrollingMap(SimulationMap<Tile> simulationMap, WaypointConnectorDelegate waypointConnector, float maxDistance = 0f)
         {
             using var map = MapUtilities.MapToBitMap(simulationMap);
@@ -88,24 +99,27 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             {
                 var bestGuardPosition = Vector2Int.zero;
                 var bestCoverage = new Bitmap(0, 0);
+                var bestCoverageScore = 0f;
 
                 var foundCandidate = false;
 
                 foreach (var uncoveredTile in uncoveredTilesSet.OrderByDescending(t => precomputedVisibility[t].Count))
                 {
                     var candidate = precomputedVisibility[uncoveredTile];
-                    if (candidate.Count <= bestCoverage.Count)
+                    if (candidate.Count <= bestCoverage.Count * WallClosePenalty)
                     {
                         break;
                     }
 
                     var coverage = Bitmap.Intersection(uncoveredTiles, candidate);
+                    var candidateScore = ScoreCandidate(uncoveredTile, map, coverage);
 
-                    if (coverage.Count > bestCoverage.Count)
+                    if (candidateScore > bestCoverageScore)
                     {
                         bestGuardPosition = uncoveredTile;
                         bestCoverage.Dispose();
                         bestCoverage = coverage;
+                        bestCoverageScore = candidateScore;
                         foundCandidate = true;
                     }
                     else
@@ -136,6 +150,30 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             Debug.LogFormat("Greedy guard positions took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return guardPositions;
+        }
+
+        private static float ScoreCandidate(Vector2Int position, Bitmap map, Bitmap visibilityMap)
+        {
+            var wallClose = IsWall(position + Top, map)
+                            || IsWall(position + TopRight, map)
+                            || IsWall(position + Right, map)
+                            || IsWall(position + BottomRight, map)
+                            || IsWall(position + Bottom, map)
+                            || IsWall(position + BottomLeft, map)
+                            || IsWall(position + Left, map)
+                            || IsWall(position + TopLeft, map);
+
+            return visibilityMap.Count * (wallClose ? WallClosePenalty : 1f);
+        }
+
+        private static bool IsWall(Vector2Int position, Bitmap map)
+        {
+            if (position.x < 0 || position.y < 0 || position.x >= map.Width || position.y >= map.Height)
+            {
+                return true;
+            }
+
+            return map.Contains(position);
         }
 
         internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)
