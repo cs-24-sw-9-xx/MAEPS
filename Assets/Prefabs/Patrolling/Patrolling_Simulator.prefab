@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 4230307919047253345}
   - component: {fileID: 4335076633358407167}
   - component: {fileID: 4230307919047253344}
-  - component: {fileID: 9093377932578344294}
   - component: {fileID: 5924617800109182993}
   m_Layer: 0
   m_Name: Patrolling_Simulator
@@ -66,20 +65,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiDocument: {fileID: 0}
---- !u!114 &9093377932578344294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4230307919047253350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7ac643e2ac14d4c8091e2c8447ca44c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiDocument: {fileID: 0}
-  simulationManager: {fileID: 4335076633358407167}
 --- !u!114 &5924617800109182993
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96,20 +81,3 @@ MonoBehaviour:
   uIDocument: {fileID: 0}
   modeSpecificUiDocument: {fileID: 0}
   simulationManager: {fileID: 4335076633358407167}
-  Chart: {fileID: 0}
-  ProgressBarMask: {fileID: 0}
-  ProgressText: {fileID: 0}
-  StoppingCriteriaToggle: {fileID: 0}
-  DistanceTravelledText: {fileID: 0}
-  CurrentGraphIdlenessText: {fileID: 0}
-  WorstGraphIdlenessText: {fileID: 0}
-  AverageGraphIdlenessText: {fileID: 0}
-  WaypointHeatMapButton: {fileID: 0}
-  CoverageHeatMapButton: {fileID: 0}
-  NoneButton: {fileID: 0}
-  ToggleAllRobotsHighlightingButton: {fileID: 0}
-  AllVerticesLineOfSightButton: {fileID: 0}
-  TargetWaypointSelectedButton: {fileID: 0}
-  ToogleIdleGraphButton: {fileID: 0}
-  RobotHighlightingSlider: {fileID: 0}
-  PlottingFrequencyInputField: {fileID: 0}
