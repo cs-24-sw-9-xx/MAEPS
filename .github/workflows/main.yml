@@ -62,7 +62,7 @@ jobs:
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: .
-          customParameters: --burst-disable-compilation
+          customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
 
       - uses: actions/upload-artifact@v4
         with:
@@ -126,6 +126,7 @@ jobs:
         with:
           targetPlatform: ${{ matrix.targetPlatform.platform }}
           projectPath: .
+          customParameters: -standaloneBuildSubtarget Player
 
       - uses: actions/upload-artifact@v4
         with:

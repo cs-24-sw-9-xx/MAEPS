@@ -20,6 +20,7 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
+using System.Diagnostics;
 
 using Maes.Algorithms;
 using Maes.Simulation;
@@ -62,7 +63,7 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private void Start()
         {
-#if !UNITY_SERVER
+#if MAEPS_GUI
             _stickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
 
             _robotControllerValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("RobotControllerValueLabel");
@@ -78,6 +79,12 @@ namespace Maes.UI.SimulationInfoUIControllers
             });
 
             AfterStart();
+#else
+#if !UNITY_EDITOR
+            Destroy(cameraController.gameObject);
+#endif
+            Destroy(uIDocument.gameObject);
+            Destroy(modeSpecificUiDocument.gameObject);
 #endif
         }
 
@@ -118,6 +125,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         }
 
         // Called whenever the simulator instantiates a new simulation object 
+        [Conditional("MAEPS_GUI")]
         protected abstract void NotifyNewSimulation(TSimulation? newSimulation);
 
         public void NotifyNewSimulation(ISimulation? simulation)

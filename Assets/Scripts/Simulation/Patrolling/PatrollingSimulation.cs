@@ -1,14 +1,8 @@
-using System.IO;
-
 using Maes.Algorithms.Patrolling;
 using Maes.Map.RobotSpawners;
-using Maes.Statistics.Patrolling;
 using Maes.Statistics.Trackers;
-using Maes.Statistics.Writer;
 using Maes.UI.SimulationInfoUIControllers;
 using Maes.UI.Visualizers.Patrolling;
-
-using UnityEngine;
 
 namespace Maes.Simulation.Patrolling
 {
@@ -30,7 +24,7 @@ namespace Maes.Simulation.Patrolling
         {
             var patrollingMap = scenario.PatrollingMapFactory(_collisionMap);
 
-            PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap);
+            PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap, StatisticsFolderPath);
 
             foreach (var (_, vertexVisualizer) in patrollingVisualizer.VertexVisualizers)
             {
@@ -50,33 +44,10 @@ namespace Maes.Simulation.Patrolling
             return true;
         }
 
-        public bool HasSelectedVertex()
-        {
-            return SelectedVertex != null;
-        }
-
-        protected override void CreateStatisticsFile()
-        {
-            Debug.Log($"Creating statistics folder at {StatisticsFolderPath}");
-            Directory.CreateDirectory(StatisticsFolderPath);
-
-            var patrollingFilename = Path.Join(StatisticsFolderPath, "patrolling");
-            new PatrollingCsvDataWriter(this, patrollingFilename).CreateCsvFile();
-
-            var waypointFolderPath = Path.Join(StatisticsFolderPath, "waypoints/");
-            Directory.CreateDirectory(waypointFolderPath);
-            foreach (var (point, snapShots) in PatrollingTracker.WaypointSnapShots)
-            {
-                var waypointFilename = Path.Join(waypointFolderPath, $"waypoint_{point.x}_{point.y}");
-                new CsvDataWriter<WaypointSnapShot>(snapShots, waypointFilename).CreateCsvFileNoPrepare();
-            }
-        }
-
         public void SetSelectedVertex(VertexVisualizer? newSelectedVertex)
         {
             SelectedVertex = newSelectedVertex;
             Tracker.SetVisualizedVertex(newSelectedVertex);
         }
-
     }
 }

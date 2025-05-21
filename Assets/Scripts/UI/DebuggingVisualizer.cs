@@ -20,6 +20,8 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 using Maes.Map;
 using Maes.Robot;
@@ -63,12 +65,14 @@ namespace Maes.UI
         }
 
         // Debugging measure to visualize all environment tags
+        [Conditional("MAEPS_GUI")]
         public void AddEnvironmentTag(EnvironmentTag tag)
         {
             _environmentTags.Add(tag);
         }
 
         // Debugging measure to visualize communication between robots
+        [Conditional("MAEPS_GUI")]
         public void AddCommunicationTrail(MonaRobot robot1, MonaRobot robot2)
         {
             _links.Enqueue(new CommunicationLink(robot1, robot2, _currentTick + 10));
@@ -87,6 +91,7 @@ namespace Maes.UI
                 placedTag.tag.DrawTag(placedTag.WorldPosition);
         }*/
 
+        [Conditional("MAEPS_GUI")]
         public void RenderVisibleTags()
         {
             foreach (var tag in _environmentTags)
@@ -95,6 +100,7 @@ namespace Maes.UI
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void RenderSelectedVisibleTags(int id)
         {
             foreach (var tag in _environmentTags)
@@ -105,6 +111,7 @@ namespace Maes.UI
 
         public void PhysicsUpdate()
         {
+#if MAEPS_GUI
             _currentTick++;
             // Remove old links
             while (_links.Count != 0 && _links.Peek().EndPhysicsTick < _currentTick)
@@ -112,10 +119,13 @@ namespace Maes.UI
                 var link = _links.Dequeue();
                 Object.Destroy(GameObject.Find(link.ToString()));
             }
+#endif
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void LogicUpdate() { }
 
+        [Conditional("MAEPS_GUI")]
         public void HideAllTags()
         {
             foreach (var tag in _environmentTags)
@@ -124,6 +134,7 @@ namespace Maes.UI
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void RenderCommunicationLines()
         {
             foreach (var link in _links)

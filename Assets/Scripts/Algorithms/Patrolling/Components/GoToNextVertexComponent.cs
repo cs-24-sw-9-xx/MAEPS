@@ -104,19 +104,16 @@ namespace Maes.Algorithms.Patrolling.Components
                 if (_controller.AssignedPartition != ApproachingVertex.Partition)
                 {
                     // The robot has been assigned to another partition. We need to find the closest vertex in the new partition.
-                    targetVertex = _nextVertexDelegate(_initialVertexToPatrolDelegate());
-                    TargetPosition = targetVertex.Position;
-                    do
+                    ApproachingVertex = _initialVertexToPatrolDelegate();
+                    TargetPosition = ApproachingVertex.Position;
+                    while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance)
                     {
-                        _controller.PathAndMoveTo(targetVertex.Position, dependOnBrokenBehaviour: false);
-                        if (_controller.IsCurrentlyColliding)
-                        {
-                            _controller.StopCurrentTask();
-                            break;
-                        }
+                        _controller.PathAndMoveTo(ApproachingVertex.Position, dependOnBrokenBehaviour: false);
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-                    } while (GetRelativePositionTo(targetVertex.Position).Distance > MinDistance);
-                    _patrollingAlgorithm.OnReachTargetVertex(targetVertex, _nextVertexDelegate(targetVertex));
+                    }
+
+                    targetVertex = _nextVertexDelegate(ApproachingVertex);
+                    _patrollingAlgorithm.OnReachTargetVertex(ApproachingVertex, targetVertex);
                     continue;
                 }
 

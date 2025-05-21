@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers;
 
 namespace Maes.Statistics.Trackers
@@ -33,17 +34,23 @@ namespace Maes.Statistics.Trackers
 
         private readonly CoverageCalculator.MiniTileConsumer _preCoverageTileConsumerDelegate;
 
-        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper)
+        private readonly CommunicationManager _communicationManager;
+
+        protected Tracker(SimulationMap<Tile> collisionMap, TVisualizer visualizer, RobotConstraints constraints, Func<Tile, Cell> mapper, CommunicationManager communicationManager)
         {
             _visualizer = visualizer;
             _constraints = constraints;
             _map = collisionMap.FMap(mapper);
 
+#if MAEPS_GUI
             _visualizer.SetSimulationMap(_map);
+#endif
             _rayTracingMap = new RayTracingMap<Cell>(_map);
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;
+
+            _communicationManager = communicationManager;
         }
 
         public void UIUpdate()
@@ -83,10 +90,13 @@ namespace Maes.Statistics.Trackers
                 && CurrentTick != 0
                 && CurrentTick % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                CreateSnapShot();
+                var latestSnapshot = _communicationManager.CommunicationTracker.LatestSnapshot;
+                CreateSnapShot(latestSnapshot);
             }
             CurrentTick++;
         }
+
+        public abstract void FinishStatistics();
 
         protected virtual void OnBeforeLogicUpdate(List<MonaRobot> robots) { }
         protected virtual void OnLogicUpdate(List<MonaRobot> robots) { }
@@ -101,7 +111,7 @@ namespace Maes.Statistics.Trackers
             }
         }
 
-        protected abstract void CreateSnapShot();
+        protected abstract void CreateSnapShot(CommunicationSnapshot communicationSnapshot);
 
         protected virtual void SetVisualizationMode(TVisualizationMode newMode)
         {
@@ -125,5 +135,19 @@ namespace Maes.Statistics.Trackers
         protected virtual void PreCoverageTileConsumer(int index1, Cell triangle1, int index2, Cell triangle2) { }
 
         protected virtual void AfterUpdateCoverageStatus(MonaRobot robot) { }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                // TODO release managed resources here
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
 }

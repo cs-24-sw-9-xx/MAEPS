@@ -62,16 +62,17 @@ ssh -i <path_to_ssh_key> <username>@<ip_address>
 | <ip_address>      | the IP address of the instance you just launched. You can find the IP address in the Openstack dashboard under `Compute -> Instances`.                                                                         |
 
 ## Initial setup of the instance
-| Package | Reason                                                                         |
-|---------|--------------------------------------------------------------------------------|
-| `curl`  | Used to download the artifact                                                  |
-| `jq`    | Used to parse and extract data from the JSON response returned by GitHub's API |
-| `unzip` | Used to unzip the artifact                                                     |
-| `tmux`  | Used to run the experiments in background                                      |
+| Package    | Reason                                                                          |
+|------------|---------------------------------------------------------------------------------|
+| `curl`     | Used to download the artifact                                                   |
+| `jq`       | Used to parse and extract data from the JSON response returned by GitHub's API  |
+| `unzip`    | Used to unzip the artifact                                                      |
+| `tmux`     | Used to run the experiments in background                                       |
+| `moreutils`| Used `ts` for logging                                                           |
 
 1. Run the following command to install the required packages in Arch. If using other the Linux distribution, please install the required packages using the package manager of the Linux distribution.
 ```bash
-sudo pacman -Sy --noconfirm curl jq unzip tmux
+sudo pacman -Sy --noconfirm curl jq unzip tmux moreutils
 ```
 
 ## Download the latest build of StandaloneLinux64-Server
@@ -124,12 +125,12 @@ To detach from the tmux session, you can
 
 To attach to the tmux session again, you can use the following command:
 ```bash
-tmux attach -t Simulation
+tmux attach -t <session_name>
 ```
 
 2. To run the experiment in headless mode, you can use the following command:
 ```bash
-chmod +x run-headless.sh // Only needed to run to give permission to run the script.
+chmod +x run-headless.sh # Only needed to run to give permission to run the script.
 ./run-headless.sh <EXPERIMENT> <INSTANCES>
 ```
 Here `<EXPERIMENT>` is the name of the experiment you want to run, and `<INSTANCES>` is the number of instances you want to run.
@@ -140,6 +141,4 @@ Example: To run the experiment `HeuristicConscientiousReactiveExperiment` locate
 ./run-headless.sh Patrolling.HeuristicConscientiousReactiveExperiment 2
 ```
 
-
-
-
+3. After the experiment is completed, the output.log contains all logs, and failure.log contains the names of any scenarios, that did not complete in the given amount of ticks. (default being DefaultMaxLogicTicks)

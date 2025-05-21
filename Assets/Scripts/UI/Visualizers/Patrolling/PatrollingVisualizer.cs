@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using Maes.Map;
 using Maes.Map.Generators;
@@ -8,6 +9,8 @@ using Maes.Statistics.Trackers;
 using Maes.UI.Visualizers.Exploration;
 
 using UnityEngine;
+
+using Debug = UnityEngine.Debug;
 
 namespace Maes.UI.Visualizers.Patrolling
 {
@@ -25,11 +28,13 @@ namespace Maes.UI.Visualizers.Patrolling
 
         public CommunicationZoneVertices CommunicationZoneVertices { get; private set; } = null!;
 
+        [Conditional("MAEPS_GUI")]
         public void SetCommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
             CommunicationZoneVertices = new CommunicationZoneVertices(simulationMap, patrollingMap, communicationManager);
         }
 
+#if MAEPS_GUI
         public override void SetSimulationMap(SimulationMap<Cell> newMap)
         {
             transform.position = newMap.ScaledOffset;
@@ -41,10 +46,12 @@ namespace Maes.UI.Visualizers.Patrolling
                 Destroy(visualizer);
             }
         }
+#endif
 
-        public void CreateVisualizers(Dictionary<int, VertexDetails> vertexDetails, PatrollingMap patrollingMap)
+        [Conditional("MAEPS_GUI")]
+        public void CreateVisualizers(VertexDetails[] vertexDetails, PatrollingMap patrollingMap)
         {
-            foreach (var (_, vertexDetail) in vertexDetails)
+            foreach (var vertexDetail in vertexDetails)
             {
                 var vertex = vertexDetail.Vertex;
 
@@ -77,6 +84,7 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ResetWaypointsColor()
         {
             foreach (var (_, vertex) in VertexVisualizers)
@@ -85,6 +93,7 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ResetRobotHighlighting(IEnumerable<MonaRobot> robots, MonaRobot? selectedRobot)
         {
             foreach (var robot in robots)
@@ -97,6 +106,7 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ShowWaypointHeatMap(int currentTick)
         {
             foreach (var (_, vertexVisualizer) in VertexVisualizers)
@@ -115,12 +125,14 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ShowTargetWaypoint(Vertex targetVertex)
         {
             var yellowColor = new Color(255, 255, 0, 255);
             VertexVisualizers[targetVertex.Id].SetWaypointColor(yellowColor);
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ShowRobotsHighlighting(IEnumerable<MonaRobot> robots)
         {
             foreach (var robot in robots)
@@ -129,6 +141,7 @@ namespace Maes.UI.Visualizers.Patrolling
             }
         }
 
+        [Conditional("MAEPS_GUI")]
         public void ShowDefaultColor(Vertex vertex)
         {
             if (VertexVisualizers.TryGetValue(vertex.Id, out var vertexObject))
