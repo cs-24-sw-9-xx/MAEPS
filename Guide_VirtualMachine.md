@@ -125,12 +125,12 @@ To detach from the tmux session, you can
 
 To attach to the tmux session again, you can use the following command:
 ```bash
-tmux attach -t Simulation
+tmux attach -t <session_name>
 ```
 
 2. To run the experiment in headless mode, you can use the following command:
 ```bash
-chmod +x run-headless.sh // Only needed to run to give permission to run the script.
+chmod +x run-headless.sh # Only needed to run to give permission to run the script.
 ./run-headless.sh <EXPERIMENT> <INSTANCES>
 ```
 Here `<EXPERIMENT>` is the name of the experiment you want to run, and `<INSTANCES>` is the number of instances you want to run.
@@ -141,6 +141,4 @@ Example: To run the experiment `HeuristicConscientiousReactiveExperiment` locate
 ./run-headless.sh Patrolling.HeuristicConscientiousReactiveExperiment 2
 ```
 
-
-
-
+3. After the experiment is completed, the output.log contains all logs, and failure.log contains the names of any scenarios, that did not complete in the given amount of ticks. (default being DefaultMaxLogicTicks)
