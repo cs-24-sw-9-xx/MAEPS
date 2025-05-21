@@ -1,22 +1,18 @@
 ﻿using AlgorithmSplitter;
 
-using MAEPS_Data_Processor;
+var argumentParser = new ArgumentParser();
+argumentParser.ParseArguments(args);
 
-
-
-switch (args.Length)
+var experimentsFolderPath = argumentParser.GetArgument("--path");
+if (!Path.Exists(experimentsFolderPath))
 {
-    case < 1:
-        Console.WriteLine("Please provide a path to the data folder");
-        return;
-    case < 2:
-        Console.WriteLine("Please provide a groupBy value");
-        return;
+    Console.WriteLine("Invalid path provided");
+    return;
 }
 
-var experimentsFolderPath = args[0];
-var groupBy = args[1];
-var regenerateExistingSummaries = args.Length > 2 && bool.Parse(args[2]);
+var groupBy = argumentParser.GetArgument("--groupBy");
+var regenerateExistingSummaries =
+    argumentParser.GetArgument("--regenerateExistingSummaries", bool.TryParse, false);
 
 if (!Path.Exists(experimentsFolderPath + ".zip"))
 {
@@ -24,31 +20,7 @@ if (!Path.Exists(experimentsFolderPath + ".zip"))
     return;
 }
 
-var arguments = ArgumentParser.ParseArguments(args);
 DataPreProcessor.FlattenDirectoryStructure(experimentsFolderPath);
 Grouping.GroupScenariosByGroupingValue(groupBy, experimentsFolderPath);
 Grouping.GroupScenariosByAlgorithmInGroups(experimentsFolderPath);
 SummaryAlgorithmSeedsCreator.CreateSummaryForAlgorithms(experimentsFolderPath, regenerateExistingSummaries);
-
-public static class ArgumentParser
-{
-    public static Dictionary<string, string> ParseArguments(string[] args)
-    {
-        if (args.Length == 0)
-        {
-            throw new ArgumentException("No arguments provided.");
-        }
-        
-        var arguments = new Dictionary<string, string>();
-        
-        for (var i = 0; i < args.Length; i++)
-        {
-            if (args[i].StartsWith("--"))
-            {
-                var key = args[i].TrimStart('-');
-                
-            }
-        }
-    }
-}
-
