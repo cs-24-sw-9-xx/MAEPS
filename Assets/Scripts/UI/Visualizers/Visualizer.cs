@@ -37,6 +37,14 @@ namespace Maes.UI.Visualizers
         public delegate Color32 CellToColor(Cell cell);
         public delegate Color32 CellIndexToColor(int cellIndex);
 
+#if !MAEPS_GUI
+        private void Start()
+        {
+            Destroy(gameObject);
+        }
+#endif
+
+#if MAEPS_GUI
         public virtual void SetSimulationMap(SimulationMap<Cell> newMap)
         {
             _map = newMap;
@@ -61,6 +69,7 @@ namespace Maes.UI.Visualizers
             _cellIndexToTriangleIndexes = newMap.CellIndexToTriangleIndexes();
             meshFilter.mesh = _mesh;
         }
+#endif
 
         private void GenerateTriangleVertices()
         {

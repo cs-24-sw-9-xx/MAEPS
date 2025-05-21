@@ -179,13 +179,13 @@ namespace Maes.Robot
             var leftWheelVelocityVector = LeftWheel.position - _previousLeftWheelPosition ?? Vector3.zero;
             var rightWheelVelocityVector = RightWheel.position - _previousRightWheelPosition ?? Vector3.zero;
 
+#if MAEPS_GUI
             // For each wheel, determine whether it has moved forwards or backwards
             var forward = Transform.forward;
             var leftWheelMoveDirection = Vector3.Dot(forward, leftWheelVelocityVector) < 0 ? -1f : 1f;
             var rightWheelMoveDirection = Vector3.Dot(forward, rightWheelVelocityVector) < 0 ? -1f : 1f;
 
             // Animate rotating wheels to match movement of the robot
-#if !UNITY_SERVER
             AnimateWheelRotation(LeftWheel, leftWheelMoveDirection, leftWheelVelocityVector.magnitude);
             AnimateWheelRotation(RightWheel, rightWheelMoveDirection, rightWheelVelocityVector.magnitude);
 #endif
