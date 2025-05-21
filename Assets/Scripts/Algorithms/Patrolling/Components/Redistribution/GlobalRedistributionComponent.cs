@@ -65,37 +65,46 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private void RedistributeRobotIfLastSurvivor()
         {
             // Only check after some ticks to avoid early moves
-            if (_algorithm.LogicTicks > 1000)
+            if (_algorithm.LogicTicks <= 1000)
             {
-                // If we are the only robot left
-                if (_heartbeatComponent.RobotHeartbeats.Count == 0)
-                {
-                    // Check if we have finished our current partition
-                    if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
-                    {
-                        // Find the partition with the highest idleness
-                        var partitionWithHighestIdleness = GetPartitionWithHighestIdleness();
-                        if (partitionWithHighestIdleness != _controller.AssignedPartition)
-                        {
-                            Debug.Log($"Robot {_controller.Id} is the last survivor and will move to partition {partitionWithHighestIdleness} (highest idleness)");
-                            _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
-                            _controller.AssignedPartition = partitionWithHighestIdleness;
-                        }
-                    }
-                }
+                return;
             }
+
+            // If we are the only robot left
+            if (_heartbeatComponent.RobotHeartbeats.Count != 0)
+            {
+                return;
+            }
+
+            // Check if we have finished our current partition
+            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
+            {
+                return;
+            }
+
+            // Find the partition with the highest idleness
+            var partitionWithHighestIdleness = GetPartitionWithHighestIdleness();
+            if (partitionWithHighestIdleness == _controller.AssignedPartition)
+            {
+                return;
+            }
+
+            Debug.Log($"Robot {_controller.Id} is the last survivor and will move to partition {partitionWithHighestIdleness} (highest idleness)");
+            _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
+            _controller.AssignedPartition = partitionWithHighestIdleness;
         }
 
         private int GetPartitionWithHighestIdleness()
         {
-            if (!_algorithm.PartitionIdleness.Any())
+            if (_algorithm.PartitionIdleness.Any())
             {
-                Debug.LogWarning("PartitionIdleness is empty. No partition to redistribute to.");
-                return _controller.AssignedPartition; // Return current partition if no other is available
+                return _algorithm.PartitionIdleness
+                    .OrderByDescending(kvp => kvp.Value)
+                    .First().Key;
             }
-            return _algorithm.PartitionIdleness
-                .OrderByDescending(kvp => kvp.Value)
-                .First().Key;
+
+            Debug.LogWarning("PartitionIdleness is empty. No partition to redistribute to.");
+            return _controller.AssignedPartition; // Return current partition if no other is available
         }
 
         /// <summary>
@@ -119,13 +128,14 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private void RedistributeRobot(int newPartition)
         {
             var bestPartitionToMoveRobotFrom = GetPartitionWithMostHeartbeats();
-            var robotPartiton = _controller.AssignedPartition;
-            if (bestPartitionToMoveRobotFrom == robotPartiton && IsLowestIdInPartition())
+            if (bestPartitionToMoveRobotFrom != _controller.AssignedPartition || !IsLowestIdInPartition())
             {
-                Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
-                _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
-                _controller.AssignedPartition = newPartition;
+                return;
             }
+
+            Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
+            _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
+            _controller.AssignedPartition = newPartition;
         }
 
         private int? GetPartitionWithMostHeartbeats()

@@ -1,5 +1,3 @@
-using System.Linq;
-
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
@@ -28,8 +26,7 @@ namespace Maes.Algorithms.Patrolling
 
         private static Vertex NextVertex(Vertex currentVertex)
         {
-            // If the current vertex has no neighbors, return it
-            return currentVertex.Neighbors.Count == 0 ? currentVertex : currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
+            return ConscientiousReactiveLogic.NextVertex(currentVertex);
         }
     }
 }

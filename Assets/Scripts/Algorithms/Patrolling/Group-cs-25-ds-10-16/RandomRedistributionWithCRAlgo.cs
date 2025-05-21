@@ -60,7 +60,7 @@ namespace Maes.Algorithms.Patrolling
 
         private static Vertex NextVertex(Vertex currentVertex)
         {
-            return currentVertex.Neighbors.Count == 0 ? currentVertex : currentVertex.Neighbors.OrderBy(x => x.LastTimeVisitedTick).First();
+            return ConscientiousReactiveLogic.NextVertex(currentVertex);
         }
     }
 }
