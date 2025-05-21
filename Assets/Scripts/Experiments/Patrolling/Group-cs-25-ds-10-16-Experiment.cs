@@ -106,8 +106,8 @@ namespace Maes.Experiments.Patrolling
 
                             scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Global Redistribution", AlgorithmGlobalRedistributionWithCR, robotCount, mapSize, NumberOfCycles, GlobalRobotConstraints, partition, FaultInjection));
                             scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Random Redistribution", AlgorithmRandomRedis, robotCount, mapSize, NumberOfCycles, MaterialRobotConstraints, partition, FaultInjection));
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Failure Based Redistribution", AlgorithmApdativeFailureBased, robotCount, mapSize, NumberOfCycles, MaterialRobotConstraints, partition, FaultInjection));
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Success Based Redistribution", AlgorithmApdativeFailureSucess, robotCount, mapSize, NumberOfCycles, MaterialRobotConstraint, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Failure Based Redistribution", AlgorithmAdaptiveFailureBased, robotCount, mapSize, NumberOfCycles, MaterialRobotConstraints, partition, FaultInjection));
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(seed, "Adaptiv Success Based Redistribution", AlgorithmAdaptiveFailureSucess, robotCount, mapSize, NumberOfCycles, MaterialRobotConstraints, partition, FaultInjection));
                         }
                     }
                 }
