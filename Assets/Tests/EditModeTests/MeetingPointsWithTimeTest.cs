@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
@@ -70,8 +71,9 @@ namespace Tests.EditModeTests
             Assert.AreEqual(2, partitions[1].MeetingPoints[0].VertexId);
             Assert.AreEqual(2, partitions[2].MeetingPoints[0].VertexId);
 
+            var meetingTicks = partitions[1].MeetingPoints[0].MeetingAtTicks.ToArray();
             //Check that the meeting point is at the correct time
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[1].MeetingPoints[0].MeetingAtEveryTick);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting, meetingTicks[1] - meetingTicks[0]);
         }
 
         private const string TestMap2 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX;" +
@@ -109,10 +111,13 @@ namespace Tests.EditModeTests
 
             //Check that the meeting point is at the correct time
             Assert.AreNotEqual(0, expectedGlobalTimeToNextMeeting);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[2].MeetingPoints[0].MeetingAtEveryTick);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 1 + tickToFartestPartition, partitions[2].MeetingPoints[0].InitialMeetingAtTick);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting, partitions[2].MeetingPoints[1].MeetingAtEveryTick);
-            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 2 + tickToFartestPartition, partitions[2].MeetingPoints[1].InitialMeetingAtTick);
+            var meeting1MeetingTicks = partitions[2].MeetingPoints[0].MeetingAtTicks.ToArray();
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting, meeting1MeetingTicks[1] - meeting1MeetingTicks[0]);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 1 + tickToFartestPartition, meeting1MeetingTicks[0]);
+
+            var meeting2MeetingTicks = partitions[2].MeetingPoints[1].MeetingAtTicks.ToArray();
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting, meeting2MeetingTicks[1] - meeting2MeetingTicks[0]);
+            Assert.AreEqual(expectedGlobalTimeToNextMeeting * 2 + tickToFartestPartition, meeting2MeetingTicks[0]);
         }
     }
 }

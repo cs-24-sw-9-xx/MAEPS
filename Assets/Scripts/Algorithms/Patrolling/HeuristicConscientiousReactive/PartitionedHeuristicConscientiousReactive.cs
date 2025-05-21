@@ -21,9 +21,8 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "PHCR";
-        private PartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
-        public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
-                                                                           .VertexIds
+        private IReadOnlyCollection<int> PartitionInfo => _partitionComponent.VerticesAssigned!;
+        public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.VerticesAssigned?
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly IPartitionGenerator<PartitionInfo> _partitionGenerator;
@@ -46,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
 
         private Vertex GetInitialVertexToPatrol()
         {
-            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
+            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.Contains(vertex.Id)).ToArray();
 
             return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
         }
@@ -54,7 +53,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
         private Vertex NextVertex(Vertex currentVertex)
         {
             return _heuristicConscientiousReactiveLogic.NextVertex(currentVertex,
-                currentVertex.Neighbors.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray());
+                currentVertex.Neighbors.Where(vertex => PartitionInfo.Contains(vertex.Id)).ToArray());
         }
 
         private float DistanceMethod(Vertex source, Vertex target)
