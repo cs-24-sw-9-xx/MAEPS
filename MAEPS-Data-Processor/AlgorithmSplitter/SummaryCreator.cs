@@ -19,6 +19,9 @@ internal static class SummaryAlgorithmSeedsCreator
                     Console.WriteLine("Summary already exists. Skipping for {0}", algorithmDirectory);
                     continue;
                 }
+                
+                Console.WriteLine("Create summary for {0}", algorithmDirectory);
+                
                 var summaries = new List<ExperimentSummary>();
                 foreach (var scenarioDirectory in Directory.GetDirectories(algorithmDirectory))
                 {
