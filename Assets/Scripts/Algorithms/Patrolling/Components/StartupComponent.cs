@@ -1,24 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 using Maes.Robot;
-
-using UnityEngine;
 
 namespace Maes.Algorithms.Patrolling.Components
 {
     /// <summary>
     /// Allows you to perform a one-time computation and broadcast the result to all other robots.
-    /// This requires that the robots spawn together and are all in communication range of robot 0.
-    /// Robots not in range will do nothing for the rest of the simulation.
     /// </summary>
     /// <typeparam name="TMessage">The type of the message.</typeparam>
     /// <typeparam name="TMarker">Marker type to differentiate between startup components.</typeparam>
     public sealed class StartupComponent<TMessage, TMarker> : IComponent
         where TMessage : class
     {
+        private static readonly List<StartupComponent<TMessage, TMarker>> StartupComponents = new();
+
         private readonly IRobotController _robotController;
         private readonly Func<HashSet<int>, TMessage> _messageFactory;
 
@@ -33,8 +30,6 @@ namespace Maes.Algorithms.Patrolling.Components
         /// </summary>
         public HashSet<int> DiscoveredRobots { get; } = new HashSet<int>();
 
-        // This is set after this component has run.
-        // It will not allow any other component or the algorithm logic to run before this variable is set
         /// <summary>
         /// Gets the message that has been calculated on robot 0.
         /// </summary>
@@ -49,85 +44,36 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             _robotController = robotController;
             _messageFactory = messageFactory;
+            StartupComponents.Add(this);
         }
 
         /// <inheritdoc />
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
+            foreach (var component in StartupComponents)
+            {
+                component.DiscoveredRobots.Add(_robotController.Id);
+            }
+
+            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+
             if (_robotController.Id == 0)
             {
-                // Wait for the robot id messages to be sent
-                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-
-                var robotIdMessages = _robotController.ReceiveBroadcast().Cast<ReportRobotIdMessage>().ToHashSet();
-                foreach (var robotIdMessage in robotIdMessages)
+                var message = _messageFactory(DiscoveredRobots);
+                foreach (var component in StartupComponents)
                 {
-                    DiscoveredRobots.Add(robotIdMessage.RobotId);
+                    component.Message = message;
                 }
-                // Add ourselves
-                DiscoveredRobots.Add(_robotController.Id);
 
-                // Send the startup message
-                Message = _messageFactory(DiscoveredRobots);
-                _robotController.Broadcast(new StartupMessage(Message, DiscoveredRobots));
-
-                yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+                StartupComponents.Clear();
             }
-            else
-            {
-                // Send our robot id to 0
-                _robotController.Broadcast(new ReportRobotIdMessage(_robotController.Id));
 
-                // Wait for robot 0 to receive the messages and send the startup message
-                yield return ComponentWaitForCondition.WaitForLogicTicks(2, shouldContinue: false);
-
-                var receivedMessages = _robotController.ReceiveBroadcast();
-                if (receivedMessages.Count == 0)
-                {
-                    // We are out of range of robot 0
-                    // There is nothing for us to do.
-                    // Log this and do nothing.
-                    Debug.LogWarningFormat("Robot {0} did not receive the startup message. Disabling...", _robotController.Id);
-                    while (true)
-                    {
-                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-                    }
-                }
-
-                var receivedMessage = receivedMessages.OfType<StartupMessage>().Single();
-                Message = receivedMessage.Message;
-                foreach (var robotId in receivedMessage.DiscoveredRobots)
-                {
-                    DiscoveredRobots.Add(robotId);
-                }
-            }
+            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
             while (true)
             {
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-            }
-        }
-
-        private sealed class StartupMessage
-        {
-            public readonly TMessage Message;
-            public readonly HashSet<int> DiscoveredRobots;
-
-            public StartupMessage(TMessage message, HashSet<int> discoveredRobots)
-            {
-                Message = message;
-                DiscoveredRobots = discoveredRobots;
-            }
-        }
-
-        private sealed class ReportRobotIdMessage
-        {
-            public readonly int RobotId;
-
-            public ReportRobotIdMessage(int robotId)
-            {
-                RobotId = robotId;
             }
         }
     }
