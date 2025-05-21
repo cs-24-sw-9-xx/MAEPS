@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -46,6 +47,7 @@ namespace Maes.Statistics.Trackers
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
 
+        private readonly ArrayPool<WaypointSnapshot> _waypointSnapshotPool;
         private readonly BlockingCollection<(PatrollingSnapshot, WaypointSnapshot[])> _snapshots = new();
 
         private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
@@ -66,6 +68,8 @@ namespace Maes.Statistics.Trackers
                 _vertices[i] = new VertexDetails(map.Vertices[i]);
                 Debug.Assert(_vertices[i].Vertex.Id == i);
             }
+
+            _waypointSnapshotPool = ArrayPool<WaypointSnapshot>.Create();
 
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
@@ -101,10 +105,12 @@ namespace Maes.Statistics.Trackers
 
                     _patrollingSnapshotWriter.AddRecord(patrollingSnapshot);
 
-                    for (var i = 0; i < waypointSnapshots.Length; i++)
+                    for (var i = 0; i < _vertices.Length; i++)
                     {
                         _waypointSnapShots[i].AddRecord(waypointSnapshots[i]);
                     }
+
+                    _waypointSnapshotPool.Return(waypointSnapshots, clearArray: false);
                 }
             }
             catch (InvalidOperationException)
@@ -227,9 +233,9 @@ namespace Maes.Statistics.Trackers
                 new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness,
                     TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, _simulation.NumberOfActiveRobots);
 
-            var waypointSnapshots = new WaypointSnapshot[_vertices.Length];
+            var waypointSnapshots = _waypointSnapshotPool.Rent(_vertices.Length);
 
-            for (var i = 0; i < waypointSnapshots.Length; i++)
+            for (var i = 0; i < _vertices.Length; i++)
             {
                 var vertex = _vertices[i].Vertex;
                 waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
