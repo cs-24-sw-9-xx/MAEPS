@@ -1,4 +1,5 @@
 ﻿using AlgorithmSplitter;
+using AlgorithmSplitter.Boxplots;
 
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
@@ -11,8 +12,12 @@ if (!Path.Exists(experimentsFolderPath))
 }
 
 var groupBy = argumentParser.GetArgument("--groupBy");
-var regenerateExistingSummaries =
-    argumentParser.GetArgument("--regenerateExistingSummaries", bool.TryParse, false);
+var regenerateExistingSummaries = argumentParser.GetArgument("--regenerateExistingSummaries", bool.TryParse, false);
+var title = argumentParser.GetArgument("--title");
+var xLabel = argumentParser.GetArgument("--xLabel");
+var yLabel = argumentParser.GetArgument("--yLabel");
+
+var plotSettings = new PlotSettings(title, xLabel, yLabel);
 
 if (!Path.Exists(experimentsFolderPath + ".zip"))
 {
@@ -22,5 +27,8 @@ if (!Path.Exists(experimentsFolderPath + ".zip"))
 
 DataPreProcessor.FlattenDirectoryStructure(experimentsFolderPath);
 Grouping.GroupScenariosByGroupingValue(groupBy, experimentsFolderPath);
-Grouping.GroupScenariosByAlgorithmInGroups(experimentsFolderPath);
-SummaryAlgorithmSeedsCreator.CreateSummaryForAlgorithms(experimentsFolderPath, regenerateExistingSummaries);
+Grouping.GroupScenariosByAlgorithmInGroups(experimentsFolderPath, groupBy);
+SummaryAlgorithmSeedsCreator.CreateSummaryForAlgorithms(experimentsFolderPath, regenerateExistingSummaries, groupBy);
+
+using var boxPlotCreator = new BoxPlotCreator(experimentsFolderPath, groupBy, plotSettings);
+boxPlotCreator.CreateBoxPlotForAlgorithms();
