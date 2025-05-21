@@ -236,7 +236,7 @@ namespace Maes.Robot
 
         public void DestroyRobot()
         {
-            Debug.LogFormat("Destroying robot {0}", id);
+            Debug.LogFormat("Destroying robot {0} in partition {1}", id, AssignedPartition);
             gameObject.SetActive(false);
             Destroy(gameObject);
         }
