@@ -17,7 +17,7 @@ Please follow the guide from the beginning until the section "Launch Ubuntu inst
 The guide is available at: https://hpc.aau.dk/strato/getting-started/launch-instance/#initial-openstack-setup
 
 ### Launch an instance
-1. Navigate to `Compute -> Instance`. You should see the following:
+1. Navigate to `Compute -> Instances`. You should see the following:
 ![Screenshot 2025-05-15 at 10.37.35.png](.readmeGuideVMAsserts/Screenshot%202025-05-15%20at%2010.37.35.png)
 
 2. Then click on the button `Launch Instance` (Placed at the top right). You should see the following:
