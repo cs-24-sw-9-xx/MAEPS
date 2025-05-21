@@ -4,12 +4,17 @@ namespace AlgorithmSplitter;
 
 internal static class Grouping
 {
+    /// <summary>
+    /// This method groups the scenarios by the grouping value in the folder structure of the experiment folder.
+    /// </summary>
+    /// <param name="groupBy">The grouping value.</param>
+    /// <param name="experimentsFolderPath">The path to the experiment folder.</param>
     public static void GroupScenariosByGroupingValue(string groupBy, string experimentsFolderPath)
     {
-        var scenariosByGroupValue = Directory.GetDirectories(experimentsFolderPath, "*", SearchOption.TopDirectoryOnly);
+        var scenariosByGroupValue = Directory.GetDirectories(experimentsFolderPath);
         foreach (var scenarioFolder in scenariosByGroupValue)
         {
-            if (Path.GetFileName(scenarioFolder).StartsWith(groupBy))
+            if (Path.GetFileName(scenarioFolder).StartsWith(groupBy) || Path.GetFileName(scenarioFolder).StartsWith("Plots"))
             {
                 continue;
             }
@@ -31,12 +36,17 @@ internal static class Grouping
         }
     }
 
-    public static void GroupScenariosByAlgorithmInGroups(string experimentsFolderPath)
+    /// <summary>
+    /// This method groups the scenarios by algorithm name in the folder structure of the groupBy.
+    /// </summary>
+    /// <param name="experimentsFolderPath">The path to the experiment folder.</param>
+    /// <param name="groupBy">The groupBy value.</param>
+    public static void GroupScenariosByAlgorithmInGroups(string experimentsFolderPath, string groupBy)
     {
-        var folderByGroupValue = Directory.GetDirectories(experimentsFolderPath, "*", SearchOption.TopDirectoryOnly);
+        var folderByGroupValue = Directory.GetDirectories(experimentsFolderPath, groupBy + "*", SearchOption.TopDirectoryOnly);
         foreach (var folderGroupValue in folderByGroupValue)
         {
-            var scenarioFolders = Directory.GetDirectories(folderGroupValue, "*", SearchOption.TopDirectoryOnly);
+            var scenarioFolders = Directory.GetDirectories(folderGroupValue);
             var algorithms = new HashSet<string>();
 
             foreach (var scenarioFolder in scenarioFolders)

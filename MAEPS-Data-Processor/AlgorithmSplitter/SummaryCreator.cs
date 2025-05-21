@@ -8,9 +8,9 @@ internal static class SummaryAlgorithmSeedsCreator
 {
     private const string SummaryFileName = "summary.csv";
 
-    public static void CreateSummaryForAlgorithms(string experimentsFolderPath, bool regenerateExistingSummaries)
+    public static void CreateSummaryForAlgorithms(string experimentsFolderPath, bool regenerateExistingSummaries, string groupBy)
     {
-        foreach (var folderByGroupValue in Directory.GetDirectories(experimentsFolderPath))
+        foreach (var folderByGroupValue in Directory.GetDirectories(experimentsFolderPath, groupBy + "*", SearchOption.TopDirectoryOnly))
         {
             foreach (var algorithmDirectory in Directory.GetDirectories(folderByGroupValue))
             {
@@ -68,5 +68,23 @@ internal static class SummaryAlgorithmSeedsCreator
         using var csv = new CsvHelper.CsvWriter(writer, config);
     
         csv.WriteRecords(summaries);
+    }
+    
+    public static ExperimentSummary[] GetSummary(string path)
+    {
+        if (!SummaryExists(path))
+        {
+            throw new FileNotFoundException("Summary file not found", GetSummaryPath(path));
+        }
+        
+        var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true
+        };
+            
+        using var reader = new StreamReader(GetSummaryPath(path));
+        using var csv = new CsvHelper.CsvReader(reader, config);
+    
+        return csv.GetRecords<ExperimentSummary>().ToArray();
     }
 }
