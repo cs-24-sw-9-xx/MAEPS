@@ -79,7 +79,7 @@ jobs:
         targetPlatform:
           - { machine: ubuntu-latest, platform: StandaloneLinux64 }
           - { machine: windows-latest, platform: StandaloneWindows64 }
-          - { machine: macos-latest, platform: StandaloneOSX }
+          # - { machine: macos-latest, platform: StandaloneOSX } # building on macos keeps reporting error because of licensing issues. In the future try and enable this again :)
     steps:
       - uses: actions/checkout@v4
 
