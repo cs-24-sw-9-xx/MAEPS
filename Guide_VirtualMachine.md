@@ -96,13 +96,45 @@ export GITHUB_TOKEN="your_github_token_here"
 export GITHUB_OWNER="your_github_username_or_org"
 export REPO_NAME="your_repository_name"
 ```
+<details>
+<summary>
+What is the GITHUB_TOKEN?
+</summary>
+Go to
 
-4. Run the script to download the latest build of StandaloneLinux64-Server:
+[github/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens/)
+
+and make a token, with the organization as owner if possible.
+</details>
+
+<details>
+<summary>
+Hint (arch): Install vim to easily edit the bashrc file instead of using vi.
+</summary>
+
 ```bash
-chmod +x download-Build-StandaloneLinux64-Server.sh // Only needed to run to give permission to run the script.
+sudo pacman -Sy --noconfirm vim
+```
+
+Open the file:
+```bash
+vim ~/.bashrc
+```
+
+Press 'i' for insert mode, then input the variables, press esc to exit insert mode, then press ':' 'w' 'q' to write(save) and quit the file.
+</details>
+
+4. To make the terminal able to use these new variables run:
+```
+source ~/.bashrc
+```
+
+5. Run the script to download the latest build of StandaloneLinux64-Server:
+```bash
+chmod +x download-Build-StandaloneLinux64-Server.sh # Only needed to run to give permission to run the script.
 ./download-Build-StandaloneLinux64-Server.sh
 ```
-5. After the script has finished running, you can now navigate to the folder where the run-headless.sh script is located. Use the following command:
+6. After the script has finished running, you can now navigate to the folder where the run-headless.sh script is located. Use the following command:
 ```bash
 cd artifacts/Build-StandaloneLinux64-Server/StandaloneLinux64
 ```
