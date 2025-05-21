@@ -90,3 +90,5 @@ InitTestScene*
 .DS_Store
 /Assets/Packages
 Assets/Packages.meta
+/MAEPS-Data-Processor/AlgorithmSplitter/bin
+/MAEPS-Data-Processor/AlgorithmSplitter/obj
