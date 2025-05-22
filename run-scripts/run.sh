@@ -34,3 +34,8 @@ echo "Finished making output.log and failed.log and exceptions.log"v
 if [ -s failed.log ]; then
     echo -e "\e[31mSome simulations failed. Check failed.log for details.\e[0m"
 fi
+
+# Check if grep found any matches, print error message in red if it did
+if [ -s exceptions.log ]; then
+    echo -e "\e[31mSome exceptions occurred. Check exceptions.log for details.\e[0m"
+fi
