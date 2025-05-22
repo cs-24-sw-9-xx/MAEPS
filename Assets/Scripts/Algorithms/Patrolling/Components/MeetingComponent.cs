@@ -9,8 +9,6 @@ using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Robot;
 
-using UnityEngine;
-
 namespace Maes.Algorithms.Patrolling.Components
 {
     public sealed class MeetingComponent : IComponent
@@ -19,7 +17,7 @@ namespace Maes.Algorithms.Patrolling.Components
         public delegate IEnumerable<ComponentWaitForCondition> OnMissingRobotsAtMeetingDelegate(Meeting meeting, HashSet<int> missingRobotIds);
 
         public MeetingComponent(int preUpdateOrder, int postUpdateOrder,
-            Func<int> getLogicTick, EstimateTimeDelegate estimateTime,
+            Func<int> getLogicTick,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent<HMPPartitionInfo> partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
             IMovementComponent movementComponent)
@@ -27,20 +25,19 @@ namespace Maes.Algorithms.Patrolling.Components
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
             _getLogicTick = getLogicTick;
-            _estimateTime = estimateTime;
             _controller = controller;
             _exchangeInformation = exchangeInformation;
             _onMissingRobotsAtMeeting = onMissingRobotsAtMeeting;
             _movementComponent = movementComponent;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
+            _ticksTracker = new TicksTracker(controller);
         }
 
         public int PreUpdateOrder { get; }
         public int PostUpdateOrder { get; }
 
         private readonly Func<int> _getLogicTick;
-        private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
         private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
@@ -48,6 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent<HMPPartitionInfo> _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
+        private readonly TicksTracker _ticksTracker;
 
         private Meeting _nextMeeting;
         private Meeting? GoingToMeeting { get; set; }
@@ -115,9 +113,9 @@ namespace Maes.Algorithms.Patrolling.Components
         ///     If it is able to do that, it returns null = continue current work.
         ///     Otherwise, it returns the vertex of the meeting point.
         /// </summary>
-        /// <param name="currentlyTargetingPosition">The vertex which the robot is approaching towards</param>
+        /// <param name="currentlyTargeting">The vertex which the robot is approaching towards</param>
         /// <returns>Returns the vertex that the robot should move to</returns>
-        public Vertex? ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
+        public Vertex? ShouldGoToNextMeeting(Vertex currentlyTargeting)
         {
             if (GoingToMeeting != null)
             {
@@ -125,8 +123,8 @@ namespace Maes.Algorithms.Patrolling.Components
             }
 
             var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-            var ticksToCurrentlyTargetingPosition = _estimateTime(currentPosition, currentlyTargetingPosition);
-            var ticksFromTargetToMeetingPoint = _estimateTime(currentlyTargetingPosition, _nextMeeting.Vertex.Position);
+            var ticksToCurrentlyTargetingPosition = _controller.TravelEstimator.OverEstimateTime(currentPosition, currentlyTargeting.Position);
+            var ticksFromTargetToMeetingPoint = _ticksTracker.GetTicks(currentlyTargeting, _nextMeeting.Vertex);
 
             var totalTicks = (_getLogicTick() + ticksToCurrentlyTargetingPosition + ticksFromTargetToMeetingPoint) ?? int.MaxValue;
 
@@ -152,10 +150,12 @@ namespace Maes.Algorithms.Patrolling.Components
                 return currentVertex;
             }
 
-            var ticksToPatrollingVertex = _estimateTime(currentVertex.Position, suggestedVertexToPatrol.Position);
-            var ticksFromPatrollingVertexToMeetingPoint = _estimateTime(suggestedVertexToPatrol.Position, _nextMeeting.Vertex.Position);
+            _ticksTracker.Visited(currentVertex, _getLogicTick());
 
-            var totalTicks = (_getLogicTick() + ticksToPatrollingVertex + ticksFromPatrollingVertexToMeetingPoint) ?? int.MaxValue;
+            var ticksToPatrollingVertex = _ticksTracker.GetTicks(currentVertex, suggestedVertexToPatrol);
+            var ticksFromPatrollingVertexToMeetingPoint = _ticksTracker.GetTicks(suggestedVertexToPatrol, _nextMeeting.Vertex);
+
+            var totalTicks = _getLogicTick() + ticksToPatrollingVertex + ticksFromPatrollingVertexToMeetingPoint;
 
             if (totalTicks < _nextMeeting.MeetingAtTick)
             {
@@ -178,6 +178,9 @@ namespace Maes.Algorithms.Patrolling.Components
             else
             {
                 stringBuilder.Append("Not going to any meeting\n");
+                stringBuilder.Append("Next meeting:\n");
+                stringBuilder.Append($"   Vertex Id: {_nextMeeting.MeetingPoint.VertexId}\n");
+                stringBuilder.Append($"   Meeting at Tick: {_nextMeeting.MeetingAtTick}\n");
             }
         }
 
