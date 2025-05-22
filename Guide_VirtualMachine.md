@@ -82,7 +82,7 @@ scp -i <path_to_ssh_key> ./path-to/download-Build-StandaloneLinux64-Server.sh <u
 ```
 | Parameter         | Description                                                              |
 |-------------------|--------------------------------------------------------------------------|
-| <path_to_ssh_key> | The path to the SSH key                                                  |
+| <path_to_ssh_key> | The path to the SSH private key                                                  |
 | \<username\>      | The username to your instance. If the OS is Arch, the username is `arch` |
 | <ip_address>      | the IP address of the instance you just launched. You can find the IP address in the Openstack dashboard under `Compute -> Instances`.                                                                         |
 
