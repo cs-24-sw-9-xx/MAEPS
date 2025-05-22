@@ -47,7 +47,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                     GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,
-                    GroupBParameters.MaterialRobotConstraints,
+                    GroupBParameters.GlobalRobotConstraints,
                     GroupBParameters.StandardPartitionCount,
                     GroupBParameters.FaultInjection(seed)));
             }
