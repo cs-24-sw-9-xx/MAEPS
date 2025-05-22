@@ -25,9 +25,7 @@ using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
-using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -60,10 +58,8 @@ namespace Maes.Experiments.Patrolling
             { nameof(SingleCycleChristofides), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
 
             // Algorithms that use all-waypoint-connected-maps and partitioning
-            { nameof(PartitionedHeuristicConscientiousReactive), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new PartitionedHeuristicConscientiousReactive(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))) },
             { nameof(HMPPatrollingAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
             (
-                new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
             ))
             },
         };
