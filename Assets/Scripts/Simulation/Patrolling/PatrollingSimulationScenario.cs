@@ -16,6 +16,8 @@ namespace Maes.Simulation.Patrolling
         public bool StopAfterDiff { get; }
         public int Partitions { get; }
 
+        public bool SaveWaypointData { get; }
+
         public PatrollingSimulationScenario(int seed,
             int totalCycles,
             bool stopAfterDiff,
@@ -27,7 +29,8 @@ namespace Maes.Simulation.Patrolling
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
             int maxLogicTicks = DefaultMaxLogicTicks,
-            int partitions = 1)
+            int partitions = 1,
+            bool saveWaypointData = false)
             : base(seed,
                 robotSpawner,
                 hasFinishedSim,
@@ -40,6 +43,7 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
+            SaveWaypointData = saveWaypointData;
             PatrollingMapFactory = patrollingMapFactory ?? ((map) =>
                 PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions, RobotConstraints));
         }
