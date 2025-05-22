@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.PartitionedRedistribution;
@@ -60,9 +61,9 @@ namespace Maes.Experiments.Patrolling.GroupB
         public static RobotConstraints GlobalRobotConstraints => RobotConstraints(successCalculator: (_, _) => true);
 
 
-        public static IFaultInjection FaultInjection(int seed, int robotCount)
+        public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.01f, int invokeEvery = 1000)
         {
-            return new DestroyRobotsRandomFaultInjection(seed, 0.01f, 1000, robotCount - 1);
+            return ($"FaultInjection-random-seed-{seed}-probability-{probability}f-invoke-{invokeEvery}-maxDestroy-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }
 
     }

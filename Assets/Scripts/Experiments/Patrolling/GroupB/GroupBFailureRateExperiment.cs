@@ -2,7 +2,6 @@
 using System.Linq;
 
 using Maes.Algorithms.Patrolling;
-using Maes.FaultInjections.DestroyRobots;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -30,11 +29,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                         GroupBParameters.StandardAmountOfCycles,
                         GroupBParameters.MaterialRobotConstraints,
                         1,
-                        () => new DestroyRobotsRandomFaultInjection(
-                            seed,
-                            failureRate,
-                            1000,
-                            GroupBParameters.StandardRobotCount - 1))
+                        GroupBParameters.FaultInjection(seed, probability: failureRate))
                     );
                 }
             }
