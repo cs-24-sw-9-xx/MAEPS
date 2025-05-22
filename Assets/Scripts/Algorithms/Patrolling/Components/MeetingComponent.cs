@@ -20,7 +20,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         public MeetingComponent(int preUpdateOrder, int postUpdateOrder,
             Func<int> getLogicTick, EstimateTimeDelegate estimateTime,
-            PatrollingMap patrollingMap, IRobotController controller, PartitionComponent<HMPPartitionInfo> partitionComponent,
+            PatrollingMap patrollingMap, IRobotController controller, HMPPartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
             IMovementComponent movementComponent)
         {
@@ -43,10 +43,9 @@ namespace Maes.Algorithms.Patrolling.Components
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
-        private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
-        private readonly PartitionComponent<HMPPartitionInfo> _partitionComponent;
+        private readonly HMPPartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
         private Meeting _nextMeeting;
@@ -55,7 +54,7 @@ namespace Maes.Algorithms.Patrolling.Components
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _nextMeeting = _nextMeetingPointDecider.GetNextMeeting(_partitionComponent.PartitionInfo!.MeetingPoints, _patrollingMap);
+            _nextMeeting = GetNextMeeting(_partitionComponent.MeetingPoints, _patrollingMap);
             while (true)
             {
                 while (!GoingToMeeting.HasValue)
@@ -84,6 +83,7 @@ namespace Maes.Algorithms.Patrolling.Components
                     senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
                 }
 
+                _partitionComponent.AttendMeeting(meeting.MeetingPoint.VertexId, meeting.MeetingAtTick);
                 // If all other robots are at the meeting point, then exchange information
                 // Otherwise, handling missing robots
                 if (senseNearByRobotIds.SetEquals(otherRobotIds))
@@ -102,10 +102,8 @@ namespace Maes.Algorithms.Patrolling.Components
                     }
                 }
 
-                _nextMeetingPointDecider.HeldMeeting(meeting.MeetingPoint);
-
                 GoingToMeeting = null;
-                _nextMeeting = _nextMeetingPointDecider.GetNextMeeting(_partitionComponent.PartitionInfo!.MeetingPoints, _patrollingMap);
+                _nextMeeting = GetNextMeeting(_partitionComponent.MeetingPoints, _patrollingMap);
             }
         }
 
@@ -178,6 +176,9 @@ namespace Maes.Algorithms.Patrolling.Components
             else
             {
                 stringBuilder.Append("Not going to any meeting\n");
+                stringBuilder.Append("Next planned meeting\n");
+                stringBuilder.Append($"   Vertex Id: {_nextMeeting.MeetingPoint.VertexId}\n");
+                stringBuilder.Append($"   Meeting at Tick: {_nextMeeting.MeetingAtTick}\n");
             }
         }
 
@@ -213,44 +214,23 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
-        /// <summary>
-        /// Keeps track of the number of meetings held at each meeting point and decides the next meeting point.
-        /// </summary>
-        private class NextMeetingPointDecider
+        private static Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
         {
-            private readonly Dictionary<MeetingPoint, int> _heldMeetingsAtMeetingPoint = new();
-
-            public Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
+            var bestMeetingPoint = meetingPoints[0];
+            var bestMeetingAtTick = bestMeetingPoint.NextMeetingTime() ?? int.MaxValue;
+            foreach (var meetingPoint in meetingPoints.Skip(1))
             {
-                var bestMeetingPoint = meetingPoints[0];
-                var bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
-                foreach (var meetingPoint in meetingPoints.Skip(1))
+                var meetingAtTick = meetingPoint.NextMeetingTime() ?? int.MaxValue;
+                if (meetingAtTick < bestMeetingAtTick)
                 {
-                    var meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
-                    if (meetingAtTick < bestMeetingAtTick)
-                    {
-                        bestMeetingPoint = meetingPoint;
-                        bestMeetingAtTick = meetingAtTick;
-                    }
-                }
-
-                var meetingVertex = patrollingMap.Vertices.First(v => v.Id == bestMeetingPoint.VertexId);
-
-                return new Meeting(bestMeetingPoint, meetingVertex, bestMeetingAtTick);
-            }
-
-            private int GetHeldMeetings(MeetingPoint meetingPoint)
-            {
-                return _heldMeetingsAtMeetingPoint.GetValueOrDefault(meetingPoint, 0);
-            }
-
-            public void HeldMeeting(MeetingPoint meetingPoint)
-            {
-                if (!_heldMeetingsAtMeetingPoint.TryAdd(meetingPoint, 1))
-                {
-                    _heldMeetingsAtMeetingPoint[meetingPoint]++;
+                    bestMeetingPoint = meetingPoint;
+                    bestMeetingAtTick = meetingAtTick;
                 }
             }
+
+            var meetingVertex = patrollingMap.Vertices.First(v => v.Id == bestMeetingPoint.VertexId);
+
+            return new Meeting(bestMeetingPoint, meetingVertex, bestMeetingAtTick);
         }
 
         /// <summary>
@@ -327,7 +307,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 public bool ApproachingSameMeeting(Meeting meeting)
                 {
-                    return MeetingPoint.Equals(meeting.MeetingPoint) && MeetingAtTick == meeting.MeetingAtTick;
+                    return MeetingPoint.VertexId == meeting.MeetingPoint.VertexId && MeetingAtTick == meeting.MeetingAtTick;
                 }
             }
         }

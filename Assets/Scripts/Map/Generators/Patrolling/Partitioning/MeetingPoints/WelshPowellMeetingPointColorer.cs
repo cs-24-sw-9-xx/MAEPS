@@ -36,10 +36,11 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
     {
         private sealed class Vertex
         {
-            public Vertex(int id, HashSet<int> meetingRobotIds)
+            public Vertex(int id, HashSet<int> meetingRobotIds, int? colorId = null)
             {
                 Id = id;
                 MeetingRobotIds = meetingRobotIds;
+                ColorId = colorId;
             }
 
             public HashSet<int> MeetingRobotIds { get; }
@@ -53,6 +54,20 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             _vertices = meetingRobotIdsByVertexId.Select(kvp => new Vertex(kvp.Key, kvp.Value)).ToArray();
             SetNeighbors();
         }
+
+        public WelshPowellMeetingPointColorer(IReadOnlyCollection<MeetingPoint> meetingPoints)
+        {
+            _vertices = meetingPoints
+                .Select(meetingPoint =>
+                {
+                    var last = meetingPoint.MeetingAtTicks.Last();
+                    return new Vertex(meetingPoint.VertexId, new HashSet<int>(meetingPoint.RobotIds));
+                })
+                .ToArray(); ;
+            SetNeighbors();
+        }
+
+        public int MaxColorId => _vertices.Max(vertex => vertex.ColorId ?? 0);
 
         private readonly Vertex[] _vertices;
 

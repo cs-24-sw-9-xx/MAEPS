@@ -119,13 +119,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                 });
             }
 
-            public void AddGeneratedRobotVertices(HMPPatrollingAlgorithm algorithm)
+            public void AddGeneratedRobotVertices(int robotId, HMPPatrollingAlgorithm algorithm)
             {
                 var partitionInfo = algorithm.PartitionInfo;
-                if (partitionInfo is { VertexIds: { Count: > 0 } })
-                {
-                    _generatedRobotVertices[partitionInfo.RobotId] = new HashSet<int>(partitionInfo.VertexIds);
-                }
+                _generatedRobotVertices[robotId] = new HashSet<int>(partitionInfo);
             }
 
             public bool IsRobotPatrollingOwnPartition { get; private set; }
@@ -163,6 +160,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
             private readonly HMPPatrollingAlgorithm _algorithm;
             private readonly TrackerVertices _trackerVertices;
+            private int _robotId;
 
             public string AlgorithmName => _algorithm.AlgorithmName;
             public Vertex TargetVertex => _algorithm.TargetVertex;
@@ -194,7 +192,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             {
                 foreach (var result in _algorithm.PreUpdateLogic())
                 {
-                    _trackerVertices.AddGeneratedRobotVertices(_algorithm);
+                    _trackerVertices.AddGeneratedRobotVertices(_robotId, _algorithm);
                     yield return result;
                 }
             }
@@ -207,6 +205,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public void SetController(Robot2DController controller)
             {
                 _algorithm.SetController(controller);
+                _robotId = controller.Id;
                 _trackerVertices.AddRobot(controller.Id, _algorithm);
             }
 

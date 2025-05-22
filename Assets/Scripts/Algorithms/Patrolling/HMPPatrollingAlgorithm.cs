@@ -29,6 +29,7 @@ using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
+using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Robot;
 using Maes.Utilities;
 
@@ -48,9 +49,9 @@ namespace Maes.Algorithms.Patrolling
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
-        public HMPPartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
-        public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
-                                                                           .VertexIds
+        public IReadOnlyCollection<int> PartitionInfo => _partitionComponent.VerticesAssigned!;
+        public IReadOnlyCollection<MeetingPoint> MeetingPoints => _partitionComponent.MeetingPoints;
+        public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.VerticesAssigned?
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly IHMPPartitionGenerator _partitionGenerator;
@@ -79,7 +80,7 @@ namespace Maes.Algorithms.Patrolling
 
         private Vertex GetInitialVertexToPatrol()
         {
-            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
+            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.Contains(vertex.Id)).ToArray();
 
             return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
         }
@@ -87,7 +88,7 @@ namespace Maes.Algorithms.Patrolling
         private Vertex NextVertex(Vertex currentVertex)
         {
             var suggestedVertex = _heuristicConscientiousReactiveLogic.NextVertex(currentVertex,
-                currentVertex.Neighbors.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray());
+                currentVertex.Neighbors.Where(vertex => PartitionInfo.Contains(vertex.Id)).ToArray());
 
             return _meetingComponent.NextVertex(currentVertex, suggestedVertex);
         }
@@ -95,7 +96,7 @@ namespace Maes.Algorithms.Patrolling
         private IEnumerable<ComponentWaitForCondition> ExchangeInformation(MeetingComponent.Meeting meeting)
         {
             TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, Controller.Id));
-            foreach (var condition in _partitionComponent.ExchangeInformation())
+            foreach (var condition in _partitionComponent.ExchangeInformation(meeting.MeetingPoint.RobotIds))
             {
                 yield return condition;
             }

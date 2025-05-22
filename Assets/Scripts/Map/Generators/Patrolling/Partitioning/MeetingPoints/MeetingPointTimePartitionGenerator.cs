@@ -106,14 +106,17 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, PartitionInfo> partitionsById)
         {
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
-            var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
+
+            var welshPowellMeetingPointColorer = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId);
+            var tickColorAssignment = welshPowellMeetingPointColorer.Run();
+            var globalMeetingCycle = welshPowellMeetingPointColorer.MaxColorId * globalMeetingIntervalTicks;
 
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
 
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
-                var meetingPoint = new MeetingPoint(vertexId, globalMeetingIntervalTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
+                var meetingPoint = new MeetingPoint(vertexId, meetingRobotIds, globalMeetingCycle, globalMeetingIntervalTicks);
                 foreach (var robotId in meetingRobotIds)
                 {
                     if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
@@ -122,7 +125,21 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
                         meetingPointsByPartitionId[robotId] = meetingPoints;
                     }
 
-                    meetingPoints.Add(meetingPoint);
+                    meetingPoints.Add(meetingPoint.Clone());
+                }
+            }
+
+            foreach (var (_, meetingPoints) in meetingPointsByPartitionId)
+            {
+                foreach (var meetingPoint in meetingPoints)
+                {
+                    var meetingAtTicks = startMeetingAfterTicks +
+                                         globalMeetingIntervalTicks * tickColorAssignment[meetingPoint.VertexId];
+                    for (var i = 0; i < 3; i++)
+                    {
+                        meetingPoint.AddMeetingTime(meetingAtTicks);
+                        meetingAtTicks += globalMeetingCycle;
+                    }
                 }
             }
 

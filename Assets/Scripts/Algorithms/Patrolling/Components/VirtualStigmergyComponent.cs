@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text;
 
 using JetBrains.Annotations;
@@ -54,6 +55,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private readonly OnConflictDelegate _onConflictDelegate;
         private readonly IRobotController _controller;
+        public bool NewUpdate { get; private set; } = false;
 
         private readonly bool _isStruct;
 
@@ -94,6 +96,7 @@ namespace Maes.Algorithms.Patrolling.Components
         {
             while (true)
             {
+                NewUpdate = false;
                 foreach (var objectMessage in _controller.ReceiveBroadcast())
                 {
                     if (objectMessage is VirtualStigmergyMessage message)
@@ -303,6 +306,11 @@ namespace Maes.Algorithms.Patrolling.Components
             }
         }
 
+        public IReadOnlyCollection<TValue> GetAllWithoutSeeding()
+        {
+            return _localKnowledge.Values.Select(valueInfo => valueInfo.Value).ToArray();
+        }
+
         public void DebugInfo(StringBuilder stringBuilder)
         {
             if (_localKnowledge.Count > 0)
@@ -320,6 +328,10 @@ namespace Maes.Algorithms.Patrolling.Components
 #if VIRTUAL_STIGMERGY_TRACING
             Debug.LogFormat("STIGMERGY Robot {0} sending {1} message: key: {2}, value: {3}, timestamp: {4}, robotId: {5}", _monaRobot.id, message.Type, message.Key, message.Value, message.Timestamp, message.RobotId);
 #endif
+            if (message.Type == MessageType.Put)
+            {
+                NewUpdate = true;
+            }
             _controller.Broadcast(message);
         }
 

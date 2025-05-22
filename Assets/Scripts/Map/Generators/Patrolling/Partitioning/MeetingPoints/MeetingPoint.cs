@@ -5,34 +5,56 @@ using Maes.Utilities;
 
 namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 {
-    public readonly struct MeetingPoint : IEquatable<MeetingPoint>
+    public class MeetingPoint : IEquatable<MeetingPoint>, ICloneable<MeetingPoint>
     {
-        public MeetingPoint(int vertexId, int meetingAtEveryTick, int initialMeetingAtTick, IReadOnlyCollection<int> robotIds)
+        public MeetingPoint(int vertexId, IReadOnlyCollection<int> robotIds, int globalMeetingCycle, int globalMeetingInterval)
         {
             VertexId = vertexId;
-            MeetingAtEveryTick = meetingAtEveryTick;
-            InitialMeetingAtTick = initialMeetingAtTick;
-            RobotIds = robotIds;
+            GlobalMeetingCycle = globalMeetingCycle;
+            GlobalMeetingInterval = globalMeetingInterval;
+
+            _meetingAtTicks = new Queue<int>();
+            _robotIds = new HashSet<int>(robotIds);
+        }
+
+        private MeetingPoint(int vertexId, IReadOnlyCollection<int> robotIds, int globalMeetingCycle, Queue<int> meetingAtTicks, int globalMeetingInterval)
+        {
+            VertexId = vertexId;
+            GlobalMeetingCycle = globalMeetingCycle;
+            GlobalMeetingInterval = globalMeetingInterval;
+            _meetingAtTicks = new Queue<int>(meetingAtTicks);
+            _robotIds = new HashSet<int>(robotIds);
         }
 
         public int VertexId { get; }
-        public int MeetingAtEveryTick { get; }
-        public int InitialMeetingAtTick { get; }
-        public IReadOnlyCollection<int> RobotIds { get; }
+        private int GlobalMeetingCycle { get; }
+        private int GlobalMeetingInterval { get; }
+        private readonly Queue<int> _meetingAtTicks;
+        private readonly HashSet<int> _robotIds;
+        public IReadOnlyCollection<int> RobotIds => _robotIds;
+        public IReadOnlyCollection<int> MeetingAtTicks => _meetingAtTicks;
 
-        /// <summary>
-        /// Gives the tick at which the meeting will be held.
-        /// </summary>
-        /// <param name="heldMeetings">The number of meetings that have been held so far on this meeting point.</param>
-        /// <returns></returns>
-        public int GetMeetingAtTick(int heldMeetings)
+        public void AttendMeeting(int tick)
         {
-            return InitialMeetingAtTick + (heldMeetings * MeetingAtEveryTick);
+            while (_meetingAtTicks.TryPeek(out var result) && result <= tick)
+            {
+                _meetingAtTicks.Dequeue();
+            }
+        }
+
+        public int? NextMeetingTime()
+        {
+            return _meetingAtTicks.TryPeek(out var nextMeeting) ? nextMeeting : null;
+        }
+
+        public void AddMeetingTime(int tick)
+        {
+            _meetingAtTicks.Enqueue(tick);
         }
 
         public bool Equals(MeetingPoint other)
         {
-            return VertexId == other.VertexId && MeetingAtEveryTick == other.MeetingAtEveryTick && InitialMeetingAtTick == other.InitialMeetingAtTick && RobotIds.SetEquals(other.RobotIds);
+            return VertexId == other.VertexId && _robotIds.SetEquals(other._robotIds) && _meetingAtTicks.SetEquals(other._meetingAtTicks);
         }
 
         public override bool Equals(object? obj)
@@ -42,7 +64,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(VertexId, MeetingAtEveryTick, InitialMeetingAtTick, RobotIds);
+            return HashCode.Combine(VertexId, RobotIds, MeetingAtTicks);
         }
 
         public static bool operator ==(MeetingPoint left, MeetingPoint right)
@@ -53,6 +75,17 @@ namespace Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints
         public static bool operator !=(MeetingPoint left, MeetingPoint right)
         {
             return !left.Equals(right);
+        }
+
+        public MeetingPoint Clone()
+        {
+            var meetingPoint = new MeetingPoint(VertexId, _robotIds, GlobalMeetingCycle, _meetingAtTicks, GlobalMeetingInterval);
+            return meetingPoint;
+        }
+
+        public bool IsRobotParticipating(IReadOnlyCollection<int> meetingPointRobotIds)
+        {
+            return _robotIds.Overlaps(meetingPointRobotIds);
         }
     }
 }
