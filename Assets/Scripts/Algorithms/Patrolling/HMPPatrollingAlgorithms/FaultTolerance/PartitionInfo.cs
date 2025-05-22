@@ -40,18 +40,37 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         }
     }
 
+    public readonly struct UnfinishedPartitionInfoWithDiameter
+    {
+        public int RobotId { get; }
+
+        public HashSet<int> VertexIds { get; }
+
+        public int Diameter { get; }
+
+        public UnfinishedPartitionInfoWithDiameter(int robotId, HashSet<int> vertexIds, int diameter)
+        {
+            RobotId = robotId;
+            VertexIds = vertexIds;
+            Diameter = diameter;
+        }
+    }
+
     public sealed class PartitionInfo : ICloneable<PartitionInfo>
     {
-        public PartitionInfo(int robotId, IReadOnlyCollection<int> vertexIds, IReadOnlyList<MeetingPoint> meetingPoints)
+        public PartitionInfo(int robotId, IReadOnlyCollection<int> vertexIds, IReadOnlyList<MeetingPoint> meetingPoints, int diameter)
         {
             RobotId = robotId;
             VertexIds = vertexIds;
             MeetingPoints = meetingPoints;
+            Diameter = diameter;
         }
 
         public int RobotId { get; }
         public IReadOnlyCollection<int> VertexIds { get; }
         public IReadOnlyList<MeetingPoint> MeetingPoints { get; }
+
+        public int Diameter { get; }
 
         public PartitionInfo Clone()
         {
