@@ -63,7 +63,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.01f, int invokeEvery = 1000)
         {
-            return ($"FaultInjection-random-seed-{seed}-probability-{probability}f-invoke-{invokeEvery}-maxDestroy-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, 0.01f, 1000, robotCount - 1));
+            return ($"FaultInjection-random-seed-{seed}-probability-{probability}f-invoke-{invokeEvery}-maxDestroy-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }
 
     }
