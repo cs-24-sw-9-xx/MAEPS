@@ -25,30 +25,28 @@ using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Map;
 using Maes.Robot;
 
-namespace Maes.Algorithms.Patrolling.PartitionedAlgorithms
+namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
 {
     /// <summary>
     /// Original implementation of the Conscientious Reactive Algorithm of https://doi.org/10.1007/3-540-36483-8_11.
     /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
     /// </summary>
-    public sealed class AdaptiveRedistributionFailureBasedCRAlgo : PatrollingAlgorithm
+    public sealed class AdaptiveRedistributionSuccessBasedCRAlgo : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Adaptive Redistribution Failure Based CR Algorithm";
+        public override string AlgorithmName => "Adaptive Redistribution Success Based CR Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private HeartBeatComponent _heartbeatComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        private AdaptiveRedistributionFailureBasedComponent _redistributionComponent = null!;
+        private AdaptiveRedistributionSuccessBasedComponent _redistributionComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            _heartbeatComponent = new HeartBeatComponent(controller, this);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new AdaptiveRedistributionFailureBasedComponent(controller, patrollingMap, this);
+            _redistributionComponent = new AdaptiveRedistributionSuccessBasedComponent(controller, patrollingMap, this);
 
-            return new IComponent[] { _goToNextVertexComponent, _heartbeatComponent, _redistributionComponent, _collisionRecoveryComponent };
+            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _redistributionComponent };
         }
 
         private static Vertex NextVertex(Vertex currentVertex)
