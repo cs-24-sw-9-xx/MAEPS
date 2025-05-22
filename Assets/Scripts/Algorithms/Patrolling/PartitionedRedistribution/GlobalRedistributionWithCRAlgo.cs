@@ -25,7 +25,7 @@ using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Map;
 using Maes.Robot;
 
-namespace Maes.Algorithms.Patrolling
+namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
 {
     /// <summary>
     /// Original implementation of the Conscientious Reactive Algorithm of https://doi.org/10.1007/3-540-36483-8_11.
