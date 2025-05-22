@@ -17,7 +17,7 @@ Please follow the guide from the beginning until the section "Launch Ubuntu inst
 The guide is available at: https://hpc.aau.dk/strato/getting-started/launch-instance/#initial-openstack-setup
 
 ### Launch an instance
-1. Navigate to `Compute -> Images`. You should see the following:
+1. Navigate to `Compute -> Instances`. You should see the following:
 ![Screenshot 2025-05-15 at 10.37.35.png](.readmeGuideVMAsserts/Screenshot%202025-05-15%20at%2010.37.35.png)
 
 2. Then click on the button `Launch Instance` (Placed at the top right). You should see the following:
@@ -57,7 +57,7 @@ ssh -i <path_to_ssh_key> <username>@<ip_address>
 
 | Parameter         | Description                                                              |
 |-------------------|--------------------------------------------------------------------------|
-| <path_to_ssh_key> | The path to the SSH key                                                  |
+| <path_to_ssh_key> | The path to the SSH private key                                          |
 | \<username\>      | The username to your instance. If the OS is Arch, the username is `arch` |
 | <ip_address>      | the IP address of the instance you just launched. You can find the IP address in the Openstack dashboard under `Compute -> Instances`.                                                                         |
 
@@ -72,7 +72,7 @@ ssh -i <path_to_ssh_key> <username>@<ip_address>
 
 1. Run the following command to install the required packages in Arch. If using other the Linux distribution, please install the required packages using the package manager of the Linux distribution.
 ```bash
-sudo pacman -Sy --noconfirm curl jq unzip tmux moreutils
+sudo pacman -Suy --noconfirm curl jq unzip tmux moreutils
 ```
 
 ## Download the latest build of StandaloneLinux64-Server
@@ -82,7 +82,7 @@ scp -i <path_to_ssh_key> ./path-to/download-Build-StandaloneLinux64-Server.sh <u
 ```
 | Parameter         | Description                                                              |
 |-------------------|--------------------------------------------------------------------------|
-| <path_to_ssh_key> | The path to the SSH key                                                  |
+| <path_to_ssh_key> | The path to the SSH private key                                          |
 | \<username\>      | The username to your instance. If the OS is Arch, the username is `arch` |
 | <ip_address>      | the IP address of the instance you just launched. You can find the IP address in the Openstack dashboard under `Compute -> Instances`.                                                                         |
 
@@ -96,13 +96,45 @@ export GITHUB_TOKEN="your_github_token_here"
 export GITHUB_OWNER="your_github_username_or_org"
 export REPO_NAME="your_repository_name"
 ```
+<details>
+<summary>
+What is the GITHUB_TOKEN?
+</summary>
+Go to
 
-4. Run the script to download the latest build of StandaloneLinux64-Server:
+[github/settings/personal-access-tokens](https://github.com/settings/personal-access-tokens/)
+
+and make a token, with the organization as owner if possible.
+</details>
+
+<details>
+<summary>
+Hint (arch): Install vim to easily edit the bashrc file instead of using vi.
+</summary>
+
 ```bash
-chmod +x download-Build-StandaloneLinux64-Server.sh // Only needed to run to give permission to run the script.
+sudo pacman -Suy --noconfirm vim
+```
+
+Open the file:
+```bash
+vim ~/.bashrc
+```
+
+Press 'i' for insert mode, then input the variables, press esc to exit insert mode, then press ':' 'w' 'q' to write(save) and quit the file.
+</details>
+
+4. To make the terminal able to use these new variables run:
+```
+source ~/.bashrc
+```
+
+5. Run the script to download the latest build of StandaloneLinux64-Server:
+```bash
+chmod +x download-Build-StandaloneLinux64-Server.sh # Only needed to run to give permission to run the script.
 ./download-Build-StandaloneLinux64-Server.sh
 ```
-5. After the script has finished running, you can now navigate to the folder where the run-headless.sh script is located. Use the following command:
+6. After the script has finished running, you can now navigate to the folder where the run-headless.sh script is located. Use the following command:
 ```bash
 cd artifacts/Build-StandaloneLinux64-Server/StandaloneLinux64
 ```
