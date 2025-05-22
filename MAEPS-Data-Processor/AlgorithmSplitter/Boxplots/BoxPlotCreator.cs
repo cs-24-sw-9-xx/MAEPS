@@ -117,8 +117,7 @@ public sealed class BoxPlotCreator : IDisposable
     }
     
     /// <summary>
-    /// This method is used to adjust the position of the box plots that are on the same position on the x-axis.
-    /// So instance of they are placed on each other, they are offset by a small value.
+    /// Offsets overlapping box plots on the same x-axis position by a small value.
     /// </summary>
     /// <param name="boxPlots"></param>
     private void AdjustPositionOfBoxPlots()
