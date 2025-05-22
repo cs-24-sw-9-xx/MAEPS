@@ -72,7 +72,7 @@ ssh -i <path_to_ssh_key> <username>@<ip_address>
 
 1. Run the following command to install the required packages in Arch. If using other the Linux distribution, please install the required packages using the package manager of the Linux distribution.
 ```bash
-sudo pacman -Sy --noconfirm curl jq unzip tmux moreutils
+sudo pacman -Suy --noconfirm curl jq unzip tmux moreutils
 ```
 
 ## Download the latest build of StandaloneLinux64-Server
@@ -113,7 +113,7 @@ Hint (arch): Install vim to easily edit the bashrc file instead of using vi.
 </summary>
 
 ```bash
-sudo pacman -Sy --noconfirm vim
+sudo pacman -Suy --noconfirm vim
 ```
 
 Open the file:
