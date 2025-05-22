@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 using Maes.Robot;
 

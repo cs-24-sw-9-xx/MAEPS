@@ -22,10 +22,8 @@
 
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map.Generators;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -69,7 +67,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator)))),
+                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",

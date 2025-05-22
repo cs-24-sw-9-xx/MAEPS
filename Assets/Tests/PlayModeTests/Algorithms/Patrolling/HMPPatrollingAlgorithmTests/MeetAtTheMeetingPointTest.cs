@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling;
-using Maes.Algorithms.Patrolling.TrackInfos;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance.TrackInfos;
 using Maes.Map.Generators.Patrolling.Waypoints.Connectors;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -13,7 +13,6 @@ using Maes.Simulation.Patrolling;
 using NUnit.Framework;
 
 using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
-using Tests.EditModeTests.Utilities.Partitions;
 
 using UnityEngine;
 
@@ -61,7 +60,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: spawnAtVertexPosition,
-                        createAlgorithmDelegate: (_) => new HMPPatrollingAlgorithm(new MeetingPointTimePartitionGenerator(new TestPartitionGenerator(verticesByPartitionId)))),
+                        createAlgorithmDelegate: (_) => new HMPPatrollingAlgorithm()),
                     mapSpawner: _ => simulationMap,
                     patrollingMapFactory: _ => patrollingMap,
                     robotConstraints: _robotConstraints,
