@@ -12,6 +12,7 @@ namespace Maes.FaultInjections.DestroyRobots
     {
         protected readonly Random _random;
         protected int DestroyedCount { get; private set; }
+        private DestroyRobotDelegate _destroyFunc = null!;
 
         protected DestroyRobotBaseFaultInjection(int seed)
         {
@@ -26,6 +27,11 @@ namespace Maes.FaultInjections.DestroyRobots
             }
         }
 
+        public void SetDestroyFunc(DestroyRobotDelegate destroyFunc)
+        {
+            _destroyFunc = destroyFunc;
+        }
+
         /// <summary>
         /// Whether a robot should be destroyed at <paramref name="logicTick"/>.
         /// </summary>
@@ -37,9 +43,8 @@ namespace Maes.FaultInjections.DestroyRobots
         private void DestroyOneRobot(List<MonaRobot> robots)
         {
             var robot = robots[_random.Next(0, robots.Count)];
-            if (robots.Remove(robot))
+            if (_destroyFunc(robot))
             {
-                robot.DestroyRobot();
                 DestroyedCount++;
             }
         }

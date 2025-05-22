@@ -31,7 +31,10 @@ namespace Maes.Simulation
 
         CommunicationManager CommunicationManager { get; }
 
+        MonaRobot? SelectedRobot { get; }
+
         void SetSelectedRobot(MonaRobot? newSelectedRobot);
+        bool DestroyRobot(MonaRobot robot);
 
         // TODO: Remove this!
         void SetSelectedTag(VisibleTagInfoHandler? newSelectedTag);
