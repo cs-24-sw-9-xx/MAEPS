@@ -30,6 +30,7 @@
                 </engine:GroupBox>
                 <engine:GroupBox text="Selected Robot" class="visualization-groupbox">
                     <engine:Button text="Currently&#10;Visible" name="SelectedRobotCurrentlyVisibleButton" />
+                    <engine:Button text="Destroy" name="DestroySelectedRobotButton" />
                     <engine:Button text="Slam Map" name="SelectedRobotSlamMapButton" />
                     <engine:Button text="Visualize&#10;Tags" name="SelectedRobotVisualizeTagsButton" />
                     <engine:Button text="Sticky&#10;Camera" name="SelectedRobotStickyCameraButton" />
