@@ -73,6 +73,7 @@ namespace Maes.Simulation
         private Label _physicsTicksValueLabel = null!;
         private Label _logicTicksValueLabel = null!;
         private Label _simulatedTimeValueLabel = null!;
+        private string _experimentName = string.Empty;
 
         // Runs once when starting the program
         private void Start()
@@ -86,10 +87,6 @@ namespace Maes.Simulation
             // This simulation handles physics updates custom time factors, so disable built in real time physics calls
             Physics2D.simulationMode = SimulationMode2D.Script;
 
-            // Group all scenarios into one experiment folder:
-            // data/experimentName/scenario_name/some_data_file.csv
-            PrependExperimentFolderNameToStatisticsFileName();
-
             // Adapt UI for ros mode
             if (GlobalSettings.IsRosMode)
             {
@@ -99,13 +96,17 @@ namespace Maes.Simulation
             UISpeedController.UpdateButtonsUI(SimulationPlayState.Play);
         }
 
-        private void PrependExperimentFolderNameToStatisticsFileName()
+        /// <summary>
+        /// Group all scenarios into one experiment folder:
+        /// data/experimentName/scenario_name/some_data_file.csv
+        /// </summary>
+        private void PrependExperimentFolderNameToStatisticsFileName(TScenario scenario)
         {
-            var experimentName = "experiment-" + TimeUtilities.GetCurrentTimeUTC();
-            foreach (var item in InitialScenarios)
+            if (_experimentName == string.Empty)
             {
-                item.StatisticsFileName = $"{experimentName}/{item.StatisticsFileName}";
+                _experimentName = "experiment-" + TimeUtilities.GetCurrentTimeUTC();
             }
+            scenario.StatisticsFileName = $"{_experimentName}/{scenario.StatisticsFileName}";
         }
 
         private void RemoveFastForwardButtonsFromControlPanel()
@@ -285,6 +286,8 @@ namespace Maes.Simulation
 
         private void CreateSimulation(TScenario scenario)
         {
+            PrependExperimentFolderNameToStatisticsFileName(scenario);
+            Debug.Log($"Starting simulation: {scenario.StatisticsFileName}");
             CurrentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();

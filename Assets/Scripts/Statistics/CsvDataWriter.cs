@@ -50,6 +50,7 @@ namespace Maes.Statistics
         public void Finish()
         {
             _csvWriter.Dispose();
+            _streamWriter.Dispose();
 
             // TOCTOU problem
             if (File.Exists(_path))
