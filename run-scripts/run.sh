@@ -28,7 +28,7 @@ grep "Simulation did not complete successfully" output.log > failed.log
 
 grep "Exception" output.log > exceptions.log
 
-echo "Finished making output.log and failed.log and exceptions.log"v
+echo "Finished generating output.log, failed.log, and exceptions.log"
 
 # Check if grep found any matches, print error message in red if it did
 if [ -s failed.log ]; then
