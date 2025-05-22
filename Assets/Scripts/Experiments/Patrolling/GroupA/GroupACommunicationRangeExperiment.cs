@@ -23,8 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -50,7 +49,6 @@ namespace Maes.Experiments.Patrolling
             PatrollingMapFactory patrollingMapFactory = AllWaypointConnectedGenerator.MakePatrollingMap;
             CreateAlgorithmDelegate algorithm = (_) => new HMPPatrollingAlgorithm
             (
-                new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
             );
             var algorithmName = nameof(HMPPatrollingAlgorithm);
 
