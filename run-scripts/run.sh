@@ -26,9 +26,16 @@ echo "All instances have shut down."
 
 grep "Simulation did not complete successfully" output.log > failed.log
 
-echo "Finished making output.log and failed.log"
+grep "Exception" output.log > exceptions.log
+
+echo "Finished generating output.log, failed.log, and exceptions.log"
 
 # Check if grep found any matches, print error message in red if it did
 if [ -s failed.log ]; then
     echo -e "\e[31mSome simulations failed. Check failed.log for details.\e[0m"
+fi
+
+# Check if grep found any matches, print error message in red if it did
+if [ -s exceptions.log ]; then
+    echo -e "\e[31mSome exceptions occurred. Check exceptions.log for details.\e[0m"
 fi
