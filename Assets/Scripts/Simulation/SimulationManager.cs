@@ -285,6 +285,7 @@ namespace Maes.Simulation
 
         private void CreateSimulation(TScenario scenario)
         {
+            Debug.Log($"Starting simulation: {scenario.StatisticsFileName}");
             CurrentScenario = scenario;
             _simulationGameObject = Instantiate(SimulationPrefab, transform);
             CurrentSimulation = _simulationGameObject.GetComponent<TSimulation>();
