@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -18,26 +19,23 @@ namespace Maes.Experiments.Patrolling.GroupB
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var (algorithmName, algorithmDelegate) in GroupBParameters.Algorithms)
+                foreach (var failureRate in FailureRates)
                 {
-                    foreach (var failureRate in FailureRates)
-                    {
-                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                    scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                        seed,
+                        nameof(ConscientiousReactiveAlgorithm),
+                        GroupBParameters.Algorithms[nameof(ConscientiousReactiveAlgorithm)],
+                        GroupBParameters.StandardRobotCount,
+                        GroupBParameters.StandardMapSize,
+                        GroupBParameters.StandardAmountOfCycles,
+                        GroupBParameters.MaterialRobotConstraints,
+                        1,
+                        () => new DestroyRobotsRandomFaultInjection(
                             seed,
-                            algorithmName,
-                            algorithmDelegate,
-                            GroupBParameters.StandardRobotCount,
-                            GroupBParameters.StandardMapSize,
-                            GroupBParameters.StandardAmountOfCycles,
-                            GroupBParameters.MaterialRobotConstraints,
-                            GroupBParameters.StandardPartitionCount,
-                            () => new DestroyRobotsRandomFaultInjection(
-                                seed,
-                                failureRate,
-                                1000,
-                                GroupBParameters.StandardRobotCount - 1))
-                        );
-                    }
+                            failureRate,
+                            1000,
+                            GroupBParameters.StandardRobotCount - 1))
+                    );
                 }
             }
 

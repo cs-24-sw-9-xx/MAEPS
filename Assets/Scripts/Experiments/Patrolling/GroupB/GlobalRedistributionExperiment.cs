@@ -23,12 +23,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.PartitionedRedistribution;
-using Maes.FaultInjections;
-using Maes.FaultInjections.DestroyRobots;
 using Maes.Simulation.Patrolling;
-using Maes.Experiments.Patrolling.GroupB;
 using Maes.UI;
 
 using UnityEngine;
@@ -45,10 +41,10 @@ namespace Maes.Experiments.Patrolling.GroupB
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
                 scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                    seed, 
-                    nameof(GlobalRedistributionWithCRAlgo), 
-                    GroupBParameters.Algorithms[nameof(GlobalRedistributionWithCRAlgo)], 
-                    GroupBParameters.StandardRobotCount, 
+                    seed,
+                    nameof(GlobalRedistributionWithCRAlgo),
+                    GroupBParameters.Algorithms[nameof(GlobalRedistributionWithCRAlgo)],
+                    GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,
                     GroupBParameters.MaterialRobotConstraints,

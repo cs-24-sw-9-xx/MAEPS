@@ -25,7 +25,6 @@
 
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
 using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Map.Generators;
 using Maes.Robot;
