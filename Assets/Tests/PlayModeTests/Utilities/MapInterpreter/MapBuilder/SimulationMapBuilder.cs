@@ -26,7 +26,7 @@
 using Maes.Map;
 using Maes.Map.Generators;
 
-namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
+namespace Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder
 {
     public class SimulationMapBuilder : BaseSimulationMapBuilder<SimulationMap<Tile>>
     {

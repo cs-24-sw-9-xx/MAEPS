@@ -3,7 +3,7 @@ using Maes.Map.Generators;
 
 using UnityEngine;
 
-namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
+namespace Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder
 {
     public class StartEndLocationSimulationMapBuilder : BaseSimulationMapBuilder<(Vector2 start, Vector2 end, SimulationMap<Tile> map)>
     {

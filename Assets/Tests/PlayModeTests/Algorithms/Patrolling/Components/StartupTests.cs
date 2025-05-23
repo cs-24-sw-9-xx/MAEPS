@@ -12,7 +12,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using UnityEngine;
 
@@ -72,7 +72,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
         private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, params Vector2Int[] robotPositions)
         {
-            var tilemap = Utilities.BitmapToTilemap(bitmap);
+            var tilemap = Utilities.Utilities.BitmapToTilemap(bitmap);
 
             var robotSpawnPositions = robotPositions.ToList();
 

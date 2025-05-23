@@ -12,7 +12,8 @@
         "Unity.Robotics.ROSTCPConnector.MessageGeneration",
         "Unity.Robotics.ROSTCPConnector.Messages",
         "Unity.Burst",
-        "Unity.Mathematics"
+        "Unity.Mathematics",
+        "PlayModeTests"
     ],
     "includePlatforms": [
         "Editor"

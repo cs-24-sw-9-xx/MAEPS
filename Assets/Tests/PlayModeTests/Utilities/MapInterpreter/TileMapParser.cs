@@ -28,7 +28,7 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-namespace Tests.EditModeTests.Utilities.MapInterpreter
+namespace Tests.PlayModeTests.Utilities.MapInterpreter
 {
     public class TileMapParser
     {
