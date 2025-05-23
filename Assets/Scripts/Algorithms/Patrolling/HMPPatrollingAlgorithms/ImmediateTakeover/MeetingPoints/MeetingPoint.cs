@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Maes.Utilities;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints
 {
     public readonly struct MeetingPoint : IEquatable<MeetingPoint>
     {

@@ -24,11 +24,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.TrackInfos;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.TrackInfos;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
@@ -38,7 +37,7 @@ using Maes.Utilities;
 
 using UnityEngine;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     /// <summary>
     /// Partition-based patrolling algorithm with the use of meeting points in a limited communication range.

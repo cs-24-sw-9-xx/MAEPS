@@ -22,7 +22,7 @@
 
 using System.Collections.Generic;
 
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
