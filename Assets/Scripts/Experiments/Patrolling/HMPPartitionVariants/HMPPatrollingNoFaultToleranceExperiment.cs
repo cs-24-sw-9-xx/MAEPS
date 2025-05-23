@@ -35,7 +35,7 @@ namespace Maes.Experiments.Patrolling
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    internal class HMPPatrollingExperiment : MonoBehaviour
+    internal class HMPPatrollingNoFaultToleranceExperiment : MonoBehaviour
     {
         private void Start()
         {
