@@ -2,7 +2,7 @@ using CsvHelper.Configuration.Attributes;
 
 namespace Maes.Statistics.Snapshots
 {
-    public readonly struct PatrollingSnapshot
+    public sealed class PatrollingSnapshot
     {
         public CommunicationSnapshot CommunicationSnapshot { get; }
 
