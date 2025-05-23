@@ -16,6 +16,9 @@ namespace Maes.Simulation.Patrolling
         public bool StopAfterDiff { get; }
         public int Partitions { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether waypoint data should be saved during the simulation.
+        /// </summary>
         public bool SaveWaypointData { get; }
 
         public PatrollingSimulationScenario(int seed,
