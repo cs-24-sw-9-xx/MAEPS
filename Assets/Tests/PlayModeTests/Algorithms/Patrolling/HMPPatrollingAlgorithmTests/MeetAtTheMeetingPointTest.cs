@@ -12,7 +12,7 @@ using Maes.Simulation.Patrolling;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
 
 using UnityEngine;
 
