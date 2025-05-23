@@ -31,28 +31,35 @@ if [[ -d "$artifact_output_dir" ]]; then
   rm -rf "$artifact_output_dir"
 fi
 
-# === Fetch latest successful workflow run ===
-echo "📡 Fetching latest successful workflow run on branch '$BRANCH_NAME'..."
-latest_run_id=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/$GITHUB_OWNER/$REPO_NAME/actions/runs?branch=$BRANCH_NAME&status=success&per_page=1" \
-  | jq -r '.workflow_runs[0].id')
+# === Fetch run ID ===
+if [[ -z "$1" ]]; then
+  echo "📡 Fetching latest successful workflow run on branch '$BRANCH_NAME'..."
+  latest_run_id=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+    "https://api.github.com/repos/$GITHUB_OWNER/$REPO_NAME/actions/runs?branch=$BRANCH_NAME&status=success&per_page=1" \
+    | jq -r '.workflow_runs[0].id')
 
-if [[ -z "$latest_run_id" || "$latest_run_id" == "null" ]]; then
-  echo "❌ No successful workflow runs found on branch '$BRANCH_NAME'."
-  exit 1
+  if [[ -z "$latest_run_id" || "$latest_run_id" == "null" ]]; then
+    echo "❌ No successful workflow runs found on branch '$BRANCH_NAME'."
+    exit 1
+  fi
+
+  echo "✅ Latest successful workflow run ID: $latest_run_id"
+  run_id=$latest_run_id
+else
+  run_id=$1
+  echo "📡 Using provided run ID: $run_id"
 fi
 
-echo "✅ Latest successful workflow run ID: $latest_run_id"
 
 # === Get artifact info ===
-echo "📦 Fetching artifacts for run ID $latest_run_id..."
+echo "📦 Fetching artifacts for run ID $run_id..."
 artifact_info=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-  "https://api.github.com/repos/$GITHUB_OWNER/$REPO_NAME/actions/runs/$latest_run_id/artifacts" \
+  "https://api.github.com/repos/$GITHUB_OWNER/$REPO_NAME/actions/runs/$run_id/artifacts" \
   | jq -r --arg name "$ARTIFACT_NAME" \
     '.artifacts | map(select(.name == $name)) | first')
 
 if [[ -z "$artifact_info" || "$artifact_info" == "null" ]]; then
-  echo "❌ Artifact '$ARTIFACT_NAME' not found in run $latest_run_id."
+  echo "❌ Artifact '$ARTIFACT_NAME' not found in run $run_id."
   exit 1
 fi
 
