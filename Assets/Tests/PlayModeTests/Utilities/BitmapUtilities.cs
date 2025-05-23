@@ -6,7 +6,7 @@ using Maes.Utilities;
 
 using Random = System.Random;
 
-namespace Tests.EditModeTests.Utilities
+namespace Tests.PlayModeTests.Utilities
 {
     public static class BitmapUtilities
     {

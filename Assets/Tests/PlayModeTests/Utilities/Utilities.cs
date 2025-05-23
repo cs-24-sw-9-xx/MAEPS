@@ -20,7 +20,7 @@
 using Maes.Map.Generators;
 using Maes.Utilities;
 
-namespace Tests.PlayModeTests
+namespace Tests.PlayModeTests.Utilities
 {
     public static class Utilities
     {

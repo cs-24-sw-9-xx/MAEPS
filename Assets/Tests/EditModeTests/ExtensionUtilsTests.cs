@@ -2,7 +2,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
 
 namespace Tests.EditModeTests
 {
