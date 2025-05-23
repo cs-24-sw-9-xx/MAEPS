@@ -73,6 +73,7 @@ maes-ros-slam-ws/log
 maes-ros-slam-ws/.idea
 
 # Misc
+*.zip
 /.vscode
 /.vsconfig
 UserSettings/

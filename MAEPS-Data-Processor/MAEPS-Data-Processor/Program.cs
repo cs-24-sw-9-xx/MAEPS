@@ -27,20 +27,16 @@ internal class Program
         foreach (var experimentDirectory in Directory.GetDirectories(Directory.GetCurrentDirectory()))
         {
             var summaries = new List<ExperimentSummary>();
+            var patrollingData = new List<PatrollingSnapshot>();
             Console.WriteLine(experimentDirectory);
-            foreach (var scenarioDirectory in Directory.GetDirectories(experimentDirectory))
+            Parallel.ForEach(Directory.GetDirectories(experimentDirectory), scenarioDirectory =>
             {
                 Console.WriteLine(scenarioDirectory);
-                if (File.Exists(Path.Combine(scenarioDirectory, "*.png")))
-                {
-                    Console.WriteLine("Graphs already created. Skipping");
-                    continue;
-                }
+
                 var data = CsvDataReader.ReadPatrollingCsv(Path.Combine(scenarioDirectory, "patrolling.csv"));
-                
                 PlotWorstIdleness(scenarioDirectory, data);
                 PlotAverageIdleness(scenarioDirectory, data);
-                
+
                 var summary = new ExperimentSummary
                 {
                     Algorithm = Path.GetFileName(scenarioDirectory),
@@ -51,9 +47,17 @@ internal class Program
                     NumberOfRobotsStart = data.First().NumberOfRobots,
                     NumberOfRobotsEnd = data.Last().NumberOfRobots
                 };
-                summaries.Add(summary);
-                GenerateSummary(scenarioDirectory, summaries.TakeLast(1));
-            }
+                lock (summaries)
+                {
+                    summaries.Add(summary);
+                }
+
+                lock (patrollingData)
+                {
+                    patrollingData.AddRange(data);
+                }
+            });
+            
             GenerateSummary(experimentDirectory, summaries);
         }
 

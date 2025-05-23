@@ -22,7 +22,6 @@ public static class CsvDataReader
         };
         using var reader = new StreamReader(path);
         using var csv = new CsvReader(reader, config);
-        //csv.Context.RegisterClassMap<PatrollingClassMap>();
         return csv.GetRecords<PatrollingSnapshot>().ToList();
     }
 }
