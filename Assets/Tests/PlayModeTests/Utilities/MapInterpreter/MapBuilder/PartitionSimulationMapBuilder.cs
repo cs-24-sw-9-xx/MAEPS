@@ -29,7 +29,7 @@ using Maes.Map.Generators;
 
 using UnityEngine;
 
-namespace Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder
+namespace Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder
 {
     public delegate void ConnectVerticesDelegate(IReadOnlyCollection<Vertex> vertices);
     public class PartitionSimulationMapBuilder : BaseSimulationMapBuilder<(SimulationMap<Tile> map, PatrollingMap patrollingMap, Dictionary<int, HashSet<Vertex>> verticesByPartitionId)>

@@ -68,6 +68,67 @@ jobs:
           name: Test results (playmode)
           path: ${{ steps.testRunner.outputs.artifactsPath }}
   
+  test-player:
+    permissions:
+      checks: write
+    name: Run Player tests ✨
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Test-Player-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Test-Player-
+            Library-StandaloneLinux64-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+            Library-StandaloneLinux64-
+            Library-
+
+      - name: Cache .NET tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet/tools
+          key: dotnet-tools-${{ runner.os }}-8.0
+          restore-keys: |
+            dotnet-tools-${{ runner.os }}
+
+      - name: Cache Packages
+        uses: actions/cache@v4
+        with:
+          path: Assets/Packages
+          key: Packages-${{ runner.os }}-${{ hashFiles('Assets/NuGet.config') }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install NuGetForUnity.Cli
+        run: dotnet tool install --global NuGetForUnity.Cli
+
+      - name: Restore NuGet Packages for Unity Project
+        run: nugetforunity restore .
+
+      - uses: game-ci/unity-test-runner@v4
+        id: testRunner
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: .
+          testMode: Standalone
+          customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Test results (player)
+          path: ${{ steps.testRunner.outputs.artifactsPath }}
   
   build:
     name: Build for ${{ matrix.targetPlatform.platform }}
@@ -78,7 +139,7 @@ jobs:
         targetPlatform:
           - { machine: ubuntu-latest, platform: StandaloneLinux64 }
           - { machine: windows-latest, platform: StandaloneWindows64 }
-          - { machine: macos-latest, platform: StandaloneOSX }
+          # - { machine: macos-latest, platform: StandaloneOSX } # Macos has licensing issues for some reason
     steps:
       - uses: actions/checkout@v4
 
