@@ -5,6 +5,7 @@ using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
+using Maes.Map.Generators;
 using Maes.Robot;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
@@ -36,7 +37,20 @@ namespace Maes.Experiments.Patrolling.GroupB
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
         };
 
-        private static RobotConstraints RobotConstraints(RobotConstraints.SignalTransmissionSuccessCalculator successCalculator)
+        private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()
+        {
+            [2400] = new() //2.4 GHz
+            {
+                [TileType.Room] = 0.25f,
+                [TileType.Hall] = 0.25f,
+                [TileType.Wall] = 0.25f,
+                [TileType.Concrete] = 15f,
+                [TileType.Wood] = 6.7f,
+                [TileType.Brick] = 5.5f
+            }
+        };
+
+        private static RobotConstraints RobotConstraints(bool materialCommunication)
         {
             return new RobotConstraints(
                 senseNearbyAgentsRange: 5f,
@@ -51,14 +65,14 @@ namespace Maes.Experiments.Patrolling.GroupB
                 slamRayTraceRange: 7f,
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
-                calculateSignalTransmissionProbability: successCalculator,
+                calculateSignalTransmissionProbability: (_, _) => true,
                 robotCollisions: false,
-                materialCommunication: false);
+                materialCommunication: materialCommunication);
         }
 
-        public static RobotConstraints MaterialRobotConstraints => RobotConstraints(successCalculator: (_, distanceThroughWalls) => distanceThroughWalls <= 3);
+        public static RobotConstraints MaterialRobotConstraints => RobotConstraints(true);
 
-        public static RobotConstraints GlobalRobotConstraints => RobotConstraints(successCalculator: (_, _) => true);
+        public static RobotConstraints GlobalRobotConstraints => RobotConstraints(false);
 
         /// <summary>
         /// Creates a fault injection strategy that destroys robots randomly.
@@ -73,7 +87,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         /// prob: Probability
         /// max: Max number of robot deaths
         /// </remarks>
-        public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.01f, int invokeEvery = 1000)
+        public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.025f, int invokeEvery = 1000)
         {
             return ($"FI-random-{seed}-prob-{probability}-invoke-{invokeEvery}-max-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }
