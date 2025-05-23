@@ -47,10 +47,10 @@ namespace Maes.Experiments.Patrolling.GroupB
                     scenarios.AddRange(ScenarioUtil.CreateScenarios(
                         seed,
                         nameof(GlobalRedistributionWithCRAlgo),
-                        GroupBParameters.Algorithms[nameof(GlobalRedistributionWithCRAlgo)],
+                        GroupBParameters.PartitionedAlgorithms[nameof(GlobalRedistributionWithCRAlgo)],
                         GroupBParameters.StandardRobotCount,
                         GroupBParameters.StandardMapSize,
-                        2,//GroupBParameters.StandardAmountOfCycles,
+                        GroupBParameters.StandardAmountOfCycles,
                         GroupBParameters.GlobalRobotConstraints,
                         count,
                         GroupBParameters.FaultInjection(seed)));

@@ -23,7 +23,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                     scenarios.AddRange(ScenarioUtil.CreateScenarios(
                         seed,
                         nameof(ConscientiousReactiveAlgorithm),
-                        GroupBParameters.Algorithms[nameof(ConscientiousReactiveAlgorithm)],
+                        GroupBParameters.PartitionedAlgorithms[nameof(ConscientiousReactiveAlgorithm)],
                         GroupBParameters.StandardRobotCount,
                         GroupBParameters.StandardMapSize,
                         GroupBParameters.StandardAmountOfCycles,
