@@ -5,13 +5,13 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
 using Maes.Map;
 using Maes.Robot;
 
 using UnityEngine;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     public sealed class MeetingComponent : IComponent
     {
@@ -120,7 +120,7 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
         /// </summary>
         /// <param name="currentlyTargetingPosition">The vertex which the robot is approaching towards</param>
         /// <returns>Returns the vertex that the robot should move to</returns>
-        public Vertex ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
+        public Vertex? ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
         {
             if (GoingToMeeting != null)
             {

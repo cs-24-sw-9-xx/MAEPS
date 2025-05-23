@@ -22,10 +22,10 @@
 
 using System.Collections.Generic;
 
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
 using Maes.Utilities;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     public readonly struct UnfinishedPartitionInfo
     {
