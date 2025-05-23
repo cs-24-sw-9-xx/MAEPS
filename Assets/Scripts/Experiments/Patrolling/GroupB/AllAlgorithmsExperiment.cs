@@ -56,7 +56,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                                     GroupBParameters.StandardAmountOfCycles,
                                     GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
                                     partitionCount,
-                                    GroupBParameters.FaultInjection(seed)));
+                                    GroupBParameters.FaultInjection(seed, robotCount: robotCount)));
                             }
                         }
                     }
