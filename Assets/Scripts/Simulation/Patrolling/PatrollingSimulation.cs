@@ -24,7 +24,7 @@ namespace Maes.Simulation.Patrolling
         {
             var patrollingMap = scenario.PatrollingMapFactory(_collisionMap);
 
-            PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap, StatisticsFolderPath);
+            PatrollingTracker = new PatrollingTracker(this, _collisionMap, patrollingVisualizer, scenario, patrollingMap, StatisticsFolderPath, scenario.SaveWaypointData);
 
             foreach (var (_, vertexVisualizer) in patrollingVisualizer.VertexVisualizers)
             {
