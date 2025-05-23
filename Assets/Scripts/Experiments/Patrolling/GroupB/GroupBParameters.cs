@@ -60,10 +60,22 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static RobotConstraints GlobalRobotConstraints => RobotConstraints(successCalculator: (_, _) => true);
 
-
+        /// <summary>
+        /// Creates a fault injection strategy that destroys robots randomly.
+        /// </summary>
+        /// <param name="seed"></param>
+        /// <param name="robotCount"></param>
+        /// <param name="probability"></param>
+        /// <param name="invokeEvery"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// FI-random: Fault Injection random
+        /// prob: Probability
+        /// max: Max number of robot deaths
+        /// </remarks>
         public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.01f, int invokeEvery = 1000)
         {
-            return ($"FaultInjection-random-seed-{seed}-probability-{probability}f-invoke-{invokeEvery}-maxDestroy-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
+            return ($"FI-random-{seed}-prob-{probability}-invoke-{invokeEvery}-max-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }
 
     }
