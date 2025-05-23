@@ -7,7 +7,7 @@ using Maes.Robot;
 
 using UnityEngine;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     public class PartitionComponent : IComponent
     {
@@ -28,7 +28,7 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
         protected VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
-        public PartitionInfo PartitionInfo { get; private set; }
+        public PartitionInfo PartitionInfo { get; private set; } = null!;
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
