@@ -95,7 +95,7 @@ namespace Maes.Statistics.Trackers
             }
 
             _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
-            _writerThread.Start(_cancellationTokenSource.Token); ;
+            _writerThread.Start(_cancellationTokenSource.Token);
         }
 
         private void WriterThread(object cancellationTokenObject)

@@ -13,13 +13,13 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     public static class GroupBParameters
     {
-        public const int StandardAmountOfCycles = 10;
+        public const int StandardAmountOfCycles = 100;
         public const int StandardMapSize = 150;
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
 
         // We both make building and cave maps, so 100 scenarios in total
-        public const int StandardSeedCount = 1;
+        public const int StandardSeedCount = 50;
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> Algorithms = new()
         {
