@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Log unexpected termination
+trap 'echo "Script terminated unexpectedly at $(date)" >> error.log' EXIT
+
 # Delete the folder if it exists
 if [ -d "instanceslog" ]; then
     rm -rf instanceslog
@@ -54,3 +57,6 @@ for ((i=0; i<limit; i++)); do
 done
 
 echo "Logs for each instance have been saved in the 'instanceslog' folder."
+
+# Remove the trap after successful execution
+trap - EXIT
