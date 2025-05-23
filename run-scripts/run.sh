@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Log unexpected termination
+trap 'echo "Script terminated unexpectedly at $(date)" >> error.log' EXIT
+
+# Delete the folder if it exists
+if [ -d "instanceslog" ]; then
+    rm -rf instanceslog
+fi
+
 if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <experiment> <instances>" >&2
     exit 1
@@ -39,3 +47,16 @@ fi
 if [ -s exceptions.log ]; then
     echo -e "\e[31mSome exceptions occurred. Check exceptions.log for details.\e[0m"
 fi
+
+# Create a folder for instance logs
+mkdir -p instanceslog
+
+# Separate logs for each instance
+for ((i=0; i<limit; i++)); do
+    grep "(instance $i)" output.log > "instanceslog/instance_$i.log"
+done
+
+echo "Logs for each instance have been saved in the 'instanceslog' folder."
+
+# Remove the trap after successful execution
+trap - EXIT
