@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance.MeetingPoints;
 using Maes.Map;
 using Maes.Robot;
 
@@ -46,7 +45,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
-        private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent _partitionComponent;
@@ -58,57 +56,29 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _nextMeeting = _nextMeetingPointDecider.GetNextMeeting(_partitionComponent.PartitionInfo!.MeetingPoints, _patrollingMap);
+            _nextMeeting = GetNextMeeting();
             while (true)
             {
                 while (!GoingToMeeting.HasValue)
                 {
                     // If any other robot is ready to go to the meeting, then this robot is also attending and aborting its current task.
                     // Otherwise, doing it current task
-                    if (SenseNearbyRobots.OtherRobotsGoingToMeeting(_controller, _nextMeeting))
-                    {
-                        GoingToMeeting = _nextMeeting;
-                        _movementComponent.AbortCurrentTask(new AbortingTask(GoingToMeeting.Value.Vertex));
-                    }
-                    else
-                    {
-                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-                    }
+                    yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
                 }
 
                 var meeting = GoingToMeeting.Value;
-                var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _controller.Id).ToHashSet();
 
                 // Wait until all other robots are at the meeting point
-                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
-                while (!senseNearByRobotIds.SetEquals(otherRobotIds) && _getLogicTick() < meeting.MeetingAtTick)
-                {
-                    yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-                    senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
-                }
+                var ticksToWait = meeting.MeetingAtTick - _getLogicTick();
+                yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
 
-                // If all other robots are at the meeting point, then exchange information
-                // Otherwise, handling missing robots
-                if (senseNearByRobotIds.SetEquals(otherRobotIds))
+                foreach (var waitForCondition in _exchangeInformation(meeting))
                 {
-                    foreach (var waitForCondition in _exchangeInformation(meeting))
-                    {
-                        yield return waitForCondition;
-                    }
+                    yield return waitForCondition;
                 }
-                else
-                {
-                    var missingRobotIds = otherRobotIds.Except(senseNearByRobotIds).ToHashSet();
-                    foreach (var waitForCondition in _onMissingRobotsAtMeeting(meeting, missingRobotIds))
-                    {
-                        yield return waitForCondition;
-                    }
-                }
-
-                _nextMeetingPointDecider.HeldMeeting(meeting.MeetingPoint);
 
                 GoingToMeeting = null;
-                _nextMeeting = _nextMeetingPointDecider.GetNextMeeting(_partitionComponent.PartitionInfo!.MeetingPoints, _patrollingMap);
+                _nextMeeting = GetNextMeeting();
             }
         }
 
@@ -175,7 +145,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             if (GoingToMeeting != null)
             {
                 stringBuilder.Append($"Going to meeting:\n");
-                stringBuilder.Append($"   Vertex Id: {GoingToMeeting.Value.MeetingPoint.VertexId}\n");
+                stringBuilder.Append($"   Vertex Id: {GoingToMeeting.Value.Vertex.Id}\n");
                 stringBuilder.Append($"   Meeting at Tick: {GoingToMeeting.Value.MeetingAtTick}\n");
             }
             else
@@ -184,24 +154,31 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             }
         }
 
+        private Meeting GetNextMeeting()
+        {
+            return _partitionComponent.MeetingPoints
+                .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
+                    m.meetingTimes.CurrentNextMeetingAtTick))
+                .First();
+        }
+
         /// <summary>
         /// Encapsulate the information of the next meeting for the robot.
         /// </summary>
         public readonly struct Meeting : IEquatable<Meeting>
         {
-            public Meeting(MeetingPoint meetingPoint, Vertex vertex, int meetingAtTick)
+            public Meeting(Vertex vertex, int meetingAtTick)
             {
-                MeetingPoint = meetingPoint;
                 Vertex = vertex;
                 MeetingAtTick = meetingAtTick;
             }
 
-            public MeetingPoint MeetingPoint { get; }
             public Vertex Vertex { get; }
             public int MeetingAtTick { get; }
             public bool Equals(Meeting other)
             {
-                return MeetingPoint.Equals(other.MeetingPoint) && Vertex.Id == other.Vertex.Id &&
+                return Vertex.Id == other.Vertex.Id &&
                        MeetingAtTick == other.MeetingAtTick;
             }
 
@@ -212,128 +189,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(MeetingPoint, Vertex.Id, MeetingAtTick);
+                return HashCode.Combine(Vertex.Id, MeetingAtTick);
             }
         }
-
-        /// <summary>
-        /// Keeps track of the number of meetings held at each meeting point and decides the next meeting point.
-        /// </summary>
-        private class NextMeetingPointDecider
-        {
-            private readonly Dictionary<MeetingPoint, int> _heldMeetingsAtMeetingPoint = new();
-
-            public Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
-            {
-                var bestMeetingPoint = meetingPoints[0];
-                var bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
-                foreach (var meetingPoint in meetingPoints.Skip(1))
-                {
-                    var meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
-                    if (meetingAtTick < bestMeetingAtTick)
-                    {
-                        bestMeetingPoint = meetingPoint;
-                        bestMeetingAtTick = meetingAtTick;
-                    }
-                }
-
-                var meetingVertex = patrollingMap.Vertices.First(v => v.Id == bestMeetingPoint.VertexId);
-
-                return new Meeting(bestMeetingPoint, meetingVertex, bestMeetingAtTick);
-            }
-
-            private int GetHeldMeetings(MeetingPoint meetingPoint)
-            {
-                return _heldMeetingsAtMeetingPoint.GetValueOrDefault(meetingPoint, 0);
-            }
-
-            public void HeldMeeting(MeetingPoint meetingPoint)
-            {
-                if (!_heldMeetingsAtMeetingPoint.TryAdd(meetingPoint, 1))
-                {
-                    _heldMeetingsAtMeetingPoint[meetingPoint]++;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Utility class to sense nearby robots and check if they are going to the same meeting.
-        /// </summary>
-        private static class SenseNearbyRobots
-        {
-            /// <summary>
-            /// Gets the ids of the robots that are sensed and going to the same meeting.
-            /// </summary>
-            /// <param name="controller">The robot controller.</param>
-            /// <param name="meeting">The meeting that the robot is going to.</param>
-            /// <returns>Returns the ids of the robots that are sensed and going to the same meeting.</returns>
-            public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting)
-            {
-                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, controller.Id));
-                var robotIds = new HashSet<int>();
-                var messages = controller.ReceiveBroadcast().OfType<GoingToMeetingMessage>();
-
-                foreach (var goingToMeetingMessage in messages)
-                {
-                    if (goingToMeetingMessage.ApproachingSameMeeting(meeting))
-                    {
-                        robotIds.Add(goingToMeetingMessage.FromRobotId);
-                    }
-                }
-
-                return robotIds;
-            }
-
-            /// <summary>
-            /// Checks if other robots are going to the next meeting.
-            /// </summary>
-            /// <param name="controller">The robot controller.</param>
-            /// <param name="meeting">The next meeting for the robot.</param>
-            /// <returns>Returns true if other robots are going to the same meeting.</returns>
-            public static bool OtherRobotsGoingToMeeting(IRobotController controller, Meeting meeting)
-            {
-                return controller.ReceiveBroadcast().OfType<GoingToMeetingMessage>()
-                    .Any(message => message.ApproachingSameMeeting(meeting));
-            }
-
-            /// <summary>
-            /// Encapsulates the information of the meeting message that is broadcasted to other robots.
-            /// </summary>
-            private readonly struct GoingToMeetingMessage : IEquatable<GoingToMeetingMessage>
-            {
-                public GoingToMeetingMessage(MeetingPoint meetingPoint, int meetingAtTick, int fromRobotId)
-                {
-                    MeetingPoint = meetingPoint;
-                    MeetingAtTick = meetingAtTick;
-                    FromRobotId = fromRobotId;
-                }
-
-                private MeetingPoint MeetingPoint { get; }
-                private int MeetingAtTick { get; }
-                public int FromRobotId { get; }
-
-                public bool Equals(GoingToMeetingMessage other)
-                {
-                    return MeetingPoint.Equals(other.MeetingPoint) && MeetingAtTick == other.MeetingAtTick &&
-                           FromRobotId == other.FromRobotId;
-                }
-
-                public override bool Equals(object? obj)
-                {
-                    return obj is MeetingPoint other && Equals(other);
-                }
-
-                public override int GetHashCode()
-                {
-                    return HashCode.Combine(MeetingPoint, MeetingAtTick, FromRobotId);
-                }
-
-                public bool ApproachingSameMeeting(Meeting meeting)
-                {
-                    return MeetingPoint.Equals(meeting.MeetingPoint) && MeetingAtTick == meeting.MeetingAtTick;
-                }
-            }
-        }
-
     }
 }
