@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 using Maes.Map;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints
 {
     public struct PossibleMeetingPoint
     {
