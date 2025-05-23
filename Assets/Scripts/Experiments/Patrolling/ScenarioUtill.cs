@@ -79,7 +79,7 @@ namespace Maes.Experiments.Patrolling
                                         partitions: partitionNumber,
                                         maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
                                         statisticsFileName:
-                                        $"{algorithmName}-map-{mapName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-partitions-{partitionNumber}-{faultInjectionParams}-SpawnApart");
+                                        $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
 
         private static PatrollingSimulationScenario CreateCaveMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, CaveMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
@@ -100,7 +100,7 @@ namespace Maes.Experiments.Patrolling
                                         partitions: partitionNumber,
                                         maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
                                         statisticsFileName:
-                                        $"{algorithmName}-map-{mapName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-partitions-{partitionNumber}-{faultInjectionParams}-SpawnApart");
+                                        $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
 
         private static PatrollingSimulationScenario CreateCommonMapsScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, Tile[,] mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
@@ -122,7 +122,7 @@ namespace Maes.Experiments.Patrolling
                                         partitions: partitionNumber,
                                         maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
                                         statisticsFileName:
-                                        $"{algorithmName}-map-{mapName}-seed-{seed}-robots-{robotCount}-partitions-{partitionNumber}-{faultInjectionParams}-SpawnApart");
+                                        $"{algorithmName}-map-{mapName}-s-{seed}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
     }
 
