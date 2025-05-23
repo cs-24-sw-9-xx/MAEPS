@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
@@ -22,7 +23,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
-        private readonly int _robotId;
+        private int _robotId;
         private readonly PartitionGenerator _partitionGenerator;
 
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
@@ -80,6 +81,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         {
             // TODO: Implement the logic for when some other robots are not at the meeting point
             Debug.Log("Some robots are not at the meeting point");
+            // Pick the id of one of the missing robots at random
+            var missingRobotId = missingRobots.ToList()[Random.Range(0, missingRobots.Count)];
+            _robotId = missingRobotId;
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
