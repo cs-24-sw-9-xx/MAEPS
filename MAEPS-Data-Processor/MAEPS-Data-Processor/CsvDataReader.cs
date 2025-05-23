@@ -3,7 +3,7 @@
 using CsvHelper;
 using CsvHelper.Configuration;
 
-using Maes.Statistics.Patrolling;
+using Maes.Statistics.Snapshots;
 
 namespace MAEPS_Data_Processor;
 
@@ -11,7 +11,7 @@ namespace MAEPS_Data_Processor;
 
 public static class CsvDataReader
 {
-    public static List<PatrollingSnapShot> ReadPatrollingCsv(string path)
+    public static List<PatrollingSnapshot> ReadPatrollingCsv(string path)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -22,6 +22,7 @@ public static class CsvDataReader
         };
         using var reader = new StreamReader(path);
         using var csv = new CsvReader(reader, config);
-        return csv.GetRecords<PatrollingSnapShot>().ToList();
+        //csv.Context.RegisterClassMap<PatrollingClassMap>();
+        return csv.GetRecords<PatrollingSnapshot>().ToList();
     }
 }

@@ -14,10 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\..\Assets\Scripts\Statistics\Exploration\ExplorationSnapShot.cs" />
-        <Compile Include="..\..\Assets\Scripts\Statistics\Communication\CommunicationSnapShot.cs" />
+        <Compile Include="..\..\Assets\Scripts\Statistics\Snapshots\*.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Writer\TypeConverter\*.cs" />
-        <Compile Include="..\..\Assets\Scripts\Statistics\Patrolling\PatrollingSnapShot.cs" />
     </ItemGroup>
 
 </Project>

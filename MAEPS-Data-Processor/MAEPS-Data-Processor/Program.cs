@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
 
-using Maes.Statistics.Patrolling;
+using Maes.Statistics.Snapshots;
 
 using ScottPlot;
 
@@ -9,7 +9,7 @@ namespace MAEPS_Data_Processor;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static void Main()
     {
         // Change directory to the data folder
         var directoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -78,10 +78,10 @@ internal class Program
 
         }
 
-        void PlotWorstIdleness(string path, List<PatrollingSnapShot> data)
+        void PlotWorstIdleness(string path, List<PatrollingSnapshot> data)
         {
             Plot plot = new();
-            plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.WorstGraphIdleness).ToList());
+            plot.Add.ScatterPoints(data.Select(ps => ps.CommunicationSnapshot.Tick).ToList(), data.Select(ps => ps.WorstGraphIdleness).ToList());
 
             AddDeadRobotsVerticalLines(data, plot);
 
@@ -94,10 +94,10 @@ internal class Program
             Console.WriteLine("Saving to {0}", graphPath);
         }
         
-        void PlotAverageIdleness(string path, List<PatrollingSnapShot> data)
+        void PlotAverageIdleness(string path, List<PatrollingSnapshot> data)
         {
             Plot plot = new();
-            plot.Add.ScatterPoints(data.Select(ps => ps.Tick).ToList(), data.Select(ps => ps.AverageGraphIdleness).ToList());
+            plot.Add.ScatterPoints(data.Select(ps => ps.CommunicationSnapshot.Tick).ToList(), data.Select(ps => ps.AverageGraphIdleness).ToList());
             
             AddDeadRobotsVerticalLines(data, plot);
             
@@ -111,12 +111,12 @@ internal class Program
         }
     }
 
-    private static void AddDeadRobotsVerticalLines(List<PatrollingSnapShot> data, Plot plot)
+    private static void AddDeadRobotsVerticalLines(List<PatrollingSnapshot> data, Plot plot)
     {
         var deadRobots = data.GroupBy(ps => ps.NumberOfRobots).ToList();
         foreach (var group in deadRobots.Skip(1))
         {
-            var line = plot.Add.VerticalLine(group.First().Tick, 1, Color.FromColor(System.Drawing.Color.Red), LinePattern.Dashed);
+            var line = plot.Add.VerticalLine(group.First().CommunicationSnapshot.Tick, 1, Color.FromColor(System.Drawing.Color.Red), LinePattern.Dashed);
             if (group == deadRobots.Last())
             {
                 line.LegendText = "Dead Robots";
