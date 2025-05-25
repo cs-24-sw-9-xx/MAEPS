@@ -24,7 +24,6 @@ namespace Maes.Experiments.Patrolling.GroupB
             150,
             200,
             250,
-            300
         };
 
         public static readonly List<int> RobotCounts = new()
@@ -34,11 +33,15 @@ namespace Maes.Experiments.Patrolling.GroupB
             4,
             8,
             16,
-            32,
         };
         public static readonly List<int> PartitionCounts = new()
         {
             1,
+            2,
+            4,
+        };
+        public static readonly List<int> RedistributionPartitionCounts = new()
+        {
             2,
             4,
         };

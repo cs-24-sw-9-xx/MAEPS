@@ -211,6 +211,16 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             {
                 return _algorithm.GetDebugInfo();
             }
+
+            public bool HasSeenAllInPartition(int assignedPartition)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void ResetSeenVerticesForPartition(int partitionId)
+            {
+                throw new System.NotImplementedException();
+            }
         }
     }
 }

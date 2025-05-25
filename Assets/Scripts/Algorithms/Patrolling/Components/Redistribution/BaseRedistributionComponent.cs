@@ -162,15 +162,21 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private bool SwitchPartition(int partitionId)
         {
+            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
+            {
+                return false;
+            }
             var randomValue = (float)_random.NextDouble();
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
-                Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId}");
+                Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId} algo: {_algorithm.AlgorithmName}");
+                _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();
                 _currentPartitionIntersection.Clear();
+
                 return true;
             }
 
