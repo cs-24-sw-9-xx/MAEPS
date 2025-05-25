@@ -235,13 +235,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance
         {
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
+            var globalMeetingCycleTicks = globalMeetingIntervalTicks * tickColorAssignment.Values.Max();
 
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
 
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
-                var meetingPoint = new MeetingPoint(vertexId, globalMeetingIntervalTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
+                var meetingPoint = new MeetingPoint(vertexId, globalMeetingCycleTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
                 foreach (var robotId in meetingRobotIds)
                 {
                     if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
