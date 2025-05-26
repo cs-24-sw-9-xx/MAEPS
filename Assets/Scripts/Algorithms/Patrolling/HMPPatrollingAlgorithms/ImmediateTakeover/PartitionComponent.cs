@@ -14,16 +14,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     {
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator)
+        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator)
         {
-            _robotId = controller.Id;
+            _robotId = robotId;
             _partitionGenerator = partitionGenerator;
         }
 
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
-        private int _robotId;
+        private RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
 
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
@@ -60,7 +60,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
             while (true)
             {
-                var success = _virtualStigmergyComponent.TryGet(_robotId, out var partitionInfo);
+                var success = _virtualStigmergyComponent.TryGet(_robotId.RobotId, out var partitionInfo);
                 Debug.Assert(success);
                 PartitionInfo = partitionInfo!;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
@@ -83,7 +83,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             Debug.Log("Some robots are not at the meeting point");
             // Pick the id of one of the missing robots at random
             var missingRobotId = missingRobots.ToList()[Random.Range(0, missingRobots.Count)];
-            _robotId = missingRobotId;
+            _robotId.RobotId = missingRobotId;
+            _virtualStigmergyComponent.TryGet(_robotId.RobotId, out var partitionInfo);
+            Debug.Assert(partitionInfo != null, "PartitionInfo should not be null");
+            PartitionInfo = partitionInfo!;
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
