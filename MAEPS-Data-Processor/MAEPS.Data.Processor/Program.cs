@@ -38,7 +38,7 @@ internal class Program
             {
                 if (File.Exists(Path.Combine(groupedDirectory, "summary.csv")))
                 {
-                    return;
+                    //return;
                 }
                 
                 var summaries = new List<ExperimentSummary>();
@@ -64,9 +64,9 @@ internal class Program
 
                             var data = CsvDataReader.ReadPatrollingCsv(Path.Combine(scenarioDirectory,
                                 "patrolling.csv"));
-                            PlotWorstIdleness(scenarioDirectory,
+                            PlotWorstIdleness(name, scenarioDirectory,
                                 data);
-                            PlotAverageIdleness(scenarioDirectory,
+                            PlotAverageIdleness(name, scenarioDirectory,
                                 data);
 
                             var summary = new ExperimentSummary
@@ -95,7 +95,8 @@ internal class Program
                             }
                         });
                     
-                    Plot plot = new();
+                    Plot worstIdlenessPlot = new();
+                    Plot averageIdlenessPlot = new();
 
                     foreach (var (name, algoData) in patrollingData)
                     {
@@ -107,19 +108,33 @@ internal class Program
                             .Select(g => (g.Key, g.Average(d => d.WorstGraphIdleness)))
                             .ToList();
                         
+                        var averageAvgIdlenessList = algoData
+                            .AsParallel()
+                            .GroupBy(d => d.CommunicationSnapshot.Tick)
+                            .OrderBy(g => g.Key)
+                            .Select(g => (g.Key, (double)g.Average(d => d.AverageGraphIdleness)))
+                            .ToList();
+                        
                         SaveAggretatedData(algorithmDirectory, algoData.ToList());
 
                         PlotWorstIdlenessAll(
-                            algorithmDirectory,
-                            plot, 
+                            worstIdlenessPlot, 
                             name,
                             averageWorstIdlenessList);
+                        
+                        PlotAverageIdlenessAll(
+                            averageIdlenessPlot, 
+                            name,
+                            averageAvgIdlenessList);
                     }
                     
                     
+                    var avgGraphPath = Path.Combine(groupedDirectory, "AverageGraphIdleness.png");
+                    averageIdlenessPlot.Save(avgGraphPath, 1200, 600);
+                    
                     var graphPath = Path.Combine(groupedDirectory, "WorstGraphIdleness.png");
-                    plot.Save(graphPath, 1200, 600);
-                    Console.WriteLine("Saving to {0}", graphPath);
+                    worstIdlenessPlot.Save(graphPath, 1200, 600);
+                    Console.WriteLine("Saving to aggregated graphs");
                     GenerateSummary(groupedDirectory, summaries);
                 }
             }
@@ -152,22 +167,29 @@ internal class Program
             csv.WriteRecords(data);
         }
 
-        void PlotWorstIdlenessAll(string path, Plot plot, string name, List<(int tick, double idleness)> data)
+        void PlotWorstIdlenessAll(Plot plot, string name, List<(int tick, double idleness)> data)
         {
-            var scatterPlot = plot.Add.ScatterPoints(data.Select(ps => ps.tick).ToList(), data.Select(ps => ps.idleness).ToList());
+            var scatterPlot = plot.Add.Signal(data.Select(ps => ps.idleness).ToList());
+            
+            scatterPlot.LegendText = name;
+        }
+        
+        void PlotAverageIdlenessAll(Plot plot, string name, List<(int tick, double idleness)> data)
+        {
+            var scatterPlot = plot.Add.Signal(data.Select(ps => ps.idleness).ToList());
             
             scatterPlot.LegendText = name;
         }
 
         
-        void PlotWorstIdleness(string path, List<PatrollingSnapshot> data)
+        void PlotWorstIdleness(string algoName, string path, List<PatrollingSnapshot> data)
         {
             Plot plot = new();
             plot.Add.Signal(data.Select(ps => ps.WorstGraphIdleness).ToList());
 
             AddDeadRobotsVerticalLines(data, plot);
 
-            plot.Title("Worst Idleness");
+            plot.Title($"{algoName} - Worst Idleness");
             plot.XLabel("Tick");
             plot.YLabel("Worst Idleness");
 
@@ -176,14 +198,14 @@ internal class Program
             Console.WriteLine("Saving to {0}", graphPath);
         }
         
-        void PlotAverageIdleness(string path, List<PatrollingSnapshot> data)
+        void PlotAverageIdleness(string algoName, string path, List<PatrollingSnapshot> data)
         {
             Plot plot = new();
             plot.Add.Signal(data.Select(ps => ps.AverageGraphIdleness).ToList());
             
             AddDeadRobotsVerticalLines(data, plot);
             
-            plot.Title("Average Idleness");
+            plot.Title($"{algoName} - Average Idleness");
             plot.XLabel("Tick");
             plot.YLabel("Average Idleness");
 
