@@ -79,16 +79,34 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobots)
         {
-            // TODO: Implement the logic for when some other robots are not at the meeting point
-            Debug.Log("Some robots are not at the meeting point");
-            // Pick the id of one of the missing robots at random
-            var missingRobotId = missingRobots.ToList()[Random.Range(0, missingRobots.Count)];
-            _robotId.RobotId = missingRobotId;
+            var robotsThatShowedUp = meeting.MeetingPoint.RobotIds.Except(missingRobots).ToList();
+            Debug.Assert(robotsThatShowedUp.Contains(_robotId.RobotId), "Robot that is taking over partition should be in the list of robots that showed up");
+            robotsThatShowedUp.Sort();
+            var missingRobotsSorted = missingRobots.ToList();
+            missingRobotsSorted.Sort();
+            var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
+            if (myIndex < missingRobotsSorted.Count)
+            {
+                // Pick the id of one of the missing robots to take over
+                var robotIdToTakeOver = missingRobotsSorted[myIndex];
+                if (robotsThatShowedUp.Count < missingRobotsSorted.Count && myIndex == robotsThatShowedUp.Count - 1)
+                {
+                    // Pick the id of one of the missing robots at random
+                    robotIdToTakeOver = missingRobotsSorted[Random.Range(myIndex, missingRobotsSorted.Count)];
+                }
+                TakeOverOtherRobotPartition(robotIdToTakeOver);
+            }
+
+            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+        }
+
+        private void TakeOverOtherRobotPartition(int robotId)
+        {
+            Debug.Log($"Robot {_robotId.RobotId} taking over partition for robot {robotId}");
+            _robotId.RobotId = robotId;
             _virtualStigmergyComponent.TryGet(_robotId.RobotId, out var partitionInfo);
             Debug.Assert(partitionInfo != null, "PartitionInfo should not be null");
             PartitionInfo = partitionInfo!;
-
-            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
     }
 }
