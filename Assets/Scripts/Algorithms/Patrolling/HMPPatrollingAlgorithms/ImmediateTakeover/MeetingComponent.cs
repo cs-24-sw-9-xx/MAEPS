@@ -39,6 +39,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             _robotIdClass = robotIdClass;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
+            _nextMeetingPointDecider = new NextMeetingPointDecider(getLogicTick);
         }
 
         public int PreUpdateOrder { get; }
@@ -49,7 +50,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
         private readonly RobotIdClass _robotIdClass;
-        private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
+        private readonly NextMeetingPointDecider _nextMeetingPointDecider;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent _partitionComponent;
@@ -224,6 +225,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         /// </summary>
         private class NextMeetingPointDecider
         {
+            public NextMeetingPointDecider(Func<int> getLogicTick)
+            {
+                _getLogicTick = getLogicTick;
+            }
+
+            private readonly Func<int> _getLogicTick;
             private readonly Dictionary<MeetingPoint, int> _heldMeetingsAtMeetingPoint = new();
 
             public Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
@@ -237,9 +244,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
                 var bestMeetingPoint = meetingPoints[0];
                 var bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
+                while (bestMeetingAtTick < _getLogicTick())
+                {
+                    HeldMeeting(bestMeetingPoint);
+                    bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
+                }
                 foreach (var meetingPoint in meetingPoints.Skip(1))
                 {
                     var meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
+                    while (meetingAtTick < _getLogicTick())
+                    {
+                        HeldMeeting(meetingPoint);
+                        meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
+                    }
                     if (meetingAtTick < bestMeetingAtTick)
                     {
                         bestMeetingPoint = meetingPoint;
