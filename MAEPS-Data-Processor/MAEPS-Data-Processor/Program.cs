@@ -9,7 +9,7 @@ namespace MAEPS_Data_Processor;
 
 internal class Program
 {
-    private static void Main()
+    private static void Main(string[] args)
     {
         // Change directory to the data folder
         var directoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
@@ -21,16 +21,23 @@ internal class Program
                 throw new Exception("Could not find data folder");
             }
         } while (directoryInfo.Name != "MAEPS");
+        
         Console.WriteLine("Found data directory {0}", directoryInfo.FullName + "/data");
         Directory.SetCurrentDirectory(directoryInfo.FullName + "/data");
+        
+        if (Directory.Exists(args[0]))
+        {
+            Directory.SetCurrentDirectory(args[0]);
+        }
         
         foreach (var experimentDirectory in Directory.GetDirectories(Directory.GetCurrentDirectory()))
         {
             var summaries = new List<ExperimentSummary>();
-            var patrollingData = new List<PatrollingSnapshot>();
+            var patrollingData = new Dictionary<string, List<PatrollingSnapshot>>();
             Console.WriteLine(experimentDirectory);
             Parallel.ForEach(Directory.GetDirectories(experimentDirectory), scenarioDirectory =>
             {
+                var name = scenarioDirectory.Replace(experimentDirectory, string.Empty).Split('-')[0];
                 Console.WriteLine(scenarioDirectory);
 
                 var data = CsvDataReader.ReadPatrollingCsv(Path.Combine(scenarioDirectory, "patrolling.csv"));
@@ -54,10 +61,35 @@ internal class Program
 
                 lock (patrollingData)
                 {
-                    patrollingData.AddRange(data);
+                    if (!patrollingData.ContainsKey(name))
+                    {
+                        patrollingData.Add(name, new List<PatrollingSnapshot>());
+                    }
+                    patrollingData[name].AddRange(data);
                 }
             });
             
+            Plot plot = new();
+            foreach (var (name, algoData) in patrollingData)
+            {
+                var averageWorstIdlenessList = algoData
+                    .GroupBy(d => d.CommunicationSnapshot.Tick)
+                    .Select(group => (
+                        group.Key,
+                        group.Average(d => d.WorstGraphIdleness)
+                    ))
+                    .ToList();
+
+                PlotWorstIdlenessAll(
+                    experimentDirectory,
+                    plot, 
+                    name,
+                    averageWorstIdlenessList);
+            }
+            
+            var graphPath = Path.Combine(experimentDirectory, "WorstGraphIdleness.png");
+            plot.Save(graphPath, 1200, 600);
+            Console.WriteLine("Saving to {0}", graphPath);
             GenerateSummary(experimentDirectory, summaries);
         }
 
@@ -79,9 +111,16 @@ internal class Program
                 csv.WriteRecord(summary);
                 csv.NextRecord();
             }
-
         }
 
+        void PlotWorstIdlenessAll(string path, Plot plot, string name, List<(int tick, double idleness)> data)
+        {
+            var scatterPlot = plot.Add.ScatterPoints(data.Select(ps => ps.tick).ToList(), data.Select(ps => ps.idleness).ToList());
+            
+            scatterPlot.LegendText = name;
+        }
+
+        
         void PlotWorstIdleness(string path, List<PatrollingSnapshot> data)
         {
             Plot plot = new();
