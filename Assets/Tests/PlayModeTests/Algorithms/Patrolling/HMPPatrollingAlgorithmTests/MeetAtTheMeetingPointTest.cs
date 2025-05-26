@@ -35,7 +35,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             _simulator.Destroy();
         }
 
-        private static string GetStringMapFromFile(string fileName)
+        public static string GetStringMapFromFile(string fileName)
         {
             var path = Path.Combine(Application.dataPath, "Tests/PlayModeTests/Algorithms/Patrolling/HMPPatrollingAlgorithmTests/TestMaps", fileName);
             return File.ReadAllText(path);

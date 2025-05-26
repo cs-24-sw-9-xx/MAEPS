@@ -47,6 +47,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 AtVertexId = vertexId;
                 MissingAtTick = missingAtTick;
             }
+
+            public override string ToString()
+            {
+                return $"MissingRobotId: {RobotId}, AtVertexId: {AtVertexId}, MissingAtTick: {MissingAtTick})";
+            }
         }
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
@@ -65,6 +70,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         {
             get
             {
+                var visitedVertices = new HashSet<int>();
                 for (var i = 0; i < _partitions.Length; i++)
                 {
                     var success =
@@ -75,6 +81,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                     {
                         foreach (var vertexId in _partitions[i].VertexIds)
                         {
+                            if (!visitedVertices.Add(vertexId))
+                            {
+                                continue;
+                            }
+
                             yield return vertexId;
                         }
                     }
@@ -82,14 +93,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             }
         }
 
-        private int? _skipPartitionId;
+        private int[]? _skipPartitionIds;
         public IEnumerable<(int vertexId, MeetingTimes meetingTimes)> MeetingPoints
         {
             get
             {
                 for (var i = 0; i < _partitions.Length; i++)
                 {
-                    if (_skipPartitionId == i)
+                    if (_skipPartitionIds?.Contains(i) ?? false)
                     {
                         continue;
                     }
@@ -139,9 +150,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
             _partitionIdToRobotIdVirtualStigmergyComponent = new(OnPartitionConflict, controller);
             _meetingPointVertexIdToMeetingTimesStigmergyComponent = new(OnMeetingConflict, controller);
-            _missingMeetingByVertexIdStigmergyComponent = new VirtualStigmergyComponent<int, MissingRobot, PartitionComponent>(OnMissingRobotConflict, controller);
+            _missingMeetingByVertexIdStigmergyComponent = new(OnMissingRobotConflict, controller);
 
-            return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent, _meetingPointVertexIdToMeetingTimesStigmergyComponent };
+            return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent, _meetingPointVertexIdToMeetingTimesStigmergyComponent, _missingMeetingByVertexIdStigmergyComponent };
         }
 
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
@@ -305,11 +316,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         public IEnumerable<ComponentWaitForCondition> ExchangeInformation(int meetingPointVertexId)
         {
             var nextPossibleMeetingTime = NextPossibleMeetingTime();
-            _robotController.Broadcast(new MeetingMessage(_robotId, nextPossibleMeetingTime, _missingRobot is null));
+            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, _missingRobot is null);
+            _robotController.Broadcast(meetingMessage);
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
-            var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().ToArray();
-            var nextMeetingTime = Math.Max(meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Max(), nextPossibleMeetingTime);
+            var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().Append(meetingMessage).ToArray();
+            var nextMeetingTime = meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Max();
             var mightMissCurrentNextMeetingAtTick = meetingMessages.Any(m => m.MightMissCurrentNextMeetingAtTick);
 
             var success = _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(meetingPointVertexId,
@@ -329,15 +341,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         private MissingRobot? _missingRobot;
         public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, int missingRobotId)
         {
+            var meetingTimes = GetMeetingTimes(meeting.Vertex.Id);
             if (_missingRobot?.AtVertexId == meeting.Vertex.Id)
             {
                 var partitionIdsByRobotId = _partitionIdToRobotIdVirtualStigmergyComponent.GetLocalKnowledge()
                     .GroupBy(kvp => kvp.Value.Value, kvp => kvp.Key)
-                    .ToDictionary(grouping => grouping.Key, grouping => grouping.AsEnumerable());
+                    .ToDictionary(grouping => grouping.Key, grouping => grouping.ToArray());
 
-                _skipPartitionId = partitionIdsByRobotId[_robotId].First();
+                _skipPartitionIds = partitionIdsByRobotId[_robotId];
 
-                var takeOverPartitionIds = meeting.RobotIds.SelectMany(robotId => partitionIdsByRobotId[robotId]);
+                var takeOverPartitionIds = partitionIdsByRobotId[_missingRobot.Value.RobotId];
+                Debug.Log($"Robot {_robotId} has communicated with the other neighbour robots about the missing robot, so it can take over the partitions {string.Join(", ", takeOverPartitionIds)} now from vertex {meeting.Vertex.Id} at tick {meeting.MeetingAtTick}");
 
                 foreach (var partitionId in takeOverPartitionIds)
                 {
@@ -345,35 +359,41 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 }
                 _missingRobot = null;
             }
-            else if (_missingRobot is null)
+            else if (!meetingTimes.MightMissCurrentNextMeetingAtTick && _missingRobot is null)
             {
+                Debug.Log($"Robot {_robotId} has observed a missing robot with id {missingRobotId} at vertex {meeting.Vertex.Id} at tick {meeting.MeetingAtTick}");
                 _missingRobot = new MissingRobot(missingRobotId, meeting.Vertex.Id, meeting.MeetingAtTick);
                 _missingMeetingByVertexIdStigmergyComponent.Put(meeting.Vertex.Id, _missingRobot!.Value);
             }
-            else
-            {
-                Debug.Assert(false, "We should not have a missing robot here, Only one missing robot should be allowed at a time.");
-            }
-
 
             var nextPossibleMeetingTime = NextPossibleMeetingTime();
-            _robotController.Broadcast(new MeetingMessage(_robotId, nextPossibleMeetingTime));
+            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, _missingRobot is null);
+            _robotController.Broadcast(meetingMessage);
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
-            var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().ToArray();
-            var nextMeetingTime = Math.Max(meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Max(), nextPossibleMeetingTime);
+            var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().Append(meetingMessage).ToArray();
+            var nextMeetingTime = meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Max();
+            var mightMissCurrentNextMeetingAtTick = meetingMessages.Any(m => m.MightMissCurrentNextMeetingAtTick);
 
-            var success = _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(meeting.Vertex.Id,
-                out var meetingTimes);
-            Debug.Assert(success);
+            meetingTimes = GetMeetingTimes(meeting.Vertex.Id);
 
-            _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meeting.Vertex.Id, new MeetingTimes(meetingTimes.NextNextMeetingAtTick, nextMeetingTime, meetingTimes.RobotIds));
+            _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meeting.Vertex.Id, new MeetingTimes(meetingTimes.NextNextMeetingAtTick, nextMeetingTime, meetingTimes.RobotIds, mightMissCurrentNextMeetingAtTick));
             _meetingPointVertexIdToMeetingTimesStigmergyComponent.SendAll();
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
 
-        public IEnumerable<ComponentWaitForCondition> OnMeetingAnotherRobotAtMeeting(int meetingPointVertexId)
+        private MeetingTimes GetMeetingTimes(int meetingPointVertexId)
         {
+            var success = _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(meetingPointVertexId,
+                out var meetingTimes);
+            Debug.Assert(success);
+            return meetingTimes;
+        }
+
+
+        public IEnumerable<ComponentWaitForCondition> OnMeetingAnotherRobotAtMeeting(int meetingPointVertexId, HashSet<int> readyRobotIds, HashSet<int> unknownRobotIds)
+        {
+            Debug.Log("Robot " + _robotId + " has met another robot at meeting point " + meetingPointVertexId + " with ready robots: " + string.Join(", ", readyRobotIds) + " and unknown robots: " + string.Join(", ", unknownRobotIds));
             _missingRobot = null;
 
             foreach (var waitForCondition in ExchangeInformation(meetingPointVertexId))

@@ -88,7 +88,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
                     if (unknownRobotIds.Count > 0)
                     {
-                        foreach (var waitForCondition in _partitionComponent.OnMeetingAnotherRobotAtMeeting(meeting.Vertex.Id))
+                        foreach (var waitForCondition in _partitionComponent.OnMeetingAnotherRobotAtMeeting(meeting.Vertex.Id, readyRobotIds, unknownRobotIds))
                         {
                             yield return waitForCondition;
                         }
@@ -96,7 +96,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                     else
                     {
                         var missingRobotIds = meeting.RobotIds.Except(readyRobotIds).ToHashSet();
-                        _trackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, missingRobotIds, _controller.Id));
+                        _trackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, meeting.MeetingAtTick, _controller.Id, missingRobotIds, _controller.Id));
                         foreach (var waitForCondition in _partitionComponent.OnMissingRobotAtMeeting(meeting, missingRobotIds.Single()))
                         {
                             yield return waitForCondition;

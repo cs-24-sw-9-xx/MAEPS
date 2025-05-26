@@ -1,0 +1,50 @@
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+X                       X                                                X                       X
+X                       X                                                X                       X
+X          0            X            1              12           2       X                       X
+X                       X                                                X                       X
+X                       X                                                X     3                 X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X          0            X            1            X          2           X                       X
+X                       X                         X                      X             3         X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X          2           X                       X
+X                       X                         X                      X           3           X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X          0            X            1            X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                       X                         X                      X                       X
+X                                                 X                                              X
+X                                                 X                                              X
+X                                                 X                                              X
+X                             01                  X                                              X
+X                                                 X                             23               X
+X                                                 X                                              X
+X                                                 X                                              X
+X                                                 X                                              X
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
