@@ -33,6 +33,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             4,
             8,
             16,
+            32,
         };
         public static readonly List<int> PartitionCounts = new()
         {
@@ -55,7 +56,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         };
 
         // We both make building and cave maps, so 100 scenarios in total
-        public const int StandardSeedCount = 50;
+        public const int StandardSeedCount = 10;
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> Algorithms = new()
         {
