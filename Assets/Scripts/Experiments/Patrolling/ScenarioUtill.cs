@@ -88,7 +88,7 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
+                                        maxLogicTicks: 500000,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
@@ -109,7 +109,7 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
+                                        maxLogicTicks: 500000,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
