@@ -22,10 +22,12 @@
 
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
@@ -60,7 +62,7 @@ namespace Maes.Experiments.Patrolling
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
-                    totalCycles: 4,
+                    totalCycles: 100,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,
@@ -71,7 +73,8 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap,
+                    maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * 100)
             );
 
             var simulator = new MySimulator(scenarios);

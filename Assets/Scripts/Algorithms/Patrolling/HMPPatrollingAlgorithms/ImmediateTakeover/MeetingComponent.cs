@@ -25,7 +25,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
-            IMovementComponent movementComponent)
+            IMovementComponent movementComponent, RobotIdClass robotIdClass)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -35,6 +35,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             _exchangeInformation = exchangeInformation;
             _onMissingRobotsAtMeeting = onMissingRobotsAtMeeting;
             _movementComponent = movementComponent;
+            _robotIdClass = robotIdClass;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
         }
@@ -46,6 +47,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
+        private readonly RobotIdClass _robotIdClass;
         private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
@@ -77,14 +79,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                 }
 
                 var meeting = GoingToMeeting.Value;
-                var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _controller.Id).ToHashSet();
+                var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _robotIdClass.RobotId).ToHashSet();
 
                 // Wait until all other robots are at the meeting point
-                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
+                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 while (!senseNearByRobotIds.SetEquals(otherRobotIds) && _getLogicTick() < meeting.MeetingAtTick)
                 {
                     yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-                    senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
+                    senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 }
 
                 // If all other robots are at the meeting point, then exchange information
@@ -274,9 +276,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             /// <param name="controller">The robot controller.</param>
             /// <param name="meeting">The meeting that the robot is going to.</param>
             /// <returns>Returns the ids of the robots that are sensed and going to the same meeting.</returns>
-            public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting)
+            public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting, RobotIdClass robotIdClass)
             {
-                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, controller.Id));
+                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, robotIdClass.RobotId));
                 var robotIds = new HashSet<int>();
                 var messages = controller.ReceiveBroadcast().OfType<GoingToMeetingMessage>();
 
