@@ -1,6 +1,6 @@
 using System.Globalization;
 
-using MAEPS_Data_Processor;
+using MAEPS.Data.Processor;
 
 namespace AlgorithmSplitter;
 

@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MAEPS-Data-Processor\MAEPS-Data-Processor.csproj" />
+      <ProjectReference Include="..\MAEPS.Data.Processor\MAEPS.Data.Processor.csproj" />
     </ItemGroup>
 
 </Project>

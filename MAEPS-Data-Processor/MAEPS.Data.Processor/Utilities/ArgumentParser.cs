@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace AlgorithmSplitter;
+namespace MAEPS.Data.Processor.Utilities;
 
 public class ArgumentParser
 {

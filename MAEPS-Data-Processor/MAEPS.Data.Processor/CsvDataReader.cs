@@ -5,9 +5,7 @@ using CsvHelper.Configuration;
 
 using Maes.Statistics.Snapshots;
 
-namespace MAEPS_Data_Processor;
-
-
+namespace MAEPS.Data.Processor;
 
 public static class CsvDataReader
 {

@@ -83,8 +83,8 @@ InitTestScene*
 /data
 /MinotaurExperiment
 /TnfExperiment
-/MAEPS-Data-Processor/MAEPS-Data-Processor/bin
-/MAEPS-Data-Processor/MAEPS-Data-Processor/obj
+/MAEPS-Data-Processor/MAEPS.Data.Processor/bin
+/MAEPS-Data-Processor/MAEPS.Data.Processor/obj
 /maes-csv-reader/env
 /maes-csv-reader/datasets
 /maes-csv-reader/src/__pycache*
