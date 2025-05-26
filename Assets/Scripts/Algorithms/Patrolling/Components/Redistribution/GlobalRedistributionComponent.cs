@@ -133,7 +133,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                 return;
             }
 
-            Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition}");
+            Debug.Log($"Robot {_controller.Id} is the lowest ID in partition {_controller.AssignedPartition} and will move to partition {newPartition} algo: {_algorithm.AlgorithmName}");
             _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
             _controller.AssignedPartition = newPartition;
         }

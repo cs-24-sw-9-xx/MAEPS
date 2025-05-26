@@ -35,14 +35,14 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
     public sealed class RandomRedistributionComponent : IComponent
     {
         private readonly IRobotController _controller;
-        private readonly PatrollingAlgorithm _algorithm;
+        private readonly IPatrollingAlgorithm _algorithm;
         private readonly int _probabilityFactor;
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly Random _random;
         public int PreUpdateOrder => -450;
         public int PostUpdateOrder => -450;
 
-        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, PatrollingAlgorithm algorithm, int seed, int probabilityFactor)
+        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, IPatrollingAlgorithm algorithm, int seed, int probabilityFactor)
         {
             _controller = controller;
             _algorithm = algorithm;
@@ -76,7 +76,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
             var availablePartitions = _partitionIds.Where(id => id != _controller.AssignedPartition).ToList();
             var randomPartitionId = availablePartitions[_random.Next(availablePartitions.Count)];
-            Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId}");
+            Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId} algo: {_algorithm.AlgorithmName}");
             _controller.AssignedPartition = randomPartitionId;
             return true;
         }

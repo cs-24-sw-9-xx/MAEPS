@@ -23,7 +23,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -33,23 +32,32 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class GlobalRedistributionExperiment : MonoBehaviour
+    internal class AllAlgorithmsSimpleExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(100, 3))
             {
-                scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                    seed,
-                    nameof(GlobalRedistributionWithCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(GlobalRedistributionWithCRAlgo)],
-                    GroupBParameters.StandardRobotCount,
-                    GroupBParameters.StandardMapSize,
-                    GroupBParameters.StandardAmountOfCycles,
-                    GroupBParameters.GlobalRobotConstraints,
-                    GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
+                foreach (var partitionCount in GroupBParameters.RedistributionPartitionCounts)
+                {
+                    foreach (var robotCount in GroupBParameters.RobotCounts)
+                    {
+                        foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                        {
+                            scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                                seed,
+                                algorithm.Key,
+                                algorithm.Value,
+                                robotCount,
+                                200,
+                                GroupBParameters.StandardAmountOfCycles,
+                                GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                                partitionCount,
+                                GroupBParameters.FaultInjection(seed, robotCount: robotCount)));
+                        }
+                    }
+                }
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
