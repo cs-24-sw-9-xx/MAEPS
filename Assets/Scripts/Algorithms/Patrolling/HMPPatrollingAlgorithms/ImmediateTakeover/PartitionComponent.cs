@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using Maes.Algorithms.Patrolling.Components;
+using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map;
 using Maes.Robot;
 
@@ -23,7 +24,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
-        private RobotIdClass _robotId;
+        private readonly RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
 
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;

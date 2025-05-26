@@ -28,6 +28,7 @@ using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.TrackInfos;
+using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
