@@ -86,6 +86,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             var missingRobotsSorted = missingRobots.ToList();
             missingRobotsSorted.Sort();
             var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
+            Debug.Log($"Meeting at vertex: {meeting.MeetingPoint.VertexId} at tick: {meeting.MeetingAtTick} with showed up count: {robotsThatShowedUp.Count}; {string.Join(' ', robotsThatShowedUp)} and missing robot count: {missingRobotsSorted.Count}; {string.Join(' ', missingRobotsSorted)} missing robots.");
             if (myIndex < missingRobotsSorted.Count)
             {
                 // Pick the id of one of the missing robots to take over
