@@ -15,7 +15,7 @@ namespace Maes.Experiments.Patrolling.GroupB
     public static class GroupBParameters
     {
         public const int StandardAmountOfCycles = 100;
-        public const int StandardMapSize = 150;
+        public const int StandardMapSize = 200;
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
 
