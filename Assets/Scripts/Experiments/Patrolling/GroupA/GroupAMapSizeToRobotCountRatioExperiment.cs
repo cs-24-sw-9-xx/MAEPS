@@ -43,7 +43,7 @@ namespace Maes.Experiments.Patrolling
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
-            foreach (var seed in GroupAParameters.SeedGenerator())
+            foreach (var seed in GroupAParameters.SeedGenerator(10))
             {
                 foreach (var mapSize in _mapSizes)
                 {
