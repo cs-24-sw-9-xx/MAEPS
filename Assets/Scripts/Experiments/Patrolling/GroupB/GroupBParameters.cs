@@ -18,6 +18,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         public const int StandardMapSize = 150;
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
+        public const int StandardFaultInjectionSeed = 1;
 
         public static readonly List<int> MapSizes = new()
         {
@@ -126,7 +127,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         /// prob: Probability
         /// max: Max number of robot deaths
         /// </remarks>
-        public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.025f, int invokeEvery = 1000)
+        public static (string, Func<IFaultInjection>) FaultInjection(int seed = StandardFaultInjectionSeed, int robotCount = StandardRobotCount, float probability = 0.025f, int invokeEvery = 1000)
         {
             return ($"FI-random-{seed}-prob-{probability}-invoke-{invokeEvery}-max-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }
