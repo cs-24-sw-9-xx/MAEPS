@@ -72,12 +72,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
                 var readyRobotIds = SenseNearbyRobots.ReceivedRobotIds(_controller, meeting);
 
-                // If all other robots are at the meeting point, then exchange information
+                
+                    
+                foreach (var waitForCondition in _partitionComponent.HandleMeeting(meeting, readyRobotIds))
+                {
+                    yield return waitForCondition;
+                }
+                
+                /*// If all other robots are at the meeting point, then exchange information
                 // Otherwise, handling missing robots
                 if (readyRobotIds.SetEquals(meeting.RobotIds))
                 {
                     _trackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, _getLogicTick(), _controller.Id));
-                    foreach (var waitForCondition in _partitionComponent.ExchangeInformation(meeting.Vertex.Id))
+                    foreach (var waitForCondition in _partitionComponent.DecideNextMeetingTime(meeting.Vertex.Id))
                     {
                         yield return waitForCondition;
                     }
@@ -96,18 +103,20 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                     else
                     {
                         var missingRobotIds = meeting.RobotIds.Except(readyRobotIds).ToHashSet();
-                        _trackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, meeting.MeetingAtTick, _controller.Id, missingRobotIds, _controller.Id));
+                        _trackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, _getLogicTick(), _controller.Id, missingRobotIds, _controller.Id));
                         foreach (var waitForCondition in _partitionComponent.OnMissingRobotAtMeeting(meeting, missingRobotIds.Single()))
                         {
                             yield return waitForCondition;
                         }
                     }
-                }
+                }*/
 
                 GoingToMeeting = null;
                 _nextMeeting = GetNextMeeting();
             }
         }
+
+        
 
         /// <summary>
         /// Checks if the robot should go to the next vertex or the next meeting point.
@@ -153,11 +162,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
         private Meeting GetNextMeeting()
         {
-            return _partitionComponent.MeetingPoints
+            var meetingTimes = _partitionComponent.MeetingPoints
                 .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
-                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
-                    m.meetingTimes.CurrentNextMeetingAtTick, m.meetingTimes.RobotIds))
-                .First();
+                .ThenBy(m => m.meetingTimes.MightMissCurrentNextMeetingAtTick) // Ensure that those with MightMissCurrentNextMeetingAtTick=true are less priority
+                .ToArray();
+
+            if (meetingTimes.Length > 1)
+            {
+                _partitionComponent.SkipingMeetingTimesWithSameTime(meetingTimes.Skip(1));
+            }
+
+            var m = meetingTimes[0];
+            return new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
+                m.meetingTimes.CurrentNextMeetingAtTick, m.meetingTimes.RobotIds);
         }
 
         /// <summary>
