@@ -74,9 +74,9 @@ internal static class Program
         foreach (var algorithmDirectory in Directory.GetDirectories(groupedDirectory))
         {
             ProcessAlgorithmDirectory(algorithmDirectory, groupedDirectory, summaries, patrollingData);
-            GenerateAggregatedPlots(algorithmDirectory, patrollingData);
             GenerateSummary(groupedDirectory, summaries);
         }
+        GenerateAggregatedPlots(groupedDirectory, patrollingData);
     }
 
     private static void ProcessAlgorithmDirectory(
@@ -111,6 +111,27 @@ internal static class Program
                 bag.Add(item);
             }
         });
+
+        var data = patrollingData[Path.GetFileName(algorithmDirectory)];
+        
+        var worstIdlenessPlot = GeneratePlot(
+            "Aggregated - Worst Idleness",
+            "Worst Idleness",
+            CalculateAverageIdleness(data, ps => ps.WorstGraphIdleness));
+        
+        var averageIdlenessPlot = GeneratePlot(
+            "Aggregated - Average Idleness",
+            "Average Idleness",
+            CalculateAverageIdleness(data, ps => ps.AverageGraphIdleness));
+        
+        if (s_plotFailedRobots)
+        {
+            worstIdlenessPlot.AddDeadRobotsVerticalLines(data);
+            averageIdlenessPlot.AddDeadRobotsVerticalLines(data);
+        }
+        
+        SavePlot(worstIdlenessPlot, algorithmDirectory, "WorstGraphIdleness.png");
+        SavePlot(averageIdlenessPlot, algorithmDirectory, "AverageGraphIdleness.png");
     }
 
     private static ExperimentSummary CreateExperimentSummary(string scenarioDirectory, List<PatrollingSnapshot> data)
@@ -153,24 +174,14 @@ internal static class Program
         plot.Title(title);
         plot.XLabel("Tick");
         plot.YLabel(yLabel);
-
-        plot.Legend.Alignment = Alignment.UpperLeft;
         
         return plot;
     }
 
-    private static void GenerateAggregatedPlots(string algorithmDirectory, ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>> patrollingData)
+    private static void GenerateAggregatedPlots(string outputDirectory, ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>> patrollingData)
     {
-        var firstData = patrollingData.First().Value;
-        var worstIdlenessPlot = GeneratePlot(
-            "Aggregated - Worst Idleness",
-            "Worst Idleness",
-            CalculateAverageIdleness(firstData, ps => ps.WorstGraphIdleness));
-        
-        var averageIdlenessPlot = GeneratePlot(
-            "Aggregated - Average Idleness",
-            "Average Idleness",
-            CalculateAverageIdleness(firstData, ps => ps.AverageGraphIdleness));
+        var worstIdlenessPlot = new Plot();
+        var averageIdlenessPlot = new Plot();
 
         if (s_plotFailedRobots)
         {
@@ -178,24 +189,19 @@ internal static class Program
             averageIdlenessPlot.AddDeadRobotsVerticalLines(patrollingData.First().Value);
         }
         
-        foreach (var (name, algoData) in patrollingData.Skip(1))
+        foreach (var (name, algoData) in patrollingData)
         {
             var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
             var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
-
-            var stopWatch = Stopwatch.StartNew();
             
-            SaveAggregatedData(algorithmDirectory, algoData.OrderBy(x => x.CommunicationSnapshot.Tick).ToList());
-
-            stopWatch.Stop();
-            Console.WriteLine($"Aggregated data saved in {stopWatch.ElapsedMilliseconds} ms");
+            SaveAggregatedData(outputDirectory, algoData.ToList());
             
             worstIdlenessPlot.AddPlotLine(name, averageWorstIdlenessList);
             averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
         }
         
-        SavePlot(averageIdlenessPlot, algorithmDirectory, "AverageGraphIdleness.png");
-        SavePlot(worstIdlenessPlot, algorithmDirectory, "WorstGraphIdleness.png");
+        SavePlot(averageIdlenessPlot, outputDirectory, "AverageGraphIdleness.png");
+        SavePlot(worstIdlenessPlot, outputDirectory, "WorstGraphIdleness.png");
         Console.WriteLine("Saving aggregated graphs");
     }
 
@@ -213,8 +219,11 @@ internal static class Program
 
     private static void SavePlot(Plot plot, string directory, string fileName)
     {
+        plot.Legend.Alignment = Alignment.UpperLeft;
         var path = Path.Combine(directory, fileName);
         plot.Save(path, PlotWidth, PlotHeight);
+
+        Console.WriteLine("Saved {0} to {1}",fileName, path);
     }
 
     private static void GenerateSummary(string path, IEnumerable<ExperimentSummary> summaries)
