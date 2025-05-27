@@ -2,7 +2,7 @@ using CsvHelper.Configuration.Attributes;
 
 namespace Maes.Statistics.Snapshots
 {
-    public 
+    public
 #if UNITY
         readonly struct
 #else
