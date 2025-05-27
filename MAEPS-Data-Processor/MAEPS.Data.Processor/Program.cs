@@ -1,227 +1,262 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
-
+using CsvHelper;
+using CsvHelper.Configuration;
 using MAEPS.Data.Processor.Utilities;
-
 using Maes.Statistics.Snapshots;
-
 using ScottPlot;
 
 namespace MAEPS.Data.Processor;
 
-internal class Program
+internal static class Program
 {
-    private static void Main(string[] args)
+    private const int PlotWidth = 1200;
+    private const int PlotHeight = 800;
+
+    private static bool s_plotFailedRobots;
+    private static bool s_plotIndividual;
+    private static bool s_recompute;
+
+    public static void Main(string[] args)
     {
-        // Defaults to using the data folder in the MAEPS project.
         DirectoryUtils.SetDefaultDataDirectory();
         
         var argumentParser = new ArgumentParser();
         argumentParser.ParseArguments(args);
 
         var experimentsFolderPath = argumentParser.GetArgument("--path");
-        
-        // Override used to specify another location.
+        var groupBy = argumentParser.GetArgument("--groupBy");
+        s_plotFailedRobots = argumentParser.GetArgument("--showFailed", bool.TryParse, false);
+        s_plotIndividual = argumentParser.GetArgument("--plotIndividual", bool.TryParse, false);
+        s_recompute = argumentParser.GetArgument("--recompute", bool.TryParse, false);
+
+
         if (Directory.Exists(experimentsFolderPath))
         {
             Directory.SetCurrentDirectory(experimentsFolderPath);
         }
-        
-        var groupBy = argumentParser.GetArgument("--groupBy");
 
+        ProcessExperimentDirectories(experimentsFolderPath, groupBy);
+    }
+
+    private static void ProcessExperimentDirectories(string experimentsFolderPath, string groupBy)
+    {
         foreach (var experimentDirectory in Directory.GetDirectories(experimentsFolderPath))
         {
-            DirectoryUtils.GroupScenarios(groupBy, experimentDirectory);
-            DirectoryUtils.GroupScenariosByAlgorithm(experimentDirectory, groupBy);
-
-            foreach (var groupedDirectory in Directory.GetDirectories(experimentDirectory, groupBy + "*", SearchOption.TopDirectoryOnly))
-            {
-                if (File.Exists(Path.Combine(groupedDirectory, "summary.csv")))
-                {
-                    //return;
-                }
-                
-                var summaries = new List<ExperimentSummary>();
-                var patrollingData = new ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>>();
-                Console.WriteLine(groupedDirectory);
-                foreach (var algorithmDirectory in Directory.GetDirectories(groupedDirectory))
-                {
-                    Parallel.ForEach(Directory.GetDirectories(algorithmDirectory),
-                        scenarioDirectory =>
-                        {
-                            var name = scenarioDirectory.Replace(groupedDirectory,
-                                    string.Empty)
-                                .Split('-')[0];
-                            var bag = patrollingData.GetOrAdd(name,
-                                _ => new ConcurrentBag<PatrollingSnapshot>());
-                            if (!File.Exists(Path.Combine(scenarioDirectory,
-                                    "patrolling.csv")))
-                            {
-                                Console.WriteLine(
-                                    $"Skipping {scenarioDirectory} because patrolling.csv is missing or incomplete.");
-                                return;
-                            }
-
-                            var data = CsvDataReader.ReadPatrollingCsv(Path.Combine(scenarioDirectory,
-                                "patrolling.csv"));
-                            PlotWorstIdleness(name, scenarioDirectory,
-                                data);
-                            PlotAverageIdleness(name, scenarioDirectory,
-                                data);
-
-                            var summary = new ExperimentSummary
-                            {
-                                Algorithm = Path.GetFileName(scenarioDirectory),
-                                AverageIdleness = data.Last()
-                                    .AverageGraphIdleness,
-                                WorstIdleness = data.Max(ps => ps.WorstGraphIdleness),
-                                TotalDistanceTraveled = data.Last()
-                                    .TotalDistanceTraveled,
-                                TotalCycles = data.Last()
-                                    .CompletedCycles,
-                                NumberOfRobotsStart = data.First()
-                                    .NumberOfRobots,
-                                NumberOfRobotsEnd = data.Last()
-                                    .NumberOfRobots
-                            };
-                            lock (summaries)
-                            {
-                                summaries.Add(summary);
-                            }
-
-                            foreach (var item in data)
-                            {
-                                bag.Add(item);
-                            }
-                        });
-                    
-                    Plot worstIdlenessPlot = new();
-                    Plot averageIdlenessPlot = new();
-
-                    foreach (var (name, algoData) in patrollingData)
-                    {
-                        
-                        var averageWorstIdlenessList = algoData
-                            .AsParallel()
-                            .GroupBy(d => d.CommunicationSnapshot.Tick)
-                            .OrderBy(g => g.Key)
-                            .Select(g => (g.Key, g.Average(d => d.WorstGraphIdleness)))
-                            .ToList();
-                        
-                        var averageAvgIdlenessList = algoData
-                            .AsParallel()
-                            .GroupBy(d => d.CommunicationSnapshot.Tick)
-                            .OrderBy(g => g.Key)
-                            .Select(g => (g.Key, (double)g.Average(d => d.AverageGraphIdleness)))
-                            .ToList();
-                        
-                        SaveAggretatedData(algorithmDirectory, algoData.ToList());
-
-                        PlotWorstIdlenessAll(
-                            worstIdlenessPlot, 
-                            name,
-                            averageWorstIdlenessList);
-                        
-                        PlotAverageIdlenessAll(
-                            averageIdlenessPlot, 
-                            name,
-                            averageAvgIdlenessList);
-                    }
-                    
-                    
-                    var avgGraphPath = Path.Combine(groupedDirectory, "AverageGraphIdleness.png");
-                    averageIdlenessPlot.Save(avgGraphPath, 1200, 600);
-                    
-                    var graphPath = Path.Combine(groupedDirectory, "WorstGraphIdleness.png");
-                    worstIdlenessPlot.Save(graphPath, 1200, 600);
-                    Console.WriteLine("Saving to aggregated graphs");
-                    GenerateSummary(groupedDirectory, summaries);
-                }
-            }
-        }
-
-        void GenerateSummary(string path, IEnumerable
-            <ExperimentSummary> summaries)
-        {
-            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                HasHeaderRecord = true
-            };
-            
-            using var writer = new StreamWriter(Path.Combine(path, "summary.csv"));
-            using var csv = new CsvHelper.CsvWriter(writer, config);
-            // Write header and record
-            csv.WriteRecords(summaries);
-        }
-
-        void SaveAggretatedData(string path, List<PatrollingSnapshot> data)
-        {
-            var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
-            {
-                HasHeaderRecord = true
-            };
-            
-            using var writer = new StreamWriter(Path.Combine(path, "AggregatedData.csv"));
-            using var csv = new CsvHelper.CsvWriter(writer, config);
-            // Write header and record
-            csv.WriteRecords(data);
-        }
-
-        void PlotWorstIdlenessAll(Plot plot, string name, List<(int tick, double idleness)> data)
-        {
-            var scatterPlot = plot.Add.Signal(data.Select(ps => ps.idleness).ToList());
-            
-            scatterPlot.LegendText = name;
-        }
-        
-        void PlotAverageIdlenessAll(Plot plot, string name, List<(int tick, double idleness)> data)
-        {
-            var scatterPlot = plot.Add.Signal(data.Select(ps => ps.idleness).ToList());
-            
-            scatterPlot.LegendText = name;
-        }
-
-        
-        void PlotWorstIdleness(string algoName, string path, List<PatrollingSnapshot> data)
-        {
-            Plot plot = new();
-            plot.Add.Signal(data.Select(ps => ps.WorstGraphIdleness).ToList());
-
-            AddDeadRobotsVerticalLines(data, plot);
-
-            plot.Title($"{algoName} - Worst Idleness");
-            plot.XLabel("Tick");
-            plot.YLabel("Worst Idleness");
-
-            var graphPath = Path.Combine(path, "WorstGraphIdleness.png");
-            plot.Save(graphPath, 1200, 600);
-            Console.WriteLine("Saving to {0}", graphPath);
-        }
-        
-        void PlotAverageIdleness(string algoName, string path, List<PatrollingSnapshot> data)
-        {
-            Plot plot = new();
-            plot.Add.Signal(data.Select(ps => ps.AverageGraphIdleness).ToList());
-            
-            AddDeadRobotsVerticalLines(data, plot);
-            
-            plot.Title($"{algoName} - Average Idleness");
-            plot.XLabel("Tick");
-            plot.YLabel("Average Idleness");
-
-            var graphPath = Path.Combine(path, "AverageGraphIdleness.png");
-            Console.WriteLine("Saving to {0}", graphPath);
-            plot.Save(graphPath, 1200, 600);
+            ProcessSingleExperiment(experimentDirectory, groupBy);
         }
     }
-    
-    private static void AddDeadRobotsVerticalLines(List<PatrollingSnapshot> data, Plot plot)
+
+    private static void ProcessSingleExperiment(string experimentDirectory, string groupBy)
     {
-        var deadRobots = data.GroupBy(ps => ps.NumberOfRobots).ToList();
-        foreach (var group in deadRobots.Skip(1))
+        DirectoryUtils.GroupScenarios(groupBy, experimentDirectory);
+        DirectoryUtils.GroupScenariosByAlgorithm(experimentDirectory, groupBy);
+
+        foreach (var groupedDirectory in Directory.GetDirectories(experimentDirectory, $"{groupBy}*", SearchOption.TopDirectoryOnly))
         {
-            var line = plot.Add.VerticalLine(group.First().CommunicationSnapshot.Tick, 1, Color.FromColor(System.Drawing.Color.Red), LinePattern.Dashed);
-            if (group == deadRobots.Last())
+            if (!s_recompute && File.Exists(Path.Combine(groupedDirectory, "summary.csv")))
+            {
+                Console.WriteLine("Data already processed. Skipping for {0}", groupedDirectory);
+                continue;
+            }
+
+            ProcessGroupedDirectory(groupedDirectory);
+        }
+    }
+
+    private static void ProcessGroupedDirectory(string groupedDirectory)
+    {
+        Console.WriteLine(groupedDirectory);
+        var summaries = new ConcurrentBag<ExperimentSummary>();
+        var patrollingData = new ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>>();
+
+        foreach (var algorithmDirectory in Directory.GetDirectories(groupedDirectory))
+        {
+            ProcessAlgorithmDirectory(algorithmDirectory, groupedDirectory, summaries, patrollingData);
+            GenerateAggregatedPlots(algorithmDirectory, patrollingData);
+            GenerateSummary(groupedDirectory, summaries);
+        }
+    }
+
+    private static void ProcessAlgorithmDirectory(
+        string algorithmDirectory,
+        string groupedDirectory,
+        ConcurrentBag<ExperimentSummary> summaries,
+        ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>> patrollingData)
+    {
+        Parallel.ForEach(Directory.GetDirectories(algorithmDirectory), scenarioDirectory =>
+        {
+            var name = Path.GetFileName(algorithmDirectory);
+            var bag = patrollingData.GetOrAdd(name, _ => new ConcurrentBag<PatrollingSnapshot>());
+        
+            var patrollingFilePath = Path.Combine(scenarioDirectory, "patrolling.csv");
+            if (!File.Exists(patrollingFilePath))
+            {
+                Console.WriteLine($"Skipping {scenarioDirectory} because patrolling.csv is missing or incomplete.");
+                return;
+            }
+
+            var data = CsvDataReader.ReadPatrollingCsv(patrollingFilePath);
+
+            if (s_plotIndividual)
+            {
+                GenerateIndividualPlots(name, scenarioDirectory, data);
+            }
+            
+            summaries.Add(CreateExperimentSummary(scenarioDirectory, data));
+
+            foreach (var item in data)
+            {
+                bag.Add(item);
+            }
+        });
+    }
+
+    private static ExperimentSummary CreateExperimentSummary(string scenarioDirectory, List<PatrollingSnapshot> data)
+    {
+        return new ExperimentSummary
+        {
+            Algorithm = Path.GetFileName(scenarioDirectory),
+            AverageIdleness = data.Last().AverageGraphIdleness,
+            WorstIdleness = data.Max(ps => ps.WorstGraphIdleness),
+            TotalDistanceTraveled = data.Last().TotalDistanceTraveled,
+            TotalCycles = data.Last().CompletedCycles,
+            NumberOfRobotsStart = data.First().NumberOfRobots,
+            NumberOfRobotsEnd = data.Last().NumberOfRobots
+        };
+    }
+
+    private static void GenerateIndividualPlots(string algoName, string path, List<PatrollingSnapshot> data)
+    {
+        var worstIdlenessPlot = GeneratePlot(algoName, $"Worst Idleness", 
+            data.Select(ps => ps.WorstGraphIdleness).ToList());
+        
+        var averageIdlenessPlot = GeneratePlot(algoName, $"Average Idleness", 
+            data.Select(ps => ps.AverageGraphIdleness).ToList());
+
+        if (s_plotFailedRobots)
+        {
+            worstIdlenessPlot.AddDeadRobotsVerticalLines(data);
+            averageIdlenessPlot.AddDeadRobotsVerticalLines(data);
+        }
+        
+        SavePlot(worstIdlenessPlot, path, "WorstGraphIdleness.png");
+        SavePlot(averageIdlenessPlot, path, "AverageGraphIdleness.png");
+    }
+
+    private static Plot GeneratePlot<T>(string title, string yLabel, List<T> values)
+    {
+        var plot = new Plot();
+        plot.Add.Signal(values);
+
+        plot.Title(title);
+        plot.XLabel("Tick");
+        plot.YLabel(yLabel);
+
+        plot.Legend.Alignment = Alignment.UpperLeft;
+        
+        return plot;
+    }
+
+    private static void GenerateAggregatedPlots(string algorithmDirectory, ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>> patrollingData)
+    {
+        var firstData = patrollingData.First().Value;
+        var worstIdlenessPlot = GeneratePlot(
+            "Aggregated - Worst Idleness",
+            "Worst Idleness",
+            CalculateAverageIdleness(firstData, ps => ps.WorstGraphIdleness));
+        
+        var averageIdlenessPlot = GeneratePlot(
+            "Aggregated - Average Idleness",
+            "Average Idleness",
+            CalculateAverageIdleness(firstData, ps => ps.AverageGraphIdleness));
+
+        if (s_plotFailedRobots)
+        {
+            worstIdlenessPlot.AddDeadRobotsVerticalLines(patrollingData.First().Value);
+            averageIdlenessPlot.AddDeadRobotsVerticalLines(patrollingData.First().Value);
+        }
+        
+        foreach (var (name, algoData) in patrollingData.Skip(1))
+        {
+            var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
+            var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
+
+            var stopWatch = Stopwatch.StartNew();
+            
+            SaveAggregatedData(algorithmDirectory, algoData.OrderBy(x => x.CommunicationSnapshot.Tick).ToList());
+
+            stopWatch.Stop();
+            Console.WriteLine($"Aggregated data saved in {stopWatch.ElapsedMilliseconds} ms");
+            
+            worstIdlenessPlot.AddPlotLine(name, averageWorstIdlenessList);
+            averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
+        }
+        
+        SavePlot(averageIdlenessPlot, algorithmDirectory, "AverageGraphIdleness.png");
+        SavePlot(worstIdlenessPlot, algorithmDirectory, "WorstGraphIdleness.png");
+        Console.WriteLine("Saving aggregated graphs");
+    }
+
+    private static List<double> CalculateAverageIdleness(
+        IEnumerable<PatrollingSnapshot> snapshots,
+        Func<PatrollingSnapshot, double> idlenessSelector)
+    {
+        return snapshots
+            .AsParallel()
+            .GroupBy(d => d.CommunicationSnapshot.Tick)
+            .OrderBy(g => g.Key)
+            .Select(g => g.Average(idlenessSelector))
+            .ToList();
+    }
+
+    private static void SavePlot(Plot plot, string directory, string fileName)
+    {
+        var path = Path.Combine(directory, fileName);
+        plot.Save(path, PlotWidth, PlotHeight);
+    }
+
+    private static void GenerateSummary(string path, IEnumerable<ExperimentSummary> summaries)
+    {
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true
+        };
+        
+        using var writer = new StreamWriter(Path.Combine(path, "summary.csv"));
+        using var csv = new CsvWriter(writer, config);
+        csv.WriteRecords(summaries);
+    }
+
+    private static void SaveAggregatedData(string path, List<PatrollingSnapshot> data)
+    {
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true
+        };
+        
+        using var writer = new StreamWriter(Path.Combine(path, "AggregatedData.csv"));
+        using var csv = new CsvWriter(writer, config);
+        csv.WriteRecords(data);
+    }
+    
+    private static void AddPlotLine(this Plot plot, string name, List<double> data)
+    {
+        var addedPlot = plot.Add.Signal(data);
+        addedPlot.LegendText = name;
+    }
+
+    private static void AddDeadRobotsVerticalLines(this Plot plot, IEnumerable<PatrollingSnapshot> data)
+    {
+        var failedRobotTicks = data.GroupBy(ps => ps.NumberOfRobots)
+            .Skip(1)
+            .Select(g => g.First().CommunicationSnapshot.Tick).ToArray();
+        
+        foreach (var tick in failedRobotTicks)
+        {
+            var line = plot.Add.VerticalLine(tick, 1, Color.FromColor(System.Drawing.Color.Red), LinePattern.Dashed);
+            if (tick == failedRobotTicks.Last())
             {
                 line.LegendText = "Dead Robots";
             }
