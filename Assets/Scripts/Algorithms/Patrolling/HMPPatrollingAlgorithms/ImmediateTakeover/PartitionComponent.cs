@@ -15,8 +15,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     {
         public enum TakeoverStrategy
         {
-            ImmediateTakeoverStrategy = 0, // At each meeting, if there is a missing robot, then we take over the other partition immediately
-            QuasiRandomStrategy = 1, // At each meeting, if there is a missing robot, then there is a 50% chance to take over the another partition
+            ImmediateTakeoverStrategy, // At each meeting, if there is a missing robot, then we take over the other partition immediately
+            QuasiRandomStrategy, // At each meeting, if there is a missing robot, then there is a 50% chance to take over the another partition
         }
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);

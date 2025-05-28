@@ -53,7 +53,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         }
 
         public RobotIdClass RobotId;
-        public override string AlgorithmName => "HMPAlgorithm";
+        public override string AlgorithmName => "HMPAlgorithm" + Enum.GetName(typeof(PartitionComponent.TakeoverStrategy), _takeoverStrategy);
         public PartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
         public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
                                                                            .VertexIds
