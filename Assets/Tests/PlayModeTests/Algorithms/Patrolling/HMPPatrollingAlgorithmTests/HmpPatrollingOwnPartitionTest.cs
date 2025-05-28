@@ -73,7 +73,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private void CreateAndEnqueueScenario()
         {
-
             var robotConstraints = new RobotConstraints(
                 mapKnown: true,
                 distributeSlam: false,

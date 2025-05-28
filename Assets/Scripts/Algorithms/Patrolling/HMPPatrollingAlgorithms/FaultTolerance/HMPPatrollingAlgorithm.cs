@@ -237,6 +237,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfoWithDiameter> partitionsById)
         {
+            // We have only a single partition
+            if (partitionsById.Count == 1)
+            {
+                return new Dictionary<int, List<MeetingPoint>>()
+                {
+                    {partitionsById.Keys.Single(), new List<MeetingPoint>()}
+                };
+            }
+
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
             var maximumTickColorAssignment = tickColorAssignment.Values.Max();
