@@ -87,7 +87,10 @@ namespace Maes.Experiments.Patrolling
 
         private static int MaxLogicTicks(int mapSize, int robotCount)
         {
-            return GroupAParameters.StandardAmountOfCycles * MySimulationScenario.DefaultMaxLogicTicks * (mapSize / robotCount);
+            var maxTicks = GroupAParameters.StandardAmountOfCycles 
+                           * MySimulationScenario.DefaultMaxLogicTicks 
+                           * (mapSize / robotCount);
+            return maxTicks > 0 ? maxTicks : int.MaxValue;
         }
     }
 }
