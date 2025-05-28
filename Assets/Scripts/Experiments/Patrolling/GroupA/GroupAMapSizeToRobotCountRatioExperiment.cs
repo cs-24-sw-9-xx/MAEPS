@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -39,6 +40,11 @@ namespace Maes.Experiments.Patrolling
     {
         private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250, 300 };
         private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
+        private static readonly IEnumerable<string> scenarioFilters = new List<string>
+        {
+            // Paste the name of a scenario here to filter only that scenario e.g.:
+            //"SingleCycleChristofides-seed-3-size-250-robots-16-constraints-Standard-BuildingMap-SpawnApart"
+        };
 
         private void Start()
         {
@@ -56,6 +62,11 @@ namespace Maes.Experiments.Patrolling
                         }
                     }
                 }
+            }
+
+            if (scenarioFilters is not null && scenarioFilters.Any())
+            {
+                scenarios = scenarios.Where(scenario => scenarioFilters.Any(filter => scenario.StatisticsFileName.Contains(filter))).ToList();
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
