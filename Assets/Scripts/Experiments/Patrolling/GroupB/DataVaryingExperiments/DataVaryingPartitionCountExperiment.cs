@@ -35,7 +35,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
     internal class DataVaryingPartitionCountExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCounts = new() { 1, 2, 4, 8 };
+        private static readonly List<int> PartitionCounts = new() { 8 };
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
