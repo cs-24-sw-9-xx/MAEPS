@@ -156,6 +156,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
         private Meeting GetNextMeeting()
         {
+            // HACK: Create a fake meeting point if there are no meeting points, due to only having a single robot patrolling.
+            if (!_partitionComponent.MeetingPoints.Any())
+            {
+                var firstVertex = _patrollingMap.Vertices.First();
+                return new Meeting(firstVertex, int.MaxValue);
+            }
+
             return _partitionComponent.MeetingPoints
                 .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
                 .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
