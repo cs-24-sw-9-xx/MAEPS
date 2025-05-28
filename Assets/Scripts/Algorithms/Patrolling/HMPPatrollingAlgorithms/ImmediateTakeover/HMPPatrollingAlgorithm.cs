@@ -46,9 +46,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed = 0)
+        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed = 0)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
+            _takeoverStrategy = takeoverStrategy;
         }
 
         public RobotIdClass RobotId;
@@ -59,7 +60,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
-
+        private readonly PartitionComponent.TakeoverStrategy _takeoverStrategy;
         private PartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -67,7 +68,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             RobotId = new RobotIdClass(controller.Id);
-            _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions);
+            _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions, _takeoverStrategy);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent, RobotId);
 

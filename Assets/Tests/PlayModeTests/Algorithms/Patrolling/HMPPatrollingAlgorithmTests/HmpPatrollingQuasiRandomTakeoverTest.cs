@@ -38,7 +38,7 @@ using UnityEngine;
 
 namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 {
-    public class HmpPatrollingImmediateTakeoverTest
+    public class HmpPatrollingQuasiRandomTakeoverTest
     {
         private PatrollingSimulator _maes;
         private const int Seed = 1;
@@ -93,7 +93,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: Seed,
                         numberOfRobots: RobotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new WrapperHMPPatrollingAlgorithm(_trackerVertices, PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)),
+                        createAlgorithmDelegate: _ => new WrapperHMPPatrollingAlgorithm(_trackerVertices, PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",

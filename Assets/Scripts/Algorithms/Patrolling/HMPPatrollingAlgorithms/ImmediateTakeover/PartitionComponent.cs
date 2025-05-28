@@ -13,12 +13,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     public class PartitionComponent : IComponent
     {
+        public enum TakeoverStrategy
+        {
+            ImmediateTakeoverStrategy = 0, // At each meeting, if there is a missing robot, then we take over the other partition immediately
+            QuasiRandomStrategy = 1, // At each meeting, if there is a missing robot, then there is a 50% chance to take over the another partition
+        }
+
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator)
+        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy)
         {
             _robotId = robotId;
             _partitionGenerator = partitionGenerator;
+            _takeoverStrategy = takeoverStrategy;
         }
 
         public int PreUpdateOrder => -900;
@@ -26,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         private readonly RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
-
+        private readonly TakeoverStrategy _takeoverStrategy;
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
         protected VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
@@ -86,8 +93,21 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             var missingRobotsSorted = missingRobots.ToList();
             missingRobotsSorted.Sort();
             Debug.Log($"Meeting at vertex: {meeting.MeetingPoint.VertexId} at tick: {meeting.MeetingAtTick} with showed up count: {robotsThatShowedUp.Count}; {string.Join(' ', robotsThatShowedUp)} and missing robot count: {missingRobotsSorted.Count}; {string.Join(' ', missingRobotsSorted)} missing robots.");
-
-            ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
+            switch (_takeoverStrategy)
+            {
+                case TakeoverStrategy.ImmediateTakeoverStrategy:
+                    ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
+                    break;
+                case TakeoverStrategy.QuasiRandomStrategy:
+                    if (Random.Range(0, 2) == 0)
+                    {
+                        ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
+                    }
+                    break;
+                default:
+                    Debug.LogError($"Unknown takeover strategy: {_takeoverStrategy}");
+                    break;
+            }
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
