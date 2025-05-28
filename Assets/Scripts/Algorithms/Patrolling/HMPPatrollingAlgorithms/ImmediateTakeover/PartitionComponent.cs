@@ -85,8 +85,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             robotsThatShowedUp.Sort();
             var missingRobotsSorted = missingRobots.ToList();
             missingRobotsSorted.Sort();
-            var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
             Debug.Log($"Meeting at vertex: {meeting.MeetingPoint.VertexId} at tick: {meeting.MeetingAtTick} with showed up count: {robotsThatShowedUp.Count}; {string.Join(' ', robotsThatShowedUp)} and missing robot count: {missingRobotsSorted.Count}; {string.Join(' ', missingRobotsSorted)} missing robots.");
+
+            ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
+
+            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+        }
+
+        private void ImmediateTakeover(List<int> robotsThatShowedUp, List<int> missingRobotsSorted)
+        {
+            var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
             if (myIndex < missingRobotsSorted.Count)
             {
                 // Pick the id of one of the missing robots to take over
@@ -98,8 +106,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                 }
                 TakeOverOtherRobotPartition(robotIdToTakeOver);
             }
-
-            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
 
         private void TakeOverOtherRobotPartition(int robotId)
