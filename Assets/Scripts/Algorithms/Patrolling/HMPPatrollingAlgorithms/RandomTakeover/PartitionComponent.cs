@@ -13,19 +13,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 {
     public class PartitionComponent : IComponent
     {
-        public enum TakeoverStrategy
-        {
-            ImmediateTakeoverStrategy = 0, // At each meeting, if there is a missing robot, then we take over the other partition immediately
-            QuasiRandomStrategy = 1, // At each meeting, if there is a missing robot, then there is a 50% chance to take over the another partition
-        }
-
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy)
+        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator)
         {
             _robotId = robotId;
             _partitionGenerator = partitionGenerator;
-            _takeoverStrategy = takeoverStrategy;
         }
 
         public int PreUpdateOrder => -900;
@@ -33,7 +26,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 
         private readonly RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
-        private readonly TakeoverStrategy _takeoverStrategy;
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
         protected VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
@@ -93,42 +85,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
             var missingRobotsSorted = missingRobots.ToList();
             missingRobotsSorted.Sort();
             Debug.Log($"Meeting at vertex: {meeting.MeetingPoint.VertexId} at tick: {meeting.MeetingAtTick} with showed up count: {robotsThatShowedUp.Count}; {string.Join(' ', robotsThatShowedUp)} and missing robot count: {missingRobotsSorted.Count}; {string.Join(' ', missingRobotsSorted)} missing robots.");
-            switch (_takeoverStrategy)
-            {
-                case TakeoverStrategy.ImmediateTakeoverStrategy:
-                    ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
-                    break;
-                case TakeoverStrategy.QuasiRandomStrategy:
-                    if (Random.Range(0, 2) == 0)
-                    {
-                        ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
-                    }
-                    break;
-                default:
-                    Debug.LogError($"Unknown takeover strategy: {_takeoverStrategy}");
-                    break;
-            }
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
 
-        private void ImmediateTakeover(List<int> robotsThatShowedUp, List<int> missingRobotsSorted)
+        public void TakeoverStrategy(HashSet<int> otherRobotIds)
         {
-            var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
-            if (myIndex < missingRobotsSorted.Count)
-            {
-                // Pick the id of one of the missing robots to take over
-                var robotIdToTakeOver = missingRobotsSorted[myIndex];
-                if (robotsThatShowedUp.Count < missingRobotsSorted.Count && myIndex == robotsThatShowedUp.Count - 1)
-                {
-                    // Pick the id of one of the missing robots at random
-                    robotIdToTakeOver = missingRobotsSorted[Random.Range(myIndex, missingRobotsSorted.Count)];
-                }
-                TakeOverOtherRobotPartition(robotIdToTakeOver);
-            }
+            var sortedRobotIds = otherRobotIds.ToList();
+            sortedRobotIds.Sort();
+            var robotIdToTakeover = sortedRobotIds[Random.Range(0, sortedRobotIds.Count)];
+            TakeoverOtherRobotPartition(robotIdToTakeover);
         }
 
-        private void TakeOverOtherRobotPartition(int robotId)
+        private void TakeoverOtherRobotPartition(int robotId)
         {
             Debug.Log($"Robot {_robotId.RobotId} taking over partition for robot {robotId}");
             _robotId.RobotId = robotId;

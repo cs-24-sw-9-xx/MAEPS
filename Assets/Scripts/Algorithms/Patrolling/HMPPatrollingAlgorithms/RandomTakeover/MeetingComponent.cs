@@ -20,13 +20,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 
         public delegate IEnumerable<ComponentWaitForCondition> ExchangeInformationAtMeetingDelegate(Meeting meeting);
         public delegate IEnumerable<ComponentWaitForCondition> OnMissingRobotsAtMeetingDelegate(Meeting meeting, HashSet<int> missingRobotIds);
+        public delegate void TakeoverStrategy(HashSet<int> otherRobotIds);
 
         public MeetingComponent(int preUpdateOrder, int postUpdateOrder,
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
-            IMovementComponent movementComponent, RobotIdClass robotIdClass)
+            IMovementComponent movementComponent, RobotIdClass robotIdClass, TakeoverStrategy takeoverStrategy)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -37,6 +38,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
             _onMissingRobotsAtMeeting = onMissingRobotsAtMeeting;
             _movementComponent = movementComponent;
             _robotIdClass = robotIdClass;
+            _takeoverStrategy = takeoverStrategy;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
             _nextMeetingPointDecider = new NextMeetingPointDecider(getLogicTick);
@@ -50,6 +52,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
         private readonly RobotIdClass _robotIdClass;
+        private readonly TakeoverStrategy _takeoverStrategy;
         private readonly NextMeetingPointDecider _nextMeetingPointDecider;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
@@ -108,6 +111,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
                         yield return waitForCondition;
                     }
                 }
+                _takeoverStrategy(otherRobotIds);
 
                 _nextMeetingPointDecider.HeldMeeting(meeting.MeetingPoint);
 
