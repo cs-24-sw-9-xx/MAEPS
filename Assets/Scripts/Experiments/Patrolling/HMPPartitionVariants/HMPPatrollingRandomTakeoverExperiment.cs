@@ -23,7 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
@@ -37,7 +37,7 @@ namespace Maes.Experiments.Patrolling
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
-    internal class HMPPatrollingImmediateTakeoverExperiment : MonoBehaviour
+    internal class HMPPatrollingRandomTakeoverExperiment : MonoBehaviour
     {
         private void Start()
         {
@@ -69,7 +69,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)),
+                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
