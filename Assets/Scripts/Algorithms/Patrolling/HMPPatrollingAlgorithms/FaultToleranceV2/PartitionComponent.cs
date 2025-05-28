@@ -255,7 +255,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         }
 
         private MissingRobot? _missingRobot;
-        
+
         public void DebugInfo(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine("PartitionComponent Debug Info:");

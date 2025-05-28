@@ -176,11 +176,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
 
             var bestMeeting = meetingTimes[0];
-            
+
             var skippingMeetingTimes = meetingTimes.Skip(1).Where(m => m.Item1.MeetingAtTick == bestMeeting.Item1.MeetingAtTick)
                 .Select(m => m.Item3)
                 .ToArray();
-            
+
 
             if (meetingTimes.Length > 1)
             {
