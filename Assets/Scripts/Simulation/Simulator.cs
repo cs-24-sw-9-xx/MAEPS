@@ -83,14 +83,6 @@ namespace Maes.Simulation
         private void EnqueueScenario(TScenario scenario)
         {
             SimulationManager.EnqueueScenario(scenario);
-            SimulationManager.InitialScenarios.Enqueue(scenario);
-        }
-        private void EnqueueScenarios(IEnumerable<TScenario> scenario)
-        {
-            foreach (var simulationScenario in scenario)
-            {
-                SimulationManager.EnqueueScenario(simulationScenario);
-            }
         }
 
         private (int Instances, int InstanceId) ParseCommandLine()
