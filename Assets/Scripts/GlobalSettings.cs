@@ -40,7 +40,7 @@ namespace Maes
         public static readonly bool DrawCommunication;
 
         // Statistics
-        public static readonly bool ShouldWriteCsvResults = true;
+        public static readonly bool ShouldWriteCsvResults = false;
         public static readonly string StatisticsOutPutPath = "data/";
         public static readonly int TicksPerStatsSnapShot = 1;
         public static readonly bool PopulateAdjacencyAndComGroupsEveryTick;
@@ -76,7 +76,7 @@ namespace Maes
             LogicTickDeltaMillis = config.GlobalSettings.LogicTicksDeltaMillis;
             PhysicsTickDeltaMillis = config.GlobalSettings.PhysicsTicksPerLogicUpdate;
             DrawCommunication = config.GlobalSettings.DrawCommunication;
-            ShouldWriteCsvResults = config.GlobalSettings.ShouldWriteCsvResults;
+            ShouldWriteCsvResults = false;
             if (config.GlobalSettings.StatisticsResultPath.Length == 0)
             {
                 // Puts results file in same dir as the executable is run from

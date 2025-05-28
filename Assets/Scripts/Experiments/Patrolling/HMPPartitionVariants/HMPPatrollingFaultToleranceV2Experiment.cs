@@ -39,7 +39,7 @@ namespace Maes.Experiments.Patrolling
     {
         private void Start()
         {
-            const int robotCount = 4;
+            const int robotCount = 6;
             const int seed = 123;
             const int mapSize = 100;
             const string algoName = "HMPPatrollingAlgorithm";
@@ -60,7 +60,7 @@ namespace Maes.Experiments.Patrolling
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
-                    totalCycles: 4,
+                    totalCycles: 100,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,

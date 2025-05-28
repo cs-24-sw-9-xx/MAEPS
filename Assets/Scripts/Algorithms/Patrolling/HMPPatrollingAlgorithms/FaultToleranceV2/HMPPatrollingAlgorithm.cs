@@ -27,7 +27,6 @@ using System.Linq;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2.MeetingPoints;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2.TrackInfos;
 using Maes.Map;
 using Maes.Map.Generators.Patrolling.Partitioning;
 using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
@@ -66,7 +65,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         {
             _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, TrackInfo);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
@@ -89,25 +88,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 currentVertex.Neighbors.Where(vertex => VerticesByIdToPatrol.Contains(vertex.Id)).ToArray());
 
             return _meetingComponent.NextVertex(currentVertex, suggestedVertex);
-        }
-
-        private IEnumerable<ComponentWaitForCondition> ExchangeInformation(MeetingComponent.Meeting meeting)
-        {
-            TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, Controller.Id));
-            foreach (var condition in _partitionComponent.ExchangeInformation(meeting.Vertex.Id))
-            {
-                yield return condition;
-            }
-        }
-
-        private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobotIds)
-        {
-            TrackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, missingRobotIds, Controller.Id));
-
-            foreach (var condition in _partitionComponent.OnMissingRobotAtMeeting(meeting, missingRobotIds))
-            {
-                yield return condition;
-            }
         }
 
         private float DistanceMethod(Vertex source, Vertex target)
@@ -144,12 +124,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             var partitionsWithDiametersById =
                 GetPartitionDiameters(partitionsWithMeetingPointsById, meetingRobotIdsByVertexId);
 
-            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithDiametersById);
+            var (meetingPointsByPartitionId, maximumTickColorAssignment) = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithDiametersById);
 
             var hmpPartitionsById = new Dictionary<int, PartitionInfo>();
             foreach (var (robotId, partitionInfo) in partitionsWithMeetingPointsById)
             {
-                hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[robotId], partitionsWithDiametersById[robotId].Diameter);
+                hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[robotId], maximumTickColorAssignment);
             }
 
             return hmpPartitionsById;
@@ -164,19 +144,21 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             foreach (var meetingPoint in neighborsPartitionsWithNoCommonVertices)
             {
                 var shortestConnection = meetingPoint.Connections[0];
-                var shortestDistance = SquaredDistanceOfConnection(PatrollingMap, shortestConnection);
+                var shortestTravelTime = Controller.TravelEstimator.OverEstimateTime(shortestConnection.Item1.Position,
+                    shortestConnection.Item2.Position);
 
                 foreach (var connection in meetingPoint.Connections.Skip(1))
                 {
-                    var distance = SquaredDistanceOfConnection(PatrollingMap, connection);
+                    var distance = Controller.TravelEstimator.OverEstimateTime(connection.Item1.Position,
+                        connection.Item2.Position);
 
-                    if (!(distance < shortestDistance))
+                    if (!(distance < shortestTravelTime))
                     {
                         continue;
                     }
 
                     shortestConnection = connection;
-                    shortestDistance = distance;
+                    shortestTravelTime = distance;
                 }
 
                 // Add the vertex id of the best connection to the partition with the smallest amount of vertices, such that vertex would be the shared meeting point
@@ -195,11 +177,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             }
 
             return partitions;
-        }
-
-        private static double SquaredDistanceOfConnection(PatrollingMap patrollingMap, (Vertex, Vertex) connection)
-        {
-            return patrollingMap.SquaredDistanceBetweenVertices(connection.Item1.Id, connection.Item2.Id);
         }
 
         private static Dictionary<int, HashSet<int>> FindMeetingRobotsAtMeetingPoints(UnfinishedPartitionInfo[] partitions)
@@ -234,10 +211,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             return meetingPointVertexByVertexId;
         }
 
-        private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
+        private (Dictionary<int, List<MeetingPoint>>, int) GetMeetingPointsByPartitionId(
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfoWithDiameter> partitionsById)
         {
-            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById);
+            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById) / 2;
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
             var maximumTickColorAssignment = tickColorAssignment.Values.Max();
 
@@ -263,7 +240,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 }
             }
 
-            return meetingPointsByPartitionId;
+            return (meetingPointsByPartitionId, maximumTickColorAssignment * globalMeetingIntervalTicks);
         }
 
         private Dictionary<int, UnfinishedPartitionInfoWithDiameter> GetPartitionDiameters(

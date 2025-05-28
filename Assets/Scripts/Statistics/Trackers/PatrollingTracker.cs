@@ -94,8 +94,11 @@ namespace Maes.Statistics.Trackers
                         $"{v.Vertex.Position.x}_{v.Vertex.Position.y}"))).ToArray();
             }
 
-            _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
-            _writerThread.Start(_cancellationTokenSource.Token);
+            if (GlobalSettings.ShouldWriteCsvResults)
+            {
+                _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
+                _writerThread.Start(_cancellationTokenSource.Token);
+            }
         }
 
         private void WriterThread(object cancellationTokenObject)
@@ -177,8 +180,11 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
-            _snapshots.CompleteAdding();
-            _writerThread.Join();
+            if (GlobalSettings.ShouldWriteCsvResults)
+            {
+                _snapshots.CompleteAdding();
+                _writerThread.Join();
+            }
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)

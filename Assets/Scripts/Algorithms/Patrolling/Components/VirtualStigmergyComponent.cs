@@ -277,6 +277,11 @@ namespace Maes.Algorithms.Patrolling.Components
             return ret;
         }
 
+        public IEnumerable<KeyValuePair<TKey, ValueInfo>> GetLocalKnowledge()
+        {
+            return _localKnowledge;
+        }
+
         /// <summary>
         /// Checks if a key exists in the local knowledge
         /// </summary>
@@ -308,6 +313,7 @@ namespace Maes.Algorithms.Patrolling.Components
             if (_localKnowledge.Count > 0)
             {
                 stringBuilder.Append("Local Knowledge:\n");
+                stringBuilder.Append("  \"key\": (timestamp, robotId, \"Value\"),\n");
                 foreach (var (key, valueInfo) in _localKnowledge)
                 {
                     stringBuilder.AppendFormat("  \"{0}\": ({1}, {2}, \"{3}\"),\n", key, valueInfo.Timestamp, valueInfo.RobotId, valueInfo.Value);
