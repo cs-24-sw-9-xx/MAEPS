@@ -41,8 +41,6 @@ namespace Maes.Simulation
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
         public Queue<TScenario> Scenarios = new();
-        public readonly Queue<TScenario> InitialScenarios = new();
-
         public UIDocument modeSpecificUiDocument = null!;
         public GameObject SimulationPrefab = null!;
         public GameObject RosClockPrefab = null!;
