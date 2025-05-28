@@ -82,6 +82,7 @@ namespace Maes.Simulation
 
         private void EnqueueScenario(TScenario scenario)
         {
+            Debug.Assert(scenario.MaxLogicTicks < 0, "MaxLogicTicks cannot be negative.");
             SimulationManager.EnqueueScenario(scenario);
         }
 
