@@ -67,7 +67,7 @@ namespace Maes.Experiments.Patrolling
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var scenarioBuilding = CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
-            scenarios.Add(scenarioBuilding);
+            // scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
         }
