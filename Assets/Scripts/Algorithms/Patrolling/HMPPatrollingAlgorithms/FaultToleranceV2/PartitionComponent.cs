@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
@@ -194,13 +195,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         public IEnumerable<ComponentWaitForCondition> HandleMeeting(MeetingComponent.Meeting meeting, HashSet<int> readyRobotIds)
         {
             var meetingPointVertexId = meeting.Vertex.Id;
-            
+
             _meetingPointVertexIdToMeetingTimesStigmergyComponent.SendAll();
             _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
             _missingMeetingByVertexIdStigmergyComponent.SendAll();
-            
+
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-            
+
             if (readyRobotIds.SetEquals(meeting.RobotIds))
             {
                 foreach (var waitForCondition in DecideNextMeetingTime(meetingPointVertexId, readyRobotIds))
@@ -213,7 +214,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 var unknownRobotIds = readyRobotIds.Except(meeting.RobotIds).ToHashSet();
                 var missingRobotIds = meeting.RobotIds.Except(readyRobotIds).ToHashSet();
                 Debug.Assert(missingRobotIds.Count == 1, "Only one fault robot at a time is supported");
-            
+
                 if (unknownRobotIds.Count > 0)
                 {
                     Debug.Assert(unknownRobotIds.Count == 1, "It should be only one robot");
@@ -228,7 +229,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                     {
                         yield return waitForCondition;
                     }
-                } 
+                }
             }
         }
 
@@ -236,7 +237,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         private IEnumerable<ComponentWaitForCondition> DecideNextMeetingTime(int meetingPointVertexId, IReadOnlyCollection<int> robotIds, bool mightMissCurrentNextMeeting = false)
         {
             var nextPossibleMeetingTime = NextPossibleMeetingTime(meetingPointVertexId);
-            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, mightMissCurrentNextMeeting || _missingRobot is null);
+            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, mightMissCurrentNextMeeting || _missingRobot is not null);
             _robotController.Broadcast(meetingMessage);
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
@@ -254,6 +255,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         }
 
         private MissingRobot? _missingRobot;
+        
+        public void DebugInfo(StringBuilder stringBuilder)
+        {
+            stringBuilder.AppendLine("PartitionComponent Debug Info:");
+            stringBuilder.AppendLine($"Observed missing robot: {_robotId}");
+            stringBuilder.AppendLine(_missingRobot is not null
+                ? $"Missing Robot: {_missingRobot.Value}"
+                : "No missing robot observed.");
+        }
 
         private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(int meetingPointVertexId, int missingRobotId, IReadOnlyCollection<int> readyRobotIds)
         {
@@ -262,7 +272,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             if (_missingRobot?.AtVertexId == meetingPointVertexId)
             {
                 Debug.Assert(_missingRobot.Value.RobotId == missingRobotId, "Another robot is fault than the previous observed. This case is not considered");
-                
+
                 if (ShouldTakeOverPartition(readyRobotIds))
                 {
                     var partitionIdsByRobotId = _partitionIdToRobotIdVirtualStigmergyComponent.GetLocalKnowledge()
@@ -281,11 +291,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 }
                 else
                 {
-                    Debug.Log($"The fault robot's partition is not partolled by Robot {_robotId}, but by another one");
+                    Debug.Log($"The fault robot's partition is not patrolled by Robot {_robotId}, but by another one");
                 }
 
                 robotIds = robotIds.Except(new[] { _missingRobot.Value.RobotId }).ToArray();
-                
+
                 _missingRobot = null;
             }
             else if (!meetingTimes.MightMissCurrentNextMeetingAtTick && _missingRobot is null)
@@ -304,7 +314,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 yield return waitForCondition;
             }
         }
-        
+
         private bool ShouldTakeOverPartition(IReadOnlyCollection<int> readyRobotIds)
         {
             var bestRobotId = int.MaxValue;
@@ -334,7 +344,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             return meetingTimes;
         }
 
-        private bool _firstTimeInNewPartition;
+        private readonly bool _firstTimeInNewPartition;
 
         private IEnumerable<ComponentWaitForCondition> OnMeetingAnotherRobotAtMeeting(int meetingPointVertexId,
             IReadOnlyCollection<int> readyRobotIds, IReadOnlyCollection<int> unknownRobotIds, int missingRobotId)
@@ -344,18 +354,18 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
             var robotIds = new HashSet<int>(readyRobotIds.Union(unknownRobotIds));
             robotIds.Remove(missingRobotId);
-            
+
             foreach (var waitForCondition in DecideNextMeetingTime(meetingPointVertexId, robotIds, _firstTimeInNewPartition))
             {
                 yield return waitForCondition;
             }
         }
-        
+
         private int NextPossibleMeetingTime(int meetingPointVertexId)
         {
             var interval = 0;
             var highestNextNextMeetingAtTicks = 0;
-            
+
             var partitionIds = GetRobotPartitionIds(_robotId).ToArray();
 
             var intersection = new HashSet<int>();
@@ -363,15 +373,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             {
                 intersection.UnionWith(_partitions[id].VertexIds);
             }
-            
+
             foreach (var i in partitionIds)
             {
                 interval += _partitions[i].Diameter;
-                var partitionsHighestNextNextMeetingAtTicks = _partitions[i].MeetingPoints.Select(m =>
-                {
-                    var meetingTimes = GetMeetingTimes(m.VertexId);
-                    return meetingTimes.NextNextMeetingAtTick;
-                }).Max();
+                var partitionsHighestNextNextMeetingAtTicks = _partitions[i].MeetingPoints
+                    .Select(m => GetMeetingTimes(m.VertexId).NextNextMeetingAtTick)
+                    .Max();
                 highestNextNextMeetingAtTicks = Math.Max(highestNextNextMeetingAtTicks, partitionsHighestNextNextMeetingAtTicks);
             }
 
@@ -380,24 +388,24 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 Debug.Assert(_partitions.Select(p => p.Diameter).Distinct().Count() == 1, "The Diameter is different and therefore need to rethink the following is correct since it can not be applied.");
                 interval -= _partitions[0].Diameter;
             }
-            
+
             return interval + highestNextNextMeetingAtTicks;
         }
-        
+
         private int RobotIdByPartitionId(int partitionId)
         {
             var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(partitionId, out var robotId);
             Debug.Assert(success);
             return robotId;
         }
-        
+
         private IEnumerable<int> GetRobotPartitionIds(int robotId)
         {
             return _partitionIdToRobotIdVirtualStigmergyComponent.GetLocalKnowledge()
                 .Where(kvp => kvp.Value.Value == robotId)
                 .Select(kvp => kvp.Key);
         }
-        
+
         private int NeighbourPartitionCount(int robotId)
         {
             var partitionIds = GetRobotPartitionIds(robotId).ToArray();

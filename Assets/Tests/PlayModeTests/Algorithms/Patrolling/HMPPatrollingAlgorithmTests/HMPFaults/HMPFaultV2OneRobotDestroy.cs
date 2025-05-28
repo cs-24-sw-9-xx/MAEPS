@@ -94,7 +94,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests.
                 Debug.Log(meetingTracker.NumberOfExchangeInfoAtMeetingTrackInfos + " exchange info at meeting track infos");
                 yield return null;
             }
-            
+
             Debug.Log(meetingTracker.NumberOfExchangeInfoAtMeetingTrackInfos + " exchange info at meeting track infos");
 
             /*meetingTracker.AssertMeetingHasBeenHeld(meetingPoints, meetingTimes);
@@ -145,11 +145,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests.
 
         public void AssertMeetingHasBeenHeld(int numberOfTimesHeld)
         {
-            
-            
-            
-            
-            
+
+
+
+
+
             /*foreach (var meetingPoint in meetingPoints)
             {
                 Assert.IsTrue(_heldMeetingAtMeetingPoint.TryGetValue(meetingPoint, out var attendedRobotsAtTick),

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2.TrackInfos;
 using Maes.Map;
 using Maes.Robot;
 
@@ -72,13 +71,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
                 var readyRobotIds = SenseNearbyRobots.ReceivedRobotIds(_controller, meeting);
 
-                
-                    
+
+
                 foreach (var waitForCondition in _partitionComponent.HandleMeeting(meeting, readyRobotIds))
                 {
                     yield return waitForCondition;
                 }
-                
+
                 /*// If all other robots are at the meeting point, then exchange information
                 // Otherwise, handling missing robots
                 if (readyRobotIds.SetEquals(meeting.RobotIds))
@@ -116,7 +115,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             }
         }
 
-        
+
 
         /// <summary>
         /// Checks if the robot should go to the next vertex or the next meeting point.
@@ -162,19 +161,33 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
         private Meeting GetNextMeeting()
         {
-            var meetingTimes = _partitionComponent.MeetingPoints
-                .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
-                .ThenBy(m => m.meetingTimes.MightMissCurrentNextMeetingAtTick) // Ensure that those with MightMissCurrentNextMeetingAtTick=true are less priority
+            var currentTick = _getLogicTick();
+            var meetingTimes = _partitionComponent.MeetingPoints.SelectMany(m => new[]
+                {
+                    (new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
+                        m.meetingTimes.CurrentNextMeetingAtTick, m.meetingTimes.RobotIds), m.meetingTimes.MightMissCurrentNextMeetingAtTick, m),
+                    (new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
+                        m.meetingTimes.NextNextMeetingAtTick, m.meetingTimes.RobotIds), false, m)
+                })
+                .Where(m => m.Item1.MeetingAtTick >= currentTick)
+                .OrderBy(m => m.Item1.MeetingAtTick)
+                .ThenBy(m => m.Item2) // Ensure that those with MightMissCurrentNextMeetingAtTick=true are less priority
                 .ToArray();
+
+
+            var bestMeeting = meetingTimes[0];
+            
+            var skippingMeetingTimes = meetingTimes.Skip(1).Where(m => m.Item1.MeetingAtTick == bestMeeting.Item1.MeetingAtTick)
+                .Select(m => m.Item3)
+                .ToArray();
+            
 
             if (meetingTimes.Length > 1)
             {
-                _partitionComponent.SkipingMeetingTimesWithSameTime(meetingTimes.Skip(1));
+                _partitionComponent.SkipingMeetingTimesWithSameTime(skippingMeetingTimes);
             }
 
-            var m = meetingTimes[0];
-            return new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
-                m.meetingTimes.CurrentNextMeetingAtTick, m.meetingTimes.RobotIds);
+            return bestMeeting.Item1;
         }
 
         /// <summary>
