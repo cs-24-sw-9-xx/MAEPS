@@ -35,7 +35,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
     internal class InternalAlgorithmsExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCount = new() { 1, 4 };
+        private static readonly List<int> PartitionCount = new() { 2, 4, 8 };
         private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
 
         private void Start()
@@ -47,35 +47,19 @@ namespace Maes.Experiments.Patrolling.GroupB
                 {
                     foreach (var count in PartitionCount)
                     {
-                        if (count > 1)
-                        {
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                                seed,
-                                algName,
-                                GroupBParameters.Algorithms[algName],
-                                GroupBParameters.StandardRobotCount,
-                                GroupBParameters.StandardMapSize,
-                                GroupBParameters.StandardAmountOfCycles,
-                                GroupBParameters.GlobalRobotConstraints,
-                                count,
-                                GroupBParameters.FaultInjection(seed)));
 
-                        }
-                        else
-                        {
-                            scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                                seed,
-                                algName,
-                                GroupBParameters.Algorithms[algName],
-                                GroupBParameters.StandardRobotCount,
-                                GroupBParameters.StandardMapSize,
-                                GroupBParameters.StandardAmountOfCycles,
-                                GroupBParameters.GlobalRobotConstraints,
-                                count,
-                                GroupBParameters.FaultInjection(seed,
-                                    robotCount: 1))); // robotCount = 1 for no fault injection
+                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                            seed,
+                            algName,
+                            GroupBParameters.Algorithms[algName],
+                            GroupBParameters.StandardRobotCount,
+                            GroupBParameters.StandardMapSize,
+                            GroupBParameters.StandardAmountOfCycles,
+                            GroupBParameters.GlobalRobotConstraints,
+                            count,
+                            GroupBParameters.FaultInjection(seed,
+                                robotCount: 1))); // robotCount = 1 for no fault injection
 
-                        }
                     }
                 }
             }
