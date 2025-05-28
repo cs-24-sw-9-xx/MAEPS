@@ -21,11 +21,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy)
+        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy, System.Random random)
         {
             _robotId = robotId;
             _partitionGenerator = partitionGenerator;
             _takeoverStrategy = takeoverStrategy;
+            _random = random;
         }
 
         public int PreUpdateOrder => -900;
@@ -34,6 +35,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private readonly RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
         private readonly TakeoverStrategy _takeoverStrategy;
+        private readonly System.Random _random;
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
         protected VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
@@ -99,7 +101,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                     ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
                     break;
                 case TakeoverStrategy.QuasiRandomStrategy:
-                    if (Random.Range(0, 2) == 0)
+                    if (_random.Next(2) == 0)
                     {
                         ImmediateTakeover(robotsThatShowedUp, missingRobotsSorted);
                     }
@@ -122,7 +124,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                 if (robotsThatShowedUp.Count < missingRobotsSorted.Count && myIndex == robotsThatShowedUp.Count - 1)
                 {
                     // Pick the id of one of the missing robots at random
-                    robotIdToTakeOver = missingRobotsSorted[Random.Range(myIndex, missingRobotsSorted.Count)];
+                    robotIdToTakeOver = missingRobotsSorted[myIndex + _random.Next(missingRobotsSorted.Count - myIndex)];
                 }
                 TakeOverOtherRobotPartition(robotIdToTakeOver);
             }

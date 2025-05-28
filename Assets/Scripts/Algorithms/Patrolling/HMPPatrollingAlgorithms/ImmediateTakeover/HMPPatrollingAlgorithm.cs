@@ -50,8 +50,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _takeoverStrategy = takeoverStrategy;
+            _random = new System.Random(seed);
+
         }
 
+        private readonly System.Random _random;
         public RobotIdClass RobotId;
         public override string AlgorithmName => "HMPAlgorithm" + Enum.GetName(typeof(PartitionComponent.TakeoverStrategy), _takeoverStrategy);
         public PartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
@@ -68,7 +71,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             RobotId = new RobotIdClass(controller.Id);
-            _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions, _takeoverStrategy);
+            _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions, _takeoverStrategy, _random);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent, RobotId);
 

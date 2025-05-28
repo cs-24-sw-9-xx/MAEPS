@@ -15,10 +15,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
     {
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator)
+        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, System.Random random)
         {
             _robotId = robotId;
             _partitionGenerator = partitionGenerator;
+            _random = random;
         }
 
         public int PreUpdateOrder => -900;
@@ -26,6 +27,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 
         private readonly RobotIdClass _robotId;
         private readonly PartitionGenerator _partitionGenerator;
+        private readonly System.Random _random;
         protected StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
         protected VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent> _virtualStigmergyComponent = null!;
 
@@ -93,7 +95,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
         {
             var sortedRobotIds = otherRobotIds.ToList();
             sortedRobotIds.Sort();
-            var robotIdToTakeover = sortedRobotIds[Random.Range(0, sortedRobotIds.Count)];
+            var robotIdToTakeover = sortedRobotIds[_random.Next(sortedRobotIds.Count)];
             TakeoverOtherRobotPartition(robotIdToTakeover);
         }
 
