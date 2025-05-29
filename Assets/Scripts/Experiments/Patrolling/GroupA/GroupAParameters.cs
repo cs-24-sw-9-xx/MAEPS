@@ -40,8 +40,13 @@ namespace Maes.Experiments.Patrolling
 {
     internal static class GroupAParameters
     {
+        static GroupAParameters() {
+            AllAlgorithms = StandardAlgorithms
+                .Concat(FaultTolerantHMPVariants)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
 
-        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> AllAlgorithms = StandardAlgorithms.Concat(FaultTolerantHMPVariants).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> AllAlgorithms;
 
         /// <summary>
         /// Supply the function with the robot count and it will return the patrolling map factory and the algorithm.
