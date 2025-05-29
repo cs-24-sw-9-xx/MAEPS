@@ -21,9 +21,11 @@
 
 using System;
 
+using UnityEngine;
+
 namespace Maes.Map.Generators
 {
-    public readonly struct BuildingMapConfig : IEquatable<BuildingMapConfig>
+    public readonly struct BuildingMapConfig : IEquatable<BuildingMapConfig>, IMapConfig
     {
         // Bitmap size is always +1 larger in both axis
         // due to the marching squares algorithm using 4 points per square
@@ -131,6 +133,12 @@ namespace Maes.Map.Generators
             hashCode.Add(BorderSize);
             hashCode.Add(WallThickness);
             return hashCode.ToHashCode();
+        }
+
+        public readonly SimulationMap<Tile> GenerateMap(GameObject gameObject, float wallHeight = 2)
+        {
+            var buildingGenerator = gameObject.AddComponent<BuildingGenerator>();
+            return buildingGenerator.GenerateBuildingMap(this, wallHeight);
         }
 
         public static bool operator ==(BuildingMapConfig left, BuildingMapConfig right)

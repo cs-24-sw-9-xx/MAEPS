@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms.Exploration.Minotaur;
+using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
 using Maes.Utilities.Files;
@@ -93,7 +94,7 @@ namespace Tests.PlayModeTests.Algorithms.Exploration
             );
             var map = PgmMapFileLoader.LoadMapFromFileIfPresent(mapName + ".pgm");
             var testingScenario = new MySimulationScenario(RandomSeed,
-                mapSpawner: generator => generator.GenerateMap(map, RandomSeed),
+                mapSpawner: generator => generator.GenerateMap(new BitmapConfig(map, RandomSeed)),
                 hasFinishedSim: MySimulationScenario.InfallibleToFallibleSimulationEndCriteria(_ => false),
                 robotConstraints: constraints,
                 robotSpawner: (map, spawner) => spawner.SpawnRobotsAtPositions(robotSpawnPositions, map, RandomSeed, 1,

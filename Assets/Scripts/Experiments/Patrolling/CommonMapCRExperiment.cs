@@ -90,12 +90,16 @@ namespace Maes.Experiments.Patrolling
             {
                 var mapName = mapNames[mapIndex];
                 var val = random.Next(0, 1000000);
+                var mapConfig = new BitmapConfig(
+                    bitmap: currentMap,
+                    seed: val,
+                    brokenCollisionMap: false);
                 scenarios.Add(
                     new MySimulationScenario(
                         seed: val,
                         totalCycles: 4,
                         stopAfterDiff: false,
-                        mapSpawner: generator => generator.GenerateMap(currentMap, val, brokenCollisionMap: false),
+                        mapSpawner: generator => generator.GenerateMap(mapConfig),
                         robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(
                             collisionMap: map,
                             val,

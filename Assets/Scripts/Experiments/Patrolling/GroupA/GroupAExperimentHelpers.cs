@@ -36,7 +36,7 @@ namespace Maes.Experiments.Patrolling
 
     internal static class GroupAExperimentHelpers
     {
-        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, BuildingMapConfig mapConfig, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false)
+        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, IMapConfig mapConfig, int mapSize, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false)
         {
             return new MySimulationScenario(
                                         seed: seed,
@@ -50,28 +50,9 @@ namespace Maes.Experiments.Patrolling
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotConstraints: robotConstraints,
                                         statisticsFileName:
-                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-BuildingMap-SpawnApart",
+                                        $"{algorithmName}-seed-{seed}-size-{mapSize}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-BuildingMap-SpawnApart",
                                         patrollingMapFactory: patrollingMapFactory,
-                                        maxLogicTicks: shouldFail ? 0 : MaxLogicTicks(mapConfig.HeightInTiles, robotCount));
-        }
-
-        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, CaveMapConfig mapConfig, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false)
-        {
-            return new MySimulationScenario(
-                                       seed: seed,
-                                       totalCycles: GroupAParameters.StandardAmountOfCycles,
-                                       stopAfterDiff: false,
-                                       robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                                           collisionMap: buildingConfig,
-                                           seed: seed,
-                                           numberOfRobots: robotCount,
-                                           createAlgorithmDelegate: algorithm),
-                                       mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                       robotConstraints: robotConstraints,
-                                       statisticsFileName:
-                                       $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-CaveMap-SpawnApart",
-                                       patrollingMapFactory: patrollingMapFactory,
-                                       maxLogicTicks: shouldFail ? 0 : MaxLogicTicks(mapConfig.HeightInTiles, robotCount));
+                                        maxLogicTicks: shouldFail ? 0 : MaxLogicTicks(mapSize, robotCount));
         }
 
         public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f, bool shouldFail = false)
@@ -79,8 +60,8 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<MySimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, buildingMapConfig, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
-            var scenarioCave = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, caveMapConfig, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
+            var scenarioBuilding = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, buildingMapConfig, buildingMapConfig.HeightInTiles, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
+            var scenarioCave = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, caveMapConfig, caveMapConfig.HeightInTiles, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
