@@ -70,7 +70,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
                 // Wait until all other robots are at the meeting point
                 var ticksToWait = meeting.MeetingAtTick - _getLogicTick();
-                yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
+                if (ticksToWait > 0)
+                {
+                    yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
+                }
+                else
+                {
+                    Debug.Log("Time has already passed!");
+                }
 
                 foreach (var waitForCondition in _exchangeInformation(meeting))
                 {
