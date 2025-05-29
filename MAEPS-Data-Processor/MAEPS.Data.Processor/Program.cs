@@ -185,8 +185,13 @@ internal static class Program
 
         if (s_plotFailedRobots)
         {
-            worstIdlenessPlot.AddDeadRobotsVerticalLines(patrollingData.First().Value);
-            averageIdlenessPlot.AddDeadRobotsVerticalLines(patrollingData.First().Value);
+            var largestDataSet = patrollingData
+                .OrderByDescending(kvp => kvp.Value.Count)
+                .First()
+                .Value;
+
+            worstIdlenessPlot.AddDeadRobotsVerticalLines(largestDataSet);
+            averageIdlenessPlot.AddDeadRobotsVerticalLines(largestDataSet);
         }
         
         foreach (var (name, algoData) in patrollingData)
