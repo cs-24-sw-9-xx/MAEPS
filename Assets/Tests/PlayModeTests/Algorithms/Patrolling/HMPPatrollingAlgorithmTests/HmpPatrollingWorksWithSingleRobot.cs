@@ -16,6 +16,7 @@ using FaultToleranceAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorith
 using FaultToleranceV2Algorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2.HMPPatrollingAlgorithm;
 using ImmediateTakeOverAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.HMPPatrollingAlgorithm;
 using NoFaultToleranceAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance.HMPPatrollingAlgorithm;
+using RandomTakeoverAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover.HMPPatrollingAlgorithm;
 
 namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 {
@@ -87,6 +88,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             new AlgorithmFactory(() => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
             new AlgorithmFactory(() => new FaultToleranceV2Algorithm(), nameof(FaultToleranceV2Algorithm)),
             new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(() => new RandomTakeoverAlgorithm(), nameof(RandomTakeoverAlgorithm)),
         };
 
         public sealed class AlgorithmFactory
