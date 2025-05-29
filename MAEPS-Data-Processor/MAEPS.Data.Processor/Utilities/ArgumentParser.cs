@@ -73,4 +73,17 @@ public class ArgumentParser
         
         return value;
     }
+    
+    public string[] GetArgumentList(string key)
+    {
+        if (!_arguments.TryGetValue(key, out var value))
+        {
+            throw new ArgumentException($"Argument {key} not found.");
+        }
+
+        value = value.Trim('(', ')');
+        
+        
+        return value.Split(',').Select(v => v.Trim()).ToArray();
+    }
 }
