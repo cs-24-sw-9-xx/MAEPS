@@ -138,22 +138,63 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 
             var vertexIdsPartitions = clusters.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 
-            var i = 0;
-            var partitionsWithNoMeetingPointsById = robotIds.ToDictionary(id => id, id => new UnfinishedPartitionInfo(id, vertexIdsPartitions[i++]));
+            var robotIdsByPartitionId = GetRobotIdsByPartitionId(robotIds, vertexIdsPartitions);
+
+            var partitionsWithNoMeetingPointsById = vertexIdsPartitions.Select((vertexIds, id) => (vertexIds, id)).ToDictionary(partition => partition.id, partition => new UnfinishedPartitionInfo(partition.id, partition.vertexIds));
 
             var partitionsWithMeetingPointsById = AddMissingMeetingPointsForNeighborPartitions(collisionMap, partitionsWithNoMeetingPointsById);
 
             var meetingRobotIdsByVertexId = FindMeetingRobotsAtMeetingPoints(partitionsWithMeetingPointsById.Values.ToArray());
 
-            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithMeetingPointsById);
+            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithMeetingPointsById, robotIdsByPartitionId);
 
             var hmpPartitionsById = new Dictionary<int, PartitionInfo>();
-            foreach (var (robotId, partitionInfo) in partitionsWithMeetingPointsById)
+            foreach (var (partitionId, partitionInfo) in partitionsWithMeetingPointsById)
             {
-                hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[robotId]);
+                foreach (var robotId in robotIdsByPartitionId[partitionId])
+                {
+                    hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[partitionId]);
+                }
             }
 
             return hmpPartitionsById;
+        }
+
+        private static Dictionary<int, List<int>> GetRobotIdsByPartitionId(HashSet<int> robotIds, HashSet<int>[] vertexIdsPartitions)
+        {
+            Dictionary<int, List<int>> robotIdsByPartitionId;
+
+            var numberOfRobots = robotIds.Count;
+            if (vertexIdsPartitions.Length < numberOfRobots)
+            {
+                robotIdsByPartitionId = new Dictionary<int, List<int>>();
+                var sortedPartitions = vertexIdsPartitions
+                    .Select((vertexIds, index) => (vertexIds, index))
+                    .OrderByDescending(partition => partition.vertexIds.Count)
+                    .ToArray();
+
+                for (var robotId = 0; robotId < numberOfRobots; robotId++)
+                {
+                    var j = robotId % vertexIdsPartitions.Length;
+                    var partitionId = sortedPartitions[j].index;
+
+                    if (robotIdsByPartitionId.TryGetValue(partitionId, out var ids))
+                    {
+                        ids.Add(robotId);
+                    }
+                    else
+                    {
+                        robotIdsByPartitionId.Add(partitionId, new List<int> { robotId });
+                    }
+                }
+            }
+            else
+            {
+                Debug.Assert(vertexIdsPartitions.Length == robotIds.Count);
+                robotIdsByPartitionId = robotIds.ToDictionary(id => id, id => new List<int> { id });
+            }
+
+            return robotIdsByPartitionId;
         }
 
         private Dictionary<int, UnfinishedPartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Bitmap collisionMap, Dictionary<int, UnfinishedPartitionInfo> partitions)
@@ -236,7 +277,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
         }
 
         private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
-            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfo> partitionsById)
+            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfo> partitionsById, Dictionary<int, List<int>> robotIdsByPartitionId)
         {
             // We have only a single partition
             if (partitionsById.Count == 1)
@@ -246,6 +287,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
                     {partitionsById.Keys.Single(), new List<MeetingPoint>()}
                 };
             }
+
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
             var globalMeetingCycleTicks = globalMeetingIntervalTicks * tickColorAssignment.Values.Max();
@@ -253,15 +295,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
 
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
-            foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
+            foreach (var (vertexId, meetingPartitionIds) in meetingRobotIdsByVertexId)
             {
+                var meetingRobotIds = meetingPartitionIds.SelectMany(partitionId => robotIdsByPartitionId[partitionId]).ToArray();
                 var meetingPoint = new MeetingPoint(vertexId, globalMeetingCycleTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
-                foreach (var robotId in meetingRobotIds)
+                foreach (var partitionId in meetingPartitionIds)
                 {
-                    if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
+                    if (!meetingPointsByPartitionId.TryGetValue(partitionId, out var meetingPoints))
                     {
                         meetingPoints = new List<MeetingPoint>();
-                        meetingPointsByPartitionId[robotId] = meetingPoints;
+                        meetingPointsByPartitionId[partitionId] = meetingPoints;
                     }
 
                     meetingPoints.Add(meetingPoint);
