@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2;
+using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
@@ -71,7 +72,8 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap,
+                    faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 500, 20000))
             );
 
             var simulator = new MySimulator(scenarios);

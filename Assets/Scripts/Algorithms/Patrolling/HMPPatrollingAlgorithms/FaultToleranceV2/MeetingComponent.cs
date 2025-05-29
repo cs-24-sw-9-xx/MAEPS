@@ -175,16 +175,21 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
                 .ToArray();
 
 
+
             var bestMeeting = meetingTimes[0];
 
             var skippingMeetingTimes = meetingTimes.Skip(1).Where(m => m.Item1.MeetingAtTick == bestMeeting.Item1.MeetingAtTick)
                 .Select(m => m.Item3)
                 .ToArray();
 
-
-            if (meetingTimes.Length > 1)
+            if (skippingMeetingTimes.Length > 1)
             {
-                _partitionComponent.SkipingMeetingTimesWithSameTime(skippingMeetingTimes);
+                Debug.Log($"tick {bestMeeting.Item1.MeetingAtTick} and robot {_controller.Id}: skippingMeetingTimes are {string.Join(",\n", skippingMeetingTimes.Select(m => m.vertexId))}");
+            }
+
+            if (skippingMeetingTimes.Length > 1)
+            {
+                _partitionComponent.SkippingMeetingTimesWithSameTime(skippingMeetingTimes);
             }
 
             return bestMeeting.Item1;

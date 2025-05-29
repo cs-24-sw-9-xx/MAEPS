@@ -36,11 +36,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             }
         }
 
-        public readonly struct MissingRobot
+        private readonly struct MissingRobot
         {
             public readonly int RobotId;
             public readonly int AtVertexId;
-            public readonly int MissingAtTick;
+            private readonly int MissingAtTick;
 
             public MissingRobot(int robotId, int vertexId, int missingAtTick)
             {
@@ -130,6 +130,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         private readonly int _robotId;
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
+        private readonly MeetingComponent.TrackInfoDelegate _trackInfo;
 
         private PartitionInfo[] _partitions = null!;
 
@@ -137,13 +138,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
         private VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
             null!;
-
         private VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>
             _meetingPointVertexIdToMeetingTimesStigmergyComponent = null!;
-
         private VirtualStigmergyComponent<int, MissingRobot, PartitionComponent> _missingMeetingByVertexIdStigmergyComponent =
             null!;
-
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
@@ -204,7 +202,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
             if (readyRobotIds.SetEquals(meeting.RobotIds))
             {
-                foreach (var waitForCondition in DecideNextMeetingTime(meetingPointVertexId, readyRobotIds))
+                foreach (var waitForCondition in DecideNextMeetingTime(meeting, readyRobotIds))
                 {
                     yield return waitForCondition;
                 }
@@ -213,19 +211,20 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             {
                 var unknownRobotIds = readyRobotIds.Except(meeting.RobotIds).ToHashSet();
                 var missingRobotIds = meeting.RobotIds.Except(readyRobotIds).ToHashSet();
+                Debug.Log($"Observing robot {_robotId} at meeting point {meetingPointVertexId} with ready robots: {string.Join(", ", readyRobotIds)} and unknown robots: {string.Join(", ", unknownRobotIds)} and missing robots: {string.Join(", ", missingRobotIds)}");
                 Debug.Assert(missingRobotIds.Count == 1, "Only one fault robot at a time is supported");
 
                 if (unknownRobotIds.Count > 0)
                 {
                     Debug.Assert(unknownRobotIds.Count == 1, "It should be only one robot");
-                    foreach (var waitForCondition in OnMeetingAnotherRobotAtMeeting(meetingPointVertexId, readyRobotIds, unknownRobotIds, missingRobotIds.Single()))
+                    foreach (var waitForCondition in OnMeetingAnotherRobotAtMeeting(meeting, readyRobotIds, unknownRobotIds, missingRobotIds.Single()))
                     {
                         yield return waitForCondition;
                     }
                 }
                 else
                 {
-                    foreach (var waitForCondition in OnMissingRobotAtMeeting(meetingPointVertexId, missingRobotIds.Single(), readyRobotIds))
+                    foreach (var waitForCondition in OnMissingRobotAtMeeting(meeting, missingRobotIds.Single(), readyRobotIds))
                     {
                         yield return waitForCondition;
                     }
@@ -234,16 +233,20 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         }
 
 
-        private IEnumerable<ComponentWaitForCondition> DecideNextMeetingTime(int meetingPointVertexId, IReadOnlyCollection<int> robotIds, bool mightMissCurrentNextMeeting = false)
+        private IEnumerable<ComponentWaitForCondition> DecideNextMeetingTime(MeetingComponent.Meeting meeting, IReadOnlyCollection<int> robotIds, bool mightMissCurrentNextMeeting = false)
         {
+            var meetingPointVertexId = meeting.Vertex.Id;
             var nextPossibleMeetingTime = NextPossibleMeetingTime(meetingPointVertexId);
-            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, mightMissCurrentNextMeeting || _missingRobot is not null);
+            var meetingMessage = new MeetingMessage(_robotId, nextPossibleMeetingTime, robotIds, mightMissCurrentNextMeeting || _missingRobot is not null);
             _robotController.Broadcast(meetingMessage);
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
             var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().Append(meetingMessage).ToArray();
             var nextMeetingTime = meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Max();
             var mightMissCurrentNextMeetingAtTick = meetingMessages.Any(m => m.MightMissCurrentNextMeetingAtTick);
+
+            Debug.Assert(meetingMessages.Select(m => m.RobotIds)
+                .All(m => !m.Except(meetingMessages[0].RobotIds).Any()));
 
             var meetingTimes = GetMeetingTimes(meetingPointVertexId);
 
@@ -259,14 +262,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
         public void DebugInfo(StringBuilder stringBuilder)
         {
             stringBuilder.AppendLine("PartitionComponent Debug Info:");
-            stringBuilder.AppendLine($"Observed missing robot: {_robotId}");
+            stringBuilder.AppendLine($"Observed missing robot:");
             stringBuilder.AppendLine(_missingRobot is not null
-                ? $"Missing Robot: {_missingRobot.Value}"
+                ? $"Missing Robot: \n  {_missingRobot.Value}"
                 : "No missing robot observed.");
         }
 
-        private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(int meetingPointVertexId, int missingRobotId, IReadOnlyCollection<int> readyRobotIds)
+        private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, int missingRobotId, IReadOnlyCollection<int> readyRobotIds)
         {
+            var meetingPointVertexId = meeting.Vertex.Id;
             var meetingTimes = GetMeetingTimes(meetingPointVertexId);
             var robotIds = meetingTimes.RobotIds;
             if (_missingRobot?.AtVertexId == meetingPointVertexId)
@@ -275,14 +279,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
                 if (ShouldTakeOverPartition(readyRobotIds))
                 {
-                    var partitionIdsByRobotId = _partitionIdToRobotIdVirtualStigmergyComponent.GetLocalKnowledge()
-                        .GroupBy(kvp => kvp.Value.Value, kvp => kvp.Key)
-                        .ToDictionary(grouping => grouping.Key, grouping => grouping.ToArray());
+                    var partitionIdsByRobotId = PartitionIdsByRobotId();
 
                     _skipPartitionIds = partitionIdsByRobotId[_robotId];
 
                     var takeOverPartitionIds = partitionIdsByRobotId[_missingRobot.Value.RobotId];
-                    Debug.Log($"Robot {_robotId} has communicated with the other neighbour robots about the missing robot, so it can take over the partitions {string.Join(", ", takeOverPartitionIds)} now from vertex {meetingPointVertexId} at tick {meetingTimes.CurrentNextMeetingAtTick}");
+                    Debug.Log($"Robot {_robotId} has communicated with the other neighbour robots about the missing robot, so it can take over the partitions {string.Join(", ", takeOverPartitionIds)} now from vertex {meetingPointVertexId} at tick {meeting.MeetingAtTick}");
 
                     foreach (var partitionId in takeOverPartitionIds)
                     {
@@ -300,19 +302,27 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
             }
             else if (!meetingTimes.MightMissCurrentNextMeetingAtTick && _missingRobot is null)
             {
-                Debug.Log($"Robot {_robotId} has observed a missing robot with id {missingRobotId} at vertex {meetingPointVertexId} at tick {meetingTimes.CurrentNextMeetingAtTick}");
+                Debug.Log($"Robot {_robotId} has observed a missing robot with id {missingRobotId} at vertex {meetingPointVertexId} at tick {meeting.MeetingAtTick}");
                 _missingRobot = new MissingRobot(missingRobotId, meetingPointVertexId, meetingTimes.CurrentNextMeetingAtTick);
                 _missingMeetingByVertexIdStigmergyComponent.Put(meetingPointVertexId, _missingRobot!.Value);
             }
-            else
+            else if (!meetingTimes.MightMissCurrentNextMeetingAtTick && _missingRobot is not null)
             {
-                Debug.Assert(_missingRobot is not null, "Multiple failure is not supported");
+                Debug.Assert(_missingRobot is not null, $"Multiple failure is not supported. Observed by robot {_robotId} at vertex {meetingPointVertexId} at tick {meeting.MeetingAtTick}, with ready robots: {string.Join(", ", readyRobotIds)} and missing robot id {missingRobotId}");
             }
 
-            foreach (var waitForCondition in DecideNextMeetingTime(meetingPointVertexId, robotIds))
+            foreach (var waitForCondition in DecideNextMeetingTime(meeting, robotIds))
             {
                 yield return waitForCondition;
             }
+        }
+
+        private Dictionary<int, int[]> PartitionIdsByRobotId()
+        {
+            var partitionIdsByRobotId = _partitionIdToRobotIdVirtualStigmergyComponent.GetLocalKnowledge()
+                .GroupBy(kvp => kvp.Value.Value, kvp => kvp.Key)
+                .ToDictionary(grouping => grouping.Key, grouping => grouping.ToArray());
+            return partitionIdsByRobotId;
         }
 
         private bool ShouldTakeOverPartition(IReadOnlyCollection<int> readyRobotIds)
@@ -346,16 +356,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
         private readonly bool _firstTimeInNewPartition;
 
-        private IEnumerable<ComponentWaitForCondition> OnMeetingAnotherRobotAtMeeting(int meetingPointVertexId,
+        private IEnumerable<ComponentWaitForCondition> OnMeetingAnotherRobotAtMeeting(MeetingComponent.Meeting meeting,
             IReadOnlyCollection<int> readyRobotIds, IReadOnlyCollection<int> unknownRobotIds, int missingRobotId)
         {
+            var meetingPointVertexId = meeting.Vertex.Id;
             Debug.Log("Robot " + _robotId + " has met another robot at meeting point " + meetingPointVertexId + " with ready robots: " + string.Join(", ", readyRobotIds) + " and unknown robots: " + string.Join(", ", unknownRobotIds));
             _missingRobot = null;
 
             var robotIds = new HashSet<int>(readyRobotIds.Union(unknownRobotIds));
             robotIds.Remove(missingRobotId);
 
-            foreach (var waitForCondition in DecideNextMeetingTime(meetingPointVertexId, robotIds, _firstTimeInNewPartition))
+            foreach (var waitForCondition in DecideNextMeetingTime(meeting, robotIds, _firstTimeInNewPartition))
             {
                 yield return waitForCondition;
             }
@@ -449,16 +460,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultToleranceV2
 
             public int ProposedNextNextMeetingAtTick { get; }
             public bool MightMissCurrentNextMeetingAtTick { get; }
+            public IReadOnlyCollection<int> RobotIds { get; }
 
-            public MeetingMessage(int robotId, int proposedNextNextMeetingAtTick, bool mightMissCurrentNextMeetingAtTick = false)
+            public MeetingMessage(int robotId, int proposedNextNextMeetingAtTick, IReadOnlyCollection<int> robotIds,
+                bool mightMissCurrentNextMeetingAtTick = false)
             {
                 RobotId = robotId;
                 ProposedNextNextMeetingAtTick = proposedNextNextMeetingAtTick;
                 MightMissCurrentNextMeetingAtTick = mightMissCurrentNextMeetingAtTick;
+                RobotIds = robotIds;
             }
         }
 
-        public void SkipingMeetingTimesWithSameTime(IEnumerable<(int vertexId, MeetingTimes meetingTimes)> skipingMeeting)
+        public void SkippingMeetingTimesWithSameTime(IEnumerable<(int vertexId, MeetingTimes meetingTimes)> skipingMeeting)
         {
             foreach (var (vertexId, meetingTimes) in skipingMeeting)
             {
