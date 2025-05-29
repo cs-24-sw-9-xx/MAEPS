@@ -239,6 +239,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
 
             public Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
             {
+                // HACK: Create a fake meeting point if there are no meeting points, due to only having a single robot patrolling.
+                if (meetingPoints.Count == 0)
+                {
+                    var firstVertex = patrollingMap.Vertices.First();
+                    return new Meeting(new MeetingPoint(firstVertex.Id, int.MaxValue, int.MaxValue, Array.Empty<int>()), firstVertex, int.MaxValue);
+                }
                 var bestMeetingPoint = meetingPoints[0];
                 var bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
                 while (bestMeetingAtTick < _getLogicTick())

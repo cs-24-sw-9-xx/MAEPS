@@ -238,6 +238,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
         private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfo> partitionsById)
         {
+            // We have only a single partition
+            if (partitionsById.Count == 1)
+            {
+                return new Dictionary<int, List<MeetingPoint>>()
+                {
+                    {partitionsById.Keys.Single(), new List<MeetingPoint>()}
+                };
+            }
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
             var globalMeetingCycleTicks = globalMeetingIntervalTicks * tickColorAssignment.Values.Max();
