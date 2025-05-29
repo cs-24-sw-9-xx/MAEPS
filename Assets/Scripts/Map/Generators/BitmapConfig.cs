@@ -17,6 +17,8 @@ namespace Maes.Map.Generators
         public int Seed { get; }
         public int BorderSize { get; }
         public bool BrokenCollisionMap { get; }
+        public int WidthInTiles => Bitmap.GetLength(0);
+        public int HeightInTiles => Bitmap.GetLength(1);
 
         public readonly SimulationMap<Tile> GenerateMap(GameObject gameObject, float wallHeight = 2)
         {
