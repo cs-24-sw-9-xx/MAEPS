@@ -86,7 +86,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             new AlgorithmFactory(() => new NoFaultToleranceAlgorithm(), nameof(NoFaultToleranceAlgorithm)),
             new AlgorithmFactory(() => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
             new AlgorithmFactory(() => new FaultToleranceV2Algorithm(), nameof(FaultToleranceV2Algorithm)),
-            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), nameof(ImmediateTakeOverAlgorithm)),
         };
 
         public sealed class AlgorithmFactory
