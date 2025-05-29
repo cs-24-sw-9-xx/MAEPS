@@ -62,8 +62,9 @@ namespace Maes.Experiments.Exploration
             for (var i = 0; i < 10; i++)
             {
                 var val = random.Next(0, 1000000);
+                var mapConfig = new BitmapConfig(mapFromFile, val);
                 scenarios.Add(new MySimulationScenario(val,
-                    mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: los,
                     statisticsFileName: $"mino_blank_{val}",
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map,
@@ -72,7 +73,7 @@ namespace Maes.Experiments.Exploration
                         new Vector2Int(0, 0),
                         _ => new MinotaurAlgorithm(los, 4))));
                 scenarios.Add(new MySimulationScenario(val,
-                    mapSpawner: generator => generator.GenerateMap(mapFromFile, val),
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: los,
                     statisticsFileName: $"greed_blank_{val}",
                     robotSpawner: (map, spawner) => spawner.SpawnRobotsTogether(map,
