@@ -233,14 +233,26 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 var missingRobots = expectedRobotIds
                     .Where(id => notMissingRobots.All(notMissingId => notMissingId != id)).OrderBy(id => id);
 
-                Debug.Assert(missingRobots.Count() <= notMissingRobots.Count(), "Robots have to take over multiple partitions, this is not possible right now.");
+                var overtakingCandidates = meetingMessages.Where(m => !m.OverrideCurrentNextMeetingAtTick)
+                    .Select(m => m.RobotId);
+                if (_overTakingMeetingPoint == -1)
+                {
+                    overtakingCandidates = overtakingCandidates.Append(_robotId);
+                }
 
-                var overtaking = missingRobots.Zip(notMissingRobots,
+                overtakingCandidates = overtakingCandidates.OrderBy(id => id);
+
+                if (missingRobots.Count() > overtakingCandidates.Count())
+                {
+                    Debug.Log("Not enough overtaking candidates to take over the missing robots. Too bad!");
+                }
+
+                var overtaking = missingRobots.Zip(overtakingCandidates,
                     (missingId, notMissingId) => (missingId, notMissingId));
 
-                foreach (var (missingId, notMissingId) in overtaking)
+                foreach (var (missingId, overtakingId) in overtaking)
                 {
-                    if (notMissingId == _robotId)
+                    if (overtakingId == _robotId)
                     {
                         var overtakingPartitions = GetPartitionsPatrolledByRobotId(missingId);
                         Debug.LogFormat("Robot {0} in next cycle is trying to take over partitions: {1}", _robotId, string.Join(", ", overtakingPartitions));
