@@ -18,8 +18,8 @@ namespace RosMessageTypes.Maes
 
         public BroadcastMsg()
         {
-            this.msg = "";
-            this.sender = "";
+            msg = "";
+            sender = "";
         }
 
         public BroadcastMsg(string msg, string sender)
@@ -32,14 +32,14 @@ namespace RosMessageTypes.Maes
 
         private BroadcastMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.msg);
-            deserializer.Read(out this.sender);
+            deserializer.Read(out msg);
+            deserializer.Read(out sender);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.msg);
-            serializer.Write(this.sender);
+            serializer.Write(msg);
+            serializer.Write(sender);
         }
 
         public override string ToString()

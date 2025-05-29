@@ -18,8 +18,8 @@ namespace RosMessageTypes.Maes
 
         public Vector2DMsg()
         {
-            this.x = 0.0;
-            this.y = 0.0;
+            x = 0.0;
+            y = 0.0;
         }
 
         public Vector2DMsg(double x, double y)
@@ -32,14 +32,14 @@ namespace RosMessageTypes.Maes
 
         private Vector2DMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.x);
-            deserializer.Read(out this.y);
+            deserializer.Read(out x);
+            deserializer.Read(out y);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.x);
-            serializer.Write(this.y);
+            serializer.Write(x);
+            serializer.Write(y);
         }
 
         public override string ToString()

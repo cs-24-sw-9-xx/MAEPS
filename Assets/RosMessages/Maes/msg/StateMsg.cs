@@ -22,12 +22,12 @@ namespace RosMessageTypes.Maes
 
         public StateMsg()
         {
-            this.tick = 0;
-            this.status = "";
-            this.colliding = false;
-            this.incoming_broadcast_msgs = new BroadcastMsg[0];
-            this.tags_nearby = new EnvironmentTagMsg[0];
-            this.nearby_robots = new NearbyRobotMsg[0];
+            tick = 0;
+            status = "";
+            colliding = false;
+            incoming_broadcast_msgs = new BroadcastMsg[0];
+            tags_nearby = new EnvironmentTagMsg[0];
+            nearby_robots = new NearbyRobotMsg[0];
         }
 
         public StateMsg(long tick, string status, bool colliding, BroadcastMsg[] incoming_broadcast_msgs, EnvironmentTagMsg[] tags_nearby, NearbyRobotMsg[] nearby_robots)
@@ -44,25 +44,25 @@ namespace RosMessageTypes.Maes
 
         private StateMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.tick);
-            deserializer.Read(out this.status);
-            deserializer.Read(out this.colliding);
-            deserializer.Read(out this.incoming_broadcast_msgs, BroadcastMsg.Deserialize, deserializer.ReadLength());
-            deserializer.Read(out this.tags_nearby, EnvironmentTagMsg.Deserialize, deserializer.ReadLength());
-            deserializer.Read(out this.nearby_robots, NearbyRobotMsg.Deserialize, deserializer.ReadLength());
+            deserializer.Read(out tick);
+            deserializer.Read(out status);
+            deserializer.Read(out colliding);
+            deserializer.Read(out incoming_broadcast_msgs, BroadcastMsg.Deserialize, deserializer.ReadLength());
+            deserializer.Read(out tags_nearby, EnvironmentTagMsg.Deserialize, deserializer.ReadLength());
+            deserializer.Read(out nearby_robots, NearbyRobotMsg.Deserialize, deserializer.ReadLength());
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.tick);
-            serializer.Write(this.status);
-            serializer.Write(this.colliding);
-            serializer.WriteLength(this.incoming_broadcast_msgs);
-            serializer.Write(this.incoming_broadcast_msgs);
-            serializer.WriteLength(this.tags_nearby);
-            serializer.Write(this.tags_nearby);
-            serializer.WriteLength(this.nearby_robots);
-            serializer.Write(this.nearby_robots);
+            serializer.Write(tick);
+            serializer.Write(status);
+            serializer.Write(colliding);
+            serializer.WriteLength(incoming_broadcast_msgs);
+            serializer.Write(incoming_broadcast_msgs);
+            serializer.WriteLength(tags_nearby);
+            serializer.Write(tags_nearby);
+            serializer.WriteLength(nearby_robots);
+            serializer.Write(nearby_robots);
         }
 
         public override string ToString()
@@ -71,9 +71,9 @@ namespace RosMessageTypes.Maes
             "\ntick: " + tick.ToString() +
             "\nstatus: " + status.ToString() +
             "\ncolliding: " + colliding.ToString() +
-            "\nincoming_broadcast_msgs: " + System.String.Join(", ", incoming_broadcast_msgs.ToList()) +
-            "\ntags_nearby: " + System.String.Join(", ", tags_nearby.ToList()) +
-            "\nnearby_robots: " + System.String.Join(", ", nearby_robots.ToList());
+            "\nincoming_broadcast_msgs: " + String.Join(", ", incoming_broadcast_msgs.ToList()) +
+            "\ntags_nearby: " + String.Join(", ", tags_nearby.ToList()) +
+            "\nnearby_robots: " + String.Join(", ", nearby_robots.ToList());
         }
 
 #if UNITY_EDITOR

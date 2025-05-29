@@ -17,7 +17,7 @@ namespace RosMessageTypes.Maes
 
         public DepositTag_ResponseMsg()
         {
-            this.result = false;
+            result = false;
         }
 
         public DepositTag_ResponseMsg(bool result)
@@ -29,12 +29,12 @@ namespace RosMessageTypes.Maes
 
         private DepositTag_ResponseMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.result);
+            deserializer.Read(out result);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.result);
+            serializer.Write(result);
         }
 
         public override string ToString()

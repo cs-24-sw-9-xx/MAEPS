@@ -30,7 +30,7 @@ using Maes.Simulation.Patrolling;
 
 namespace Maes.Experiments.Patrolling
 {
-    using static Maes.Map.RobotSpawners.RobotSpawner<IPatrollingAlgorithm>;
+    using static Map.RobotSpawners.RobotSpawner<IPatrollingAlgorithm>;
 
     using MySimulationScenario = PatrollingSimulationScenario;
 

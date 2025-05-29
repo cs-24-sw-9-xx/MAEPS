@@ -18,8 +18,8 @@ namespace RosMessageTypes.Maes
 
         public EnvironmentTagMsg()
         {
-            this.msg = "";
-            this.pos = new Vector2DMsg();
+            msg = "";
+            pos = new Vector2DMsg();
         }
 
         public EnvironmentTagMsg(string msg, Vector2DMsg pos)
@@ -32,14 +32,14 @@ namespace RosMessageTypes.Maes
 
         private EnvironmentTagMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.msg);
-            this.pos = Vector2DMsg.Deserialize(deserializer);
+            deserializer.Read(out msg);
+            pos = Vector2DMsg.Deserialize(deserializer);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.msg);
-            serializer.Write(this.pos);
+            serializer.Write(msg);
+            serializer.Write(pos);
         }
 
         public override string ToString()

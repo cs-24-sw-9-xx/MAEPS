@@ -17,7 +17,7 @@ namespace RosMessageTypes.Maes
 
         public DepositTag_RequestMsg()
         {
-            this.msg = "";
+            msg = "";
         }
 
         public DepositTag_RequestMsg(string msg)
@@ -29,12 +29,12 @@ namespace RosMessageTypes.Maes
 
         private DepositTag_RequestMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.msg);
+            deserializer.Read(out msg);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.msg);
+            serializer.Write(msg);
         }
 
         public override string ToString()

@@ -18,8 +18,8 @@ namespace RosMessageTypes.Maes
 
         public NearbyRobotMsg()
         {
-            this.id = "";
-            this.pos = new Vector2DMsg();
+            id = "";
+            pos = new Vector2DMsg();
         }
 
         public NearbyRobotMsg(string id, Vector2DMsg pos)
@@ -32,14 +32,14 @@ namespace RosMessageTypes.Maes
 
         private NearbyRobotMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.id);
-            this.pos = Vector2DMsg.Deserialize(deserializer);
+            deserializer.Read(out id);
+            pos = Vector2DMsg.Deserialize(deserializer);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.id);
-            serializer.Write(this.pos);
+            serializer.Write(id);
+            serializer.Write(pos);
         }
 
         public override string ToString()

@@ -17,7 +17,7 @@ namespace RosMessageTypes.Maes
 
         public BroadcastToAll_ResponseMsg()
         {
-            this.result = false;
+            result = false;
         }
 
         public BroadcastToAll_ResponseMsg(bool result)
@@ -29,12 +29,12 @@ namespace RosMessageTypes.Maes
 
         private BroadcastToAll_ResponseMsg(MessageDeserializer deserializer)
         {
-            deserializer.Read(out this.result);
+            deserializer.Read(out result);
         }
 
         public override void SerializeTo(MessageSerializer serializer)
         {
-            serializer.Write(this.result);
+            serializer.Write(result);
         }
 
         public override string ToString()
