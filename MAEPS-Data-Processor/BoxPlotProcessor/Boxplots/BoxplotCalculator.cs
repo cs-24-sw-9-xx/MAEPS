@@ -1,4 +1,4 @@
-namespace AlgorithmSplitter.Boxplots;
+namespace BoxPlotProcessor.Boxplots;
 
 public class BoxplotCalculator
 {

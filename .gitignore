@@ -93,3 +93,10 @@ InitTestScene*
 Assets/Packages.meta
 /MAEPS-Data-Processor/AlgorithmSplitter/bin
 /MAEPS-Data-Processor/AlgorithmSplitter/obj
+/MAEPS-Data-Processor/MAEPS-Data-Processor/obj
+/MAEPS-Data-Processor/BoxPlotProcessor/bin
+/MAEPS-Data-Processor/BoxPlotProcessor/obj
+/MAEPS-Data-Processor/DataProcessorTools/obj
+/MAEPS-Data-Processor/RatioPlots/obj
+/MAEPS-Data-Processor/DataProcessorTools/bin
+/MAEPS-Data-Processor/RatioPlots/bin

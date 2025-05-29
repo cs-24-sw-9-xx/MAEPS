@@ -2,7 +2,7 @@ using System.Globalization;
 using CsvHelper;
 using ScottPlot;
 
-namespace AlgorithmSplitter.Boxplots;
+namespace BoxPlotProcessor.Boxplots;
 
 public record PlotSettings(string Title, string XLabel, string YLabel);
 
