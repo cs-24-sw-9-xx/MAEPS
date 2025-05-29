@@ -65,16 +65,16 @@ namespace Maes.Experiments.Patrolling
             { nameof(SingleCycleChristofides), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
 
             // Algorithms that use all-waypoint-connected-maps and partitioning
-            { nameof(NoFaultTolerance.HMPPatrollingAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new NoFaultTolerance.HMPPatrollingAlgorithm()) },
+            { "NoFaultTolerance.HMPPatrollingAlgorithm", (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new NoFaultTolerance.HMPPatrollingAlgorithm()) },
         };
 
         public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> FaultTolerantHMPVariants = new()
         {
-            { nameof(ImmediateTakeover.HMPPatrollingAlgorithm.AlgorithmName),
+            { "ImmediateTakeover.HMPPatrollingAlgorithm",
                 (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)) },
-            { nameof(ImmediateTakeover.HMPPatrollingAlgorithm.AlgorithmName),
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
                 (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)) },
-            { nameof(RandomTakeover.HMPPatrollingAlgorithm.AlgorithmName),
+            { "RandomTakeover.HMPPatrollingAlgorithm",
                 (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new RandomTakeover.HMPPatrollingAlgorithm()) },
         };
 
