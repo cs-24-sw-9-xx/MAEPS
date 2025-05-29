@@ -40,7 +40,8 @@ namespace Maes.Experiments.Patrolling
 {
     internal static class GroupAParameters
     {
-        static GroupAParameters() {
+        static GroupAParameters()
+        {
             AllAlgorithms = StandardAlgorithms
                 .Concat(FaultTolerantHMPVariants)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
