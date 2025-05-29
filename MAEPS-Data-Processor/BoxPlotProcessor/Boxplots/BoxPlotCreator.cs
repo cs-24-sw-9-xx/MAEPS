@@ -1,8 +1,11 @@
 using System.Globalization;
 using CsvHelper;
+
+using MAEPS.Data.Processor.Preprocessors;
+
 using ScottPlot;
 
-namespace AlgorithmSplitter.Boxplots;
+namespace BoxPlotProcessor.Boxplots;
 
 public record PlotSettings(string Title, string XLabel, string YLabel);
 
@@ -12,7 +15,6 @@ public sealed class BoxPlotCreator : IDisposable
 
     public BoxPlotCreator(string experimentsFolderPath, string groupBy, PlotSettings plotSettings)
     {
-        _experimentsFolderPath = experimentsFolderPath;
         _groupBy = groupBy;
         _plotSettings = plotSettings;
         _boxPlotFolderPath = Path.Join(experimentsFolderPath, "Plots", "Boxplot");
@@ -26,8 +28,7 @@ public sealed class BoxPlotCreator : IDisposable
         _writer = new StreamWriter(boxPlotCsvFilePath);
         _csv = new CsvWriter(_writer, config);
     }
-    
-    private readonly string _experimentsFolderPath;
+
     private readonly string _groupBy;
     private readonly string _boxPlotFolderPath;
     private readonly PlotSettings _plotSettings;
@@ -43,10 +44,8 @@ public sealed class BoxPlotCreator : IDisposable
         _writer.Dispose();
     }
     
-    public void CreateBoxPlotForAlgorithms()
+    public void CreateBoxPlotForAlgorithms(IEnumerable<string> groupByFolders)
     {
-        var groupByFolders = Directory.GetDirectories(_experimentsFolderPath, _groupBy + "*", SearchOption.TopDirectoryOnly);
-        
         var xValues = new List<int>();
         
         foreach (var groupByFolder in groupByFolders)
@@ -112,8 +111,7 @@ public sealed class BoxPlotCreator : IDisposable
         plot.YLabel(_plotSettings.YLabel);
         plot.Axes.Bottom.SetTicks(xValues.Select(x => (double)x).ToArray(), xValues.Select(x => x.ToString()).ToArray());
 
-        var boxPlotPngFilePath = Path.Join(_boxPlotFolderPath, "boxplot.png");
-        plot.SavePng(boxPlotPngFilePath, 1600, 900);
+        plot.SavePng(Path.Join(_boxPlotFolderPath, "boxplot.png"), 1600, 900);
     }
     
     /// <summary>

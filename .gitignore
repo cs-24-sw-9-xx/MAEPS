@@ -91,5 +91,7 @@ InitTestScene*
 .DS_Store
 /Assets/Packages
 Assets/Packages.meta
-/MAEPS-Data-Processor/AlgorithmSplitter/bin
-/MAEPS-Data-Processor/AlgorithmSplitter/obj
+/MAEPS-Data-Processor/BoxPlotProcessor/bin
+/MAEPS-Data-Processor/BoxPlotProcessor/obj
+/MAEPS-Data-Processor/RatioPlots/obj
+/MAEPS-Data-Processor/RatioPlots/bin
