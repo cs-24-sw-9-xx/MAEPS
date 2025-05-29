@@ -86,14 +86,14 @@ namespace Maes.Utilities
         [return: AssumeRange(0, int.MaxValue)]
         private int GetMapIndex([AssumeRange(0, int.MaxValue)] int x, [AssumeRange(0, int.MaxValue)] int y)
         {
-            return x * Height + y;
+            return (x * Height) + y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: AssumeRange(0, int.MaxValue)]
         private int GetVisibilityMapIndex([AssumeRange(0, int.MaxValue)] int x, [AssumeRange(0, int.MaxValue)] int y, [AssumeRange(0, int.MaxValue)] int outerY)
         {
-            return GetMapIndex(x, y) + Map.Length * outerY * 64;
+            return GetMapIndex(x, y) + (Map.Length * outerY * 64);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,7 +154,7 @@ namespace Maes.Utilities
                     // Exit if we are over MaxDistance
                     var distX = X - x;
                     var distY = outerY - y;
-                    if (distX * distX + distY * distY > MaxDistance * MaxDistance)
+                    if ((distX * distX) + (distY * distY) > MaxDistance * MaxDistance)
                     {
                         return;
                     }

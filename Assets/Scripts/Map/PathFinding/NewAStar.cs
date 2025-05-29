@@ -162,7 +162,7 @@ namespace Maes.Map.PathFinding
                     turningPenalty = lastDirection == currentDirection ? 0f : TurningPenalty;
                 }
 
-                var weight = (diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f) + turningPenalty;
+                var weight = ((diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f)) + turningPenalty;
                 var tentativeGScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + weight;
                 var neighborGScore = gScore.GetValueOrDefault(neighbor, float.PositiveInfinity);
 

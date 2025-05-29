@@ -76,14 +76,14 @@ namespace Maes.Algorithms.Exploration.Minotaur
                         {
                             winnerIDList.Add(key);
                         }
-                        minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), MinotaurAlgorithm.Waypoint.WaypointType.Door, true);
+                        minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + (_doorway.ExitDirection.Vector * 4)), MinotaurAlgorithm.Waypoint.WaypointType.Door, true);
                         minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                         minotaur._doorways.Find(x => x.Center == _doorway.Center).Explored = true;
                         return new AuctionResultMessage(winnerIDList, _doorway);
                     }
                     else if (_allBids.Count / 2 == 1)
                     {
-                        minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), MinotaurAlgorithm.Waypoint.WaypointType.Door, true);
+                        minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + (_doorway.ExitDirection.Vector * 4)), MinotaurAlgorithm.Waypoint.WaypointType.Door, true);
                         minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                         minotaur._doorways.Find(x => x.Center == _doorway.Center).Explored = true;
                         return this;

@@ -46,7 +46,7 @@ namespace Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder
 
         private static Vector2 CreateVector2(int x, int y)
         {
-            return new Vector2(x, y) + Vector2.one / 2f;
+            return new Vector2(x, y) + (Vector2.one / 2f);
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Maes.Map
             {
                 for (var y = 0; y < map.HeightInTiles; y++)
                 {
-                    var index = x * 8 + y * trianglesPerRow;
+                    var index = (x * 8) + (y * trianglesPerRow);
                     AddTraceableTriangles(new Vector2(x, y) + map.ScaledOffset, vertexDistance, index,
                         trianglesPerRow);
                 }
@@ -98,7 +98,7 @@ namespace Maes.Map
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x + vertexDistance, y),
-                new Vector2(x + 2 * vertexDistance, y + vertexDistance),
+                new Vector2(x + (2 * vertexDistance), y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
             index + 1,
             index + 4,
@@ -108,9 +108,9 @@ namespace Maes.Map
             // Triangle 3
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
-                new Vector2(x + 2 * vertexDistance, y + vertexDistance),
+                new Vector2(x + (2 * vertexDistance), y + vertexDistance),
                 new Vector2(x + vertexDistance, y),
-                new Vector2(x + 2 * vertexDistance, y),
+                new Vector2(x + (2 * vertexDistance), y),
                 index - 1,
                 index - trianglesPerRow + 4,
                 index + 5
@@ -120,8 +120,8 @@ namespace Maes.Map
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
                 new Vector2(x, y + vertexDistance),
-                new Vector2(x + vertexDistance, y + 2 * vertexDistance),
-                new Vector2(x, y + 2 * vertexDistance),
+                new Vector2(x + vertexDistance, y + (2 * vertexDistance)),
+                new Vector2(x, y + (2 * vertexDistance)),
                 index + 1,
                 index + trianglesPerRow - 4,
                 index - 5
@@ -130,7 +130,7 @@ namespace Maes.Map
             // Triangle 5
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
-                new Vector2(x + vertexDistance, y + 2 * vertexDistance),
+                new Vector2(x + vertexDistance, y + (2 * vertexDistance)),
                 new Vector2(x, y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
                 index - 1,
@@ -141,8 +141,8 @@ namespace Maes.Map
             // Triangle 6
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
-                new Vector2(x + vertexDistance, y + 2 * vertexDistance),
-                new Vector2(x + 2 * vertexDistance, y + vertexDistance),
+                new Vector2(x + vertexDistance, y + (2 * vertexDistance)),
+                new Vector2(x + (2 * vertexDistance), y + vertexDistance),
                 new Vector2(x + vertexDistance, y + vertexDistance),
                 index + 1,
                 index - 4,
@@ -152,9 +152,9 @@ namespace Maes.Map
             // Triangle 7
             index++;
             _traceableTriangles[index] = new RayTracingTriangle(
-                new Vector2(x + 2 * vertexDistance, y + vertexDistance),
-                new Vector2(x + vertexDistance, y + 2 * vertexDistance),
-                new Vector2(x + 2 * vertexDistance, y + 2 * vertexDistance),
+                new Vector2(x + (2 * vertexDistance), y + vertexDistance),
+                new Vector2(x + vertexDistance, y + (2 * vertexDistance)),
+                new Vector2(x + (2 * vertexDistance), y + (2 * vertexDistance)),
                 index - 1,
                 index + trianglesPerRow - 4,
                 index + 5
@@ -193,7 +193,7 @@ namespace Maes.Map
 
             // Convert given angle and starting point to a linear equation: ax + b
             var a = Mathf.Tan(Mathf.PI / 180f * angleDegrees);
-            var b = startingPoint.y - a * startingPoint.x;
+            var b = startingPoint.y - (a * startingPoint.x);
 
             var triangle = _traceableTriangles[startingIndex];
             var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);
@@ -272,7 +272,7 @@ namespace Maes.Map
                 a = -99.9f;
             }
 
-            var b = startingPoint.y - a * startingPoint.x;
+            var b = startingPoint.y - (a * startingPoint.x);
 
             var triangle = _traceableTriangles[startingIndex];
             var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);

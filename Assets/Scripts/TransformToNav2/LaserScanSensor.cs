@@ -185,7 +185,7 @@ namespace Maes.TransformToNav2
                 var yawDegrees = yawBaseDegrees + yawSensorDegrees;
                 var directionVector = Quaternion.Euler(0f, yawDegrees, 0f) * Vector3.forward;
                 directionVector = new Vector3(directionVector.x, directionVector.z, directionVector.y);
-                var measurementStart = RangeMetersMin * directionVector + transform.position + Vector3.back * 0.1f;
+                var measurementStart = (RangeMetersMin * directionVector) + transform.position + (Vector3.back * 0.1f);
                 var hit = Physics2D.Raycast(measurementStart, directionVector, RangeMetersMax, layerMask: 1 << 3);
                 // Only record measurement if it's within the sensor's operating range
                 if (hit)

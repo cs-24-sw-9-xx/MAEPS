@@ -58,7 +58,7 @@ namespace Maes.Algorithms.Exploration.Greed
         private struct Waypoint : IEquatable<Waypoint>
         {
             public Vector2Int Destination;
-            public WaypointType Type;
+            public readonly WaypointType Type;
 
             public enum WaypointType
             {

@@ -104,7 +104,7 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
                 }
                 else
                 {
-                    normalizedIdleness.Add(new NormalizedValue(vertex, 1 - (float)(maxLastTick - vertex.LastTimeVisitedTick) / (maxLastTick - minLastTick)));
+                    normalizedIdleness.Add(new NormalizedValue(vertex, 1 - ((float)(maxLastTick - vertex.LastTimeVisitedTick) / (maxLastTick - minLastTick))));
                 }
             }
             return normalizedIdleness;

@@ -28,7 +28,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
     public class TnfTag : EnvironmentTaggingMap.ITag
     {
         public readonly int ID;
-        private Color _color;
+        private readonly Color _color;
 
         public TnfTag(int id, bool movementTarget)
         {

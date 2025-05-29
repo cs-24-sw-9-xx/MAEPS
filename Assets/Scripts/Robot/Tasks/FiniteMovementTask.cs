@@ -89,7 +89,7 @@ namespace Maes.Robot.Tasks
         // Returns the time (in ticks from now) at which the velocity of the robot will be approximately 0 (<0.001) 
         private static int GetStopTime(float currentVelocity)
         {
-            return (int)(11f * (Mathf.Log(currentVelocity) + 3 * Mathf.Log(10)) / 2f);
+            return (int)(11f * (Mathf.Log(currentVelocity) + (3 * Mathf.Log(10))) / 2f);
         }
 
         // Returns the distance traveled in the given ticks when starting at the given velocity

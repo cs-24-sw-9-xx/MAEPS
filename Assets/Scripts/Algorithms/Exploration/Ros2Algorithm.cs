@@ -200,8 +200,8 @@ namespace Maes.Algorithms.Exploration
                     var wheelForceDelta = rotationSign * Mathf.Pow(1.3f * rotationCommandValue, 2.0f) * 0.6f;
 
                     // Calculate the force applied to each wheel and send the values to the controller
-                    var leftWheelForce = flatWheelForce + wheelForceDelta / 2f;
-                    var rightWheelForce = flatWheelForce - wheelForceDelta / 2f;
+                    var leftWheelForce = flatWheelForce + (wheelForceDelta / 2f);
+                    var rightWheelForce = flatWheelForce - (wheelForceDelta / 2f);
                     _controller.SetWheelForceFactors(leftWheelForce, rightWheelForce);
                 }
             }
@@ -274,8 +274,8 @@ namespace Maes.Algorithms.Exploration
 
         private class RosBroadcastMsg
         {
-            public string msg;
-            public string sender;
+            public readonly string msg;
+            public readonly string sender;
 
             public RosBroadcastMsg(string msg, string sender)
             {

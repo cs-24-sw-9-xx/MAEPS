@@ -74,7 +74,7 @@ namespace Maes.Map
                 {
                     for (var y = 0; y < height; y++)
                     {
-                        var tiles = new[] { slamMapTiles[x * 2, y * 2], slamMapTiles[x * 2 + 1, y * 2], slamMapTiles[x * 2, y * 2 + 1], slamMapTiles[x * 2 + 1, y * 2 + 1] };
+                        var tiles = new[] { slamMapTiles[x * 2, y * 2], slamMapTiles[(x * 2) + 1, y * 2], slamMapTiles[x * 2, (y * 2) + 1], slamMapTiles[(x * 2) + 1, (y * 2) + 1] };
                         tileStatuses[x, y] = tiles.Contains(SlamMap.SlamTileStatus.Solid) ? SlamMap.SlamTileStatus.Solid : SlamMap.SlamTileStatus.Open;
                     }
                 }

@@ -167,7 +167,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     foreach (var (_, exchangeInfoAtMeetingTrackInfos) in attendedRobotsAtTick.OrderBy(kvp => kvp.Key))
                     {
                         // Check if the meeting was held at the correct tick or before the actual meeting tick
-                        var expectedMeetingWithInTick = meetingPoint.InitialMeetingAtTick + meetingPoint.MeetingAtEveryTick * i;
+                        var expectedMeetingWithInTick = meetingPoint.InitialMeetingAtTick + (meetingPoint.MeetingAtEveryTick * i);
                         foreach (var info in exchangeInfoAtMeetingTrackInfos)
                         {
                             Assert.LessOrEqual(info.ExchangeAtTick, expectedMeetingWithInTick,

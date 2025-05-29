@@ -68,7 +68,7 @@ namespace Maes.TransformToNav2
 
         public static double NowTimeInSeconds => Mode switch
         {
-            ClockMode.UnityScaled => Time.timeAsDouble + UnityUnscaledTimeSinceFrameStart * Time.timeScale,
+            ClockMode.UnityScaled => Time.timeAsDouble + (UnityUnscaledTimeSinceFrameStart * Time.timeScale),
             // ClockMode.UnityUnscaled => Time.realtimeSinceStartupAsDouble,
             // ClockMode.UnixEpoch => SecondsSinceUnixEpoch,
             _ => throw new NotImplementedException()

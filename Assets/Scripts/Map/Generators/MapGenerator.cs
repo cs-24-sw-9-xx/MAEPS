@@ -239,7 +239,7 @@ namespace Maes.Map.Generators
                         _ => Color.blue
                     };
 
-                    var pos = new Vector3(-width / 2 + x + .5f, -height / 2 + y + .5f, 0);
+                    var pos = new Vector3((-width / 2) + x + .5f, (-height / 2) + y + .5f, 0);
                     Gizmos.DrawCube(pos, Vector3.one);
                 }
             }

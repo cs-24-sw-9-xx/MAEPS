@@ -54,7 +54,7 @@ namespace Maes.Robot.Tasks
         {
             // Emperically found numbers dependent on a MonaRobot with 0.6 relative size
             // Data has been collated and can be found in Statistics/circle_data.xlsx
-            return -1 / (0.940824360231996f * _radius + 0.502227229721352f) + 1;
+            return (-1 / ((0.940824360231996f * _radius) + 0.502227229721352f)) + 1;
         }
     }
 }

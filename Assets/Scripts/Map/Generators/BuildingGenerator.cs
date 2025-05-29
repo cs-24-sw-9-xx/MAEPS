@@ -440,9 +440,9 @@ namespace Maes.Map.Generators
                     var box = region.Where(coordinate => coordinate.x == smallestX + iCopy ||
                                                                  coordinate.x == biggestX - iCopy ||
                                                                  coordinate.y == smallestY + iCopy ||
-                                                                 coordinate.y == biggestY - iCopy &&
-                                                                 coordinate.y >= smallestY + iCopy && coordinate.y <= biggestY + iCopy &&
-                                                                 coordinate.x >= smallestX + iCopy && coordinate.x <= biggestX + iCopy);
+                                                                 (coordinate.y == biggestY - iCopy &&
+                                                                  coordinate.y >= smallestY + iCopy && coordinate.y <= biggestY + iCopy &&
+                                                                  coordinate.x >= smallestX + iCopy && coordinate.x <= biggestX + iCopy));
 
                     foreach (var coordinate in box)
                     {

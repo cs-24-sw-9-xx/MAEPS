@@ -83,8 +83,8 @@ namespace Maes.Statistics
         /// (2 cells each) BEFORE registering coverage</param>
         public void UpdateRobotCoverage(Vector2 robotWorldPos, int currentTick, MiniTileConsumer preCoverageTileConsumer)
         {
-            var robotMiniTileCenterX = (float)Math.Truncate(robotWorldPos.x) + Mathf.Round(robotWorldPos.x - (float)Math.Truncate(robotWorldPos.x)) * 0.5f + ((robotWorldPos.x < 0) ? -0.25f : 0.25f);
-            var robotMiniTileCenterY = (float)Math.Truncate(robotWorldPos.y) + Mathf.Round(robotWorldPos.y - (float)Math.Truncate(robotWorldPos.y)) * 0.5f + ((robotWorldPos.y < 0) ? -0.25f : 0.25f);
+            var robotMiniTileCenterX = (float)Math.Truncate(robotWorldPos.x) + (Mathf.Round(robotWorldPos.x - (float)Math.Truncate(robotWorldPos.x)) * 0.5f) + ((robotWorldPos.x < 0) ? -0.25f : 0.25f);
+            var robotMiniTileCenterY = (float)Math.Truncate(robotWorldPos.y) + (Mathf.Round(robotWorldPos.y - (float)Math.Truncate(robotWorldPos.y)) * 0.5f) + ((robotWorldPos.y < 0) ? -0.25f : 0.25f);
             var robotMiniTilePos = new Vector2(robotMiniTileCenterX, robotMiniTileCenterY);
             // Loop through all tiles currently near the robot
             for (var x = -1; x <= 1; x++)

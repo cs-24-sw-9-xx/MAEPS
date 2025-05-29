@@ -345,8 +345,8 @@ namespace Maes.Map.Generators
 
                     // The wall stick out in different axes depending on 2D or 3D.
                     var direction = isMesh3D ? Vector3.up : Vector3.back;
-                    var bottomLeft = new Node(topLeft, topLeft.Position - direction * wallHeight);
-                    var bottomRight = new Node(topRight, topRight.Position - direction * wallHeight);
+                    var bottomLeft = new Node(topLeft, topLeft.Position - (direction * wallHeight));
+                    var bottomRight = new Node(topRight, topRight.Position - (direction * wallHeight));
 
                     // Create section of the wall currently being made
                     // as viewed from inside the room looked at the wall
@@ -817,8 +817,8 @@ namespace Maes.Map.Generators
                 var controlNodes = new ControlNode[nodeCountX, nodeCountY];
 
                 // In Marching squares, squares are offset by 0.5 
-                XOffset = -mapWidth / 2f + 0.5f;
-                YOffset = -mapHeight / 2f + 0.5f;
+                XOffset = (-mapWidth / 2f) + 0.5f;
+                YOffset = (-mapHeight / 2f) + 0.5f;
 
                 for (var x = 0; x < nodeCountX; x++)
                 {
@@ -914,7 +914,7 @@ namespace Maes.Map.Generators
 
         private class Node
         {
-            public Vector3 Position;
+            public readonly Vector3 Position;
             public int VertexIndex = -1;
             public TileType Type;
 
@@ -939,8 +939,8 @@ namespace Maes.Map.Generators
             public ControlNode(Vector3 position, TileType type) : base(position, type)
             {
                 IsWall = Tile.IsWall(type);
-                Above = new Node(Position + Vector3.forward / 2f, type);
-                Right = new Node(Position + Vector3.right / 2f, type);
+                Above = new Node(Position + (Vector3.forward / 2f), type);
+                Right = new Node(Position + (Vector3.right / 2f), type);
             }
         }
 

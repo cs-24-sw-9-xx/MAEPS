@@ -70,7 +70,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance
         {
             foreach (var robotId in _startupComponent.DiscoveredRobots)
             {
-                _virtualStigmergyComponent.TryGet(robotId, out var _);
+                _virtualStigmergyComponent.TryGet(robotId, out _);
             }
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(2, shouldContinue: false);

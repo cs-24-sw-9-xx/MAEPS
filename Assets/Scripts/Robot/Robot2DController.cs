@@ -324,8 +324,8 @@ namespace Maes.Robot
             var radius = Vector2.Distance(Vector2Int.FloorToInt(coarseLocation), point);
             var worldPoint = SlamMap.CoarseMap.TileToWorld(point);
             var distanceBetweenWheels = Vector2.Distance(LeftWheel.position, RightWheel.position);
-            DebugCircle.Add((worldPoint, radius - distanceBetweenWheels / 2));
-            DebugCircle.Add((worldPoint, radius + distanceBetweenWheels / 2));
+            DebugCircle.Add((worldPoint, radius - (distanceBetweenWheels / 2)));
+            DebugCircle.Add((worldPoint, radius + (distanceBetweenWheels / 2)));
             _currentTask = new RotateAroundPointTask(point, radius, Constraints.RelativeMoveSpeed, counterClockwise);
         }
 

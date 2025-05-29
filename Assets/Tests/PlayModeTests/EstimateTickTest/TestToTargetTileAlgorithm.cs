@@ -24,8 +24,8 @@ namespace Tests.PlayModeTests.EstimateTickTest
         }
 
         private readonly bool _useOffset;
-        private Vector2Int _offset;
-        private Vector2Int _targetTile;
+        private readonly Vector2Int _offset;
+        private readonly Vector2Int _targetTile;
         private Vector2Int _startPosition;
         public int Tick { get; private set; }
         public Robot2DController Controller = null!;

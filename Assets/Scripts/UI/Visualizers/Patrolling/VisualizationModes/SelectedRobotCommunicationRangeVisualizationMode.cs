@@ -7,7 +7,7 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
     public class SelectedRobotCommunicationRangeVisualizationMode : IPatrollingVisualizationMode
     {
         private readonly MonaRobot _robot;
-        private Vector2Int _lastPosition;
+        private readonly Vector2Int _lastPosition;
 
         public SelectedRobotCommunicationRangeVisualizationMode(MonaRobot robot)
         {

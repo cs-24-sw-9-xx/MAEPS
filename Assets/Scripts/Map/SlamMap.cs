@@ -110,7 +110,7 @@ namespace Maes.Map
                     var xIndex = x % 2;
                     var yIndex = y % 2;
 
-                    var index = xIndex * 2 + yIndex * 4;
+                    var index = (xIndex * 2) + (yIndex * 4);
                     var slice = triangles.Skip(index).Take(2);
                     tiles[x, y] = slice.Any(t => Tile.IsWall(t.Type)) ? SlamTileStatus.Solid : SlamTileStatus.Open;
                 }
@@ -188,8 +188,8 @@ namespace Maes.Map
             // We then multiply by 2 again to get to the right slam tile
             var x = (int)Math.Round(currentPosition.x * 2, MidpointRounding.AwayFromZero);
             var y = (int)Math.Round(currentPosition.y * 2, MidpointRounding.AwayFromZero);
-            var slamX = x - (int)_offset.x * 2;
-            var slamY = y - (int)_offset.y * 2;
+            var slamX = x - ((int)_offset.x * 2);
+            var slamY = y - ((int)_offset.y * 2);
 
             return new Vector2Int(slamX, slamY);
         }
@@ -292,14 +292,14 @@ namespace Maes.Map
 
             var sign = _random.Next(2) == 1 ? -1 : 1;
             var multiplier = _random.NextDouble() * sign;
-            var newInaccuracy = _lastInaccuracyX + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
+            var newInaccuracy = _lastInaccuracyX + (multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f));
             newInaccuracy = Math.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy, _robotConstraints.SlamPositionInaccuracy);
             var newXAprox = (float)newInaccuracy + worldPosition.x;
             _lastInaccuracyX = (float)newInaccuracy;
 
             sign = _random.Next(2) == 1 ? -1 : 1;
             multiplier = _random.NextDouble() * sign;
-            newInaccuracy = _lastInaccuracyY + multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f);
+            newInaccuracy = _lastInaccuracyY + (multiplier * (_robotConstraints.SlamPositionInaccuracy / 10f));
             newInaccuracy = Math.Clamp(newInaccuracy, -_robotConstraints.SlamPositionInaccuracy,
                 _robotConstraints.SlamPositionInaccuracy);
             var newYAprox = (float)newInaccuracy + worldPosition.y;

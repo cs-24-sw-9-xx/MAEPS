@@ -256,9 +256,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
                 var initialCurrentNextMeetingAtTick =
-                    startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId];
+                    startMeetingAfterTicks + (globalMeetingIntervalTicks * tickColorAssignment[vertexId]);
                 var initialNextNextMeetingAtTick = initialCurrentNextMeetingAtTick +
-                                                   globalMeetingIntervalTicks * maximumTickColorAssignment;
+                                                   (globalMeetingIntervalTicks * maximumTickColorAssignment);
                 var meetingPoint = new MeetingPoint(vertexId, initialCurrentNextMeetingAtTick, initialNextNextMeetingAtTick, meetingRobotIds);
                 foreach (var robotId in meetingRobotIds)
                 {

@@ -76,7 +76,7 @@ namespace Maes.Map.Generators
             int borderSize = 1,
             bool brokenCollisionMap = true)
         {
-            if ((2 * doorPadding + doorWidth) > minRoomSideLength)
+            if (((2 * doorPadding) + doorWidth) > minRoomSideLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(doorWidth),
                     "Door width cannot be bigger than the smallest side lenght of rooms plus two times DoorPadding");

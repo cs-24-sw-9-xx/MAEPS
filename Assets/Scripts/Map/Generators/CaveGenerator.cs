@@ -147,25 +147,25 @@ namespace Maes.Map.Generators
 
                 // Check 3 tiles horizontally
                 var horizontalClear =
-                    IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room ||
-                    IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room && IsInMapRange(x + 2, y, newMap) && newMap[x + 2, y].Type == TileType.Room ||
-                    IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x - 2, y, newMap) && newMap[x - 2, y].Type == TileType.Room;
+                    (IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room) ||
+                    (IsInMapRange(x + 1, y, newMap) && newMap[x + 1, y].Type == TileType.Room && IsInMapRange(x + 2, y, newMap) && newMap[x + 2, y].Type == TileType.Room) ||
+                    (IsInMapRange(x - 1, y, newMap) && newMap[x - 1, y].Type == TileType.Room && IsInMapRange(x - 2, y, newMap) && newMap[x - 2, y].Type == TileType.Room);
 
                 // Check 3 tiles vertically
                 var verticalClear =
-                    IsInMapRange(x, y - 1, newMap) && newMap[x, y - 1].Type == TileType.Room && IsInMapRange(x, y + 1, newMap) && newMap[x, y + 1].Type == TileType.Room ||
-                    IsInMapRange(x, y + 1, newMap) && newMap[x, y + 1].Type == TileType.Room && IsInMapRange(x, y + 2, newMap) && newMap[x, y + 2].Type == TileType.Room ||
-                    IsInMapRange(x, y - 1, newMap) && newMap[x, y - 1].Type == TileType.Room && IsInMapRange(x, y - 2, newMap) && newMap[x, y - 2].Type == TileType.Room;
+                    (IsInMapRange(x, y - 1, newMap) && newMap[x, y - 1].Type == TileType.Room && IsInMapRange(x, y + 1, newMap) && newMap[x, y + 1].Type == TileType.Room) ||
+                    (IsInMapRange(x, y + 1, newMap) && newMap[x, y + 1].Type == TileType.Room && IsInMapRange(x, y + 2, newMap) && newMap[x, y + 2].Type == TileType.Room) ||
+                    (IsInMapRange(x, y - 1, newMap) && newMap[x, y - 1].Type == TileType.Room && IsInMapRange(x, y - 2, newMap) && newMap[x, y - 2].Type == TileType.Room);
 
                 // Check 2 tiles from bottom left to top right clear
                 var bottomLeftToTopRightClear =
-                    IsInMapRange(x - 1, y - 1, newMap) && newMap[x - 1, y - 1].Type == TileType.Room ||
-                    IsInMapRange(x + 1, y + 1, newMap) && newMap[x + 1, y + 1].Type == TileType.Room;
+                    (IsInMapRange(x - 1, y - 1, newMap) && newMap[x - 1, y - 1].Type == TileType.Room) ||
+                    (IsInMapRange(x + 1, y + 1, newMap) && newMap[x + 1, y + 1].Type == TileType.Room);
 
                 // Check 2 tiles from top left to bottom right clear
                 var topLeftToBottomRightClear =
-                    IsInMapRange(x - 1, y + 1, newMap) && newMap[x - 1, y + 1].Type == TileType.Room ||
-                    IsInMapRange(x + 1, y - 1, newMap) && newMap[x + 1, y - 1].Type == TileType.Room;
+                    (IsInMapRange(x - 1, y + 1, newMap) && newMap[x - 1, y + 1].Type == TileType.Room) ||
+                    (IsInMapRange(x + 1, y - 1, newMap) && newMap[x + 1, y - 1].Type == TileType.Room);
 
                 if (horizontalClear && verticalClear && bottomLeftToTopRightClear && topLeftToBottomRightClear)
                 {
@@ -302,7 +302,7 @@ namespace Maes.Map.Generators
             {
                 for (var y = -r; y <= r; y++)
                 {
-                    if (x * x + y * y > r * r)
+                    if ((x * x) + (y * y) > r * r)
                     {
                         continue;
                     }
@@ -382,7 +382,7 @@ namespace Maes.Map.Generators
         // Just used be drawing a line for debugging
         private static Vector3 CoordToWorldPoint(Vector2Int tile, int width, int height)
         {
-            return new Vector3(-width / 2 + .5f + tile.x, -height / 2 + .5f + tile.y, 2);
+            return new Vector3((-width / 2) + .5f + tile.x, (-height / 2) + .5f + tile.y, 2);
         }
 
         private static Tile[,] CreateRandomFillMap(CaveMapConfig config, Random random)

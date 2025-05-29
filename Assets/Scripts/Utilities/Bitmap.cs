@@ -97,7 +97,7 @@ namespace Maes.Utilities
             Height = height;
 
             // Ceil division
-            _length = ((Width * Height) - 1) / 64 + 1;
+            _length = (((Width * Height) - 1) / 64) + 1;
             _bits = ArrayPool<ulong>.Shared.Rent(_length);
             for (var i = 0; i < _length; i++)
             {
@@ -111,7 +111,7 @@ namespace Maes.Utilities
             Height = height;
 
             // Ceil division
-            _length = ((Width * Height) - 1) / 64 + 1;
+            _length = (((Width * Height) - 1) / 64) + 1;
             _bits = bits;
         }
 
@@ -196,7 +196,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int x, int y)
         {
-            Set(x * Height + y);
+            Set((x * Height) + y);
         }
 
         /// <summary>
@@ -205,7 +205,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unset(int x, int y)
         {
-            Unset(x * Height + y);
+            Unset((x * Height) + y);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(int x, int y)
         {
-            return Contains(x * Height + y);
+            return Contains((x * Height) + y);
         }
 
 
@@ -521,7 +521,7 @@ namespace Maes.Utilities
         /// <inheritdoc />
         public override bool Equals(object? obj)
         {
-            return ReferenceEquals(this, obj) || obj is Bitmap other && Equals(other);
+            return ReferenceEquals(this, obj) || (obj is Bitmap other && Equals(other));
         }
 
         /// <inheritdoc />

@@ -64,19 +64,19 @@ namespace Maes.Utilities
             if (!_isVertical)
             {
                 _a = (end.y - start.y) / (_maxX - _minX);
-                _b = start.y - _a * start.x;
+                _b = start.y - (_a * start.x);
             }
             else
             {
                 _a = (end.x - start.x) / (_maxY - _minY);
-                _b = start.x - _a * start.y;
+                _b = start.x - (_a * start.y);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float SlopeIntercept(float x)
         {
-            return _a * x + _b;
+            return (_a * x) + _b;
         }
 
 
@@ -97,7 +97,7 @@ namespace Maes.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool SameOrientation(Line2D otherLine)
         {
-            return _isVertical && otherLine._isVertical || _isHorizontal && otherLine._isHorizontal;
+            return (_isVertical && otherLine._isVertical) || (_isHorizontal && otherLine._isHorizontal);
         }
 
         private (Vector2 linePoint, Vector2 otherLinePoint) GetClosestPoints(Line2D otherLine)
@@ -153,11 +153,11 @@ namespace Maes.Utilities
             if (_isVertical) // Special case
             {
                 // This line is vertical. Simply plug x coordinate of this line into equation to find y intersection
-                var yIntersection = Start.x * a2 + b2;
+                var yIntersection = (Start.x * a2) + b2;
 
                 // Return intersection if it is within bounds of this line
 
-                if (infinite || yIntersection <= _maxY && yIntersection >= _minY)
+                if (infinite || (yIntersection <= _maxY && yIntersection >= _minY))
                 {
                     return new Vector2(Start.x, yIntersection);
                 }
@@ -183,7 +183,7 @@ namespace Maes.Utilities
                 // y = ax + b, solved for x gives x = (y - b) / a (using the y of this horizontal line)
                 var xIntersection = (Start.y - b2) / a2;
                 // Return intersection if it is within bounds of this line
-                if (infinite || xIntersection >= _minX && xIntersection <= _maxX)
+                if (infinite || (xIntersection >= _minX && xIntersection <= _maxX))
                 {
                     return new Vector2(xIntersection, Start.y);
                 }
@@ -206,12 +206,12 @@ namespace Maes.Utilities
             // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
             var intersectX = (b2 - _b) / (_a - a2);
             // Check if intersection is outside line segment
-            if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
+            if ((!infinite && intersectX - _minX < -0.0001f) || _maxX - intersectX < -0.0001f)
             {
                 return null;
             }
 
-            var intersectY = _a * intersectX + _b;
+            var intersectY = (_a * intersectX) + _b;
             // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
             //           " at " + intersectX + ", " + intersectY);
             return new Vector2(intersectX, intersectY);

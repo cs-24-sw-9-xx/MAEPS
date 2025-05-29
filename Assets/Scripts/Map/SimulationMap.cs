@@ -88,7 +88,7 @@ namespace Maes.Map
             var triangles = tile.GetTriangles();
             var mainTriangleIndex = tile.CoordinateDecimalsToTriangleIndex(localCoordinate.x % 1.0f, localCoordinate.y % 1.0f);
             // Calculate the number of triangles preceding this tile
-            var triangleOffset = ((int)localCoordinate.x) * 8 + ((int)localCoordinate.y) * WidthInTiles * 8;
+            var triangleOffset = (((int)localCoordinate.x) * 8) + (((int)localCoordinate.y) * WidthInTiles * 8);
             if (mainTriangleIndex % 2 == 0)
             {
                 return ((mainTriangleIndex + triangleOffset, triangles[mainTriangleIndex]), (mainTriangleIndex + 1 + triangleOffset, triangles[mainTriangleIndex + 1]));
@@ -101,7 +101,7 @@ namespace Maes.Map
         private (int, TCell[]) GetTileCellsByWorldCoordinate(Vector2 worldCoord)
         {
             var localCoord = WorldCoordinateToCoarseTileCoordinate(worldCoord);
-            var triangleOffset = ((int)localCoord.x) * 8 + ((int)localCoord.y) * WidthInTiles * 8;
+            var triangleOffset = (((int)localCoord.x) * 8) + (((int)localCoord.y) * WidthInTiles * 8);
             return (triangleOffset, _tiles[(int)localCoord.x, (int)localCoord.y].GetTriangles());
         }
 
@@ -135,7 +135,7 @@ namespace Maes.Map
         {
             var localCoordinate = WorldCoordinateToCoarseTileCoordinate(coordinate);
             var tile = _tiles[(int)localCoordinate.x, (int)localCoordinate.y];
-            var triangleIndexOffset = ((int)localCoordinate.x) * 8 + ((int)localCoordinate.y) * WidthInTiles * 8;
+            var triangleIndexOffset = (((int)localCoordinate.x) * 8) + (((int)localCoordinate.y) * WidthInTiles * 8);
             return triangleIndexOffset +
                    tile.CoordinateDecimalsToTriangleIndex(localCoordinate.x % 1.0f, localCoordinate.y % 1.0f);
         }
@@ -197,7 +197,7 @@ namespace Maes.Map
                     var triangles = _tiles[x, y].GetTriangles();
                     for (var t = 0; t < 8; t++)
                     {
-                        yield return ((x * 8 + y * WidthInTiles * 8) + t, triangles[t]);
+                        yield return (((x * 8) + (y * WidthInTiles * 8)) + t, triangles[t]);
                     }
                 }
             }

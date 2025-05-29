@@ -524,7 +524,7 @@ namespace Maes.Utilities
                 {
                     var i = 0;
                     (TElement, TPriority)[] nodes = _nodes;
-                    foreach ((var element, var priority) in items)
+                    foreach (var (element, priority) in items)
                     {
                         if (nodes.Length == i)
                         {
@@ -547,7 +547,7 @@ namespace Maes.Utilities
             }
             else
             {
-                foreach ((var element, var priority) in items)
+                foreach (var (element, priority) in items)
                 {
                     Enqueue(element, priority);
                 }

@@ -259,7 +259,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
             foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
             {
-                var meetingPoint = new MeetingPoint(vertexId, globalMeetingCycleTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
+                var meetingPoint = new MeetingPoint(vertexId, globalMeetingCycleTicks, startMeetingAfterTicks + (globalMeetingIntervalTicks * tickColorAssignment[vertexId]), meetingRobotIds);
                 foreach (var robotId in meetingRobotIds)
                 {
                     if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))

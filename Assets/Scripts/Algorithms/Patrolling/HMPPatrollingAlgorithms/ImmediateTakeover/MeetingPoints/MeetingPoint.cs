@@ -27,7 +27,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.M
         /// <returns></returns>
         public int GetMeetingAtTick(int heldMeetings)
         {
-            return InitialMeetingAtTick + heldMeetings * MeetingAtEveryTick;
+            return InitialMeetingAtTick + (heldMeetings * MeetingAtEveryTick);
         }
 
         public bool Equals(MeetingPoint other)

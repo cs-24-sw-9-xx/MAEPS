@@ -104,33 +104,33 @@ namespace Maes.UI.Visualizers
 
             // Triangle 2
             _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y + vertexDistance));
             _vertices.Add(new Vector3(x + vertexDistance, y));
 
             // Triangle 3
             _vertices.Add(new Vector3(x + vertexDistance, y));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y + vertexDistance));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y));
 
             // Triangle 4
-            _vertices.Add(new Vector3(x, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            _vertices.Add(new Vector3(x, y + (2 * vertexDistance)));
+            _vertices.Add(new Vector3(x + vertexDistance, y + (2 * vertexDistance)));
             _vertices.Add(new Vector3(x, y + vertexDistance));
 
             // Triangle 5
             _vertices.Add(new Vector3(x, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            _vertices.Add(new Vector3(x + vertexDistance, y + (2 * vertexDistance)));
             _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
 
             // Triangle 6
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            _vertices.Add(new Vector3(x + vertexDistance, y + (2 * vertexDistance)));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y + vertexDistance));
             _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
 
             // Triangle 7
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            _vertices.Add(new Vector3(x + vertexDistance, y + (2 * vertexDistance)));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y + (2 * vertexDistance)));
+            _vertices.Add(new Vector3(x + (2 * vertexDistance), y + vertexDistance));
         }
 
 
@@ -170,7 +170,7 @@ namespace Maes.UI.Visualizers
             var triangleIndexes = new HashSet<int>();
             foreach (var tile in map)
             {
-                var index = tile.x + tile.y * map.Width;
+                var index = tile.x + (tile.y * map.Width);
                 triangleIndexes.UnionWith(_cellIndexToTriangleIndexes[index]);
             }
 

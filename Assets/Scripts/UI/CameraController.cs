@@ -283,7 +283,7 @@ namespace Maes.UI
             {
                 if (cam.Camera.orthographic)
                 {
-                    if (cam.Camera.orthographicSize - cam.ZoomAmount.magnitude * direction > 0)
+                    if (cam.Camera.orthographicSize - (cam.ZoomAmount.magnitude * direction) > 0)
                     {
                         cam.Camera.orthographicSize -= cam.ZoomAmount.magnitude * direction;
                     }

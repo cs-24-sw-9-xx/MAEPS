@@ -27,7 +27,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover.Meet
         /// <returns></returns>
         public int GetMeetingAtTick(int heldMeetings)
         {
-            return InitialMeetingAtTick + heldMeetings * MeetingAtEveryTick;
+            return InitialMeetingAtTick + (heldMeetings * MeetingAtEveryTick);
         }
 
         public bool Equals(MeetingPoint other)

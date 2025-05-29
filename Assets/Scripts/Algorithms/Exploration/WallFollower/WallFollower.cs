@@ -287,7 +287,7 @@ namespace Maes.Algorithms.Exploration.WallFollower
 
         private static int Mod(int x, int m)
         {
-            return (x % m + m) % m;
+            return ((x % m) + m) % m;
         }
 
         private static float WrapAngle(float angle)

@@ -44,7 +44,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
             static Gaussian()
             { // My best suggested constexpr substitute
-                Gamma = Mathf.Log(A) - B * B / (2 * C * C);
+                Gamma = Mathf.Log(A) - (B * B / (2 * C * C));
             }
 
             /// <returns>
@@ -52,7 +52,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             /// </returns>
             public static float Gauss(float x)
             {
-                return Mathf.Exp(Alpha * x * x + Beta * x + Gamma);
+                return Mathf.Exp((Alpha * x * x) + (Beta * x) + Gamma);
             }
         }
 

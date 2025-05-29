@@ -498,7 +498,7 @@ namespace Maes.Robot
             var y2 = end.y;
             var xDiff = x2 - x1;
             var yDiff = y2 - y1;
-            var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
+            var lineLength = Mathf.Sqrt((xDiff * xDiff) + (yDiff * yDiff));
 
             var signalStrength = _robotConstraints.TransmitPower;
 
@@ -575,8 +575,8 @@ namespace Maes.Robot
                 var aCurr = xyAlphas[alphaIndex];
                 var aMid = (aPrev + aCurr) / 2f;
 
-                var midPointX = x1 + aMid * xDiff;
-                var midPointY = y1 + aMid * yDiff;
+                var midPointX = x1 + (aMid * xDiff);
+                var midPointY = y1 + (aMid * yDiff);
 
                 var distance = (aCurr - aPrev) * lineLength;
 

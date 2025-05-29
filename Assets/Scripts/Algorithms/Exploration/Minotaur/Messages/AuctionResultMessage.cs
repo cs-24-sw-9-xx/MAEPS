@@ -48,7 +48,7 @@ namespace Maes.Algorithms.Exploration.Minotaur
                 if (_winnerList.Contains(minotaur._controller.Id))
                 {
                     minotaur._controller.StopCurrentTask();
-                    minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + _doorway.ExitDirection.Vector * 4), MinotaurAlgorithm.Waypoint.WaypointType.NearestDoor, true);
+                    minotaur._waypoint = new MinotaurAlgorithm.Waypoint(CoarseGrainedMap.FromSlamMapCoordinate(_doorway.Center + (_doorway.ExitDirection.Vector * 4)), MinotaurAlgorithm.Waypoint.WaypointType.NearestDoor, true);
                     minotaur._controller.PathAndMoveTo(minotaur._waypoint.Value.Destination);
                     return this;
                 }

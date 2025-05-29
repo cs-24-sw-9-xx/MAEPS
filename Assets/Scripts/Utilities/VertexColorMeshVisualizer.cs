@@ -85,10 +85,10 @@ namespace Maes.Utilities
         private static void GenerateCell(ref Vector3[] vertices, ref int[] triangles, int vertIndex, int triIndex, int x, int y, float step)
         {
             // Define unique vertices per face
-            var x0 = x * step - 0.5f;
-            var x1 = (x + 1) * step - 0.5f;
-            var y0 = y * step - 0.5f;
-            var y1 = (y + 1) * step - 0.5f;
+            var x0 = (x * step) - 0.5f;
+            var x1 = ((x + 1) * step) - 0.5f;
+            var y0 = (y * step) - 0.5f;
+            var y1 = ((y + 1) * step) - 0.5f;
 
             vertices[vertIndex] = new Vector3(x0, y0, 0); // Bottom-left
             vertices[vertIndex + 1] = new Vector3(x1, y0, 0); // Bottom-right
