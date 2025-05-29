@@ -58,7 +58,6 @@ namespace Maes.Map.Generators
 
         public bool BrokenCollisionMap { get; }
 
-
         internal CaveMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
             randomSeed: seed,
             widthInTiles: config.Map!.WidthInTiles,

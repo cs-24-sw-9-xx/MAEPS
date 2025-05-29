@@ -65,14 +65,14 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<PatrollingSimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, buildingMapConfig.HeightInTiles, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
-            var scenarioCave = CreateMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, caveMapConfig.HeightInTiles, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            var scenarioBuilding = CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            var scenarioCave = CreateMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
         }
 
-        private static PatrollingSimulationScenario CreateMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, IMapConfig mapConfig, int mapSize, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
+        private static PatrollingSimulationScenario CreateMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, IMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
         {
             return new PatrollingSimulationScenario(
                                         seed: seed,
@@ -90,7 +90,7 @@ namespace Maes.Experiments.Patrolling
                                         partitions: partitionNumber,
                                         maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
                                         statisticsFileName:
-                                        $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapSize}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
+                                        $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
     }
 }
