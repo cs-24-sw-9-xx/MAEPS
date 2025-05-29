@@ -95,7 +95,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
         {
             var sortedRobotIds = otherRobotIds.ToList();
             sortedRobotIds.Sort();
-            var robotIdToTakeover = sortedRobotIds[_random.Next(sortedRobotIds.Count)];
+            var indexToTakeover = _random.Next(sortedRobotIds.Count + 1);
+            if (indexToTakeover == sortedRobotIds.Count)
+            {
+                // Stay in the current partition
+                return;
+            }
+            var robotIdToTakeover = sortedRobotIds[indexToTakeover];
             TakeoverOtherRobotPartition(robotIdToTakeover);
         }
 
