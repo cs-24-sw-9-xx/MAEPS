@@ -29,12 +29,13 @@ using Maes.Simulation.Exploration;
 using Maes.Utilities.Files;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Exploration
 {
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
-
+    [Preserve]
     internal class GreedExploratoryExperiments : MonoBehaviour
     {
         private void Start()

@@ -19,8 +19,11 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using UnityEngine.Scripting;
+
 namespace Maes.Experiments.Exploration
 {
+    [Preserve]
     public class MinotaurDemo : ExplorationExperimentBase
     {
         private void Start()

@@ -29,12 +29,14 @@ using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
+    [Preserve]
     internal class HMPPatrollingFaultToleranceV2Experiment : MonoBehaviour
     {
         private void Start()
