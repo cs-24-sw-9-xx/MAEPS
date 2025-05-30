@@ -45,21 +45,22 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public IReadOnlyDictionary<int, MeetingPoint> MeetingPointsByVertexId { get; private set; } = null!;
 
+        private readonly HashSet<int> _verticesByIdToPatrol = new();
         public HashSet<int> VerticesByIdToPatrol
         {
             get
             {
-                var verticesByIdToPatrol = new HashSet<int>();
+                _verticesByIdToPatrol.Clear();
                 var partitions = GetPartitionsPatrolledByRobotId(_robotId);
                 foreach (var partition in partitions)
                 {
                     foreach (var vertexId in _partitions[partition].VertexIds)
                     {
-                        verticesByIdToPatrol.Add(vertexId);
+                        _verticesByIdToPatrol.Add(vertexId);
                     }
                 }
 
-                return verticesByIdToPatrol;
+                return _verticesByIdToPatrol;
             }
         }
 
@@ -97,14 +98,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
 
-        private PartitionInfo[] _partitions = null!;
+        public PartitionInfo[] _partitions = null!;
 
         private StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
 
-        private VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
+        public VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
             null!;
 
-        private VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>
+        public VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>
             _meetingPointVertexIdToMeetingTimesStigmergyComponent = null!;
 
 
@@ -224,31 +225,32 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 return assignedRobot;
             }).Distinct();
 
+            // TODO: Optimize who takes over (remember that the information must be available and correct on all robots attending meeting!)
+            var notMissingRobots = meetingMessages.Select(m => m.RobotId).Append(_robotId).OrderBy(id => id);
+            var missingRobots = expectedRobotIds
+                .Where(id => notMissingRobots.All(notMissingId => notMissingId != id)).OrderBy(id => id);
+
+            var overtakingCandidates = meetingMessages.Where(m => !m.OverrideCurrentNextMeetingAtTick)
+                .Select(m => m.RobotId).Where(id => id != _robotId);
+            if (_overTakingMeetingPoint == -1)
+            {
+                overtakingCandidates = overtakingCandidates.Append(_robotId);
+            }
+
+            overtakingCandidates = overtakingCandidates.OrderBy(id => id);
+
+            var overtaking = missingRobots.Zip(overtakingCandidates,
+                (missingId, notMissingId) => (missingId, notMissingId));
 
             // If not every expected robot showed up
             if (expectedRobotIds.Count() - 1 != meetingMessages.Count)
             {
-                // TODO: Optimize who takes over (remember that the information must be available and correct on all robots attending meeting!)
-                var notMissingRobots = meetingMessages.Select(m => m.RobotId).Append(_robotId).OrderBy(id => id);
-                var missingRobots = expectedRobotIds
-                    .Where(id => notMissingRobots.All(notMissingId => notMissingId != id)).OrderBy(id => id);
-
-                var overtakingCandidates = meetingMessages.Where(m => !m.OverrideCurrentNextMeetingAtTick)
-                    .Select(m => m.RobotId);
-                if (_overTakingMeetingPoint == -1)
-                {
-                    overtakingCandidates = overtakingCandidates.Append(_robotId);
-                }
-
-                overtakingCandidates = overtakingCandidates.OrderBy(id => id);
+                Debug.LogFormat("Vertex {0}, Missing robots: {1}", meetingPointVertexId, string.Join(", ", missingRobots));
 
                 if (missingRobots.Count() > overtakingCandidates.Count())
                 {
                     Debug.Log("Not enough overtaking candidates to take over the missing robots. Too bad!");
                 }
-
-                var overtaking = missingRobots.Zip(overtakingCandidates,
-                    (missingId, notMissingId) => (missingId, notMissingId));
 
                 foreach (var (missingId, overtakingId) in overtaking)
                 {
@@ -265,11 +267,42 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 }
             }
 
+            var giveAndTakeCandidates = overtakingCandidates.Where(c => !overtaking.Any(tuple => tuple.notMissingId == c));
+            var giveCandidates = giveAndTakeCandidates.OrderByDescending(c => GetPartitionsPatrolledByRobotId(c).Count()).ThenBy(c => c).Take(giveAndTakeCandidates.Count() / 2);
+            var takeCandidates = giveAndTakeCandidates.OrderBy(c => GetPartitionsPatrolledByRobotId(c).Count())
+                .ThenByDescending(c => c).Take(giveAndTakeCandidates.Count() / 2);
+
+            var giveTakePairs = giveCandidates.Zip(takeCandidates, (giveRobot, takeRobot) => (giveRobot, takeRobot))
+                .Where(tuple =>
+                    tuple.giveRobot != tuple.takeRobot &&
+                    // Don't shuffle partitions back and forth
+                    GetPartitionsPatrolledByRobotId(tuple.giveRobot).Count() - 1 >
+                    GetPartitionsPatrolledByRobotId(tuple.takeRobot).Count());
+
+            // Let somebody give a partition to somebody else
+            foreach (var (giveRobot, takeRobot) in giveTakePairs)
+            {
+                // There might actually be multiple partitions matching this. So lets just get the first.
+                var partition = GetPartitionsPatrolledByRobotId(giveRobot).Select(p => _partitions[p])
+                    .First(p => p.MeetingPoints.Any(m => m.VertexId == meetingPointVertexId)).PartitionId;
+
+                if (giveRobot == _robotId)
+                {
+                    Debug.LogFormat("Robot {0} is giving partition {1} away", _robotId, partition);
+                    _partitionIdToRobotIdVirtualStigmergyComponent.Put(partition, -1);
+                }
+                else if (takeRobot == _robotId)
+                {
+                    Debug.LogFormat("Robot {0} is taking partition {1}", _robotId, partition);
+                    Debug.Assert(_overTakingMeetingPoint == -1);
+                    _overTakingMeetingPoint = meetingPointVertexId;
+                    _overTakingPartitions.Add(partition);
+                }
+            }
+
             var success = _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(meetingPointVertexId,
                 out var meetingTimes);
             Debug.Assert(success);
-
-            Debug.LogFormat("Decided that the next meeting time for vertex {0} should be {1}", meetingPointVertexId, nextMeetingTime);
 
             if (overrideCurrentNextMeetingAtTick)
             {
@@ -297,6 +330,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         private int NextPossibleMeetingTime(IEnumerable<int> partitions)
         {
+            Debug.Assert(partitions.Any());
             var interval = 0;
             var highestNextNextMeetingAtTicks = 0;
             foreach (var partition in partitions)
@@ -314,35 +348,18 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                     partitionsHighestNextNextMeetingAtTicks);
             }
 
+            Debug.Assert(interval + highestNextNextMeetingAtTicks > 0);
             return interval + highestNextNextMeetingAtTicks;
         }
 
         private int NextPossibleMeetingTime()
         {
-            var interval = 0;
-            var highestNextNextMeetingAtTicks = 0;
-
-            var assignedPartitions = GetPartitionsPatrolledByRobotId(_robotId);
-            foreach (var partition in assignedPartitions)
-            {
-                interval += _partitions[partition].Diameter;
-                var partitionsHighestNextNextMeetingAtTicks = _partitions[partition].MeetingPoints.Select(m =>
-                {
-                    var success =
-                        _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(m.VertexId,
-                            out var meetingTimes);
-                    Debug.Assert(success);
-                    return meetingTimes.NextNextMeetingAtTick;
-                }).Max();
-                highestNextNextMeetingAtTicks = Math.Max(highestNextNextMeetingAtTicks,
-                    partitionsHighestNextNextMeetingAtTicks);
-            }
-
-            return interval + highestNextNextMeetingAtTicks;
+            return NextPossibleMeetingTime(GetPartitionsPatrolledByRobotId(_robotId));
         }
 
-        private IEnumerable<int> GetPartitionsPatrolledByRobotId(int robotId)
+        public IEnumerable<int> GetPartitionsPatrolledByRobotId(int robotId)
         {
+            var hasPartitions = false;
             for (var partitionId = 0; partitionId < _partitions.Length; partitionId++)
             {
                 var success =
@@ -352,7 +369,31 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
                 if (assignedRobotId == robotId)
                 {
+                    hasPartitions = true;
                     yield return partitionId;
+                }
+            }
+
+            if (hasPartitions || robotId != _robotId)
+            {
+                yield break;
+            }
+
+            // Add the robot to a partition that is patrolled by a robot with multiple partitions
+            for (var partitionId = 0; partitionId < _partitions.Length; partitionId++)
+            {
+                if (partitionId == _robotId)
+                {
+                    continue;
+                }
+
+                var partitions = GetPartitionsPatrolledByRobotId(partitionId);
+                if (partitions.Count() > 1)
+                {
+                    var partition = partitions.First();
+                    _partitionIdToRobotIdVirtualStigmergyComponent.Put(partition, _robotId);
+                    yield return partition;
+                    yield break;
                 }
             }
         }
