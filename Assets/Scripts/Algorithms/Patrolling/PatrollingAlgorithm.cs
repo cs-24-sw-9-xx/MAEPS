@@ -326,8 +326,7 @@ namespace Maes.Algorithms.Patrolling
             _stringBuilder.Clear();
             _stringBuilder
                 .AppendLine(AlgorithmName)
-                .AppendFormat("Target vertex: {0}\n", TargetVertex)
-                .AppendFormat("Neighbours:\n        {0}\n", string.Join(",\n        ", TargetVertex.Neighbors.Select(x => x.ToString())));
+                .AppendFormat("Target vertex: {0}\n", TargetVertex);
             GetDebugInfo(_stringBuilder);
 
             // Append components' debug info

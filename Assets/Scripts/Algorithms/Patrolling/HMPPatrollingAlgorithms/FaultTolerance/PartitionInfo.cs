@@ -58,15 +58,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
     public sealed class PartitionInfo : ICloneable<PartitionInfo>
     {
-        public PartitionInfo(int robotId, IReadOnlyCollection<int> vertexIds, IReadOnlyList<MeetingPoint> meetingPoints, int diameter)
+        public PartitionInfo(int partitionId, IReadOnlyCollection<int> vertexIds, IReadOnlyList<MeetingPoint> meetingPoints, int diameter)
         {
-            RobotId = robotId;
+            PartitionId = partitionId;
             VertexIds = vertexIds;
             MeetingPoints = meetingPoints;
             Diameter = diameter;
         }
 
-        public int RobotId { get; }
+        public int PartitionId { get; }
         public IReadOnlyCollection<int> VertexIds { get; }
         public IReadOnlyList<MeetingPoint> MeetingPoints { get; }
 

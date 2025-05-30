@@ -170,11 +170,101 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 return new Meeting(firstVertex, int.MaxValue);
             }
 
-            return _partitionComponent.MeetingPoints
+            // Prioritize meeting points in the following way:
+            // However, if we can fit in a lower priority meeting point before we have to go to a higher one, do that.
+            // 1. Meeting points where current next has passed but next next hasn't.
+            // 2. Meeting points where current next has not passed.
+            // 3. Meeting points where both current next and next next has passed.
+
+            // Meeting points meeting criteria 1
+            var meetingPointsMeetingCriteria1 = _partitionComponent.MeetingPoints
+                .Where(m =>
+                    !CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick)
+                    && CanGetThereInTime(m.vertexId, m.meetingTimes.NextNextMeetingAtTick))
+                .OrderBy(m => m.meetingTimes.NextNextMeetingAtTick)
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.NextNextMeetingAtTick));
+
+            // Meeting points meeting criteria 2
+            var meetingPointsMeetingCriteria2 = _partitionComponent.MeetingPoints
+                .Where(m => CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick))
                 .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
-                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
-                    m.meetingTimes.CurrentNextMeetingAtTick))
-                .First();
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.CurrentNextMeetingAtTick));
+
+            // Meeting points meeting criteria 3
+            var meetingPointsMeetingCriteria3 = _partitionComponent.MeetingPoints
+                .Where(m =>
+                    !CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick)
+                    && !CanGetThereInTime(m.vertexId, m.meetingTimes.NextNextMeetingAtTick))
+                .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.CurrentNextMeetingAtTick));
+
+            Debug.Assert(meetingPointsMeetingCriteria1.Intersect(meetingPointsMeetingCriteria2).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria2.Intersect(meetingPointsMeetingCriteria3).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria1.Intersect(meetingPointsMeetingCriteria3).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria1.Count() + meetingPointsMeetingCriteria2.Count() + meetingPointsMeetingCriteria3.Count() == _partitionComponent.MeetingPoints.Count());
+
+            var prioritizedMeetingPoints = Enumerable.Empty<Meeting>();
+
+            if (meetingPointsMeetingCriteria1.Any())
+            {
+                prioritizedMeetingPoints = prioritizedMeetingPoints.Append(meetingPointsMeetingCriteria1.First());
+            }
+
+            if (meetingPointsMeetingCriteria2.Any())
+            {
+                prioritizedMeetingPoints = prioritizedMeetingPoints.Append(meetingPointsMeetingCriteria2.First());
+            }
+
+            // There are nothing meeting criteria 1 and 2
+            if (!prioritizedMeetingPoints.Any() && meetingPointsMeetingCriteria3.Any())
+            {
+                Debug.Log("Going to priority 3 meeting");
+                return meetingPointsMeetingCriteria3.First();
+            }
+
+            // If we can get there in time before having to meet with higher priority meetings go there first.
+            if (meetingPointsMeetingCriteria3.Any() && prioritizedMeetingPoints.All(m => CanGetThereInTime2(meetingPointsMeetingCriteria3.First(), m)))
+            {
+                Debug.Log("Going to priority 3 meeting");
+                return meetingPointsMeetingCriteria3.First();
+            }
+
+            // Are there any criteria 1 meetings if not do the criteria 2 meeting
+            if (!meetingPointsMeetingCriteria1.Any() && meetingPointsMeetingCriteria2.Any())
+            {
+                Debug.Log("Going to priority 2 meeting");
+                return meetingPointsMeetingCriteria2.First();
+            }
+
+            // Check if we can get a criteria 2 meeting in before a criteria 1 meeting.
+            if (meetingPointsMeetingCriteria2.Any() && CanGetThereInTime2(meetingPointsMeetingCriteria2.First(), meetingPointsMeetingCriteria1.First()))
+            {
+                Debug.Log("Going to priority 2 meeting");
+                return meetingPointsMeetingCriteria2.First();
+            }
+
+            // Go to the criteria 1 meeting
+            Debug.Log("Going to priority 1 meeting");
+            return meetingPointsMeetingCriteria1.First();
+
+            bool CanGetThereInTime(int targetVertexId, int meetingTime)
+            {
+                var vertexPosition = _patrollingMap.Vertices.Single(v => v.Id == targetVertexId).Position;
+                var timeToTarget = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false), vertexPosition);
+
+                return timeToTarget + _getLogicTick() <= meetingTime;
+            }
+
+            // Whether or not we can go to targetMeeting before going to nextTargetMeeting.
+            bool CanGetThereInTime2(Meeting targetMeeting, Meeting nextTargetMeeting)
+            {
+                var timeToTargetMeeting = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false),
+                    targetMeeting.Vertex.Position);
+                var timeToNextTargetMeeting = _estimateTime(targetMeeting.Vertex.Position, nextTargetMeeting.Vertex.Position);
+
+                return timeToTargetMeeting + timeToNextTargetMeeting + _getLogicTick() <=
+                       nextTargetMeeting.MeetingAtTick;
+            }
         }
 
         /// <summary>
