@@ -67,9 +67,38 @@ namespace Maes.Experiments.Patrolling
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var scenarioBuilding = CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
-            // scenarios.Add(scenarioBuilding);
+            scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
+        }
+        public static PatrollingSimulationScenario CreateCaveMapScenario(
+            int seed,
+            string algorithmName,
+            CreateAlgorithmDelegate algorithm,
+            int robotCount,
+            int mapSize,
+            int cycles,
+            RobotConstraints robotConstraints,
+            int partitionNumber,
+            (string Params, Func<IFaultInjection> Method) faultInjection)
+        {
+            var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            return CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+        }
+
+        public static PatrollingSimulationScenario CreateBuildingMapScenario(
+            int seed,
+            string algorithmName,
+            CreateAlgorithmDelegate algorithm,
+            int robotCount,
+            int mapSize,
+            int cycles,
+            RobotConstraints robotConstraints,
+            int partitionNumber,
+            (string Params, Func<IFaultInjection> Method) faultInjection)
+        {
+            var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
+            return CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
         }
 
         private static PatrollingSimulationScenario CreateBuildingMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, BuildingMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
@@ -88,7 +117,7 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: 500000,
+                                        maxLogicTicks: 1000000,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
@@ -109,7 +138,7 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: 500000,
+                                        maxLogicTicks: 1000000,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
