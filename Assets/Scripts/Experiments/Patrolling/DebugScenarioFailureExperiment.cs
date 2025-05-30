@@ -26,6 +26,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -37,6 +38,7 @@ namespace Maes.Experiments.Patrolling
     /// This fails every third scenario.
     /// This way both building and cave maps are tested.
     /// </summary>
+    [Preserve]
     internal class DebugScenarioFailureExperiment : MonoBehaviour
     {
         private void Start()

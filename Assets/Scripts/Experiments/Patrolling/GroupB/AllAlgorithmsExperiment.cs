@@ -27,11 +27,13 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
+    [Preserve]
     internal class AllAlgorithmsExperiment : MonoBehaviour
     {
         private void Start()

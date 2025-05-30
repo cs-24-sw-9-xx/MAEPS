@@ -29,6 +29,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -40,6 +41,7 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
+    [Preserve]
     internal class GroupACommunicationRangeExperiment : MonoBehaviour
     {
         private readonly List<float> _communicationRangeThroughWalls = new List<float>() { 0, 1f, 2f, 3f, 4f, 5f };
