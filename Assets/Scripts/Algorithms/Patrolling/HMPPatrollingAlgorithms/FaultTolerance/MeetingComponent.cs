@@ -23,8 +23,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
-            ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
-            IMovementComponent movementComponent)
+            ExchangeInformationAtMeetingDelegate exchangeInformation)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -32,8 +31,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _estimateTime = estimateTime;
             _controller = controller;
             _exchangeInformation = exchangeInformation;
-            _onMissingRobotsAtMeeting = onMissingRobotsAtMeeting;
-            _movementComponent = movementComponent;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
         }
@@ -44,9 +41,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly Func<int> _getLogicTick;
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
-        private readonly IMovementComponent _movementComponent;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
-        private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
@@ -69,10 +64,63 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 var meeting = GoingToMeeting.Value;
 
                 // Wait until all other robots are at the meeting point
-                var ticksToWait = meeting.MeetingAtTick - _getLogicTick();
-                if (ticksToWait > 0)
+                if (meeting.MeetingAtTick - _getLogicTick() > 0)
                 {
-                    yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
+                    while (meeting.MeetingAtTick - _getLogicTick() > 0)
+                    {
+                        // Wait until we are on the meeting vertex.
+                        if (_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false) != meeting.Vertex.Position)
+                        {
+                            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+                            continue;
+                        }
+
+                        // Send all information about partitions
+                        _partitionComponent._partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
+
+                        // Tell our neighbors we are already here.
+                        _controller.Broadcast(new AlreadyHereMessage(_controller.Id, meeting.MeetingAtTick, meeting.Vertex.Id));
+
+                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+
+                        var alreadyHereMessages = _controller.ReceiveBroadcast().OfType<AlreadyHereMessage>()
+                            .Where(m => m.MeetingVertexId == meeting.Vertex.Id).ToList();
+
+                        // Agree on meeting time.
+                        if (alreadyHereMessages.Any())
+                        {
+                            var maxMeetingAtTick = Math.Max(meeting.MeetingAtTick,
+                                alreadyHereMessages.Max(m => m.MeetingAtTick));
+                            meeting = new Meeting(meeting.Vertex, maxMeetingAtTick);
+                        }
+
+
+                        // Are all robots already here?
+                        var robotsHere = alreadyHereMessages.Select(m => m.RobotId).Append(_controller.Id).ToHashSet();
+                        var everyBodyHere = true;
+                        for (var partitionId = 0; partitionId < _partitionComponent._partitions.Length; partitionId++)
+                        {
+                            if (_partitionComponent._partitions[partitionId].VertexIds.Contains(meeting.Vertex.Id))
+                            {
+                                var success = _partitionComponent._partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(
+                                    partitionId, out var partitionRobotId);
+                                Debug.Assert(success);
+
+                                if (!robotsHere.Contains(partitionRobotId))
+                                {
+                                    everyBodyHere = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If everybody is here early we can continue.
+                        if (everyBodyHere)
+                        {
+                            Debug.Log("Everybody here early!");
+                            break;
+                        }
+                    }
                 }
                 else
                 {
@@ -87,36 +135,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 GoingToMeeting = null;
                 _nextMeeting = GetNextMeeting();
             }
-        }
-
-        /// <summary>
-        /// Checks if the robot should continue is work or move to the next meeting point.
-        /// Given the current position, it checks if robot can move to the vertex which the robot is approaching towards, and thereby, to the next meeting point.
-        ///     If it is able to do that, it returns null = continue current work.
-        ///     Otherwise, it returns the vertex of the meeting point.
-        /// </summary>
-        /// <param name="currentlyTargetingPosition">The vertex which the robot is approaching towards</param>
-        /// <returns>Returns the vertex that the robot should move to</returns>
-        public Vertex? ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
-        {
-            if (GoingToMeeting != null)
-            {
-                return GoingToMeeting.Value.Vertex;
-            }
-
-            var currentPosition = _controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false);
-            var ticksToCurrentlyTargetingPosition = _estimateTime(currentPosition, currentlyTargetingPosition);
-            var ticksFromTargetToMeetingPoint = _estimateTime(currentlyTargetingPosition, _nextMeeting.Vertex.Position);
-
-            var totalTicks = (_getLogicTick() + ticksToCurrentlyTargetingPosition + ticksFromTargetToMeetingPoint) ?? int.MaxValue;
-
-            if (totalTicks < _nextMeeting.MeetingAtTick)
-            {
-                return null;
-            }
-
-            GoingToMeeting = _nextMeeting;
-            return _nextMeeting.Vertex;
         }
 
         /// <summary>
@@ -170,11 +188,111 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 return new Meeting(firstVertex, int.MaxValue);
             }
 
-            return _partitionComponent.MeetingPoints
+            // Prioritize meeting points in the following way:
+            // However, if we can fit in a lower priority meeting point before we have to go to a higher one, do that.
+            // 1. Meeting points where current next has passed but next next hasn't.
+            // 2. Meeting points where current next has not passed.
+            // 3. Meeting points where both current next and next next has passed.
+
+            // Meeting points meeting criteria 1
+            var meetingPointsMeetingCriteria1 = _partitionComponent.MeetingPoints
+                .Where(m =>
+                    !CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick)
+                    && CanGetThereInTime(m.vertexId, m.meetingTimes.NextNextMeetingAtTick))
+                .OrderBy(m => m.meetingTimes.NextNextMeetingAtTick)
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.NextNextMeetingAtTick));
+
+            // Meeting points meeting criteria 2
+            var meetingPointsMeetingCriteria2 = _partitionComponent.MeetingPoints
+                .Where(m => CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick))
                 .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
-                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId),
-                    m.meetingTimes.CurrentNextMeetingAtTick))
-                .First();
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.CurrentNextMeetingAtTick));
+
+            // Meeting points meeting criteria 3
+            var meetingPointsMeetingCriteria3 = _partitionComponent.MeetingPoints
+                .Where(m =>
+                    !CanGetThereInTime(m.vertexId, m.meetingTimes.CurrentNextMeetingAtTick)
+                    && !CanGetThereInTime(m.vertexId, m.meetingTimes.NextNextMeetingAtTick))
+                .OrderBy(m => m.meetingTimes.CurrentNextMeetingAtTick)
+                .Select(m => new Meeting(_patrollingMap.Vertices.Single(v => v.Id == m.vertexId), m.meetingTimes.CurrentNextMeetingAtTick));
+
+            Debug.Assert(meetingPointsMeetingCriteria1.Intersect(meetingPointsMeetingCriteria2).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria2.Intersect(meetingPointsMeetingCriteria3).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria1.Intersect(meetingPointsMeetingCriteria3).Count() == 0);
+            Debug.Assert(meetingPointsMeetingCriteria1.Count() + meetingPointsMeetingCriteria2.Count() + meetingPointsMeetingCriteria3.Count() == _partitionComponent.MeetingPoints.Count());
+
+            var prioritizedMeetingPoints = Enumerable.Empty<Meeting>();
+
+            if (meetingPointsMeetingCriteria1.Any())
+            {
+                prioritizedMeetingPoints = prioritizedMeetingPoints.Append(meetingPointsMeetingCriteria1.First());
+            }
+
+            if (meetingPointsMeetingCriteria2.Any())
+            {
+                prioritizedMeetingPoints = prioritizedMeetingPoints.Append(meetingPointsMeetingCriteria2.First());
+            }
+
+            // There are nothing meeting criteria 1 and 2
+            if (!prioritizedMeetingPoints.Any() && meetingPointsMeetingCriteria3.Any())
+            {
+                return meetingPointsMeetingCriteria3.First();
+            }
+
+            // If we can get there in time before having to meet with higher priority meetings go there first.
+            if (meetingPointsMeetingCriteria3.Any() && prioritizedMeetingPoints.All(m => CanGetThereInTime2(meetingPointsMeetingCriteria3.First(), m)))
+            {
+                return meetingPointsMeetingCriteria3.First();
+            }
+
+            // Are there any criteria 1 meetings if not do the criteria 2 meeting
+            if (!meetingPointsMeetingCriteria1.Any() && meetingPointsMeetingCriteria2.Any())
+            {
+                return meetingPointsMeetingCriteria2.First();
+            }
+
+            // Check if we can get a criteria 2 meeting in before a criteria 1 meeting.
+            if (meetingPointsMeetingCriteria2.Any() && CanGetThereInTime2(meetingPointsMeetingCriteria2.First(), meetingPointsMeetingCriteria1.First()))
+            {
+                return meetingPointsMeetingCriteria2.First();
+            }
+
+            // Go to the criteria 1 meeting
+            Debug.Log("Going to priority 1 meeting");
+            return meetingPointsMeetingCriteria1.First();
+
+            bool CanGetThereInTime(int targetVertexId, int meetingTime)
+            {
+                var vertexPosition = _patrollingMap.Vertices.Single(v => v.Id == targetVertexId).Position;
+                var timeToTarget = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false), vertexPosition);
+
+                return timeToTarget + _getLogicTick() <= meetingTime;
+            }
+
+            // Whether or not we can go to targetMeeting before going to nextTargetMeeting.
+            bool CanGetThereInTime2(Meeting targetMeeting, Meeting nextTargetMeeting)
+            {
+                var timeToTargetMeeting = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false),
+                    targetMeeting.Vertex.Position);
+                var timeToNextTargetMeeting = _estimateTime(targetMeeting.Vertex.Position, nextTargetMeeting.Vertex.Position);
+
+                return timeToTargetMeeting + timeToNextTargetMeeting + _getLogicTick() <=
+                       nextTargetMeeting.MeetingAtTick;
+            }
+        }
+
+        public sealed class AlreadyHereMessage
+        {
+            public int RobotId { get; }
+            public int MeetingAtTick { get; }
+            public int MeetingVertexId { get; }
+
+            public AlreadyHereMessage(int robotId, int meetingAtTick, int meetingVertexId)
+            {
+                RobotId = robotId;
+                MeetingAtTick = meetingAtTick;
+                MeetingVertexId = meetingVertexId;
+            }
         }
 
         /// <summary>
