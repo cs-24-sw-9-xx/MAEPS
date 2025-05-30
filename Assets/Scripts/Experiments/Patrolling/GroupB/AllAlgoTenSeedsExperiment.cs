@@ -23,7 +23,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -33,37 +32,26 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class GlobalRedistributionRobotCountExperiment : MonoBehaviour
+    internal class AllAlgoTenSeedsExperiment : MonoBehaviour
     {
-        private static readonly List<int> RobotCount = new()
-        {
-            1,
-            2,
-            4,
-            8,
-            16,
-            32,
-        };
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(0, 10))
             {
-                foreach (var count in RobotCount)
+                foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
                 {
-
                     scenarios.AddRange(ScenarioUtil.CreateScenarios(
                         seed,
-                        nameof(GlobalRedistributionWithCRAlgo),
-                        GroupBParameters.PartitionedAlgorithms[nameof(GlobalRedistributionWithCRAlgo)],
-                        count,
-                        GroupBParameters.StandardMapSize,
+                        algorithm.Key,
+                        algorithm.Value,
+                        16,
+                        200,
                         GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.GlobalRobotConstraints,
-                        GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection(seed)));
+                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                        4,
+                        GroupBParameters.FaultInjection(robotCount: 16)));
                 }
-
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");

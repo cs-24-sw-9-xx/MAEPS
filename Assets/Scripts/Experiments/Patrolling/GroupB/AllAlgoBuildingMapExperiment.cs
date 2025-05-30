@@ -23,7 +23,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -33,29 +32,26 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class GlobalRedistributionPartitionCountExperiment : MonoBehaviour
+    internal class AllAlgoBuildingMapExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCount = new() { 2, 4 };
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(0, 50))
             {
-                foreach (var count in PartitionCount)
+                foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
                 {
-
-                    scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                    scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                         seed,
-                        nameof(GlobalRedistributionWithCRAlgo),
-                        GroupBParameters.PartitionedAlgorithms[nameof(GlobalRedistributionWithCRAlgo)],
-                        GroupBParameters.StandardRobotCount,
-                        GroupBParameters.StandardMapSize,
+                        algorithm.Key,
+                        algorithm.Value,
+                        16,
+                        200,
                         GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.GlobalRobotConstraints,
-                        count,
-                        GroupBParameters.FaultInjection(seed)));
+                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                        4,
+                        GroupBParameters.FaultInjection()));
                 }
-
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
