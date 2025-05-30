@@ -284,6 +284,7 @@ namespace Maes.Simulation
 
         private void CreateSimulation(TScenario scenario)
         {
+            var startTime = Time.realtimeSinceStartup;
             PrependExperimentFolderNameToStatisticsFileName(scenario);
             Debug.Log($"Starting simulation: {scenario.StatisticsFileName}");
             CurrentScenario = scenario;
@@ -293,6 +294,8 @@ namespace Maes.Simulation
             CurrentSimulation.SetInfoUIController(SimulationInfoUIController);
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+            var endTime = Time.realtimeSinceStartup;
+            Debug.Log($"Simulation created in {endTime - startTime:F2} seconds for {scenario.StatisticsFileName}");
         }
 
         private void UpdateStatisticsUI()
