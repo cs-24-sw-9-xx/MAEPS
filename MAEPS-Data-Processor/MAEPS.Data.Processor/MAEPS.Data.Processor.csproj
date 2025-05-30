@@ -2,8 +2,8 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
-        <RootNamespace>MAEPS_Data_Processor</RootNamespace>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>MAEPS.Data.Processor</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -14,10 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Include="..\..\Assets\Scripts\Statistics\Exploration\ExplorationSnapShot.cs" />
-        <Compile Include="..\..\Assets\Scripts\Statistics\Communication\CommunicationSnapShot.cs" />
+        <Compile Include="..\..\Assets\Scripts\Statistics\Snapshots\*.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Writer\TypeConverter\*.cs" />
-        <Compile Include="..\..\Assets\Scripts\Statistics\Patrolling\PatrollingSnapShot.cs" />
     </ItemGroup>
 
 </Project>

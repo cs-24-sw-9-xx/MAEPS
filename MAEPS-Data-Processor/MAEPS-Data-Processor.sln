@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAEPS-Data-Processor", "MAEPS-Data-Processor\MAEPS-Data-Processor.csproj", "{5E0F31C5-2F64-4F38-B911-551639609D6E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAEPS.Data.Processor", "MAEPS.Data.Processor\MAEPS.Data.Processor.csproj", "{5E0F31C5-2F64-4F38-B911-551639609D6E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgorithmSplitter", "AlgorithmSplitter\AlgorithmSplitter.csproj", "{6422F45E-AEDA-429E-9197-250902303C9C}"
 EndProject

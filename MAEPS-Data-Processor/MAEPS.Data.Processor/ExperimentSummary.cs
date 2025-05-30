@@ -1,4 +1,4 @@
-﻿namespace MAEPS_Data_Processor;
+﻿namespace MAEPS.Data.Processor;
 
 public class ExperimentSummary
 {

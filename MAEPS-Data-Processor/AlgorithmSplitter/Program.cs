@@ -1,6 +1,8 @@
 ﻿using AlgorithmSplitter;
 using AlgorithmSplitter.Boxplots;
 
+using MAEPS.Data.Processor.Utilities;
+
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
 
