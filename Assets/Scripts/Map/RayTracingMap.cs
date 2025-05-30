@@ -191,12 +191,12 @@ namespace Maes.Map
 
             var startingIndex = _map.GetTriangleIndex(startingPoint);
 
-            // Convert given angle and starting point to a linear equation: ax + b
-            var a = Mathf.Tan(Mathf.PI / 180f * angleDegrees);
-            var b = startingPoint.y - a * startingPoint.x;
+            var endPoint = new Vector2(Mathf.Cos(angleDegrees * Mathf.Deg2Rad), Mathf.Sin(angleDegrees * Mathf.Deg2Rad));
+
+            var intersectionLine = new Line2D(startingPoint, startingPoint + endPoint);
 
             var triangle = _traceableTriangles[startingIndex];
-            var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);
+            var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, intersectionLine);
             var traceCount = 1;
             var trace = new TriangleTrace(enteringEdge, startingIndex);
 
@@ -207,7 +207,6 @@ namespace Maes.Map
             {
                 if (traceCount > maxTraces)
                 { // Safety measure for avoiding infinite loops 
-                    Debug.LogError($"Equation: {a}x + {b}");
                     throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}. Angle: {angleDegrees}");
                 }
 
@@ -218,7 +217,7 @@ namespace Maes.Map
                 }
 
                 // Perform the ray tracing step for the current triangle
-                triangle.RayTrace(ref trace, angleDegrees, a, b);
+                triangle.RayTrace(ref trace, angleDegrees, intersectionLine);
                 traceCount++;
 
                 // Break if the next triangle is outside the map bounds
@@ -259,23 +258,11 @@ namespace Maes.Map
 
             var startingIndex = _map.GetTriangleIndex(startingPoint);
 
-            // Convert given angle and starting point to a linear equation: ax + b
-            var a = Mathf.Tan(Mathf.PI / 180 * angleDegrees);
-
-            // TODO: Temp fix for 90 and 270 degree angles. Should be replaced with special case logic.
-            if (Math.Abs(angleDegrees - 90f) < 0.01f)
-            {
-                a = 99.9f;
-            }
-            else if (Math.Abs(angleDegrees - 270f) < 0.01f)
-            {
-                a = -99.9f;
-            }
-
-            var b = startingPoint.y - a * startingPoint.x;
+            var endPoint = new Vector2(Mathf.Cos(angleDegrees * Mathf.Deg2Rad), Mathf.Sin(angleDegrees * Mathf.Deg2Rad));
+            var intersectionLine = new Line2D(startingPoint, startingPoint + endPoint);
 
             var triangle = _traceableTriangles[startingIndex];
-            var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, a, b);
+            var enteringEdge = triangle.FindInitialEnteringEdge(angleDegrees, intersectionLine);
             var traceCount = 1;
             var trace = new TriangleTrace(enteringEdge, startingIndex);
 
@@ -285,7 +272,6 @@ namespace Maes.Map
             {
                 if (traceCount > 1500)
                 { // Safety measure for avoiding infinite loops 
-                    Debug.Log($"Equation: {a}x + {b}");
                     throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}");
                 }
 
@@ -293,14 +279,14 @@ namespace Maes.Map
                 if (!shouldContinue(trace.NextTriangleIndex, triangle.Cell))
                 {
                     // Find intersection point
-                    var intersection = triangle.Lines[trace.EnteringEdge].GetIntersection(a, b)!.Value;
+                    var intersection = triangle.Lines[trace.EnteringEdge].GetIntersection(intersectionLine, line2Infinite: true)!.Value;
                     // Find the angle of the intersecting line
                     var intersectingLineAngle = triangle.GetLineAngle(trace.EnteringEdge);
                     return (intersection, intersectingLineAngle);
                 }
 
                 // Perform the ray tracing step for the current triangle
-                triangle.RayTrace(ref trace, angleDegrees, a, b);
+                triangle.RayTrace(ref trace, angleDegrees, intersectionLine);
                 traceCount++;
 
                 // Break if the next triangle is outside the map bounds
@@ -346,7 +332,7 @@ namespace Maes.Map
             // Returns the side at which the trace exited the triangle, the exit intersection point
             // and the index of the triangle that the trace enters next
             // Takes the edge that this tile was entered from, and the linear equation ax+b for the trace 
-            public void RayTrace(ref TriangleTrace trace, float angle, float a, float b)
+            public void RayTrace(ref TriangleTrace trace, float angle, Line2D intersectionLine)
             {
                 // Variable for storing an intersection and the corresponding edge
                 Vector2? intersection = null;
@@ -361,7 +347,7 @@ namespace Maes.Map
                     }
 
                     // Find the intersection for the current edge
-                    var currentIntersection = Lines[edge].GetIntersection(a, b);
+                    var currentIntersection = Lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
 
                     if (currentIntersection == null) // No intersection with this edge
                     {
@@ -426,13 +412,13 @@ namespace Maes.Map
 
             // When starting a ray trace, it must be determined which of the 3 edges are to be considered to the
             // initial "entering" edge
-            public int FindInitialEnteringEdge(float direction, float a, float b)
+            public int FindInitialEnteringEdge(float direction, Line2D intersectionLine)
             {
                 var intersectionsAndEdge = stackalloc (Vector2, int)[3];
                 var i = 0;
                 for (var edge = 0; edge < 3; edge++)
                 {
-                    var intersection = Lines[edge].GetIntersection(a, b);
+                    var intersection = Lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
                     if (intersection != null)
                     {
                         intersectionsAndEdge[i++] = (intersection.Value, edge);
