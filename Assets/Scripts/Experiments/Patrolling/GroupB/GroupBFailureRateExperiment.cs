@@ -6,9 +6,11 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
+    [Preserve]
     public class GroupBFailureRateExperiment : MonoBehaviour
     {
         private static readonly List<float> FailureRates = new() { 0.005f, 0.01f, 0.015f, 0.02f, 0.025f };
