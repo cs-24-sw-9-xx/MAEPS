@@ -26,6 +26,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -35,6 +36,7 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
+    [Preserve]
     internal class GroupAMapSizeExperiment : MonoBehaviour
     {
         private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250, 300 };
