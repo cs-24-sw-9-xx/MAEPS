@@ -181,7 +181,12 @@ internal static class Program
     private static void GenerateAggregatedPlots(string outputDirectory, ConcurrentDictionary<string, ConcurrentBag<PatrollingSnapshot>> patrollingData)
     {
         var worstIdlenessPlot = new Plot();
+        worstIdlenessPlot.XLabel("Tick");
+        worstIdlenessPlot.YLabel("Worst Idleness");
+
         var averageIdlenessPlot = new Plot();
+        averageIdlenessPlot.XLabel("Tick");
+        averageIdlenessPlot.YLabel("Average Idleness");
 
         if (s_plotFailedRobots)
         {
