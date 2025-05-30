@@ -5,7 +5,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using Unity.Collections;
 using Unity.Jobs;

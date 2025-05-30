@@ -6,7 +6,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using UnityEngine;
 

@@ -1,6 +1,4 @@
-using Maes.Algorithms.Patrolling;
-
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.TrackInfos
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.TrackInfos
 {
     public class ExchangeInfoAtMeetingTrackInfo : ITrackInfo
     {

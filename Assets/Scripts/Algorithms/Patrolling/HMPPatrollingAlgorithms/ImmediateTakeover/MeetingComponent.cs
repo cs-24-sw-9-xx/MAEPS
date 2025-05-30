@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.MeetingPoints;
+using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map;
 using Maes.Robot;
 
 using UnityEngine;
 
-namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
+namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 {
     public sealed class MeetingComponent : IComponent
     {
@@ -25,7 +26,7 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
-            IMovementComponent movementComponent)
+            IMovementComponent movementComponent, RobotIdClass robotIdClass)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -35,8 +36,10 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
             _exchangeInformation = exchangeInformation;
             _onMissingRobotsAtMeeting = onMissingRobotsAtMeeting;
             _movementComponent = movementComponent;
+            _robotIdClass = robotIdClass;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
+            _nextMeetingPointDecider = new NextMeetingPointDecider(getLogicTick);
         }
 
         public int PreUpdateOrder { get; }
@@ -46,7 +49,8 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly IMovementComponent _movementComponent;
-        private readonly NextMeetingPointDecider _nextMeetingPointDecider = new();
+        private readonly RobotIdClass _robotIdClass;
+        private readonly NextMeetingPointDecider _nextMeetingPointDecider;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent _partitionComponent;
@@ -77,14 +81,14 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
                 }
 
                 var meeting = GoingToMeeting.Value;
-                var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _controller.Id).ToHashSet();
+                var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _robotIdClass.RobotId).ToHashSet();
 
                 // Wait until all other robots are at the meeting point
-                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
+                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 while (!senseNearByRobotIds.SetEquals(otherRobotIds) && _getLogicTick() < meeting.MeetingAtTick)
                 {
                     yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
-                    senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting);
+                    senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 }
 
                 // If all other robots are at the meeting point, then exchange information
@@ -120,7 +124,7 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
         /// </summary>
         /// <param name="currentlyTargetingPosition">The vertex which the robot is approaching towards</param>
         /// <returns>Returns the vertex that the robot should move to</returns>
-        public Vertex ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
+        public Vertex? ShouldGoToNextMeeting(Vector2Int currentlyTargetingPosition)
         {
             if (GoingToMeeting != null)
             {
@@ -221,15 +225,38 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
         /// </summary>
         private class NextMeetingPointDecider
         {
+            public NextMeetingPointDecider(Func<int> getLogicTick)
+            {
+                _getLogicTick = getLogicTick;
+            }
+
+            private readonly Func<int> _getLogicTick;
             private readonly Dictionary<MeetingPoint, int> _heldMeetingsAtMeetingPoint = new();
 
             public Meeting GetNextMeeting(IReadOnlyList<MeetingPoint> meetingPoints, PatrollingMap patrollingMap)
             {
+                // HACK: Create a fake meeting point if there are no meeting points, due to only having a single robot patrolling.
+                if (meetingPoints.Count == 0)
+                {
+                    var firstVertex = patrollingMap.Vertices.First();
+                    return new Meeting(new MeetingPoint(firstVertex.Id, int.MaxValue, int.MaxValue, Array.Empty<int>()), firstVertex, int.MaxValue);
+                }
+
                 var bestMeetingPoint = meetingPoints[0];
                 var bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
+                while (bestMeetingAtTick < _getLogicTick())
+                {
+                    HeldMeeting(bestMeetingPoint);
+                    bestMeetingAtTick = bestMeetingPoint.GetMeetingAtTick(GetHeldMeetings(bestMeetingPoint));
+                }
                 foreach (var meetingPoint in meetingPoints.Skip(1))
                 {
                     var meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
+                    while (meetingAtTick < _getLogicTick())
+                    {
+                        HeldMeeting(meetingPoint);
+                        meetingAtTick = meetingPoint.GetMeetingAtTick(GetHeldMeetings(meetingPoint));
+                    }
                     if (meetingAtTick < bestMeetingAtTick)
                     {
                         bestMeetingPoint = meetingPoint;
@@ -267,9 +294,9 @@ namespace Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.Imme
             /// <param name="controller">The robot controller.</param>
             /// <param name="meeting">The meeting that the robot is going to.</param>
             /// <returns>Returns the ids of the robots that are sensed and going to the same meeting.</returns>
-            public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting)
+            public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting, RobotIdClass robotIdClass)
             {
-                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, controller.Id));
+                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, robotIdClass.RobotId));
                 var robotIds = new HashSet<int>();
                 var messages = controller.ReceiveBroadcast().OfType<GoingToMeetingMessage>();
 

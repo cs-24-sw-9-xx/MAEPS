@@ -22,20 +22,33 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
 
+using ImmediateTakeover = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
+using NoFaultTolerance = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
+using RandomTakeover = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover;
+
 namespace Maes.Experiments.Patrolling
 {
     internal static class GroupAParameters
     {
+        static GroupAParameters()
+        {
+            AllAlgorithms = StandardAlgorithms
+                .Concat(FaultTolerantHMPVariants)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> AllAlgorithms;
+
         /// <summary>
         /// Supply the function with the robot count and it will return the patrolling map factory and the algorithm.
         /// </summary>
@@ -58,10 +71,17 @@ namespace Maes.Experiments.Patrolling
             { nameof(SingleCycleChristofides), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
 
             // Algorithms that use all-waypoint-connected-maps and partitioning
-            { nameof(HMPPatrollingAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
-            (
-            ))
-            },
+            { "NoFaultTolerance.HMPPatrollingAlgorithm", (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new NoFaultTolerance.HMPPatrollingAlgorithm()) },
+        };
+
+        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> FaultTolerantHMPVariants = new()
+        {
+            { "ImmediateTakeover.HMPPatrollingAlgorithm",
+                (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)) },
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
+                (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)) },
+            { "RandomTakeover.HMPPatrollingAlgorithm",
+                (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new RandomTakeover.HMPPatrollingAlgorithm()) },
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?

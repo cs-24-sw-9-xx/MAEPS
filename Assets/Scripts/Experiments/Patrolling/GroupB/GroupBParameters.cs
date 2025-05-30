@@ -19,6 +19,41 @@ namespace Maes.Experiments.Patrolling.GroupB
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
 
+        public static readonly List<int> MapSizes = new()
+        {
+            150,
+            200,
+            250,
+        };
+
+        public static readonly List<int> RobotCounts = new()
+        {
+            1,
+            2,
+            4,
+            8,
+            16,
+        };
+        public static readonly List<int> PartitionCounts = new()
+        {
+            1,
+            2,
+            4,
+        };
+        public static readonly List<int> RedistributionPartitionCounts = new()
+        {
+            2,
+            4,
+        };
+
+        public static readonly Dictionary<string, RobotConstraints> RobotConstraintsDictionary = new()
+        {
+            { nameof(GlobalRedistributionWithCRAlgo), GlobalRobotConstraints },
+            { nameof(AdaptiveRedistributionFailureBasedCRAlgo), MaterialRobotConstraints },
+            { nameof(AdaptiveRedistributionSuccessBasedCRAlgo), MaterialRobotConstraints },
+            { nameof(RandomRedistributionWithCRAlgo), MaterialRobotConstraints },
+        };
+
         // We both make building and cave maps, so 100 scenarios in total
         public const int StandardSeedCount = 50;
 
@@ -27,7 +62,10 @@ namespace Maes.Experiments.Patrolling.GroupB
             { nameof(ConscientiousReactiveAlgorithm), (_) => new ConscientiousReactiveAlgorithm() },
 
             { nameof(RandomReactive), (seed) => new RandomReactive(seed) },
+        };
 
+        public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
+        {
             {nameof(AdaptiveRedistributionFailureBasedCRAlgo), (_) => new AdaptiveRedistributionFailureBasedCRAlgo()},
 
             {nameof(AdaptiveRedistributionSuccessBasedCRAlgo), (_) => new AdaptiveRedistributionSuccessBasedCRAlgo()},

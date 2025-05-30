@@ -341,7 +341,7 @@ namespace Maes.Algorithms.Patrolling
 
         protected virtual void GetDebugInfo(StringBuilder stringBuilder) { }
 
-        internal bool HasSeenAllInPartition(int assignedPartition)
+        public bool HasSeenAllInPartition(int assignedPartition)
         {
             if (!_seenVerticesByPartition.ContainsKey(assignedPartition))
             {
