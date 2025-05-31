@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-
-using CsvHelper;
-using CsvHelper.Configuration;
+﻿using System.Diagnostics;
 
 using Maes.Statistics.Snapshots;
 
@@ -11,15 +8,22 @@ public static class CsvDataReader
 {
     public static List<PatrollingSnapshot> ReadPatrollingCsv(string path)
     {
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            PrepareHeaderForMatch = args => args.Header.ToLower(),
-            HasHeaderRecord = true,
-            HeaderValidated = null // Disable header validation
-
-        };
+        var patrollingSnapshots = new List<PatrollingSnapshot>();
         using var reader = new StreamReader(path);
-        using var csv = new CsvReader(reader, config);
-        return csv.GetRecords<PatrollingSnapshot>().ToList();
+        reader.ReadLine(); // Ignore the header
+        while (true)
+        {
+            var line = reader.ReadLine();
+            if (line == null)
+            {
+                return patrollingSnapshots;
+            }
+
+            var columnValues = line.Split(';');
+            var patrollingSnapshot = new PatrollingSnapshot();
+            var lastBits = patrollingSnapshot.ReadRow(columnValues);
+            Debug.Assert(lastBits.Length == 0);
+            patrollingSnapshots.Add(patrollingSnapshot);
+        }
     }
 }
