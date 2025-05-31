@@ -293,6 +293,10 @@ namespace Maes.Simulation
             CurrentSimulation.SetInfoUIController(SimulationInfoUIController);
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+
+            // We allocate a lot of stuff when creating a simulation.
+            // Let's clean it up!
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
         }
 
         private void UpdateStatisticsUI()

@@ -34,23 +34,61 @@ namespace Maes.UI.Visualizers.Patrolling
 {
     public sealed class CommunicationZoneVertices
     {
-        public Dictionary<int, Bitmap> CommunicationZoneTiles { get; }
-        public Bitmap AllCommunicationZoneTiles { get; }
+        private readonly SimulationMap<Tile> _simulationMap;
+        private readonly PatrollingMap _patrollingMap;
+        private readonly CommunicationManager _communicationManager;
+
+        private Dictionary<int, Bitmap>? _communicationZoneTiles;
+
+        public IReadOnlyDictionary<int, Bitmap> CommunicationZoneTiles
+        {
+            get
+            {
+                if (_communicationZoneTiles == null)
+                {
+                    PopulateCommunicationZones();
+                }
+
+                return _communicationZoneTiles!;
+            }
+        }
+
+        private Bitmap? _allCommunicationZoneTiles;
+
+        public Bitmap AllCommunicationZoneTiles
+        {
+            get
+            {
+                if (_allCommunicationZoneTiles == null)
+                {
+                    PopulateCommunicationZones();
+                }
+
+                return _allCommunicationZoneTiles!;
+            }
+        }
 
         public CommunicationZoneVertices(SimulationMap<Tile> simulationMap, PatrollingMap patrollingMap, CommunicationManager communicationManager)
         {
-            CommunicationZoneTiles = new Dictionary<int, Bitmap>();
-            var vertices = patrollingMap.Vertices;
-            var communicationZones = communicationManager.CalculateZones(vertices);
+            _simulationMap = simulationMap;
+            _patrollingMap = patrollingMap;
+            _communicationManager = communicationManager;
+        }
+
+        private void PopulateCommunicationZones()
+        {
+            _communicationZoneTiles = new Dictionary<int, Bitmap>();
+            var vertices = _patrollingMap.Vertices;
+            var communicationZones = _communicationManager.CalculateZones(vertices);
             foreach (var vertex in vertices)
             {
-                CommunicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
+                _communicationZoneTiles[vertex.Id] = communicationZones[vertex.Position];
             }
 
-            AllCommunicationZoneTiles = new Bitmap(simulationMap.WidthInTiles, simulationMap.HeightInTiles);
+            _allCommunicationZoneTiles = new Bitmap(_simulationMap.WidthInTiles, _simulationMap.HeightInTiles);
             foreach (var (id, zone) in communicationZones)
             {
-                AllCommunicationZoneTiles.Union(zone);
+                _allCommunicationZoneTiles.Union(zone);
             }
         }
     }

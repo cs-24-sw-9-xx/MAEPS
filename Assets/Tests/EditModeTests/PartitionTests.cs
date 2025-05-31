@@ -98,7 +98,7 @@ namespace Tests.EditModeTests
         public void Constructor_InitializesPropertiesCorrectly()
         {
             // Arrange & Act
-            var partition = new Partition(1, _vertices, _communicationZones);
+            var partition = new Partition(1, _vertices, () => _communicationZones);
 
             // Assert
             Assert.AreEqual(1, partition.PartitionId);
@@ -119,7 +119,7 @@ namespace Tests.EditModeTests
         public void CalculateIntersectionAndRatio_CalculatesCorrectly_WhenPartitionsIntersect()
         {
             // Arrange
-            var partition1 = new Partition(1, _vertices, _communicationZones);
+            var partition1 = new Partition(1, _vertices, () => _communicationZones);
 
             // Create a second partition with vertices that intersect with the first
             var vertices2 = new List<Vertex>
@@ -152,7 +152,7 @@ namespace Tests.EditModeTests
             }
             communicationZones2[new Vector2Int(7, 7)] = bitmap5;
 
-            var partition2 = new Partition(2, vertices2, communicationZones2);
+            var partition2 = new Partition(2, vertices2, () => communicationZones2);
 
             // Act
             partition1.CalculateIntersectionAndRatio(partition2);
@@ -185,7 +185,7 @@ namespace Tests.EditModeTests
         {
             // Arrange
             var partition1 = new Partition(1, new List<Vertex> { _vertices[0] }, // Only use vertex at (2,2)
-                new Dictionary<Vector2Int, Bitmap> { { new Vector2Int(2, 2), _communicationZones[new Vector2Int(2, 2)] } });
+                () => new Dictionary<Vector2Int, Bitmap> { { new Vector2Int(2, 2), _communicationZones[new Vector2Int(2, 2)] } });
 
             // Create a second partition with no intersection
             var vertex = new Vertex(3, new Vector2Int(9, 9));
@@ -196,7 +196,7 @@ namespace Tests.EditModeTests
             bitmap4.Set(9, 9);
             communicationZones2[new Vector2Int(9, 9)] = bitmap4;
 
-            var partition2 = new Partition(2, vertices2, communicationZones2);
+            var partition2 = new Partition(2, vertices2, () => communicationZones2);
 
             // Act
             partition1.CalculateIntersectionAndRatio(partition2);
