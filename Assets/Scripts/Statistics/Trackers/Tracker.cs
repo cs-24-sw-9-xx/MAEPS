@@ -18,7 +18,6 @@ namespace Maes.Statistics.Trackers
         protected readonly TVisualizer _visualizer;
 
         protected readonly SimulationMap<Cell> _map;
-        protected readonly RayTracingMap<Cell> _rayTracingMap;
         public delegate void VisualizationModeConsumer(TVisualizationMode mode);
         public event VisualizationModeConsumer? OnVisualizationModeChanged;
 
@@ -45,7 +44,6 @@ namespace Maes.Statistics.Trackers
 #if MAEPS_GUI
             _visualizer.SetSimulationMap(_map);
 #endif
-            _rayTracingMap = new RayTracingMap<Cell>(_map);
 
             _coverageCalculator = new CoverageCalculator(_map, collisionMap);
             _preCoverageTileConsumerDelegate = PreCoverageTileConsumer;

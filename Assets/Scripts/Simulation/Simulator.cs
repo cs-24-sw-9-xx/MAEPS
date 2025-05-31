@@ -42,6 +42,10 @@ namespace Maes.Simulation
 
         protected Simulator(IReadOnlyList<TScenario> scenarios, bool autoMaxSpeedInBatchMode = true)
         {
+#if UNITY_EDITOR
+            UnityEngine.Profiling.Profiler.maxUsedMemory = int.MaxValue; // 2 GB
+#endif
+
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
