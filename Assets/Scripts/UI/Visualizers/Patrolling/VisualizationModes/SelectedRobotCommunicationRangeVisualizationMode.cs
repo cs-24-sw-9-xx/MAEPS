@@ -35,6 +35,8 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
             var communicationRangeBitmap = _robot.Controller.CommunicationManager.CalculateCommunicationZone(position);
             visualizer.SetAllColors(communicationRangeBitmap, PatrollingVisualizer.CommunicationColor, Visualizer.StandardCellColor);
             communicationRangeBitmap.Dispose();
+
+            _lastPosition = position;
         }
     }
 }

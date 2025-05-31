@@ -75,7 +75,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions.Add(new Partition(partitionId, vertices, communicationManager.CalculateZones(vertices)));
+                partitions.Add(new Partition(partitionId, vertices, () => communicationManager.CalculateZones(vertices)));
                 partitionId++;
             }
 

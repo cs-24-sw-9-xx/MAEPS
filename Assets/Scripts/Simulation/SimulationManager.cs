@@ -294,6 +294,10 @@ namespace Maes.Simulation
             CurrentSimulation.SetInfoUIController(SimulationInfoUIController);
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+
+            // We allocate a lot of stuff when creating a simulation.
+            // Let's clean it up!
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
             var endTime = Time.realtimeSinceStartup;
             Debug.Log($"Simulation created in {endTime - startTime:F2} seconds for {scenario.StatisticsFileName}");
         }
