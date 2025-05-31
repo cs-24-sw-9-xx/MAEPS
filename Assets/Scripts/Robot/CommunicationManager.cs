@@ -102,8 +102,23 @@ namespace Maes.Robot
         // Set by SetRobotReferences
         private IReadOnlyList<MonaRobot> _robots = null!;
 
+
+        private EnvironmentTaggingMap? _environmentTaggingMap;
+
         // Map for storing and retrieving all tags deposited by robots
-        private readonly EnvironmentTaggingMap _environmentTaggingMap;
+        // It is only used for environment tag based algorithms, so compute it lazily.
+        private EnvironmentTaggingMap EnvironmentTaggingMap
+        {
+            get
+            {
+                if (_environmentTaggingMap == null)
+                {
+                    _environmentTaggingMap = new EnvironmentTaggingMap(_tileMap);
+                }
+
+                return _environmentTaggingMap;
+            }
+        }
 
         private readonly SimulationMap<Tile> _tileMap;
 
@@ -169,7 +184,6 @@ namespace Maes.Robot
             _robotConstraints = robotConstraints;
             _visualizer = visualizer;
             _tileMap = collisionMap;
-            _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
             _offset = collisionMap.ScaledOffset;
         }
@@ -377,13 +391,13 @@ namespace Maes.Robot
 
         public void DepositTag(MonaRobot robot, string content)
         {
-            var tag = _environmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
+            var tag = EnvironmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
             _visualizer.AddEnvironmentTag(tag);
         }
 
         public List<EnvironmentTag> ReadNearbyTags(MonaRobot robot)
         {
-            var tags = _environmentTaggingMap.GetTagsNear(robot.transform.position,
+            var tags = EnvironmentTaggingMap.GetTagsNear(robot.transform.position,
                 _robotConstraints.EnvironmentTagReadRange);
 
             return tags;
