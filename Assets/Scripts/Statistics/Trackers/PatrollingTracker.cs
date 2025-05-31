@@ -10,6 +10,7 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
+using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Patrolling;
 using Maes.UI.Visualizers.Patrolling.VisualizationModes;
