@@ -598,8 +598,8 @@ PlayerSettings:
   il2cppStacktraceInformation:
     Standalone: 1
   managedStrippingLevel:
-    Server: 4
-    Standalone: 4
+    Server: 3
+    Standalone: 3
   incrementalIl2cppBuild: {}
   suppressCommonWarnings: 1
   allowUnsafeCode: 0
