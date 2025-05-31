@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Algorithms.Patrolling.Components;
-using Maes.Assets.Scripts.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map;
 using Maes.Robot;
 
@@ -21,7 +21,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(RobotIdClass robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy, System.Random random)
+        public PartitionComponent(StrongBox<int> robotId, PartitionGenerator partitionGenerator, TakeoverStrategy takeoverStrategy, System.Random random)
         {
             _robotId = robotId;
             _partitionGenerator = partitionGenerator;
@@ -32,7 +32,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
-        private readonly RobotIdClass _robotId;
+        private readonly StrongBox<int> _robotId;
         private readonly PartitionGenerator _partitionGenerator;
         private readonly TakeoverStrategy _takeoverStrategy;
         private readonly System.Random _random;
@@ -70,7 +70,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
             while (true)
             {
-                var success = _virtualStigmergyComponent.TryGet(_robotId.RobotId, out var partitionInfo);
+                var success = _virtualStigmergyComponent.TryGet(_robotId.Value, out var partitionInfo);
                 Debug.Assert(success);
                 PartitionInfo = partitionInfo!;
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
@@ -90,7 +90,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobots)
         {
             var robotsThatShowedUp = meeting.MeetingPoint.RobotIds.Except(missingRobots).ToList();
-            Debug.Assert(robotsThatShowedUp.Contains(_robotId.RobotId), "Robot that is taking over partition should be in the list of robots that showed up");
+            Debug.Assert(robotsThatShowedUp.Contains(_robotId.Value), "Robot that is taking over partition should be in the list of robots that showed up");
             robotsThatShowedUp.Sort();
             var missingRobotsSorted = missingRobots.ToList();
             missingRobotsSorted.Sort();
@@ -116,7 +116,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         private void ImmediateTakeover(List<int> robotsThatShowedUp, List<int> missingRobotsSorted)
         {
-            var myIndex = robotsThatShowedUp.IndexOf(_robotId.RobotId);
+            var myIndex = robotsThatShowedUp.IndexOf(_robotId.Value);
             if (myIndex < missingRobotsSorted.Count)
             {
                 // Pick the id of one of the missing robots to take over
@@ -132,9 +132,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         private void TakeOverOtherRobotPartition(int robotId)
         {
-            Debug.Log($"Robot {_robotId.RobotId} taking over partition for robot {robotId}");
-            _robotId.RobotId = robotId;
-            _virtualStigmergyComponent.TryGet(_robotId.RobotId, out var partitionInfo);
+            Debug.Log($"Robot {_robotId.Value} taking over partition for robot {robotId}");
+            _robotId.Value = robotId;
+            _virtualStigmergyComponent.TryGet(_robotId.Value, out var partitionInfo);
             Debug.Assert(partitionInfo != null, "PartitionInfo should not be null");
             PartitionInfo = partitionInfo!;
         }
