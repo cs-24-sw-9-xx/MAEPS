@@ -23,8 +23,6 @@ namespace Maes.UI.Visualizers
 
         private int _widthInTiles, _heightInTiles;
 
-        protected readonly List<Vector3> _vertices = new();
-        private readonly List<int> _triangles = new();
 
         // Set in SetSimulationMap
         private SimulationMap<Cell> _map = null!;
@@ -51,17 +49,16 @@ namespace Maes.UI.Visualizers
             _widthInTiles = _map.WidthInTiles;
             _heightInTiles = _map.HeightInTiles;
 
-            // GenerateVertices();
-            GenerateTriangleVertices();
-            GenerateTriangles();
-            _colors = new Color32[_vertices.Count];
+            var vertices = GenerateTriangleVertices();
+            var triangles = GenerateTriangles(vertices);
+            _colors = new Color32[vertices.Length];
             InitializeColors(_map);
 
             _mesh = new Mesh
             {
                 indexFormat = IndexFormat.UInt32,
-                vertices = _vertices.ToArray(),
-                triangles = _triangles.ToArray(),
+                vertices = vertices,
+                triangles = triangles,
                 colors32 = _colors
             };
             _mesh.RecalculateNormals();
@@ -69,11 +66,18 @@ namespace Maes.UI.Visualizers
             _cellIndexToTriangleIndexes = newMap.CellIndexToTriangleIndexes();
             meshFilter.mesh = _mesh;
         }
+
+        private void OnDestroy()
+        {
+            Destroy(_mesh);
+        }
 #endif
 
-        private void GenerateTriangleVertices()
+        private Vector3[] GenerateTriangleVertices()
         {
-            _vertices.Clear();
+            // 8 triangles per tile
+            // 3 vertices per triangle
+            var vertices = new List<Vector3>(_widthInTiles * _heightInTiles * 8 * 3);
             const float vertexDistance = 1f / ResolutionMultiplier;
             for (var y = 0; y < _heightInTiles; y++)
             {
@@ -81,67 +85,71 @@ namespace Maes.UI.Visualizers
                 for (var x = 0; x < _widthInTiles; x++)
                 {
                     var translatedX = x - 0.5f;
-                    AddTileTriangleVertices(translatedX, translatedY, vertexDistance);
+                    AddTileTriangleVertices(translatedX, translatedY, vertexDistance, vertices);
                 }
             }
+
+            return vertices.ToArray();
         }
 
         // Adds all of the vertices needed for a tile of 8 triangles
         // The triangles are indexed and arranged as shown in this very pretty illustration:
         // |4/5|6\7|
         // |0\1|2/3|
-        private void AddTileTriangleVertices(float x, float y, float vertexDistance)
+        private static void AddTileTriangleVertices(float x, float y, float vertexDistance, List<Vector3> vertices)
         {
             // Triangle 0
-            _vertices.Add(new Vector3(x, y, 0f));
-            _vertices.Add(new Vector3(x, y + vertexDistance, 0f));
-            _vertices.Add(new Vector3(x + vertexDistance, y, 0f));
+            vertices.Add(new Vector3(x, y, 0f));
+            vertices.Add(new Vector3(x, y + vertexDistance, 0f));
+            vertices.Add(new Vector3(x + vertexDistance, y, 0f));
 
             // Triangle 1
-            _vertices.Add(new Vector3(x, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y));
+            vertices.Add(new Vector3(x, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y));
 
             // Triangle 2
-            _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y));
+            vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y));
 
             // Triangle 3
-            _vertices.Add(new Vector3(x + vertexDistance, y));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y));
+            vertices.Add(new Vector3(x + vertexDistance, y));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y));
 
             // Triangle 4
-            _vertices.Add(new Vector3(x, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x, y + vertexDistance));
+            vertices.Add(new Vector3(x, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x, y + vertexDistance));
 
             // Triangle 5
-            _vertices.Add(new Vector3(x, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
 
             // Triangle 6
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
-            _vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + vertexDistance));
 
             // Triangle 7
-            _vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + 2 * vertexDistance));
-            _vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
+            vertices.Add(new Vector3(x + vertexDistance, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y + 2 * vertexDistance));
+            vertices.Add(new Vector3(x + 2 * vertexDistance, y + vertexDistance));
         }
 
 
-        private void GenerateTriangles()
+        private static int[] GenerateTriangles(Vector3[] vertices)
         {
-            _triangles.Clear();
+            var triangles = new int[vertices.Length];
             // The vertices are already arranged in the correct order (ie. triangle 0 has vertices indexed 0, 1, 2)
-            for (var i = 0; i < _vertices.Count; i++)
+            for (var i = 0; i < vertices.Length; i++)
             {
-                _triangles.Add(i);
+                triangles[i] = i;
             }
+
+            return triangles;
         }
 
         // Colors each triangle depending on its current state
@@ -164,9 +172,6 @@ namespace Maes.UI.Visualizers
 
         public void SetAllColors(Bitmap map, Color32 isContained, Color32 isNotContained)
         {
-            var width = map.Width;
-            var height = map.Height;
-
             var triangleIndexes = new HashSet<int>();
             foreach (var tile in map)
             {
