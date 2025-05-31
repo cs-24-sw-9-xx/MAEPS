@@ -36,7 +36,7 @@ namespace Maes.Map
             Paths = paths;
             Partitions = new List<Partition>
             {
-                new Partition(0, vertices, vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
+                new Partition(0, vertices, () => vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
             };
         }
 

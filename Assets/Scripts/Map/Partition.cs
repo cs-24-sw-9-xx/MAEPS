@@ -21,6 +21,7 @@
 // Jakob Meyer Olsen
 // Mads Beyer Mogensen
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -35,29 +36,51 @@ namespace Maes.Map
 {
     public sealed class Partition
     {
+        private readonly Func<IReadOnlyDictionary<Vector2Int, Bitmap>> _communicationZonesMaker;
         public int PartitionId { get; }
         public IReadOnlyList<Vertex> Vertices { get; }
-        public Bitmap CommunicationZone { get; }
-        public IReadOnlyDictionary<Vector2Int, Bitmap> WaypointsCommunicationZones { get; }
+
+        private Bitmap? _communicationZone;
+
+        public Bitmap CommunicationZone
+        {
+            get
+            {
+                if (_communicationZone == null)
+                {
+                    _communicationZone = CreatePartitionCommunicationZone(Vertices, WaypointsCommunicationZones);
+                }
+
+                return _communicationZone;
+            }
+        }
+
+        private IReadOnlyDictionary<Vector2Int, Bitmap>? _waypointsCommunicationZones;
+
+        public IReadOnlyDictionary<Vector2Int, Bitmap> WaypointsCommunicationZones
+        {
+            get
+            {
+                if (_waypointsCommunicationZones == null)
+                {
+                    _waypointsCommunicationZones = _communicationZonesMaker();
+                }
+
+                return _waypointsCommunicationZones;
+            }
+        }
         public IReadOnlyDictionary<int, Bitmap> IntersectionZones => _intersectionZones;
         public IReadOnlyDictionary<int, float> CommunicationRatio => _communicationRatio;
 
         private readonly HashSet<Partition> _neighborPartitions = new();
         private readonly Dictionary<int, Bitmap> _intersectionZones = new();
         private readonly Dictionary<int, float> _communicationRatio = new();
-        private readonly int _bitmapWidth;
-        private readonly int _bitmapHeight;
 
-        public Partition(int partitionId, IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
+        public Partition(int partitionId, IReadOnlyList<Vertex> vertices, Func<IReadOnlyDictionary<Vector2Int, Bitmap>> communicationZonesMaker)
         {
+            _communicationZonesMaker = communicationZonesMaker;
             PartitionId = partitionId;
             Vertices = vertices;
-            WaypointsCommunicationZones = communicationZones;
-
-            CommunicationZone = CreatePartitionCommunicationZone(vertices, communicationZones);
-            //TODO: Look into the way this bitmap is used, it may cause problems with intersection calculations in the future.
-            _bitmapWidth = CommunicationZone.Width;
-            _bitmapHeight = CommunicationZone.Height;
         }
 
         public void AddNeighborPartition(Partition partition)
@@ -73,11 +96,11 @@ namespace Maes.Map
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
         {
-            var communicationZoneIntersection = new Bitmap(_bitmapWidth, _bitmapHeight);
+            var communicationZoneIntersection = new Bitmap(CommunicationZone.Width, CommunicationZone.Height);
 
             foreach (var (position, vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
-                var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
+                using var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
                 if (intersection.Contains(position))
                 {
                     communicationZoneIntersection.Union(intersection);
