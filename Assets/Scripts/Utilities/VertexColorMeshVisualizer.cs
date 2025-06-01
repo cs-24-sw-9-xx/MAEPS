@@ -25,7 +25,7 @@ namespace Maes.Utilities
     {
         public static Mesh GenerateMeshSingleColor(Color32 color)
         {
-            var mesh = new Mesh();
+            var mesh = new Mesh { name = "Vertex Color Visualizer (Single Color)" };
 
             var vertices = new Vector3[4];
             var triangles = new int[6];
@@ -43,7 +43,7 @@ namespace Maes.Utilities
 
         public static Mesh GenerateMeshMultipleColor(Color32[] colorsInput)
         {
-            var mesh = new Mesh();
+            var mesh = new Mesh { name = "Vertex Color Visualizer (Multiple Colors)" };
             var gridSize = colorsInput.Length;
             var numCells = gridSize * gridSize;
 
