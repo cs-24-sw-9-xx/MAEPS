@@ -56,6 +56,7 @@ namespace Maes.UI.Visualizers
 
             _mesh = new Mesh
             {
+                name = "Visualizer",
                 indexFormat = IndexFormat.UInt32,
                 vertices = vertices,
                 triangles = triangles,
@@ -64,7 +65,7 @@ namespace Maes.UI.Visualizers
             _mesh.RecalculateNormals();
 
             _cellIndexToTriangleIndexes = newMap.CellIndexToTriangleIndexes();
-            meshFilter.mesh = _mesh;
+            meshFilter.sharedMesh = _mesh;
         }
 
         private void OnDestroy()

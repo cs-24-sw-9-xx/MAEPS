@@ -21,12 +21,7 @@ namespace Maes.UI.Visualizers.Patrolling
         public void SetVertexDetails(VertexDetails vertexDetails)
         {
             VertexDetails = vertexDetails;
-            SetWaypointColor(vertexDetails.Vertex.Color);
-        }
-
-        public void SetWaypointColor(Color32 color)
-        {
-            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshSingleColor(color);
+            ShowDefaultWaypointColor();
         }
 
         public void ShowDefaultWaypointColor()
@@ -34,14 +29,35 @@ namespace Maes.UI.Visualizers.Patrolling
             SetWaypointColor(VertexDetails.Vertex.Color);
         }
 
+        public void SetWaypointColor(Color32 color)
+        {
+            if (meshFilter.sharedMesh != null)
+            {
+                Destroy(meshFilter.sharedMesh);
+            }
+
+            meshFilter.sharedMesh = VertexColorMeshVisualizer.GenerateMeshSingleColor(color);
+        }
+
         public void SetWaypointColor(Color32[] colors)
         {
             if (colors.Length == 1)
             {
                 SetWaypointColor(colors[0]);
+                return;
             }
 
-            meshFilter.mesh = VertexColorMeshVisualizer.GenerateMeshMultipleColor(colors.Distinct().ToArray());
+            if (meshFilter.sharedMesh != null)
+            {
+                Destroy(meshFilter.sharedMesh);
+            }
+
+            meshFilter.sharedMesh = VertexColorMeshVisualizer.GenerateMeshMultipleColor(colors.Distinct().ToArray());
+        }
+
+        private void OnDestroy()
+        {
+            Destroy(meshFilter.sharedMesh);
         }
 
         public void OnPointerClick(PointerEventData eventData)
