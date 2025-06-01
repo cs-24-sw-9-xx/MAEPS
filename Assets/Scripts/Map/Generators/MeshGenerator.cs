@@ -93,6 +93,11 @@ namespace Maes.Map.Generators
             ClearData();
         }
 
+        private void OnDestroy()
+        {
+            ClearMesh();
+        }
+
         internal SimulationMap<Tile> GenerateMesh(Tile[,] map, float wallHeight,
             bool disableCornerRounding, List<Room> rooms, bool brokenCollisionMap)
         {
@@ -167,6 +172,7 @@ namespace Maes.Map.Generators
             // Create roof mesh
             var wallRoofMesh = new Mesh
             {
+                name = "Wall Roof",
                 vertices = _vertices2D.Select(vertex => vertex.Position).ToArray()
             };
             var subMesh = 0;
@@ -183,7 +189,7 @@ namespace Maes.Map.Generators
             wallRoofMesh.RecalculateNormals();
 
             // Apply mesh to wall roof
-            WallRoof.mesh = wallRoofMesh;
+            WallRoof.sharedMesh = wallRoofMesh;
         }
 
         private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Tile[,] tileMap, Vector3 offset,
@@ -324,7 +330,7 @@ namespace Maes.Map.Generators
 
             var wallVertices = new List<Node>();
             var wallTriangles = new Dictionary<TileType, List<int>>();
-            var innerWallsMesh = new Mesh();
+            var innerWallsMesh = new Mesh { name = "Inner Walls" + (isMesh3D ? "3D" : "2D") };
 
             var outlines = isMesh3D ? _outlines3D : _outlines2D;
 
@@ -404,11 +410,11 @@ namespace Maes.Map.Generators
 
             if (isMesh3D)
             {
-                InnerWalls3D.mesh = innerWallsMesh;
+                InnerWalls3D.sharedMesh = innerWallsMesh;
             }
             else
             {
-                InnerWalls2D.mesh = innerWallsMesh;
+                InnerWalls2D.sharedMesh = innerWallsMesh;
             }
         }
 
