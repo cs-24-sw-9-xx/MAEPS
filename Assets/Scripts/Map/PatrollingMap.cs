@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Maes.Map.Generators;
 using Maes.Map.PathFinding;
@@ -81,18 +83,19 @@ namespace Maes.Map
         {
             var startTime = Time.realtimeSinceStartup;
 
-            var aStar = new MyAStar();
-            var paths = new Dictionary<(int, int), IReadOnlyList<PathStep>>();
-            foreach (var vertex in vertices)
+            var paths = new ConcurrentDictionary<(int, int), IReadOnlyList<PathStep>>();
+            Parallel.ForEach(vertices, vertex =>
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    var path = MyAStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    var path = MyAStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ??
+                               throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = MyAStar.PathToStepsCheap(path);
 
-                    paths.Add((vertex.Id, neighbor.Id), pathSteps);
+                    var success = paths.TryAdd((vertex.Id, neighbor.Id), pathSteps);
+                    Debug.Assert(success);
                 }
-            }
+            });
 
             Debug.LogFormat("Create Paths took {0} s", Time.realtimeSinceStartup - startTime);
 
