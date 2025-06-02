@@ -49,7 +49,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), null, 4, mapSize, amountOfCycles: 1));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), null, 4, mapSize, amountOfCycles: 0));
                 }
             }
 
