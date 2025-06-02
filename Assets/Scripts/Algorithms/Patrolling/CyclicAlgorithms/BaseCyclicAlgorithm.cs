@@ -78,20 +78,30 @@ namespace Maes.Algorithms.Patrolling
             Debug.Assert(vertices.Max(v => v.Id) < PatrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
 
             var distanceMatrix = new float[vertices.Count, vertices.Count];
-            foreach (var v1 in vertices)
+
+            for (var i = 0; i < vertices.Count; i++)
             {
-                foreach (var v2 in vertices)
+                var v1 = vertices[i];
+                for (var j = i; j < vertices.Count; j++)
                 {
-                    if (v1.Id == v2.Id)
+                    var v2 = vertices[j];
+                    float distance;
+
+                    if (i == j)
                     {
-                        distanceMatrix[v1.Id, v2.Id] = 0;
+                        distance = 0;
                     }
                     else
                     {
-                        distanceMatrix[v1.Id, v2.Id] = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position, dependOnBrokenBehaviour: false) ?? float.MaxValue;
+                        distance = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position, dependOnBrokenBehaviour: false)
+                                   ?? float.MaxValue;
                     }
+
+                    distanceMatrix[v1.Id, v2.Id] = distance;
+                    distanceMatrix[v2.Id, v1.Id] = distance;
                 }
             }
+
             return distanceMatrix;
         }
 
