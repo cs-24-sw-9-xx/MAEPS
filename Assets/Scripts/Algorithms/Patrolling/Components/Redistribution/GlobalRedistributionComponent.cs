@@ -57,12 +57,12 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             while (true)
             {
                 CheckHeartbeats();
-                RedistributeRobotIfLastSurvivor();
+                RedistributeRobotIfLessRobotsThanPartitions();
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
 
-        private void RedistributeRobotIfLastSurvivor()
+        private void RedistributeRobotIfLessRobotsThanPartitions()
         {
             // Only check after some ticks to avoid early moves
             if (_algorithm.LogicTicks <= 1000)
@@ -70,8 +70,8 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                 return;
             }
 
-            // If we are the only robot left
-            if (_heartbeatComponent.RobotHeartbeats.Count != 0)
+            // If there are enough heartbeats greater or equal the amount of partitions, no redistribution is needed
+            if (_heartbeatComponent.RobotHeartbeats.Count + 1 >= _algorithm.PartitionIdleness.Count())
             {
                 return;
             }
