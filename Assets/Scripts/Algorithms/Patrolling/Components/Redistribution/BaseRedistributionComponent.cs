@@ -135,29 +135,44 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     {
                         _currentPartitionIntersection.Add(partitionId);
                     }
+                    else if (_trackerUpdateTimestamp <= _algorithm.LogicTicks - 250)
+                    {
+                        UpdateRedistributionTracker(partitionId);
+                    }
                 }
                 else
                 {
                     if (_currentPartitionIntersection.Contains(partitionId))
                     {
-                        if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
+                        if (UpdateRedistributionTracker(partitionId))
                         {
-                            UpdateTrackerOnSuccess(partitionId);
-                            _trackerUpdateTimestamp = _algorithm.LogicTicks;
-                            _receivedCommunication[partitionId] = false;
+                            return;
                         }
-                        else
-                        {
-                            UpdateTrackerOnFailure(partitionId);
-                            if (SwitchPartition(partitionId))
-                            {
-                                return;
-                            }
-                        }
+
                         _currentPartitionIntersection.Remove(partitionId);
                     }
                 }
             }
+        }
+
+        private bool UpdateRedistributionTracker(int partitionId)
+        {
+            if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
+            {
+                UpdateTrackerOnSuccess(partitionId);
+                _trackerUpdateTimestamp = _algorithm.LogicTicks;
+                _receivedCommunication[partitionId] = false;
+            }
+            else
+            {
+                UpdateTrackerOnFailure(partitionId);
+                if (SwitchPartition(partitionId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool SwitchPartition(int partitionId)

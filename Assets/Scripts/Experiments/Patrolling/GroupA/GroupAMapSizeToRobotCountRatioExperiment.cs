@@ -40,7 +40,7 @@ namespace Maes.Experiments.Patrolling
     [Preserve]
     internal class GroupAMapSizeToRobotCountRatioExperiment : MonoBehaviour
     {
-        private static readonly List<int> _mapSizes = new() { 50, 100, 150, 200 };
+        private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250 };
         private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
         private static readonly IEnumerable<string> scenarioFilters = new List<string>
         {

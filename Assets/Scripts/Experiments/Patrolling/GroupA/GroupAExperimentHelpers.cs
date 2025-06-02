@@ -36,6 +36,7 @@ namespace Maes.Experiments.Patrolling
 
     internal static class GroupAExperimentHelpers
     {
+        private static bool MaxLogicTicksToIntMax => true;
         public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, IMapConfig mapConfig, string mapName, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false, int amountOfCycles = GroupAParameters.StandardAmountOfCycles)
         {
             return new MySimulationScenario(
@@ -69,6 +70,11 @@ namespace Maes.Experiments.Patrolling
 
         private static int MaxLogicTicks(int mapSize, int robotCount)
         {
+            if (MaxLogicTicksToIntMax)
+            {
+                return int.MaxValue - 2;
+            }
+
             return GroupAParameters.StandardAmountOfCycles
                            * MySimulationScenario.DefaultMaxLogicTicks
                            * (int)Math.Sqrt(mapSize);
