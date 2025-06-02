@@ -32,25 +32,28 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class AllAlgoCaveMapExperiment : MonoBehaviour
+    internal class BuildingDataVaryingRobotCountExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, 50))
+            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                foreach (var robotCount in GroupBParameters.RobotCounts)
                 {
-                    scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
-                        seed,
-                        algorithm.Key,
-                        algorithm.Value,
-                        GroupBParameters.StandardRobotCount,
-                        GroupBParameters.StandardMapSize,
-                        GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                        GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection()));
+                    foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                    {
+                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                            seed,
+                            algorithm.Key,
+                            algorithm.Value,
+                            robotCount,
+                            GroupBParameters.StandardMapSize,
+                            GroupBParameters.StandardAmountOfCycles,
+                            GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                            GroupBParameters.StandardPartitionCount,
+                            GroupBParameters.FaultInjection(robotCount: robotCount)));
+                    }
                 }
             }
 

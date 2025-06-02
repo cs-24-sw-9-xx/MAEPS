@@ -26,6 +26,7 @@
 using System;
 using System.Collections.Generic;
 
+using Maes.Experiments.Patrolling.GroupB;
 using Maes.FaultInjections;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -115,7 +116,8 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: 1000000,
+                                        hasFinishedSim: GroupBParameters.StandardHasFinished,
+                                        maxLogicTicks: GroupBParameters.StandardMaxLogicTicks,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
@@ -136,7 +138,8 @@ namespace Maes.Experiments.Patrolling
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
-                                        maxLogicTicks: 1000000,
+                                        hasFinishedSim: GroupBParameters.StandardHasFinished,
+                                        maxLogicTicks: GroupBParameters.StandardMaxLogicTicks,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }

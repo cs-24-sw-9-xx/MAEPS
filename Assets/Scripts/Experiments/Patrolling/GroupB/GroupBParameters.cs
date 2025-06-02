@@ -7,6 +7,7 @@ using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
 
@@ -14,11 +15,13 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     public static class GroupBParameters
     {
-        public const int StandardAmountOfCycles = 100;
-        public const int StandardMapSize = 150;
+        public const int StandardAmountOfCycles = 1000000;
+        public const int StandardMapSize = 200;
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
         public const int StandardFaultInjectionSeed = 1;
+
+        public const int StandardMaxLogicTicks = 300000;
 
         public static readonly List<int> MapSizes = new()
         {
@@ -38,9 +41,9 @@ namespace Maes.Experiments.Patrolling.GroupB
         };
         public static readonly List<int> PartitionCounts = new()
         {
-            1,
             2,
             4,
+            8,
         };
         public static readonly List<int> RedistributionPartitionCounts = new()
         {
@@ -58,6 +61,24 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         // We both make building and cave maps, so 100 scenarios in total
         public const int StandardSeedCount = 10;
+
+        public static bool StandardHasFinished(ISimulation simulation, out SimulationEndCriteriaReason? reason)
+        {
+            if (simulation.HasFinishedSim())
+            {
+                reason = new SimulationEndCriteriaReason("Success", true);
+                return true;
+            }
+
+            if (simulation.SimulatedLogicTicks > StandardMaxLogicTicks)
+            {
+                reason = new SimulationEndCriteriaReason("Reached max logic ticks", true);
+                return true;
+            }
+
+            reason = null;
+            return false;
+        }
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> Algorithms = new()
         {

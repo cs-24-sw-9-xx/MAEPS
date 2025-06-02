@@ -32,27 +32,27 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class DataVaryingRobotCountExperiment : MonoBehaviour
+    internal class BuildingDataVaryingPartitionCountExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var robotCount in GroupBParameters.RobotCounts)
+                foreach (var partitionCount in GroupBParameters.PartitionCounts)
                 {
                     foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
                     {
-                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,
                             algorithm.Key,
                             algorithm.Value,
-                            robotCount,
-                            200, // Map size
+                            GroupBParameters.StandardRobotCount,
+                            GroupBParameters.StandardMapSize,
                             GroupBParameters.StandardAmountOfCycles,
                             GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                            GroupBParameters.StandardPartitionCount,
-                            GroupBParameters.FaultInjection(GroupBParameters.StandardFaultInjectionSeed, robotCount: robotCount)));
+                            partitionCount,
+                            GroupBParameters.FaultInjection()));
                     }
                 }
             }

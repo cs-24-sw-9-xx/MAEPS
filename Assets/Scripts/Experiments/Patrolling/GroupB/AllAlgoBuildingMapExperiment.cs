@@ -45,11 +45,11 @@ namespace Maes.Experiments.Patrolling.GroupB
                         seed,
                         algorithm.Key,
                         algorithm.Value,
-                        16,
-                        200,
+                        GroupBParameters.StandardRobotCount,
+                        GroupBParameters.StandardMapSize,
                         GroupBParameters.StandardAmountOfCycles,
                         GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                        4,
+                        GroupBParameters.StandardPartitionCount,
                         GroupBParameters.FaultInjection()));
                 }
             }
