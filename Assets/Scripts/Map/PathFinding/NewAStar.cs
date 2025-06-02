@@ -184,6 +184,158 @@ namespace Maes.Map.PathFinding
             }
         }
 
+        /// <summary>
+        /// Find a path from <paramref name="start"/> to <paramref name="goal"/>.
+        /// </summary>
+        /// <param name="start">The coordinate to start from.</param>
+        /// <param name="goal">The coordinate to find a path to.</param>
+        /// <param name="map">The map to pathfind on.</param>
+        /// <param name="beOptimistic">Whether or not to treat unseen tiles as walkable.</param>
+        /// <param name="acceptPartialPaths">Whether or not to return the path to the closest coordinate to the target if no path was found to the target.</param>
+        /// <param name="dependOnBrokenBehaviour">The goal might be in a wall, allow pathing to it anyway.</param>
+        /// <typeparam name="TMap">The type of <paramref name="map"/>.</typeparam>
+        /// <returns>The path or <see langword="null"/> if no path was found.</returns>
+        public static List<Vector2Int>? FindPath(Vector2Int start, Vector2Int goal, Bitmap map, bool acceptPartialPaths, bool dependOnBrokenBehaviour)
+        {
+
+            var closestDistance = float.PositiveInfinity;
+            var closest = Vector2Int.zero;
+
+            var openList = new PriorityQueue<Vector2Int, float>();
+
+            var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
+
+            var gScore = new Dictionary<Vector2Int, float>();
+            gScore.Add(start, 0);
+
+            var fScore = new Dictionary<Vector2Int, float>();
+            fScore.Add(start, Heuristic(start, goal));
+
+            openList.Enqueue(start, fScore[start]);
+
+            while (openList.Count > 0)
+            {
+                var current = openList.Dequeue();
+
+                if (current == goal)
+                {
+                    return ReconstructPath(cameFrom, current);
+                }
+
+                var currentParent = cameFrom.GetValueOrNull(current);
+
+                var top = current + Top;
+                var topRight = current + TopRight;
+                var right = current + Right;
+                var bottomRight = current + BottomRight;
+                var bottom = current + Bottom;
+                var bottomLeft = current + BottomLeft;
+                var left = current + Left;
+                var topLeft = current + TopLeft;
+
+                var wallTop = IsSolid(top);
+                var wallTopRight = IsSolid(topRight);
+                var wallRight = IsSolid(right);
+                var wallBottomRight = IsSolid(bottomRight);
+                var wallBottom = IsSolid(bottom);
+                var wallBottomLeft = IsSolid(bottomLeft);
+                var wallLeft = IsSolid(left);
+                var wallTopLeft = IsSolid(topLeft);
+
+                var anyNeighboringWalls =
+                    wallTop || wallTopRight || wallRight || wallBottomRight || wallBottom || wallBottomLeft || wallLeft || wallTopLeft;
+
+                if (!wallTop || (dependOnBrokenBehaviour && top == goal))
+                {
+                    ProcessNeighbor(current, top, currentParent, false, anyNeighboringWalls);
+                }
+
+                if ((!wallTopRight || (dependOnBrokenBehaviour && topRight == goal)) && !wallTop && !wallRight)
+                {
+                    ProcessNeighbor(current, topRight, currentParent, true, anyNeighboringWalls);
+                }
+
+                if (!wallRight || (dependOnBrokenBehaviour && right == goal))
+                {
+                    ProcessNeighbor(current, right, currentParent, false, anyNeighboringWalls);
+                }
+
+                if ((!wallBottomRight || (dependOnBrokenBehaviour && bottomRight == goal)) && !wallRight && !wallBottom)
+                {
+                    ProcessNeighbor(current, bottomRight, currentParent, true, anyNeighboringWalls);
+                }
+
+                if (!wallBottom || (dependOnBrokenBehaviour && bottom == goal))
+                {
+                    ProcessNeighbor(current, bottom, currentParent, false, anyNeighboringWalls);
+                }
+
+                if ((!wallBottomLeft || (dependOnBrokenBehaviour && bottomLeft == goal)) && !wallBottom && !wallLeft)
+                {
+                    ProcessNeighbor(current, bottomLeft, currentParent, true, anyNeighboringWalls);
+                }
+
+                if (!wallLeft || (dependOnBrokenBehaviour && left == goal))
+                {
+                    ProcessNeighbor(current, left, currentParent, false, anyNeighboringWalls);
+                }
+
+                if ((!wallTopLeft || (dependOnBrokenBehaviour && topLeft == goal)) && !wallTop && !wallLeft)
+                {
+                    ProcessNeighbor(current, topLeft, currentParent, true, anyNeighboringWalls);
+                }
+            }
+
+            if (acceptPartialPaths && !float.IsPositiveInfinity(closestDistance))
+            {
+                return FindPath(start, closest, map, acceptPartialPaths: false, dependOnBrokenBehaviour: false);
+            }
+
+            return null;
+
+            void ProcessNeighbor(Vector2Int current, Vector2Int neighbor, Vector2Int? currentParent, bool diagonal, bool neighboringWalls)
+            {
+                var turningPenalty = 0f;
+                if (currentParent != null)
+                {
+                    var lastDirection = current - currentParent;
+                    var currentDirection = neighbor - current;
+                    turningPenalty = lastDirection == currentDirection ? 0f : TurningPenalty;
+                }
+
+                var weight = (diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f) + turningPenalty;
+                var tentativeGScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + weight;
+                var neighborGScore = gScore.GetValueOrDefault(neighbor, float.PositiveInfinity);
+
+                if (tentativeGScore < neighborGScore)
+                {
+                    var heuristic = Heuristic(neighbor, goal);
+                    cameFrom[neighbor] = current;
+                    gScore[neighbor] = tentativeGScore;
+                    fScore[neighbor] = gScore[current] + heuristic;
+
+                    openList.Enqueue(neighbor, fScore[neighbor]);
+
+                    if (acceptPartialPaths && (heuristic < closestDistance))
+                    {
+                        closestDistance = heuristic;
+                        closest = neighbor;
+                    }
+                }
+            }
+
+            bool IsSolid(Vector2Int position)
+            {
+                if (position.x < 0 || position.x >= map.Width
+                    || position.y < 0 || position.y >= map.Height)
+                {
+                    return false;
+                }
+
+                return map.Contains(position);
+            }
+        }
+
         private static List<Vector2Int> ReconstructPath(Dictionary<Vector2Int, Vector2Int> cameFrom, Vector2Int current)
         {
             var totalPath = new List<Vector2Int>() { current };

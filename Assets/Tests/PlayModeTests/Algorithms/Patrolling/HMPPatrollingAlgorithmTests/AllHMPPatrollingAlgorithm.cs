@@ -13,6 +13,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     using ImmediateTakeOverAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover.HMPPatrollingAlgorithm;
     using NoFaultToleranceAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance.HMPPatrollingAlgorithm;
     using RandomTakeoverAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover.HMPPatrollingAlgorithm;
+    using SingleMeetingPointAlgorithm = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint.HMPPatrollingAlgorithm;
 
     public class AllHMPPatrollingAlgorithm
     {
@@ -23,7 +24,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             new AlgorithmFactory(() => new FaultToleranceV2Algorithm(), nameof(FaultToleranceV2Algorithm)),
             new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), nameof(ImmediateTakeOverAlgorithm)),
             new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy), nameof(ImmediateTakeOverAlgorithm)),
-            new AlgorithmFactory(() => new RandomTakeoverAlgorithm(), nameof(RandomTakeoverAlgorithm))
+            new AlgorithmFactory(() => new RandomTakeoverAlgorithm(), nameof(RandomTakeoverAlgorithm)),
+            new AlgorithmFactory(() => new SingleMeetingPointAlgorithm(), nameof(SingleMeetingPointAlgorithm))
         };
 
         public static IEnumerable TestCases
