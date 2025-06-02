@@ -142,6 +142,7 @@ namespace Maes.Robot
         private readonly HashSet<MonaRobot> _robotsCalledReadMessagesThisTick = new();
 
         public readonly CommunicationTracker CommunicationTracker;
+        private readonly Dictionary<TileType, float> _attenuationDictionary;
 
         private readonly struct Message
         {
@@ -186,6 +187,8 @@ namespace Maes.Robot
             _tileMap = collisionMap;
             CommunicationTracker = new CommunicationTracker();
             _offset = collisionMap.ScaledOffset;
+
+            _attenuationDictionary = robotConstraints.AttenuationDictionary[robotConstraints.Frequency];
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize)
@@ -537,7 +540,7 @@ namespace Maes.Robot
             // Collect intersections with grid lines
             // Alpha is a normalized value representing a point along the line.
             // 0 is the start point and 1 is the end point of the line.
-            var xyAlphas = new List<float>() { 0f, 1f };
+            var xyAlphas = new HashSet<float>() {0, 1};
 
             // X-axis intersections (vertical lines)
             if (xDiff != 0)
@@ -587,19 +590,18 @@ namespace Maes.Robot
                 }
             }
 
-            // Remove duplicate values and sorting.
-            xyAlphas = xyAlphas.Distinct().ToList();
-            xyAlphas.Sort();
-
 
             var wallTileDistance = 0f;
             var otherTileDistance = 0f;
 
+            var xyAplhasSorted = new List<float>(xyAlphas);
+            xyAplhasSorted.Sort();
+
             // Calculate line segments
-            for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
+            for (var alphaIndex = 1; alphaIndex < xyAplhasSorted.Count; alphaIndex++)
             {
-                var aPrev = xyAlphas[alphaIndex - 1];
-                var aCurr = xyAlphas[alphaIndex];
+                var aPrev = xyAplhasSorted[alphaIndex - 1];
+                var aCurr = xyAplhasSorted[alphaIndex];
                 var aMid = (aPrev + aCurr) / 2f;
 
                 var midPointX = x1 + aMid * xDiff;
@@ -621,7 +623,7 @@ namespace Maes.Robot
                 if (_robotConstraints.MaterialCommunication)
                 {
                     // Multiplier on distance to replicate old signal attenuation
-                    signalStrength -= (4 * distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tileType]);
+                    signalStrength -= (4 * distance * _attenuationDictionary[tileType]);
                 }
             }
 
