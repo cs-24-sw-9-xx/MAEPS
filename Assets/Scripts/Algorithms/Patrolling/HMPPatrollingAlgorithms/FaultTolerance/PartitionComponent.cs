@@ -228,7 +228,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             // TODO: Optimize who takes over (remember that the information must be available and correct on all robots attending meeting!)
             var notMissingRobots = meetingMessages.Select(m => m.RobotId).Append(_robotId).OrderBy(id => id);
             var missingRobots = expectedRobotIds
-                .Where(id => notMissingRobots.All(notMissingId => notMissingId != id)).OrderBy(id => id);
+                .Except(notMissingRobots).OrderBy(id => id);
 
             var overtakingCandidates = meetingMessages.Where(m => !m.OverrideCurrentNextMeetingAtTick)
                 .Select(m => m.RobotId).Where(id => id != _robotId);
