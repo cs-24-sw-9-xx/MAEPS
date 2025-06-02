@@ -26,11 +26,9 @@
 using System;
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling;
 using Maes.FaultInjections;
 using Maes.Map.Generators;
 using Maes.Robot;
-using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
@@ -65,7 +63,7 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<PatrollingSimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            var scenarioBuilding = CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
@@ -98,7 +96,7 @@ namespace Maes.Experiments.Patrolling
             (string Params, Func<IFaultInjection> Method) faultInjection)
         {
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            return CreateBuildingMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            return CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
         }
 
         private static PatrollingSimulationScenario CreateMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, IMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
@@ -141,28 +139,6 @@ namespace Maes.Experiments.Patrolling
                                         maxLogicTicks: 1000000,
                                         statisticsFileName:
                                         $"{algorithmName}-map-{mapName}-s-{seed}-ms-{mapConfig.HeightInTiles}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
-        }
-
-        private static PatrollingSimulationScenario CreateCommonMapsScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, Tile[,] mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
-        {
-            return new PatrollingSimulationScenario(
-                                        seed: seed,
-                                        totalCycles: cycles,
-                                        stopAfterDiff: false,
-                                        robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                                            collisionMap: buildingConfig,
-                                            seed: seed,
-                                            numberOfRobots: robotCount,
-                                            createAlgorithmDelegate: algorithm,
-                                            dependOnBrokenBehavior: false),
-                                        mapSpawner: generator => generator.GenerateMap(mapConfig, seed,
-                                                brokenCollisionMap: false),
-                                        robotConstraints: robotConstraints,
-                                        faultInjection: faultInjection,
-                                        partitions: partitionNumber,
-                                        maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * cycles,
-                                        statisticsFileName:
-                                        $"{algorithmName}-map-{mapName}-s-{seed}-rc-{robotCount}-pc-{partitionNumber}-{faultInjectionParams}");
         }
     }
 }
