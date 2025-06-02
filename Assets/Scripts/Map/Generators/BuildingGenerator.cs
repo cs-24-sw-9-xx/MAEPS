@@ -44,6 +44,7 @@ namespace Maes.Map.Generators
         /// used in the Marching Squares Algorithm.</returns>
         public SimulationMap<Tile> GenerateBuildingMap(BuildingMapConfig config, float wallHeight = 2.0f)
         {
+            var timeStart = Time.realtimeSinceStartup;
             _config = config;
             _wallHeight = wallHeight;
             // Clear and destroy objects from previous map
@@ -73,9 +74,13 @@ namespace Maes.Map.Generators
             // mapToDraw = borderedMap;
 
             // The rooms should now reflect their relative shifted positions after adding borders round map.
-            rooms.ForEach(r => r.OffsetCoordsBy(_config.BorderSize, _config.BorderSize));
+            foreach (var r in rooms)
+            {
+                r.OffsetCoordsBy(_config.BorderSize, _config.BorderSize);
+            }
+
             var meshGen = GetComponent<MeshGenerator>();
-            var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), _wallHeight, true,
+            var collisionMap = meshGen.GenerateMesh(borderedMap, _wallHeight, true,
                 rooms, _config.BrokenCollisionMap);
 
             foreach (var room in rooms)
@@ -89,6 +94,8 @@ namespace Maes.Map.Generators
             ResizePlaneToFitMap(_config.BitMapHeight, _config.BitMapWidth);
 
             MovePlaneAndWallRoofToFitWallHeight(_wallHeight);
+
+            Debug.LogFormat("GenerateBuildingMap took {0}s (MeshGenerator is included)", Time.realtimeSinceStartup - timeStart);
 
             return collisionMap;
         }
