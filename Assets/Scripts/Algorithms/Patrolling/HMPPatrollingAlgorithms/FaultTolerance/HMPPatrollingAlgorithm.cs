@@ -53,8 +53,25 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public IEnumerable<int> VerticesByIdToPatrol => _partitionComponent.VerticesByIdToPatrol;
 
-        public override Dictionary<int, Color32[]> ColorsByVertexId => VerticesByIdToPatrol
-                                                                           .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color });
+        private readonly Dictionary<int, Color32[]> _colorsByVertexId = new();
+        public override Dictionary<int, Color32[]> ColorsByVertexId
+        {
+            get
+            {
+                if (_colorsByVertexId.Keys.SetEquals(VerticesByIdToPatrol))
+                {
+                    return _colorsByVertexId;
+                }
+
+                _colorsByVertexId.Clear();
+                foreach (var vertex in VerticesByIdToPatrol)
+                {
+                    _colorsByVertexId[vertex] = new[] { Controller.Color };
+                }
+
+                return _colorsByVertexId;
+            }
+        }
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
@@ -66,7 +83,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         {
             _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }

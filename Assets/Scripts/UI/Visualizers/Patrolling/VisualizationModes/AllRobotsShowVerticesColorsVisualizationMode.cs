@@ -46,8 +46,8 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
             if (_robots.Count != _vertexColorsByRobotId.Keys.Count) // If the number of robots has changed, we need to update the colors
             {
                 _vertexColorsByRobotId = _robots.ToDictionary(robot => robot.id,
-                                                              robot => robot.Algorithm is IPatrollingAlgorithm alg ? alg.ColorsByVertexId
-                                                                                                                   : new Dictionary<int, Color32[]>());
+                                                              robot => ((IPatrollingAlgorithm)robot.Algorithm).ColorsByVertexId.ToDictionary(kv => kv.Key, kv => kv.Value));
+
                 changedSinceLastUpdate = true;
             }
             else
@@ -64,11 +64,11 @@ namespace Maes.UI.Visualizers.Patrolling.VisualizationModes
                             continue;
                         }
 
-                        _vertexColorsByRobotId[robot.id] = vertexColors;
+                        _vertexColorsByRobotId[robot.id] = vertexColors.ToDictionary(kv => kv.Key, kv => kv.Value);
                     }
                     else
                     {
-                        _vertexColorsByRobotId.Add(robot.id, vertexColors);
+                        _vertexColorsByRobotId.Add(robot.id, vertexColors.ToDictionary(kv => kv.Key, kv => kv.Value));
                     }
 
                     changedSinceLastUpdate = true;
