@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 using JetBrains.Annotations;
 
@@ -117,17 +116,18 @@ namespace Maes.Utilities
         public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
         {
             Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
+            var verticesSet = new HashSet<Vector2Int>(vertices);
 
             foreach (var vertex in vertices)
             {
-                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
+                BreadthFirstSearch(vertex, shortestGridPath, verticesSet, map);
             }
 
             return shortestGridPath;
         }
 
         // BFS to find the distance of the shortest path from the start position to all other vertices
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, IReadOnlyCollection<Vector2Int> vertexPositions, Bitmap map)
+        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, HashSet<Vector2Int> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             using var visited = new Bitmap(map.Width, map.Height);
