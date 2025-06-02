@@ -27,7 +27,6 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
