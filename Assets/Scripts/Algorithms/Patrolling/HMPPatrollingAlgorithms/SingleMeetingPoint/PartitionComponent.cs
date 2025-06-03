@@ -13,7 +13,18 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 {
     public class PartitionComponent : IComponent
     {
-        public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
+        public class PartitionGeneratorResult
+        {
+            public IReadOnlyDictionary<int, Assignment> AssignmentByRobotId { get; }
+            public MeetingPoint MeetingPoint { get; }
+
+            public PartitionGeneratorResult(IReadOnlyDictionary<int, Assignment> assignmentByRobotId, MeetingPoint meetingPoint)
+            {
+                AssignmentByRobotId = assignmentByRobotId;
+                MeetingPoint = meetingPoint;
+            }
+        }
+        public delegate PartitionGeneratorResult PartitionGenerator(HashSet<int> robots);
 
         public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator)
         {
@@ -25,7 +36,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
-        public IReadOnlyDictionary<int, MeetingPoint> MeetingPointsByVertexId { get; private set; } = null!;
+        public MeetingPoint MeetingPoint { get; private set; }
 
         private readonly HashSet<int> _verticesByIdToPatrol = new();
         public HashSet<int> VerticesByIdToPatrol
@@ -36,7 +47,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
                 var partitions = GetPartitionsPatrolledByRobotId(_robotId);
                 foreach (var partition in partitions)
                 {
-                    foreach (var vertexId in _partitions[partition].VertexIds)
+                    foreach (var vertexId in _assignments[partition].VertexIds)
                     {
                         _verticesByIdToPatrol.Add(vertexId);
                     }
@@ -50,9 +61,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
 
-        private PartitionInfo[] _partitions = null!;
+        private Assignment[] _assignments = null!;
 
-        private StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent> _startupComponent = null!;
+        private StartupComponent<PartitionGeneratorResult, PartitionComponent> _startupComponent = null!;
 
         private VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
             null!;
@@ -60,7 +71,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, robots => _partitionGenerator(robots));
+            _startupComponent = new StartupComponent<PartitionGeneratorResult, PartitionComponent>(controller, robots => _partitionGenerator(robots));
             _partitionIdToRobotIdVirtualStigmergyComponent = new(OnPartitionConflict, controller);
 
             return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent };
@@ -69,29 +80,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            var meetingPointsByVertexId = new Dictionary<int, MeetingPoint>();
-            var partitions = _startupComponent.Message;
+            var assignmentByRobotId = _startupComponent.Message.AssignmentByRobotId;
 
-            _partitions = new PartitionInfo[partitions.Count];
+            _assignments = new Assignment[assignmentByRobotId.Count];
+            MeetingPoint = _startupComponent.Message.MeetingPoint;
 
             var partitionId = 0;
-            foreach (var (robotId, partition) in partitions)
+            foreach (var (robotId, assignment) in assignmentByRobotId)
             {
                 // Set up partition robot assignments
                 _partitionIdToRobotIdVirtualStigmergyComponent.Put(partitionId, robotId);
-                _partitions[partitionId] = partition;
-
-
-                // Set up meeting points
-                foreach (var meetingPoint in partition.MeetingPoints)
-                {
-                    meetingPointsByVertexId[meetingPoint.VertexId] = meetingPoint;
-                }
-
+                _assignments[partitionId] = assignment;
                 partitionId++;
             }
-
-            MeetingPointsByVertexId = meetingPointsByVertexId;
 
             while (true)
             {
@@ -107,19 +108,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
             var meetingMessages = _robotController.ReceiveBroadcast().OfType<MeetingMessage>().ToList();
 
-            // Lets see if we actually should take over the partition
+            // Let's see if we actually should take over the partition
 
-            var expectedRobotIds = MeetingPointsByVertexId[meetingPointVertexId].PartitionIds.Select(p =>
+            var expectedRobotIds = MeetingPoint.PartitionIds.Select(p =>
             {
                 var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
                 Debug.Assert(success);
                 return assignedRobot;
-            }).Distinct();
+            }).Distinct().ToArray();
 
             // TODO: Optimize who takes over (remember that the information must be available and correct on all robots attending meeting!)
-            var notMissingRobots = meetingMessages.Select(m => m.RobotId).Append(_robotId).OrderBy(id => GetPartitionsPatrolledByRobotId(id).Count()).ThenBy(id => id);
+            var notMissingRobots = meetingMessages.Select(m => m.RobotId).Append(_robotId).OrderBy(id => GetPartitionsPatrolledByRobotId(id).Count()).ThenBy(id => id).ToArray();
             var missingRobots = expectedRobotIds
-                .Where(id => notMissingRobots.All(notMissingId => notMissingId != id)).OrderByDescending(id => GetPartitionsPatrolledByRobotId(id).Count()).ThenByDescending(id => id);
+                .Except(notMissingRobots).OrderByDescending(id => GetPartitionsPatrolledByRobotId(id).Count()).ThenByDescending(id => id).ToArray();
 
             var overtaking = missingRobots.Zip(notMissingRobots,
                 (missingId, notMissingId) => (missingId, notMissingId));
@@ -133,7 +134,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
                 {
                     if (overtakingId == _robotId)
                     {
-                        var overtakingPartitions = GetPartitionsPatrolledByRobotId(missingId);
+                        var overtakingPartitions = GetPartitionsPatrolledByRobotId(missingId).ToArray();
                         Debug.LogFormat("Robot {0} is taking over partitions: {1}", _robotId, string.Join(", ", overtakingPartitions));
                         foreach (var overtakingPartition in overtakingPartitions)
                         {
@@ -181,7 +182,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
         private IEnumerable<int> GetPartitionsPatrolledByRobotId(int robotId)
         {
-            for (var partitionId = 0; partitionId < _partitions.Length; partitionId++)
+            for (var partitionId = 0; partitionId < _assignments.Length; partitionId++)
             {
                 var success =
                     _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(partitionId,
