@@ -69,6 +69,7 @@ namespace Maes.Simulation
                 var startOffset = instanceId * scenariosPerInstance;
                 var endOffset = instanceId == instances - 1 ? scenarios.Count : (instanceId + 1) * scenariosPerInstance;
 
+                Debug.Log($"Instance {instanceId} will run scenarios {startOffset} - {endOffset}");
                 for (var i = startOffset; i < endOffset; i++)
                 {
                     EnqueueScenario(scenarios[i]);
