@@ -35,7 +35,7 @@ namespace Maes.Experiments.Patrolling.GroupB
     using MySimulator = PatrollingSimulator;
 
     [Preserve]
-    internal class ARSBExperiment : MonoBehaviour
+    internal class AdaptiveRedistributionExperiment : MonoBehaviour
     {
         private void Start()
         {
@@ -44,8 +44,8 @@ namespace Maes.Experiments.Patrolling.GroupB
             {
                 scenarios.AddRange(ScenarioUtil.CreateScenarios(
                     seed,
-                    nameof(AdaptiveRedistributionSuccessBasedCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionSuccessBasedCRAlgo)],
+                    nameof(AdaptiveRedistributionCRAlgo),
+                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
                     GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,

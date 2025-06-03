@@ -54,8 +54,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         public static readonly Dictionary<string, RobotConstraints> RobotConstraintsDictionary = new()
         {
             { nameof(GlobalRedistributionWithCRAlgo), GlobalRobotConstraints },
-            { nameof(AdaptiveRedistributionFailureBasedCRAlgo), MaterialRobotConstraints },
-            { nameof(AdaptiveRedistributionSuccessBasedCRAlgo), MaterialRobotConstraints },
+            { nameof(AdaptiveRedistributionCRAlgo), MaterialRobotConstraints },
             { nameof(RandomRedistributionWithCRAlgo), MaterialRobotConstraints },
         };
 
@@ -89,9 +88,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
         {
-            {nameof(AdaptiveRedistributionFailureBasedCRAlgo), (_) => new AdaptiveRedistributionFailureBasedCRAlgo()},
-
-            {nameof(AdaptiveRedistributionSuccessBasedCRAlgo), (_) => new AdaptiveRedistributionSuccessBasedCRAlgo()},
+            {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
 
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
