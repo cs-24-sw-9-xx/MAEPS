@@ -88,7 +88,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
         {
-            {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
+            // {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
 
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
