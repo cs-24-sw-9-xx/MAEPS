@@ -45,23 +45,20 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Connectors
         /// <param name="nextId">Used by partitioning.</param>
         /// <param name="numberOfReverseNearestNeighbors">The amount of RNN's to connect(make an edge) to the current vertex.</param>
         /// <returns>Vertices with connections(edges) to other vertices.</returns>
-        public static Vertex[] ConnectVertices(Bitmap map, IReadOnlyCollection<Vector2Int> vertexPositions, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
+        public static Vertex[] ConnectVertices(IReadOnlyCollection<Vector2Int> vertexPositions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, int nextId = 0, int numberOfReverseNearestNeighbors = 1)
         {
             var startTime = Time.realtimeSinceStartup;
             var vertices = vertexPositions.Select(position => new Vertex(nextId++, position)).ToArray();
 
-            ConnectVertices(vertices, map, numberOfReverseNearestNeighbors);
+            ConnectVertices(vertices, distanceMatrix, numberOfReverseNearestNeighbors);
 
             Debug.LogFormat($"{nameof(ReverseNearestNeighborWaypointConnector)} ConnectVertices took {{0}} s", Time.realtimeSinceStartup - startTime);
 
             return vertices;
         }
 
-        public static void ConnectVertices(IReadOnlyCollection<Vertex> vertices, Bitmap map, int numberOfReverseNearestNeighbors = 1)
+        public static void ConnectVertices(IReadOnlyCollection<Vertex> vertices, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, int numberOfReverseNearestNeighbors = 1)
         {
-            var vertexPositions = vertices.Select(v => v.Position).ToArray();
-            var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositions);
-
             ConnectReverseNearestNeighbors(vertices, distanceMatrix, numberOfReverseNearestNeighbors);
 
             ConnectIslands(vertices, distanceMatrix);

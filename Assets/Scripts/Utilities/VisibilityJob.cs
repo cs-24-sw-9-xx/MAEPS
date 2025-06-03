@@ -33,6 +33,9 @@ namespace Maes.Utilities
     public struct VisibilityJob : IJob
     {
         [ReadOnly]
+        public bool InaccurateButFast;
+
+        [ReadOnly]
         public int Width;
 
         [ReadOnly]
@@ -68,14 +71,43 @@ namespace Maes.Utilities
                     continue;
                 }
 
-                for (var x = 0; x < Width; x++)
+                if (InaccurateButFast)
                 {
+                    // Top row
+                    for (var x = 1; x < Width - 1; x++)
+                    {
+                        GridRayTracingLineOfSight(x, 0, outerY);
+                    }
+
+                    // Bottom row
+                    for (var x = 1; x < Width - 1; x++)
+                    {
+                        GridRayTracingLineOfSight(x, Height - 1, outerY);
+                    }
+
+                    // Left column
                     for (var y = 0; y < Height; y++)
                     {
-                        var innerIndex = GetMapIndex(x, y);
-                        if (Hint.Likely(!GetMapValue(innerIndex)))
+                        GridRayTracingLineOfSight(0, y, outerY);
+                    }
+
+                    // Right column
+                    for (var y = 0; y < Height; y++)
+                    {
+                        GridRayTracingLineOfSight(Width - 1, y, outerY);
+                    }
+                }
+                else
+                {
+                    for (var x = 0; x < Width; x++)
+                    {
+                        for (var y = 0; y < Height; y++)
                         {
-                            GridRayTracingLineOfSight(x, y, outerY);
+                            var innerIndex = GetMapIndex(x, y);
+                            if (Hint.Likely(!GetMapValue(innerIndex)))
+                            {
+                                GridRayTracingLineOfSight(x, y, outerY);
+                            }
                         }
                     }
                 }

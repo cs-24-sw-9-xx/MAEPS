@@ -266,7 +266,6 @@ namespace Maes.Statistics.Trackers
                 if (!cell.IsExplored)
                 {
                     cell.LastExplorationTimeInTicks = CurrentTick;
-                    cell.ExplorationTimeInTicks += 1;
 
                     _newlyExploredTriangles.Add((index, cell));
                     ExploredTriangles++;
