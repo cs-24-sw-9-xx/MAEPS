@@ -25,7 +25,7 @@ using System.Diagnostics;
 
 namespace Maes.Map.Generators
 {
-    public enum TileType
+    public enum TileType : byte
     {
         Room,
         Hall,
@@ -54,7 +54,7 @@ namespace Maes.Map.Generators
 
         public static bool IsWall(TileType tile)
         {
-            return (int)tile >= (int)TileType.Wall;
+            return (byte)tile >= (byte)TileType.Wall;
         }
 
         public static TileType[] Walls()
