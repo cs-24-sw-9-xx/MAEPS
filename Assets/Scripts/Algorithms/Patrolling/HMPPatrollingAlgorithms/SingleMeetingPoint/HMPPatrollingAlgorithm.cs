@@ -146,8 +146,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
                 vertexIds.Add(meetingVertex);
             }
 
-            var robotIdsByPartitionId = GetRobotIdsByPartitionId(robotIds, partitions);
-
             var diameterPartitions = GetPartitionDiameters(partitions, 1);
             var globalMeetingIntervalTicks = diameterPartitions.Max();
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitions);
@@ -156,50 +154,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
             var assignmentByRobotId = new Dictionary<int, Assignment>();
             for (var i = 0; i < partitions.Length; i++)
             {
-                foreach (var robotId in robotIdsByPartitionId[i])
-                {
-                    assignmentByRobotId[robotId] = new Assignment(partitions[i].Select(v => v.Id).ToHashSet());
-                }
+                assignmentByRobotId[i] = new Assignment(partitions[i].Select(v => v.Id).ToHashSet());
             }
 
             return new PartitionComponent.PartitionGeneratorResult(assignmentByRobotId, meetingPoint);
-        }
-
-        private static Dictionary<int, List<int>> GetRobotIdsByPartitionId(HashSet<int> robotIds, HashSet<Vertex>[] partitions)
-        {
-            Dictionary<int, List<int>> robotIdsByPartitionId;
-
-            var numberOfRobots = robotIds.Count;
-            if (partitions.Length < numberOfRobots)
-            {
-                robotIdsByPartitionId = new Dictionary<int, List<int>>();
-                var sortedPartitions = partitions
-                    .Select((vertexIds, index) => (vertexIds.Count, index))
-                    .OrderByDescending(partition => partition.Count)
-                    .ToArray();
-
-                for (var robotId = 0; robotId < numberOfRobots; robotId++)
-                {
-                    var j = robotId % partitions.Length;
-                    var partitionId = sortedPartitions[j].index;
-
-                    if (robotIdsByPartitionId.TryGetValue(partitionId, out var ids))
-                    {
-                        ids.Add(robotId);
-                    }
-                    else
-                    {
-                        robotIdsByPartitionId.Add(partitionId, new List<int> { robotId });
-                    }
-                }
-            }
-            else
-            {
-                Debug.Assert(partitions.Length == robotIds.Count);
-                robotIdsByPartitionId = robotIds.ToDictionary(id => id, id => new List<int> { id });
-            }
-
-            return robotIdsByPartitionId;
         }
 
         private Vertex GetSingleMeeting(IReadOnlyDictionary<(Vector2Int, Vector2Int), int> distanceMatrix, HashSet<Vertex>[] partitions)
