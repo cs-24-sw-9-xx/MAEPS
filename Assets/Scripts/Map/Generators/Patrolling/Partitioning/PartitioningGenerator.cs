@@ -47,12 +47,12 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public delegate IEnumerable<List<Vector2Int>> PartitioningGeneratorDelegate(
             Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
 
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints, float maxDistance = 0f)
         {
             var communicationManager =
                 new CommunicationManager(simulationMap, robotConstraints, new DebuggingVisualizer());
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
+            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map, maxDistance);
             var vertexPositionsList = vertexPositions.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);

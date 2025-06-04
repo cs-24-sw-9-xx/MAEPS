@@ -75,7 +75,7 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap,
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance),
                     maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * 100)
             );
 

@@ -37,7 +37,7 @@ namespace Maes.Experiments.Patrolling
     internal static class GroupAExperimentHelpers
     {
         private static bool MaxLogicTicksToIntMax => true;
-        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, IMapConfig mapConfig, string mapName, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false, int amountOfCycles = GroupAParameters.StandardAmountOfCycles)
+        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory patrollingMapFactory, IMapConfig mapConfig, string mapName, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false, int amountOfCycles = GroupAParameters.StandardAmountOfCycles)
         {
             return new MySimulationScenario(
                                         seed: seed,
@@ -56,7 +56,7 @@ namespace Maes.Experiments.Patrolling
                                         maxLogicTicks: shouldFail ? 0 : MaxLogicTicks(mapConfig.HeightInTiles, robotCount));
         }
 
-        public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f, bool shouldFail = false, int amountOfCycles = GroupAParameters.StandardAmountOfCycles)
+        public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f, bool shouldFail = false, int amountOfCycles = GroupAParameters.StandardAmountOfCycles)
         {
             var scenarios = new List<MySimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
