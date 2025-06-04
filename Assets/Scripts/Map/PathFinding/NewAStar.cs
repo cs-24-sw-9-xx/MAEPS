@@ -17,6 +17,7 @@
 // 
 // Contributors: Mads beyer Mogensen
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -195,23 +196,32 @@ namespace Maes.Map.PathFinding
         /// <param name="dependOnBrokenBehaviour">The goal might be in a wall, allow pathing to it anyway.</param>
         /// <typeparam name="TMap">The type of <paramref name="map"/>.</typeparam>
         /// <returns>The path or <see langword="null"/> if no path was found.</returns>
-        public static List<Vector2Int>? FindPath(Vector2Int start, Vector2Int goal, Bitmap map, bool acceptPartialPaths, bool dependOnBrokenBehaviour)
+        public static List<Vector2Int>? FindPathForPatrollingMap(Vector2Int start, Vector2Int goal, Bitmap map)
         {
-
-            var closestDistance = float.PositiveInfinity;
-            var closest = Vector2Int.zero;
+            var width = map.Width;
 
             var openList = new PriorityQueue<Vector2Int, float>();
 
             var cameFrom = new Dictionary<Vector2Int, Vector2Int>();
 
-            var gScore = new Dictionary<Vector2Int, float>();
-            gScore.Add(start, 0);
+            var arrayPool = ArrayPool<float>.Shared;
 
-            var fScore = new Dictionary<Vector2Int, float>();
-            fScore.Add(start, Heuristic(start, goal));
+            var gScore = arrayPool.Rent(width * map.Height);
+            for (var i = 0; i < width * map.Height; i++)
+            {
+                gScore[i] = float.PositiveInfinity;
+            }
 
-            openList.Enqueue(start, fScore[start]);
+            gScore[start.x + start.y * width] = 0;
+
+            var fScore = arrayPool.Rent(width * map.Height);
+            for (var i = 0; i < width * map.Height; i++)
+            {
+                fScore[i] = float.PositiveInfinity;
+            }
+            fScore[start.x + start.y * width] = Heuristic(start, goal);
+
+            openList.Enqueue(start, fScore[start.x + start.y * width]);
 
             while (openList.Count > 0)
             {
@@ -219,6 +229,8 @@ namespace Maes.Map.PathFinding
 
                 if (current == goal)
                 {
+                    arrayPool.Return(gScore, clearArray: false);
+                    arrayPool.Return(fScore, clearArray: false);
                     return ReconstructPath(cameFrom, current);
                 }
 
@@ -245,52 +257,49 @@ namespace Maes.Map.PathFinding
                 var anyNeighboringWalls =
                     wallTop || wallTopRight || wallRight || wallBottomRight || wallBottom || wallBottomLeft || wallLeft || wallTopLeft;
 
-                if (!wallTop || (dependOnBrokenBehaviour && top == goal))
+                if (!wallTop)
                 {
                     ProcessNeighbor(current, top, currentParent, false, anyNeighboringWalls);
                 }
 
-                if ((!wallTopRight || (dependOnBrokenBehaviour && topRight == goal)) && !wallTop && !wallRight)
+                if (!wallTopRight && !wallTop && !wallRight)
                 {
                     ProcessNeighbor(current, topRight, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallRight || (dependOnBrokenBehaviour && right == goal))
+                if (!wallRight)
                 {
                     ProcessNeighbor(current, right, currentParent, false, anyNeighboringWalls);
                 }
 
-                if ((!wallBottomRight || (dependOnBrokenBehaviour && bottomRight == goal)) && !wallRight && !wallBottom)
+                if (!wallBottomRight && !wallRight && !wallBottom)
                 {
                     ProcessNeighbor(current, bottomRight, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallBottom || (dependOnBrokenBehaviour && bottom == goal))
+                if (!wallBottom)
                 {
                     ProcessNeighbor(current, bottom, currentParent, false, anyNeighboringWalls);
                 }
 
-                if ((!wallBottomLeft || (dependOnBrokenBehaviour && bottomLeft == goal)) && !wallBottom && !wallLeft)
+                if (!wallBottomLeft && !wallBottom && !wallLeft)
                 {
                     ProcessNeighbor(current, bottomLeft, currentParent, true, anyNeighboringWalls);
                 }
 
-                if (!wallLeft || (dependOnBrokenBehaviour && left == goal))
+                if (!wallLeft)
                 {
                     ProcessNeighbor(current, left, currentParent, false, anyNeighboringWalls);
                 }
 
-                if ((!wallTopLeft || (dependOnBrokenBehaviour && topLeft == goal)) && !wallTop && !wallLeft)
+                if (!wallTopLeft && !wallTop && !wallLeft)
                 {
                     ProcessNeighbor(current, topLeft, currentParent, true, anyNeighboringWalls);
                 }
             }
 
-            if (acceptPartialPaths && !float.IsPositiveInfinity(closestDistance))
-            {
-                return FindPath(start, closest, map, acceptPartialPaths: false, dependOnBrokenBehaviour: false);
-            }
-
+            arrayPool.Return(gScore, clearArray: false);
+            arrayPool.Return(fScore, clearArray: false);
             return null;
 
             void ProcessNeighbor(Vector2Int current, Vector2Int neighbor, Vector2Int? currentParent, bool diagonal, bool neighboringWalls)
@@ -303,24 +312,21 @@ namespace Maes.Map.PathFinding
                     turningPenalty = lastDirection == currentDirection ? 0f : TurningPenalty;
                 }
 
+                var currentIndex = current.x + current.y * width;
+                var neighborIndex = neighbor.x + neighbor.y * width;
+
                 var weight = (diagonal ? math.SQRT2 : 1f) * (neighboringWalls ? 2f : 1f) + turningPenalty;
-                var tentativeGScore = gScore.GetValueOrDefault(current, float.PositiveInfinity) + weight;
-                var neighborGScore = gScore.GetValueOrDefault(neighbor, float.PositiveInfinity);
+                var tentativeGScore = gScore[currentIndex] + weight;
+                var neighborGScore = gScore[neighborIndex];
 
                 if (tentativeGScore < neighborGScore)
                 {
                     var heuristic = Heuristic(neighbor, goal);
                     cameFrom[neighbor] = current;
-                    gScore[neighbor] = tentativeGScore;
-                    fScore[neighbor] = gScore[current] + heuristic;
+                    gScore[neighborIndex] = tentativeGScore;
+                    fScore[neighborIndex] = gScore[currentIndex] + heuristic;
 
-                    openList.Enqueue(neighbor, fScore[neighbor]);
-
-                    if (acceptPartialPaths && (heuristic < closestDistance))
-                    {
-                        closestDistance = heuristic;
-                        closest = neighbor;
-                    }
+                    openList.Enqueue(neighbor, fScore[neighborIndex]);
                 }
             }
         }

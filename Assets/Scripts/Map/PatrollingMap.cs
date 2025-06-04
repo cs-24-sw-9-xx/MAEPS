@@ -97,7 +97,7 @@ namespace Maes.Map
                     }
 
 
-                    var path = NewAStar.FindPath(vertex.Position, neighbor.Position, bitmap, acceptPartialPaths: false, dependOnBrokenBehaviour: false)?.ToArray() ??
+                    var path = NewAStar.FindPathForPatrollingMap(vertex.Position, neighbor.Position, bitmap)?.ToArray() ??
                                throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = MyAStar.PathToStepsCheap(path);
 
