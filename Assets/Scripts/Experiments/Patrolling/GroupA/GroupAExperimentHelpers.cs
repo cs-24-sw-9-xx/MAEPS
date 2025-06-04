@@ -72,7 +72,7 @@ namespace Maes.Experiments.Patrolling
         {
             if (MaxLogicTicksToIntMax)
             {
-                return int.MaxValue - 2;
+                return 10000000;
             }
 
             return GroupAParameters.StandardAmountOfCycles
