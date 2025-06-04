@@ -56,7 +56,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var communicationRangeThroughWalls in _communicationRangeThroughWalls)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, GroupAParameters.StandardMapSize, communicationRangeThroughWalls));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, false, GroupAParameters.StandardRobotCount, GroupAParameters.StandardMapSize, communicationRangeThroughWalls));
                 }
 
             }
