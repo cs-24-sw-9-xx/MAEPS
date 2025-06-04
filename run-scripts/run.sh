@@ -8,9 +8,24 @@ if [ -d "instanceslog" ]; then
     rm -rf instanceslog
 fi
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <experiment> <instances>" >&2
+# Validate argument count
+if [ "$#" -ne 2 ] && [ "$#" -ne 4 ]; then
+    echo "Usage:" >&2
+    echo "  $0 <experiment> <total_instances>                # Run all instances on this machine" >&2
+    echo "  $0 <experiment> <total_instances> <start> <end>  # Run instances from including <start> to including <end>" >&2
     exit 1
+fi
+
+experiment=$1
+total_instances=$2
+
+if [ "$#" -eq 2 ]; then
+    # Run all instances
+    start_id=0
+    end_id=$((total_instances - 1))
+else
+    start_id=$3
+    end_id=$4
 fi
 
 if ! command -v "ts" 2>&1 >/dev/null
@@ -22,10 +37,8 @@ fi
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-limit=$2  # or set this from user input or arguments
-
-{ for ((i=0; i<limit; i++)); do
-    "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout --instances "$limit" --instanceid "$i" --experiment "$1" | ts "[%Y-%m-%d %H:%M:%S (instance $i)]"  &
+{ for ((i=start_id; i<=end_id; i++)); do
+    "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout --instances "$total_instances" --instanceid "$i" --experiment "$experiment" | ts "[%Y-%m-%d %H:%M:%S (instance $i)]"  &
 done } | tee output.log
 
 wait  # wait for all background processes to complete
@@ -52,7 +65,7 @@ fi
 mkdir -p instanceslog
 
 # Separate logs for each instance
-for ((i=0; i<limit; i++)); do
+for ((i=start_id; i<=end_id; i++)); do
     grep "(instance $i)" output.log > "instanceslog/instance_$i.log"
 done
 
