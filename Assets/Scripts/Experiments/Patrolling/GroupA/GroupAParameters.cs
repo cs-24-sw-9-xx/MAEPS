@@ -48,7 +48,6 @@ namespace Maes.Experiments.Patrolling
         {
             AllAlgorithms = StandardAlgorithms
                 .Concat(ReactiveAlgorithms)
-                .Concat(PartitionedAlgorithms)
                 .Concat(FaultTolerantHMPVariants)
                 .Concat(CyclicAlgorithms)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
