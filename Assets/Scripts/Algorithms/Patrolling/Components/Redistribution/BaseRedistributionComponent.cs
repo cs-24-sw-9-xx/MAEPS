@@ -45,6 +45,8 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IPatrollingAlgorithm _algorithm;
         private readonly Dictionary<int, bool> _receivedCommunication;
         private readonly System.Random _random;
+        private readonly Stack<int> _partitionStack = new();
+        private readonly Dictionary<int, bool> _hasLeftPartitionIntersection = new();
 
         /// <summary>
         /// Method to be implemented by derived classes to update the redistribution tracker on failure.
@@ -73,6 +75,15 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             _map = map;
             _algorithm = algorithm;
             _random = new System.Random(seed);
+            SetHasLeftIntersectionFlagToFalse();
+        }
+
+        private void SetHasLeftIntersectionFlagToFalse()
+        {
+            foreach (var partition in _map.Partitions)
+            {
+                _hasLeftPartitionIntersection[partition.PartitionId] = false;
+            }
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -135,7 +146,9 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     {
                         _currentPartitionIntersection.Add(partitionId);
                     }
-                    else if (_trackerUpdateTimestamp <= _algorithm.LogicTicks - 250)
+                    if (_hasLeftPartitionIntersection[partitionId]
+                    && _algorithm.HasSeenAllInPartition(_controller.AssignedPartition)
+                    && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
                     {
                         UpdateRedistributionTracker(partitionId);
                     }
@@ -144,18 +157,20 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                 {
                     if (_currentPartitionIntersection.Contains(partitionId))
                     {
-                        if (UpdateRedistributionTracker(partitionId))
-                        {
-                            return;
-                        }
-
+                        _hasLeftPartitionIntersection[partitionId] = true;
+                        UpdateRedistributionTracker(partitionId);
                         _currentPartitionIntersection.Remove(partitionId);
+                        return;
+                    }
+                    if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition) && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
+                    {
+                        UpdateRedistributionTracker(partitionId);
                     }
                 }
             }
         }
 
-        private bool UpdateRedistributionTracker(int partitionId)
+        private void UpdateRedistributionTracker(int partitionId)
         {
             if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
             {
@@ -166,36 +181,30 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             else
             {
                 UpdateTrackerOnFailure(partitionId);
-                if (SwitchPartition(partitionId))
-                {
-                    return true;
-                }
+                SwitchPartition(partitionId);
             }
-
-            return false;
         }
 
-        private bool SwitchPartition(int partitionId)
+        private void SwitchPartition(int partitionId)
         {
-            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
+            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition) && _partitionStack.Count > 0 && _partitionStack.Peek() == partitionId)
             {
-                return false;
+                return;
             }
             var randomValue = (float)_random.NextDouble();
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
+                _partitionStack.Clear();
+                _partitionStack.Push(_controller.AssignedPartition);
                 Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId} algo: {_algorithm.AlgorithmName}");
                 _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();
                 _currentPartitionIntersection.Clear();
-
-                return true;
+                SetHasLeftIntersectionFlagToFalse();
             }
-
-            return false;
         }
 
         private sealed class RedistributionMessage

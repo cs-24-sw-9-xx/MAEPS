@@ -67,7 +67,7 @@ namespace Maes.UI.Visualizers.Patrolling
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            Tooltip.ShowTooltip_Static($"{VertexDetails.Vertex} Visits: {VertexDetails.Vertex.NumberOfVisits}");
+            Tooltip.ShowTooltip_Static($"{VertexDetails.Vertex} Visits: {VertexDetails.Vertex.NumberOfVisits} Partition: {VertexDetails.Vertex.Partition}");
         }
 
         public void OnPointerExit(PointerEventData eventData)

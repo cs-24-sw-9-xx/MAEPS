@@ -45,11 +45,6 @@ namespace Maes.Experiments.Patrolling.GroupB
             4,
             8,
         };
-        public static readonly List<int> RedistributionPartitionCounts = new()
-        {
-            2,
-            4,
-        };
 
         public static readonly Dictionary<string, RobotConstraints> RobotConstraintsDictionary = new()
         {
@@ -88,11 +83,14 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
         {
-            // {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
-
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
+        };
+
+        public static readonly Dictionary<string, CreateAlgorithmDelegate> AdaptivePartitionedAlgorithms = new()
+        {
+            {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
         };
 
         private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()

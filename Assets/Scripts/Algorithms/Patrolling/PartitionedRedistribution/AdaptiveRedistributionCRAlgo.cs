@@ -33,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
     /// </summary>
     public sealed class AdaptiveRedistributionCRAlgo : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Adaptive Redistribution Success Based CR Algorithm";
+        public override string AlgorithmName => "Adaptive Redistribution CR Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
