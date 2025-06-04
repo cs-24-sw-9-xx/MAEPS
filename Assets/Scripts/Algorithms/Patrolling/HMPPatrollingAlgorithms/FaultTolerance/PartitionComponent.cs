@@ -108,16 +108,27 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         public VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>
             _meetingPointVertexIdToMeetingTimesStigmergyComponent = null!;
 
+        private PatrollingMap _patrollingMap = null!;
 
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, robots => _partitionGenerator(robots));
+            _patrollingMap = patrollingMap;
+            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, GeneratePartitions);
 
             _partitionIdToRobotIdVirtualStigmergyComponent = new(OnPartitionConflict, controller);
             _meetingPointVertexIdToMeetingTimesStigmergyComponent = new(OnMeetingConflict, controller);
 
             return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent, _meetingPointVertexIdToMeetingTimesStigmergyComponent };
+        }
+
+        private Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robots)
+        {
+            Debug.Assert(_patrollingMap.Vertices.Count >= robots.Count);
+            var partitions = _partitionGenerator(robots);
+            Debug.Assert(partitions.Count == robots.Count);
+
+            return partitions;
         }
 
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]

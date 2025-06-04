@@ -8,7 +8,7 @@ namespace Maes.Statistics.Snapshots
 {
     public struct PatrollingSnapshot : ICsvData
     {
-        public CommunicationSnapshot CommunicationSnapshot { get; private set; }
+        public CommunicationSnapshot CommunicationSnapshot;
 
         public float GraphIdleness { get; private set; }
         public int WorstGraphIdleness { get; private set; }

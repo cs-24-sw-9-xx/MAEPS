@@ -74,7 +74,7 @@ namespace Maes.Experiments.Patrolling
                     robotConstraints: robotConstraints,
                     faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 10000, 20000, 25000),
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance))
             );
 
             var simulator = new MySimulator(scenarios);

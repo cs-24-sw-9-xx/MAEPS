@@ -41,13 +41,26 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
         public PartitionInfo PartitionInfo { get; private set; } = null!;
 
+        private PatrollingMap _patrollingMap = null!;
+
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, robots => _partitionGenerator(robots));
+            _patrollingMap = patrollingMap;
+
+            _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, GeneratePartitions);
             _virtualStigmergyComponent =
                 new VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent>(OnConflict, controller);
 
             return new IComponent[] { _startupComponent, _virtualStigmergyComponent };
+        }
+
+        private Dictionary<int, PartitionInfo> GeneratePartitions(HashSet<int> robots)
+        {
+            Debug.Assert(_patrollingMap.Vertices.Count >= robots.Count);
+            var partitions = _partitionGenerator(robots);
+            Debug.Assert(partitions.Count == robots.Count);
+
+            return partitions;
         }
 
         private static VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent>.ValueInfo OnConflict(int key, VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent>.ValueInfo localvalueinfo, VirtualStigmergyComponent<int, PartitionInfo, PartitionComponent>.ValueInfo incomingvalueinfo)

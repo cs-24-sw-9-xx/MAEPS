@@ -6,7 +6,6 @@ using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
-using Maes.Robot;
 
 using UnityEngine;
 
@@ -17,19 +16,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         public delegate int? EstimateTimeDelegate(Vector2Int start, Vector2Int target);
 
         public delegate IEnumerable<ComponentWaitForCondition> ExchangeInformationAtMeetingDelegate(Meeting meeting);
-        public delegate IEnumerable<ComponentWaitForCondition> OnMissingRobotsAtMeetingDelegate(Meeting meeting, HashSet<int> missingRobotIds);
 
         public MeetingComponent(int preUpdateOrder, int postUpdateOrder,
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
-            PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
+            PatrollingMap patrollingMap, PartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
             _getLogicTick = getLogicTick;
             _estimateTime = estimateTime;
-            _controller = controller;
             _exchangeInformation = exchangeInformation;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
@@ -40,7 +37,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
         private readonly Func<int> _getLogicTick;
         private readonly EstimateTimeDelegate _estimateTime;
-        private readonly IRobotController _controller;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
@@ -128,14 +124,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
         private Meeting GetNextMeeting()
         {
-            // There are no meeting points, never meet.
-            if (!_partitionComponent.MeetingPointsByVertexId.Any())
-            {
-                Debug.LogWarning("There are no meeting points! Are there only one partition?");
-                return new Meeting(_patrollingMap.Vertices.First(), int.MaxValue);
-            }
-
-            var meetingPoint = _partitionComponent.MeetingPointsByVertexId.Values.Single();
+            var meetingPoint = _partitionComponent.MeetingPoint;
             var cycleIndex = (_getLogicTick() - meetingPoint.FirstMeetingAtTick) / meetingPoint.CycleIntervalTicks;
             var nextMeetingTime = (cycleIndex + 1) * meetingPoint.CycleIntervalTicks + meetingPoint.FirstMeetingAtTick;
 

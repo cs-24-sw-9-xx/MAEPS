@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -49,7 +50,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), null, 4, mapSize, amountOfCycles: 0));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance), 4, mapSize, amountOfCycles: 0));
                 }
             }
 
