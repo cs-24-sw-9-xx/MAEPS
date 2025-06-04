@@ -40,14 +40,15 @@ using SingleMeetingPoint = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.Si
 
 namespace Maes.Experiments.Patrolling
 {
-    using AlgorithmsDictionary = Dictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate)>>;
-    using IReadOnlyAlgorithmsDictionary = IReadOnlyDictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate)>>;
+    using AlgorithmsDictionary = Dictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate, bool usePartitionGroupB)>>;
+    using IReadOnlyAlgorithmsDictionary = IReadOnlyDictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate, bool usePartionGroupB)>>;
     internal static class GroupAParameters
     {
         static GroupAParameters()
         {
             AllAlgorithms = StandardAlgorithms
                 .Concat(ReactiveAlgorithms)
+                .Concat(PartitionedAlgorithms)
                 .Concat(FaultTolerantHMPVariants)
                 .Concat(CyclicAlgorithms)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -58,35 +59,42 @@ namespace Maes.Experiments.Patrolling
         public static readonly IReadOnlyAlgorithmsDictionary
             ReactiveAlgorithms = new AlgorithmsDictionary
             {
-                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm()) },
-                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed)) },
-                { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new HeuristicConscientiousReactiveAlgorithm()) }
+                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm(), false) },
+                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed), false) },
+                { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new HeuristicConscientiousReactiveAlgorithm(), false) }
             };
 
         public static readonly IReadOnlyAlgorithmsDictionary CyclicAlgorithms = new AlgorithmsDictionary
         {
             {
-                nameof(SingleCycleChristofides), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleCycleChristofides())
+                nameof(SingleCycleChristofides), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleCycleChristofides(), false)
+            }
+        };
+
+        public static readonly IReadOnlyAlgorithmsDictionary PartitionedAlgorithms = new AlgorithmsDictionary
+        {
+            {
+                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new HeuristicConscientiousReactiveAlgorithm(), true)
             }
         };
 
         public static readonly IReadOnlyAlgorithmsDictionary StandardAlgorithms = new AlgorithmsDictionary
         {
-            { "NoFaultTolerance.HMPPatrollingAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new NoFaultTolerance.HMPPatrollingAlgorithm()) },
+            { "NoFaultTolerance.HMPPatrollingAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new NoFaultTolerance.HMPPatrollingAlgorithm(), false) },
         };
 
         public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantHMPVariants = new AlgorithmsDictionary
         {
             { "ImmediateTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), false) },
             { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy), false) },
             { "RandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new RandomTakeover.HMPPatrollingAlgorithm()) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new RandomTakeover.HMPPatrollingAlgorithm(), false) },
             { "SingleMeetingPoint.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleMeetingPoint.HMPPatrollingAlgorithm()) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleMeetingPoint.HMPPatrollingAlgorithm(), false) },
             { "FaultTolerance.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new FaultTolerance.HMPPatrollingAlgorithm()) }
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new FaultTolerance.HMPPatrollingAlgorithm(), false) }
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
