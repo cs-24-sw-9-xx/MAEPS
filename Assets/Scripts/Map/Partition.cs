@@ -101,10 +101,7 @@ namespace Maes.Map
             foreach (var (position, vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
                 using var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
-                if (intersection.Contains(position))
-                {
-                    communicationZoneIntersection.Union(intersection);
-                }
+                communicationZoneIntersection.Union(intersection);
             }
             _intersectionZones[otherPartition.PartitionId] = communicationZoneIntersection;
 

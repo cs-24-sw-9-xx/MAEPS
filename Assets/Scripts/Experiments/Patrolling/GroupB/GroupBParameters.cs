@@ -7,6 +7,7 @@ using Maes.FaultInjections;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
 
@@ -14,10 +15,13 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     public static class GroupBParameters
     {
-        public const int StandardAmountOfCycles = 100;
-        public const int StandardMapSize = 150;
+        public const int StandardAmountOfCycles = 1000000;
+        public const int StandardMapSize = 200;
         public const int StandardRobotCount = 16;
         public const int StandardPartitionCount = 4;
+        public const int StandardFaultInjectionSeed = 1;
+
+        public const int StandardMaxLogicTicks = 300000;
 
         public static readonly List<int> MapSizes = new()
         {
@@ -33,29 +37,42 @@ namespace Maes.Experiments.Patrolling.GroupB
             4,
             8,
             16,
+            32,
         };
         public static readonly List<int> PartitionCounts = new()
         {
-            1,
             2,
             4,
-        };
-        public static readonly List<int> RedistributionPartitionCounts = new()
-        {
-            2,
-            4,
+            8,
         };
 
         public static readonly Dictionary<string, RobotConstraints> RobotConstraintsDictionary = new()
         {
             { nameof(GlobalRedistributionWithCRAlgo), GlobalRobotConstraints },
-            { nameof(AdaptiveRedistributionFailureBasedCRAlgo), MaterialRobotConstraints },
-            { nameof(AdaptiveRedistributionSuccessBasedCRAlgo), MaterialRobotConstraints },
+            { nameof(AdaptiveRedistributionCRAlgo), MaterialRobotConstraints },
             { nameof(RandomRedistributionWithCRAlgo), MaterialRobotConstraints },
         };
 
         // We both make building and cave maps, so 100 scenarios in total
-        public const int StandardSeedCount = 50;
+        public const int StandardSeedCount = 10;
+
+        public static bool StandardHasFinished(ISimulation simulation, out SimulationEndCriteriaReason? reason)
+        {
+            if (simulation.HasFinishedSim())
+            {
+                reason = new SimulationEndCriteriaReason("Success", true);
+                return true;
+            }
+
+            if (simulation.SimulatedLogicTicks > StandardMaxLogicTicks)
+            {
+                reason = new SimulationEndCriteriaReason("Reached max logic ticks", true);
+                return true;
+            }
+
+            reason = null;
+            return false;
+        }
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> Algorithms = new()
         {
@@ -66,13 +83,14 @@ namespace Maes.Experiments.Patrolling.GroupB
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
         {
-            {nameof(AdaptiveRedistributionFailureBasedCRAlgo), (_) => new AdaptiveRedistributionFailureBasedCRAlgo()},
-
-            {nameof(AdaptiveRedistributionSuccessBasedCRAlgo), (_) => new AdaptiveRedistributionSuccessBasedCRAlgo()},
-
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
+        };
+
+        public static readonly Dictionary<string, CreateAlgorithmDelegate> AdaptivePartitionedAlgorithms = new()
+        {
+            {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
         };
 
         private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()
@@ -125,7 +143,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         /// prob: Probability
         /// max: Max number of robot deaths
         /// </remarks>
-        public static (string, Func<IFaultInjection>) FaultInjection(int seed, int robotCount = StandardRobotCount, float probability = 0.025f, int invokeEvery = 1000)
+        public static (string, Func<IFaultInjection>) FaultInjection(int seed = StandardFaultInjectionSeed, int robotCount = StandardRobotCount, float probability = 0.025f, int invokeEvery = 1000)
         {
             return ($"FI-random-{seed}-prob-{probability}-invoke-{invokeEvery}-max-{robotCount - 1}", () => new DestroyRobotsRandomFaultInjection(seed, probability, invokeEvery, robotCount - 1));
         }

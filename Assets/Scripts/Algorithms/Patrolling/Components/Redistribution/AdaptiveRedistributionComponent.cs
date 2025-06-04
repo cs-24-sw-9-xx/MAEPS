@@ -26,11 +26,11 @@ using Maes.Robot;
 namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
-    /// Component responsible for redistributing robots to different partitions based on failure. If the robot receive communication from a partition, it will decrease the tracker.
+    /// Component responsible for redistributing robots to different partitions based on success. If the robot receive communication from a partition, it will not redistribute to that partition.
     /// </summary>
-    public sealed class AdaptiveRedistributionFailureBasedComponent : BaseRedistributionComponent
+    public sealed class AdaptiveRedistributionComponent : BaseRedistributionComponent
     {
-        public AdaptiveRedistributionFailureBasedComponent(IRobotController controller, PatrollingMap map, IPatrollingAlgorithm algorithm, int seed = 123) : base(controller, map, algorithm, seed)
+        public AdaptiveRedistributionComponent(IRobotController controller, PatrollingMap map, IPatrollingAlgorithm algorithm, int seed = 123) : base(controller, map, algorithm, seed)
         {
         }
 
@@ -45,23 +45,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         protected override void UpdateTrackerOnSuccess(int partitionId)
         {
-            if (!_redistributionTracker.ContainsKey(partitionId))
-            {
-                _redistributionTracker[partitionId] = 0;
-            }
-
-            else
-            {
-                if (_redistributionTracker[partitionId] > 0)
-                {
-
-                    _redistributionTracker[partitionId] -= _currentPartition.CommunicationRatio[partitionId];
-                }
-                else
-                {
-                    _redistributionTracker[partitionId] = 0;
-                }
-            }
+            _redistributionTracker[partitionId] = 0;
         }
     }
 }

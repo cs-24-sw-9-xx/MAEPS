@@ -78,7 +78,7 @@ namespace Maes.Experiments.Patrolling
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        createAlgorithmDelegate: (_) => new AdaptiveRedistributionFailureBasedCRAlgo()),
+                        createAlgorithmDelegate: (_) => new AdaptiveRedistributionCRAlgo()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     partitions: 4,
                     robotConstraints: robotConstraints,

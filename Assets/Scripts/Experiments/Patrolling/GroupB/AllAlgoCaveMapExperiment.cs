@@ -23,49 +23,35 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    [Preserve]
-    internal class GlobalRedistributionRobotCountExperiment : MonoBehaviour
+    internal class AllAlgoCaveMapExperiment : MonoBehaviour
     {
-        private static readonly List<int> RobotCount = new()
-        {
-            1,
-            2,
-            4,
-            8,
-            16,
-            32,
-        };
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(0, 50))
             {
-                foreach (var count in RobotCount)
+                foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
                 {
-
-                    scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                    scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
                         seed,
-                        nameof(GlobalRedistributionWithCRAlgo),
-                        GroupBParameters.PartitionedAlgorithms[nameof(GlobalRedistributionWithCRAlgo)],
-                        count,
+                        algorithm.Key,
+                        algorithm.Value,
+                        GroupBParameters.StandardRobotCount,
                         GroupBParameters.StandardMapSize,
                         GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.GlobalRobotConstraints,
+                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
                         GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection(seed)));
+                        GroupBParameters.FaultInjection()));
                 }
-
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");

@@ -27,40 +27,32 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    [Preserve]
-    internal class AllAlgorithmsExperiment : MonoBehaviour
+    internal class BuildingDataVaryingPartitionCountAdaptiveExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var size in GroupBParameters.MapSizes)
+                foreach (var partitionCount in GroupBParameters.PartitionCounts)
                 {
-                    foreach (var partitionCount in GroupBParameters.PartitionCounts)
+                    foreach (var algorithm in GroupBParameters.AdaptivePartitionedAlgorithms)
                     {
-                        foreach (var robotCount in GroupBParameters.RobotCounts)
-                        {
-                            foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
-                            {
-                                scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                                    seed,
-                                    algorithm.Key,
-                                    algorithm.Value,
-                                    robotCount,
-                                    size,
-                                    GroupBParameters.StandardAmountOfCycles,
-                                    GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                                    partitionCount,
-                                    GroupBParameters.FaultInjection(seed, robotCount: robotCount)));
-                            }
-                        }
+                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                            seed,
+                            algorithm.Key,
+                            algorithm.Value,
+                            GroupBParameters.StandardRobotCount,
+                            GroupBParameters.StandardMapSize,
+                            GroupBParameters.StandardAmountOfCycles,
+                            GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                            partitionCount,
+                            GroupBParameters.FaultInjection()));
                     }
                 }
             }

@@ -31,20 +31,20 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
     /// Original implementation of the Conscientious Reactive Algorithm of https://doi.org/10.1007/3-540-36483-8_11.
     /// Pseudocode can be found in another paper: https://doi.org/10.1080/01691864.2013.763722
     /// </summary>
-    public sealed class AdaptiveRedistributionSuccessBasedCRAlgo : PatrollingAlgorithm
+    public sealed class AdaptiveRedistributionCRAlgo : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "Adaptive Redistribution Success Based CR Algorithm";
+        public override string AlgorithmName => "Adaptive Redistribution CR Algorithm";
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
-        private AdaptiveRedistributionSuccessBasedComponent _redistributionComponent = null!;
+        private AdaptiveRedistributionComponent _redistributionComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new AdaptiveRedistributionSuccessBasedComponent(controller, patrollingMap, this);
+            _redistributionComponent = new AdaptiveRedistributionComponent(controller, patrollingMap, this);
 
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent, _redistributionComponent };
         }
