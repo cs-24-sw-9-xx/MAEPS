@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
@@ -115,19 +118,22 @@ namespace Maes.Utilities
         /// <returns></returns>
         public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
         {
-            Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
+            var startTime = Time.realtimeSinceStartup;
+            ConcurrentDictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
             var verticesSet = new HashSet<Vector2Int>(vertices);
 
-            foreach (var vertex in vertices)
+            Parallel.ForEach(vertices, vertex =>
             {
                 BreadthFirstSearch(vertex, shortestGridPath, verticesSet, map);
-            }
+            });
 
-            return shortestGridPath;
+            Debug.LogFormat("CalculateDistanceMatrix took {0}s", Time.realtimeSinceStartup - startTime);
+
+            return shortestGridPath.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         // BFS to find the distance of the shortest path from the start position to all other vertices
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, HashSet<Vector2Int> vertexPositions, Bitmap map)
+        private static void BreadthFirstSearch(Vector2Int startPosition, ConcurrentDictionary<(Vector2Int, Vector2Int), int> shortestGridPath, HashSet<Vector2Int> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
             using var visited = new Bitmap(map.Width, map.Height);

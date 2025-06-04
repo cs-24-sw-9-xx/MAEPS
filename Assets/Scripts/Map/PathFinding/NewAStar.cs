@@ -233,14 +233,14 @@ namespace Maes.Map.PathFinding
                 var left = current + Left;
                 var topLeft = current + TopLeft;
 
-                var wallTop = IsSolid(top);
-                var wallTopRight = IsSolid(topRight);
-                var wallRight = IsSolid(right);
-                var wallBottomRight = IsSolid(bottomRight);
-                var wallBottom = IsSolid(bottom);
-                var wallBottomLeft = IsSolid(bottomLeft);
-                var wallLeft = IsSolid(left);
-                var wallTopLeft = IsSolid(topLeft);
+                var wallTop = map.Contains(top);
+                var wallTopRight = map.Contains(topRight);
+                var wallRight = map.Contains(right);
+                var wallBottomRight = map.Contains(bottomRight);
+                var wallBottom = map.Contains(bottom);
+                var wallBottomLeft = map.Contains(bottomLeft);
+                var wallLeft = map.Contains(left);
+                var wallTopLeft = map.Contains(topLeft);
 
                 var anyNeighboringWalls =
                     wallTop || wallTopRight || wallRight || wallBottomRight || wallBottom || wallBottomLeft || wallLeft || wallTopLeft;
@@ -322,17 +322,6 @@ namespace Maes.Map.PathFinding
                         closest = neighbor;
                     }
                 }
-            }
-
-            bool IsSolid(Vector2Int position)
-            {
-                if (position.x < 0 || position.x >= map.Width
-                    || position.y < 0 || position.y >= map.Height)
-                {
-                    return false;
-                }
-
-                return map.Contains(position);
             }
         }
 

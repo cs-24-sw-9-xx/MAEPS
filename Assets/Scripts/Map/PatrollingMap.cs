@@ -83,17 +83,37 @@ namespace Maes.Map
         {
             var startTime = Time.realtimeSinceStartup;
 
+            using var bitmap = MapUtilities.MapToBitMap(coarseMap);
+
             var paths = new ConcurrentDictionary<(int, int), IReadOnlyList<PathStep>>();
             Parallel.ForEach(vertices, vertex =>
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    var path = MyAStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ??
+                    // This way we make sure that we don't calculate the reverse ones as well.
+                    if (vertex.Id > neighbor.Id)
+                    {
+                        continue;
+                    }
+
+
+                    var path = NewAStar.FindPath(vertex.Position, neighbor.Position, bitmap, acceptPartialPaths: false, dependOnBrokenBehaviour: false)?.ToArray() ??
                                throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = MyAStar.PathToStepsCheap(path);
 
-                    var success = paths.TryAdd((vertex.Id, neighbor.Id), pathSteps);
-                    Debug.Assert(success);
+                    var reversedPathSteps = new List<PathStep>(pathSteps.Count);
+                    for (var i = pathSteps.Count - 1; i >= 0; i--)
+                    {
+                        var pathStep = pathSteps[i];
+                        var reversedPathStep = new PathStep(pathStep.End, pathStep.Start, null!);
+                        reversedPathSteps.Add(reversedPathStep);
+                    }
+
+                    var success1 = paths.TryAdd((vertex.Id, neighbor.Id), pathSteps);
+                    var success2 = paths.TryAdd((neighbor.Id, vertex.Id), reversedPathSteps);
+
+                    Debug.Assert(success1);
+                    Debug.Assert(success2);
                 }
             });
 
