@@ -38,9 +38,9 @@ namespace Maes.Experiments.Patrolling
     /// AAU group cs-25-ds-10-17
     /// </summary>
     [Preserve]
-    internal class GroupAMapSizeToRobotCountRatioHMPVariantExperiment : MonoBehaviour
+    internal class GroupAMapSizeToRobotCountRatio1SeedExperiment : MonoBehaviour
     {
-        private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250, 300 };
+        private static readonly List<int> _mapSizes = new() { 100, 150, 200, 250 };
         private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
         private static readonly IEnumerable<string> scenarioFilters = new List<string>
         {
@@ -51,11 +51,11 @@ namespace Maes.Experiments.Patrolling
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
-            foreach (var seed in GroupAParameters.SeedGenerator(5))
+            foreach (var seed in GroupAParameters.SeedGenerator(1))
             {
                 foreach (var mapSize in _mapSizes)
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.FaultTolerantHMPVariants)
+                    foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
                     {
                         foreach (var robotCount in _robotCounts)
                         {
