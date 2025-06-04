@@ -287,3 +287,38 @@ jobs:
       - name: Check forbidden knowledge
         run: |
           unity-editor -nographics -logFile /dev/stdout -customBuildName LinuxProjectFileBuild -projectPath . -executeMethod Editor.ProjectAuditCI.AuditAndExport -quit
+
+  build-data-processor:
+    name: Build MAEPS Data Processor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache .NET tools and packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.nuget/packages
+            ~/.dotnet/tools
+          key: dotnet-tools-${{ runner.os }}-8.0
+          restore-keys: |
+            dotnet-tools-${{ runner.os }}
+
+      - name: Restore NuGet packages
+        run: dotnet restore MAEPS-Data-Processor/MAEPS-Data-Processor.sln
+
+      - name: Build Data Processor
+        run: dotnet build MAEPS-Data-Processor/MAEPS-Data-Processor.sln --configuration Release --no-restore
+
+      - name: Publish Data Processor
+        run: dotnet publish MAEPS-Data-Processor/MAEPS.Data.Processor/MAEPS.Data.Processor.csproj --configuration Release --output publish-data-processor
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MAEPS-Data-Processor
+          path: publish-data-processor
