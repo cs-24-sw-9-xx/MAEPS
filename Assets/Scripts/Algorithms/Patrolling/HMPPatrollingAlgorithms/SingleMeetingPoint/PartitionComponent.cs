@@ -68,13 +68,25 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
             null!;
 
+        private PatrollingMap _patrollingMap = null!;
+
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _startupComponent = new StartupComponent<PartitionGeneratorResult, PartitionComponent>(controller, robots => _partitionGenerator(robots));
+            _patrollingMap = patrollingMap;
+            _startupComponent = new StartupComponent<PartitionGeneratorResult, PartitionComponent>(controller, GeneratePartitions);
             _partitionIdToRobotIdVirtualStigmergyComponent = new(OnPartitionConflict, controller);
 
             return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent };
+        }
+
+        private PartitionGeneratorResult GeneratePartitions(HashSet<int> robots)
+        {
+            Debug.Assert(_patrollingMap.Vertices.Count >= robots.Count);
+            var partitions = _partitionGenerator(robots);
+            Debug.Assert(partitions.AssignmentByRobotId.Count == robots.Count);
+
+            return partitions;
         }
 
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
