@@ -49,6 +49,25 @@ namespace Maes.Simulation.Patrolling
             SaveWaypointData = saveWaypointData;
             PatrollingMapFactory = patrollingMapFactory ?? ((map) =>
                 PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions, RobotConstraints));
+            HasFinishedSim = hasFinishedSim ?? DefaultHasFinishedSim;
+        }
+
+        private bool DefaultHasFinishedSim(PatrollingSimulation simulation, out SimulationEndCriteriaReason? reason)
+        {
+            if (simulation.HasFinishedSim())
+            {
+                reason = new SimulationEndCriteriaReason("Success", true);
+                return true;
+            }
+
+            if (simulation.SimulatedLogicTicks > MaxLogicTicks)
+            {
+                reason = new SimulationEndCriteriaReason($"Max ticks ({MaxLogicTicks}) reached (stuck?). Completed cycle: {simulation.PatrollingTracker.CurrentCycle} out of {simulation.PatrollingTracker.TotalCycles}", false);
+                return true;
+            }
+
+            reason = null;
+            return false;
         }
     }
 }
