@@ -43,14 +43,13 @@ namespace Maes.Experiments.Patrolling
     {
         private void Start()
         {
-            var scenarioCounter = 0;
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(1))
             {
                 foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                 {
                     var (patrollingMapFactory, algorithm, useGroupBPartition) = lambda(GroupAParameters.StandardRobotCount);
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, useGroupBPartition, 4, 100, shouldFail: scenarioCounter++ % 3 == 0));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, useGroupBPartition, 4, 100));
                 }
             }
 
