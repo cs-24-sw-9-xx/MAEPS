@@ -27,7 +27,6 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
-using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Exploration;
 using Maes.UI.Visualizers.Exploration.VisualizationModes;
