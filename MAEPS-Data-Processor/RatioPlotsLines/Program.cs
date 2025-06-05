@@ -1,7 +1,9 @@
-﻿using MAEPS.Data.Processor.Preprocessors;
+﻿using System.Globalization;
+
+using MAEPS.Data.Processor.Preprocessors;
 using MAEPS.Data.Processor.Utilities;
 
-using RatioPlots;
+using ScottPlot.DataSources;
 
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
@@ -20,21 +22,20 @@ if (groupBys.Length != 2)
     return;
 }
 
-var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, false);
+var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, true);
 
-var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "Ratio", regenerate: regenerate);
-var folderStructure = new Dictionary<string, IReadOnlyList<string>>();
+var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "RatioLines", regenerate: regenerate);
 var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(dataFolder);
+
+var ratioPlotter = new RatioLinesComputer(dataFolder, groupBys);
 foreach (var algorithmFolder in algorithmFolders)
 {
     var groupedFolderPaths = Grouping.GroupScenariosByGroupingValue(groupBys, algorithmFolder);
-    foreach (var groupedFolderPath in groupedFolderPaths)
+    Parallel.ForEach(groupedFolderPaths, groupedFolderPath =>
     {
         SummaryAlgorithmSeedsCreator.CreateSummaryFromScenarios(groupedFolderPath, regenerate: regenerate);
-    }
-    folderStructure[algorithmFolder] = groupedFolderPaths;
+    });
+    ratioPlotter.GenerateRatioData(algorithmFolder, groupedFolderPaths);
 }
 
-var ratioPlotter = new RatioComputer(dataFolder, folderStructure, groupBys);
-ratioPlotter.GenerateRatioData();
-ratioPlotter.CreatePlots();
+ratioPlotter.SaveGlobalWorstIdlenessPlots();
