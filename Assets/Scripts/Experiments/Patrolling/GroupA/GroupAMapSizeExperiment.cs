@@ -50,8 +50,8 @@ namespace Maes.Experiments.Patrolling
                 {
                     foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
                     {
-                        var (patrollingMapFactory, algorithm, useGroupBPartition) = lambda(GroupAParameters.StandardRobotCount);
-                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, useGroupBPartition, GroupAParameters.StandardRobotCount, mapSize));
+                        var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
+                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, mapSize));
                     }
                 }
             }
