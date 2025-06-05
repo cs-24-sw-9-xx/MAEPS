@@ -76,10 +76,15 @@ public static class Grouping
             var scenarioName = Path.GetFileName(folder);
             var values = scenarioName.GroupingValues<string>(groupBys);
 
-            var valueFolder = Directory.CreateDirectory(Path.Combine(scenariosFolderPath, GroupingName(groupBys, values)));
-            var newExperimentFolder = Path.Combine(valueFolder.FullName, scenarioName);
+            var groupedFolderPath = Path.Combine(scenariosFolderPath, GroupingName(groupBys, values));
+            if (!Directory.Exists(groupedFolderPath))
+            {
+                Directory.CreateDirectory(groupedFolderPath);
+            }
+            
+            var newExperimentFolder = Path.Combine(groupedFolderPath, scenarioName);
             Directory.Move(folder, newExperimentFolder);
-            groupedFolderPaths.Add(valueFolder.FullName);
+            groupedFolderPaths.Add(groupedFolderPath);
         }
 
         return groupedFolderPaths;
