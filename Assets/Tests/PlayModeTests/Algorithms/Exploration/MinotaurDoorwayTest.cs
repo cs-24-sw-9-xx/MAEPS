@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Maes.Algorithms.Exploration.Minotaur;
-using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
 using Maes.Utilities.Files;
