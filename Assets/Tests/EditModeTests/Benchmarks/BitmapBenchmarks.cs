@@ -6,6 +6,8 @@ using NUnit.Framework;
 
 using Debug = UnityEngine.Debug;
 
+using Tests.PlayModeTests.Utilities;
+
 namespace Tests.EditModeTests.Benchmarks
 {
     public class BitmapBenchmarks
