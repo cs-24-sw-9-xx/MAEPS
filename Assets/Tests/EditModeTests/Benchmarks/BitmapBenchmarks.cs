@@ -8,6 +8,8 @@ using Tests.PlayModeTests.Utilities;
 
 using Debug = UnityEngine.Debug;
 
+using Tests.PlayModeTests.Utilities;
+
 namespace Tests.EditModeTests.Benchmarks
 {
     public class BitmapBenchmarks

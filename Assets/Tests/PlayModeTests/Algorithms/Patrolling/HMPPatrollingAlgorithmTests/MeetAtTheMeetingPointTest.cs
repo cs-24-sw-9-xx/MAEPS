@@ -12,6 +12,8 @@ using Maes.Simulation.Patrolling;
 
 using NUnit.Framework;
 
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
+
 using UnityEngine;
 
 namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
