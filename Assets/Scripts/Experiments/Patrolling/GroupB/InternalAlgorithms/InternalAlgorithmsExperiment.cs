@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -32,25 +33,34 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class NoFaultAllAlgoCaveMapExperiment : MonoBehaviour
+    internal class InternalAlgorithmsExperiment : MonoBehaviour
     {
+        private static readonly List<int> PartitionCount = new() { 2, 4, 8 };
+        private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
+
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, 50))
+            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
+                foreach (var algName in AlgorithmName)
                 {
-                    scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
-                        seed,
-                        algorithm.Key,
-                        algorithm.Value,
-                        GroupBParameters.StandardRobotCount,
-                        GroupBParameters.StandardMapSize,
-                        GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                        GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection(robotCount: 1)));
+                    foreach (var count in PartitionCount)
+                    {
+
+                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                            seed,
+                            algName,
+                            GroupBParameters.Algorithms[algName],
+                            GroupBParameters.StandardRobotCount,
+                            GroupBParameters.StandardMapSize,
+                            GroupBParameters.StandardAmountOfCycles,
+                            GroupBParameters.GlobalRobotConstraints,
+                            count,
+                            GroupBParameters.FaultInjection(seed,
+                                robotCount: 1))); // robotCount = 1 for no fault injection
+
+                    }
                 }
             }
 
