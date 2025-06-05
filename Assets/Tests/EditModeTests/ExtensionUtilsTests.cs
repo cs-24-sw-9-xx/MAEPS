@@ -2,8 +2,6 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
-
 namespace Tests.EditModeTests
 {
     public class ExtensionUtilsTests

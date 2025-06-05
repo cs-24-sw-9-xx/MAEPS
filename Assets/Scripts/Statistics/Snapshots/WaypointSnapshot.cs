@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 
-using Maes.Statistics.Csv;
-
 namespace Maes.Statistics.Snapshots
 {
     public struct WaypointSnapshot : ICsvData

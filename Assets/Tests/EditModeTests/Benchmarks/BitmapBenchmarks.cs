@@ -4,8 +4,6 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.PlayModeTests.Utilities;
-
 using Debug = UnityEngine.Debug;
 
 namespace Tests.EditModeTests.Benchmarks
