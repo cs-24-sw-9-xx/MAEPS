@@ -26,22 +26,9 @@ namespace Maes.Map.Generators
     // Factory for generating maps using overloading
     public class MapSpawner : MonoBehaviour
     {
-        public SimulationMap<Tile> GenerateMap(CaveMapConfig caveConfig, float wallHeight = 2.0f)
+        public SimulationMap<Tile> GenerateMap(IMapConfig mapConfig, float wallHeight = 2.0f)
         {
-            var caveGenerator = gameObject.AddComponent<CaveGenerator>();
-            return caveGenerator.GenerateCaveMap(caveConfig, wallHeight);
-        }
-
-        public SimulationMap<Tile> GenerateMap(BuildingMapConfig buildingConfig, float wallHeight = 2.0f)
-        {
-            var buildingGenerator = gameObject.AddComponent<BuildingGenerator>();
-            return buildingGenerator.GenerateBuildingMap(buildingConfig, wallHeight);
-        }
-
-        public SimulationMap<Tile> GenerateMap(Tile[,] bitmap, int seed, float wallHeight = 2.0f, int borderSize = 1, bool brokenCollisionMap = true)
-        {
-            var bitMapGenerator = gameObject.AddComponent<BitMapGenerator>();
-            return bitMapGenerator.CreateMapFromBitMap(bitmap, seed, wallHeight, borderSize, brokenCollisionMap: brokenCollisionMap);
+            return mapConfig.GenerateMap(gameObject, wallHeight);
         }
     }
 }

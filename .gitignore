@@ -73,6 +73,7 @@ maes-ros-slam-ws/log
 maes-ros-slam-ws/.idea
 
 # Misc
+*.zip
 /.vscode
 /.vsconfig
 UserSettings/
@@ -82,13 +83,12 @@ InitTestScene*
 /data
 /MinotaurExperiment
 /TnfExperiment
-/MAEPS-Data-Processor/MAEPS-Data-Processor/bin
-/MAEPS-Data-Processor/MAEPS-Data-Processor/obj
 /maes-csv-reader/env
 /maes-csv-reader/datasets
 /maes-csv-reader/src/__pycache*
 .DS_Store
 /Assets/Packages
 Assets/Packages.meta
-/MAEPS-Data-Processor/AlgorithmSplitter/bin
-/MAEPS-Data-Processor/AlgorithmSplitter/obj
+/MAEPS-Data-Processor/**/obj
+/MAEPS-Data-Processor/**/bin
+!/MAEPS-Data-Processor/**/*.csproj

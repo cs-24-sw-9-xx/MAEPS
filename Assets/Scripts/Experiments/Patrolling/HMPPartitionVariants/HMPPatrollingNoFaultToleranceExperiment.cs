@@ -29,12 +29,14 @@ using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
+    [Preserve]
     internal class HMPPatrollingNoFaultToleranceExperiment : MonoBehaviour
     {
         private void Start()
@@ -71,7 +73,7 @@ namespace Maes.Experiments.Patrolling
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance))
             );
 
             var simulator = new MySimulator(scenarios);

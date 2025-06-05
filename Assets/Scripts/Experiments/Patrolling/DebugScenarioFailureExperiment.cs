@@ -26,6 +26,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -37,6 +38,7 @@ namespace Maes.Experiments.Patrolling
     /// This fails every third scenario.
     /// This way both building and cave maps are tested.
     /// </summary>
+    [Preserve]
     internal class DebugScenarioFailureExperiment : MonoBehaviour
     {
         private void Start()
@@ -47,8 +49,8 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
                 {
-                    var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, 4, 100, shouldFail: scenarioCounter++ % 3 == 0));
+                    var (patrollingMapFactory, algorithm, useGroupBPartition) = lambda(GroupAParameters.StandardRobotCount);
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, useGroupBPartition, 4, 100, shouldFail: scenarioCounter++ % 3 == 0));
                 }
             }
 

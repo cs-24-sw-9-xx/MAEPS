@@ -63,23 +63,48 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
         /// </summary>
         /// <param name="map"></param>
         /// <param name="maxDistance">The maximum range of a waypoint.</param>
+        /// <param name="inaccurateButFast">Whether or not to be inaccurate but fast.</param>
         /// <returns></returns>
-        public static HashSet<Vector2Int> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f)
+        public static HashSet<Vector2Int> VertexPositionsFromMap(Bitmap map, float maxDistance = 0f, bool inaccurateButFast = true)
         {
             return WaypointGeneratorCache<GreedyMostVisibilityWaypointGeneratorCacheKey>.Cached(
                 map,
-                () => VertexPositionsFromMapComputation(map, maxDistance),
+                () => VertexPositionsFromMapComputation(map, maxDistance, inaccurateButFast),
                 hash =>
                 {
                     hash.Append(maxDistance);
+                    hash.Append(inaccurateButFast ? 1 : 0);
                     return hash;
                 });
         }
 
-        private static HashSet<Vector2Int> VertexPositionsFromMapComputation(Bitmap map, float maxDistance)
+        private static HashSet<Vector2Int> VertexPositionsFromMapComputation(Bitmap map, float maxDistance, bool inaccurateButFast)
         {
-            var precomputedVisibility = ComputeVisibility(map, maxDistance);
+            var precomputedVisibility = ComputeVisibility(map, maxDistance, inaccurateButFast);
             return ComputeVertexCoordinates(map, precomputedVisibility);
+        }
+
+        private sealed class UncoveredTilesSetComparer : IComparer<Vector2Int>
+        {
+            private readonly Dictionary<Vector2Int, int> _precomputedVisibility;
+            private readonly int _width;
+
+            public UncoveredTilesSetComparer(Dictionary<Vector2Int, Bitmap> precomputedVisibility)
+            {
+                _precomputedVisibility = precomputedVisibility.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Count);
+                _width = precomputedVisibility.Values.First().Width;
+            }
+
+            public int Compare(Vector2Int x, Vector2Int y)
+            {
+                var visibility = _precomputedVisibility[y] - _precomputedVisibility[x];
+                if (visibility != 0)
+                {
+                    return visibility;
+                }
+
+                return (y.y * _width + y.x) - (x.y * _width + x.x);
+            }
         }
 
         private static HashSet<Vector2Int> ComputeVertexCoordinates(Bitmap map, Dictionary<Vector2Int, Bitmap> precomputedVisibility)
@@ -89,7 +114,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             var guardPositions = new HashSet<Vector2Int>();
 
             using var uncoveredTiles = new Bitmap(map.Width, map.Height);
-            var uncoveredTilesSet = precomputedVisibility.Keys.ToHashSet();
+            var uncoveredTilesSet = new SortedSet<Vector2Int>(precomputedVisibility.Keys, new UncoveredTilesSetComparer(precomputedVisibility));
             foreach (var uncoveredTile in precomputedVisibility.Keys)
             {
                 uncoveredTiles.Set(uncoveredTile.x, uncoveredTile.y);
@@ -103,7 +128,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
 
                 var foundCandidate = false;
 
-                foreach (var uncoveredTile in uncoveredTilesSet.OrderByDescending(t => precomputedVisibility[t].Count))
+                foreach (var uncoveredTile in uncoveredTilesSet)
                 {
                     var candidate = precomputedVisibility[uncoveredTile];
                     if (candidate.Count <= bestCoverage.Count * WallClosePenalty)
@@ -176,7 +201,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
             return map.Contains(position);
         }
 
-        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance = 0f)
+        internal static Dictionary<Vector2Int, Bitmap> ComputeVisibility(Bitmap map, float maxDistance, bool inaccurateButFast)
         {
             var startTime = Time.realtimeSinceStartup;
 
@@ -201,6 +226,7 @@ namespace Maes.Map.Generators.Patrolling.Waypoints.Generators
                     Map = nativeMap,
                     Visibility = nativeVisibilities[x],
                     MaxDistance = maxDistance,
+                    InaccurateButFast = inaccurateButFast
                 };
 
                 jobs[x] = job.Schedule();

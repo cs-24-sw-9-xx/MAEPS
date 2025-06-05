@@ -31,12 +31,14 @@ using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
+    [Preserve]
     internal class PartitionedConscientiousReactiveExperiment : MonoBehaviour
     {
         private void Start()
@@ -76,7 +78,7 @@ namespace Maes.Experiments.Patrolling
                         collisionMap: buildingConfig,
                         seed: 123,
                         numberOfRobots: robotCount,
-                        createAlgorithmDelegate: (_) => new AdaptiveRedistributionFailureBasedCRAlgo()),
+                        createAlgorithmDelegate: (_) => new AdaptiveRedistributionCRAlgo()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     partitions: 4,
                     robotConstraints: robotConstraints,

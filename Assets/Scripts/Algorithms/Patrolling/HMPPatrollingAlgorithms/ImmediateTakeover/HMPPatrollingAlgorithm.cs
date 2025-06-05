@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
@@ -45,27 +46,34 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed = 0)
+        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed = 0)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
+            _takeoverStrategy = takeoverStrategy;
+            _random = new System.Random(seed);
+
         }
-        public override string AlgorithmName => "HMPAlgorithm";
+
+        private readonly System.Random _random;
+        public StrongBox<int> RobotId = null!;
+        public override string AlgorithmName => "HMPAlgorithm" + Enum.GetName(typeof(PartitionComponent.TakeoverStrategy), _takeoverStrategy);
         public PartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
         public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
                                                                            .VertexIds
                                                                            .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
-
+        private readonly PartitionComponent.TakeoverStrategy _takeoverStrategy;
         private PartitionComponent _partitionComponent = null!;
         private MeetingComponent _meetingComponent = null!;
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
+            RobotId = new StrongBox<int>(controller.Id);
+            _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions, _takeoverStrategy, _random);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent, RobotId);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
@@ -133,28 +141,27 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
             var vertexIdsPartitions = clusters.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 
-            var i = 0;
-            var partitionsWithNoMeetingPointsById = robotIds.ToDictionary(id => id, id => new UnfinishedPartitionInfo(id, vertexIdsPartitions[i++]));
+            var partitionsWithNoMeetingPointsById = vertexIdsPartitions.Select((vertexIds, id) => (vertexIds, id)).ToDictionary(partition => partition.id, partition => new UnfinishedPartitionInfo(partition.id, partition.vertexIds));
 
-            var partitionsWithMeetingPointsById = AddMissingMeetingPointsForNeighborPartitions(collisionMap, partitionsWithNoMeetingPointsById);
+            var partitionsWithMeetingPointsById = AddMissingMeetingPointsForNeighborPartitions(partitionsWithNoMeetingPointsById, distanceMatrix);
 
             var meetingRobotIdsByVertexId = FindMeetingRobotsAtMeetingPoints(partitionsWithMeetingPointsById.Values.ToArray());
 
             var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithMeetingPointsById);
 
             var hmpPartitionsById = new Dictionary<int, PartitionInfo>();
-            foreach (var (robotId, partitionInfo) in partitionsWithMeetingPointsById)
+            foreach (var (partitionId, partitionInfo) in partitionsWithMeetingPointsById)
             {
-                hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[robotId]);
+                hmpPartitionsById[partitionId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[partitionId]);
             }
 
             return hmpPartitionsById;
         }
 
-        private Dictionary<int, UnfinishedPartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Bitmap collisionMap, Dictionary<int, UnfinishedPartitionInfo> partitions)
+        private Dictionary<int, UnfinishedPartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Dictionary<int, UnfinishedPartitionInfo> partitions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             var verticesReverseNearestNeighbors = PatrollingMap.Vertices.Select(v => new Vertex(v.Id, v.Position, v.Partition, v.Color)).ToArray();
-            ReverseNearestNeighborWaypointConnector.ConnectVertices(verticesReverseNearestNeighbors, collisionMap);
+            ReverseNearestNeighborWaypointConnector.ConnectVertices(verticesReverseNearestNeighbors, distanceMatrix);
 
             var neighborsPartitionsWithNoCommonVertices = GetNeighborsPartitionsWithNoCommonVertices(partitions, verticesReverseNearestNeighbors);
             foreach (var meetingPoint in neighborsPartitionsWithNoCommonVertices)
@@ -233,21 +240,31 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfo> partitionsById)
         {
+            // We have only a single partition
+            if (partitionsById.Count == 1)
+            {
+                return new Dictionary<int, List<MeetingPoint>>()
+                {
+                    {partitionsById.Keys.Single(), new List<MeetingPoint>()}
+                };
+            }
+
             var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
+            var globalMeetingCycleTicks = globalMeetingIntervalTicks * tickColorAssignment.Values.Max();
 
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
 
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
-            foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
+            foreach (var (vertexId, meetingPartitionIds) in meetingRobotIdsByVertexId)
             {
-                var meetingPoint = new MeetingPoint(vertexId, globalMeetingIntervalTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
-                foreach (var robotId in meetingRobotIds)
+                var meetingPoint = new MeetingPoint(vertexId, globalMeetingCycleTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingPartitionIds);
+                foreach (var partitionId in meetingPartitionIds)
                 {
-                    if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
+                    if (!meetingPointsByPartitionId.TryGetValue(partitionId, out var meetingPoints))
                     {
                         meetingPoints = new List<MeetingPoint>();
-                        meetingPointsByPartitionId[robotId] = meetingPoints;
+                        meetingPointsByPartitionId[partitionId] = meetingPoints;
                     }
 
                     meetingPoints.Add(meetingPoint);

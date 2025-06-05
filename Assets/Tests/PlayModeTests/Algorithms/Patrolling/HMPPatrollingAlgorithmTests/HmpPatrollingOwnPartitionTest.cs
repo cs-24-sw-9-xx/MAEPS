@@ -73,7 +73,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private void CreateAndEnqueueScenario()
         {
-
             var robotConstraints = new RobotConstraints(
                 mapKnown: true,
                 distributeSlam: false,
@@ -97,7 +96,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map))
             )};
 
             _maes = new PatrollingSimulator(scenarios);
@@ -210,6 +209,16 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public string GetDebugInfo()
             {
                 return _algorithm.GetDebugInfo();
+            }
+
+            public bool HasSeenAllInPartition(int assignedPartition)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void ResetSeenVerticesForPartition(int partitionId)
+            {
+                throw new System.NotImplementedException();
             }
         }
     }

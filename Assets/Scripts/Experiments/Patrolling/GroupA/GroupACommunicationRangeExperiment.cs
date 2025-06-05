@@ -29,6 +29,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -40,23 +41,22 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
+    [Preserve]
     internal class GroupACommunicationRangeExperiment : MonoBehaviour
     {
         private readonly List<float> _communicationRangeThroughWalls = new List<float>() { 0, 1f, 2f, 3f, 4f, 5f };
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
-            PatrollingMapFactory patrollingMapFactory = AllWaypointConnectedGenerator.MakePatrollingMap;
-            CreateAlgorithmDelegate algorithm = (_) => new HMPPatrollingAlgorithm
-            (
-            );
+            PatrollingMapFactory patrollingMapFactory = map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance);
+            CreateAlgorithmDelegate algorithm = (_) => new HMPPatrollingAlgorithm();
             var algorithmName = nameof(HMPPatrollingAlgorithm);
 
             foreach (var seed in GroupAParameters.SeedGenerator())
             {
                 foreach (var communicationRangeThroughWalls in _communicationRangeThroughWalls)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, GroupAParameters.StandardMapSize, communicationRangeThroughWalls));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, false, GroupAParameters.StandardRobotCount, GroupAParameters.StandardMapSize, communicationRangeThroughWalls));
                 }
 
             }

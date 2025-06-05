@@ -50,10 +50,28 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
-        public PartitionInfo PartitionInfo => _partitionComponent.PartitionInfo!;
-        public override Dictionary<int, Color32[]> ColorsByVertexId => _partitionComponent.PartitionInfo?
-                                                                           .VertexIds
-                                                                           .ToDictionary(vertexId => vertexId, _ => new[] { Controller.Color }) ?? new Dictionary<int, Color32[]>();
+
+        public IEnumerable<int> VerticesByIdToPatrol => _partitionComponent.VerticesByIdToPatrol;
+
+        private readonly Dictionary<int, Color32[]> _colorsByVertexId = new();
+        public override Dictionary<int, Color32[]> ColorsByVertexId
+        {
+            get
+            {
+                if (_colorsByVertexId.Keys.SetEquals(VerticesByIdToPatrol))
+                {
+                    return _colorsByVertexId;
+                }
+
+                _colorsByVertexId.Clear();
+                foreach (var vertex in VerticesByIdToPatrol)
+                {
+                    _colorsByVertexId[vertex] = new[] { Controller.Color };
+                }
+
+                return _colorsByVertexId;
+            }
+        }
 
         private readonly HeuristicConscientiousReactiveLogic _heuristicConscientiousReactiveLogic;
 
@@ -65,7 +83,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         {
             _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
@@ -77,7 +95,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         private Vertex GetInitialVertexToPatrol()
         {
-            var vertices = PatrollingMap.Vertices.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray();
+            var vertices = PatrollingMap.Vertices.Where(vertex => VerticesByIdToPatrol.Contains(vertex.Id)).ToArray();
 
             return vertices.GetClosestVertex(target => Controller.EstimateTimeToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
         }
@@ -85,7 +103,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private Vertex NextVertex(Vertex currentVertex)
         {
             var suggestedVertex = _heuristicConscientiousReactiveLogic.NextVertex(currentVertex,
-                currentVertex.Neighbors.Where(vertex => PartitionInfo.VertexIds.Contains(vertex.Id)).ToArray());
+                currentVertex.Neighbors.Where(vertex => VerticesByIdToPatrol.Contains(vertex.Id)).ToArray());
 
             return _meetingComponent.NextVertex(currentVertex, suggestedVertex);
         }
@@ -93,7 +111,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private IEnumerable<ComponentWaitForCondition> ExchangeInformation(MeetingComponent.Meeting meeting)
         {
             TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, Controller.Id));
-            foreach (var condition in _partitionComponent.ExchangeInformation())
+            foreach (var condition in _partitionComponent.ExchangeInformation(meeting.Vertex.Id))
             {
                 yield return condition;
             }
@@ -133,28 +151,30 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             var vertexIdsPartitions = clusters.Select(vertexPoints => vertexPoints.Select(point => vertexIdByPosition[point]).ToHashSet()).ToArray();
 
-            var i = 0;
-            var partitionsWithNoMeetingPointsById = robotIds.ToDictionary(id => id, id => new UnfinishedPartitionInfo(id, vertexIdsPartitions[i++]));
+            var partitionsWithNoMeetingPointsById = vertexIdsPartitions.Select((vertexIds, id) => (vertexIds, id)).ToDictionary(partition => partition.id, partition => new UnfinishedPartitionInfo(partition.id, partition.vertexIds));
 
-            var partitionsWithMeetingPointsById = AddMissingMeetingPointsForNeighborPartitions(collisionMap, partitionsWithNoMeetingPointsById);
+            var partitionsWithMeetingPointsById = AddMissingMeetingPointsForNeighborPartitions(partitionsWithNoMeetingPointsById, distanceMatrix);
 
             var meetingRobotIdsByVertexId = FindMeetingRobotsAtMeetingPoints(partitionsWithMeetingPointsById.Values.ToArray());
 
-            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithMeetingPointsById);
+            var partitionsWithDiametersById =
+                GetPartitionDiameters(partitionsWithMeetingPointsById, meetingRobotIdsByVertexId);
+
+            var meetingPointsByPartitionId = GetMeetingPointsByPartitionId(meetingRobotIdsByVertexId, partitionsWithDiametersById);
 
             var hmpPartitionsById = new Dictionary<int, PartitionInfo>();
-            foreach (var (robotId, partitionInfo) in partitionsWithMeetingPointsById)
+            foreach (var (partitionId, partitionInfo) in partitionsWithMeetingPointsById)
             {
-                hmpPartitionsById[robotId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[robotId]);
+                hmpPartitionsById[partitionId] = new PartitionInfo(partitionInfo.RobotId, partitionInfo.VertexIds, meetingPointsByPartitionId[partitionId], partitionsWithDiametersById[partitionId].Diameter);
             }
 
             return hmpPartitionsById;
         }
 
-        private Dictionary<int, UnfinishedPartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Bitmap collisionMap, Dictionary<int, UnfinishedPartitionInfo> partitions)
+        private Dictionary<int, UnfinishedPartitionInfo> AddMissingMeetingPointsForNeighborPartitions(Dictionary<int, UnfinishedPartitionInfo> partitions, Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix)
         {
             var verticesReverseNearestNeighbors = PatrollingMap.Vertices.Select(v => new Vertex(v.Id, v.Position, v.Partition, v.Color)).ToArray();
-            ReverseNearestNeighborWaypointConnector.ConnectVertices(verticesReverseNearestNeighbors, collisionMap);
+            ReverseNearestNeighborWaypointConnector.ConnectVertices(verticesReverseNearestNeighbors, distanceMatrix);
 
             var neighborsPartitionsWithNoCommonVertices = GetNeighborsPartitionsWithNoCommonVertices(partitions, verticesReverseNearestNeighbors);
             foreach (var meetingPoint in neighborsPartitionsWithNoCommonVertices)
@@ -231,23 +251,37 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         }
 
         private Dictionary<int, List<MeetingPoint>> GetMeetingPointsByPartitionId(
-            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfo> partitionsById)
+            Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId, Dictionary<int, UnfinishedPartitionInfoWithDiameter> partitionsById)
         {
-            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById, meetingRobotIdsByVertexId);
+            // We have only a single partition
+            if (partitionsById.Count == 1)
+            {
+                return new Dictionary<int, List<MeetingPoint>>()
+                {
+                    {partitionsById.Keys.Single(), new List<MeetingPoint>()}
+                };
+            }
+
+            var globalMeetingIntervalTicks = GetGlobalMeetingIntervalTicks(partitionsById);
             var tickColorAssignment = new WelshPowellMeetingPointColorer(meetingRobotIdsByVertexId).Run();
+            var maximumTickColorAssignment = tickColorAssignment.Values.Max();
 
             var startMeetingAfterTicks = GetWhenToStartMeeting(partitionsById.Values);
 
             var meetingPointsByPartitionId = new Dictionary<int, List<MeetingPoint>>();
-            foreach (var (vertexId, meetingRobotIds) in meetingRobotIdsByVertexId)
+            foreach (var (vertexId, meetingPartitionIds) in meetingRobotIdsByVertexId)
             {
-                var meetingPoint = new MeetingPoint(vertexId, globalMeetingIntervalTicks, startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId], meetingRobotIds);
-                foreach (var robotId in meetingRobotIds)
+                var initialCurrentNextMeetingAtTick =
+                    startMeetingAfterTicks + globalMeetingIntervalTicks * tickColorAssignment[vertexId];
+                var initialNextNextMeetingAtTick = initialCurrentNextMeetingAtTick +
+                                                   globalMeetingIntervalTicks * maximumTickColorAssignment;
+                var meetingPoint = new MeetingPoint(vertexId, initialCurrentNextMeetingAtTick, initialNextNextMeetingAtTick, meetingPartitionIds);
+                foreach (var partitionId in meetingPartitionIds)
                 {
-                    if (!meetingPointsByPartitionId.TryGetValue(robotId, out var meetingPoints))
+                    if (!meetingPointsByPartitionId.TryGetValue(partitionId, out var meetingPoints))
                     {
                         meetingPoints = new List<MeetingPoint>();
-                        meetingPointsByPartitionId[robotId] = meetingPoints;
+                        meetingPointsByPartitionId[partitionId] = meetingPoints;
                     }
 
                     meetingPoints.Add(meetingPoint);
@@ -257,19 +291,25 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             return meetingPointsByPartitionId;
         }
 
-        private int GetGlobalMeetingIntervalTicks(Dictionary<int, UnfinishedPartitionInfo> partitionsById,
+        private Dictionary<int, UnfinishedPartitionInfoWithDiameter> GetPartitionDiameters(
+            Dictionary<int, UnfinishedPartitionInfo> partitionsById,
             Dictionary<int, HashSet<int>> meetingRobotIdsByVertexId)
         {
-            var estimatedPartitionMeetingIntervalTicks = new List<int>();
-            foreach (var (robotId, partitionInfo) in partitionsById)
+            return partitionsById.ToDictionary(kv => kv.Key, kv =>
             {
+                var robotId = kv.Key;
+                var partitionInfo = kv.Value;
                 var numberOfMeetingPoints = meetingRobotIdsByVertexId
                     .Count(m => m.Value.Contains(robotId));
                 var estimated = EstimatePartitionMeetingIntervalTicks(partitionInfo, numberOfMeetingPoints);
-                estimatedPartitionMeetingIntervalTicks.Add(estimated);
-            }
+                return new UnfinishedPartitionInfoWithDiameter(partitionInfo.RobotId, partitionInfo.VertexIds,
+                    estimated);
+            });
+        }
 
-            return estimatedPartitionMeetingIntervalTicks.Max();
+        private int GetGlobalMeetingIntervalTicks(Dictionary<int, UnfinishedPartitionInfoWithDiameter> partitionsById)
+        {
+            return partitionsById.Values.Select(p => p.Diameter).Max();
         }
 
         private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
@@ -301,7 +341,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             return maxTicks;
         }
 
-        private int GetWhenToStartMeeting(IEnumerable<UnfinishedPartitionInfo> partitionInfos)
+        private int GetWhenToStartMeeting(IEnumerable<UnfinishedPartitionInfoWithDiameter> partitionInfos)
         {
             var startMeetingAfterTicks = 0;
 

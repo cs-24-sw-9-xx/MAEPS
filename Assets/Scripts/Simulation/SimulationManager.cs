@@ -41,8 +41,6 @@ namespace Maes.Simulation
     where TScenario : SimulationScenario<TSimulation, TAlgorithm>
     {
         public Queue<TScenario> Scenarios = new();
-        public readonly Queue<TScenario> InitialScenarios = new();
-
         public UIDocument modeSpecificUiDocument = null!;
         public GameObject SimulationPrefab = null!;
         public GameObject RosClockPrefab = null!;
@@ -286,6 +284,7 @@ namespace Maes.Simulation
 
         private void CreateSimulation(TScenario scenario)
         {
+            var startTime = Time.realtimeSinceStartup;
             PrependExperimentFolderNameToStatisticsFileName(scenario);
             Debug.Log($"Starting simulation: {scenario.StatisticsFileName}");
             CurrentScenario = scenario;
@@ -295,6 +294,12 @@ namespace Maes.Simulation
             CurrentSimulation.SetInfoUIController(SimulationInfoUIController);
 
             SimulationInfoUIController.NotifyNewSimulation(CurrentSimulation);
+
+            // We allocate a lot of stuff when creating a simulation.
+            // Let's clean it up!
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            var endTime = Time.realtimeSinceStartup;
+            Debug.Log($"Simulation created in {endTime - startTime:F2} seconds for {scenario.StatisticsFileName}");
         }
 
         private void UpdateStatisticsUI()

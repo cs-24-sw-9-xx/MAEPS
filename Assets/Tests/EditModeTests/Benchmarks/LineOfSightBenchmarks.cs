@@ -6,7 +6,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using UnityEngine;
 
@@ -31,7 +31,32 @@ namespace Tests.EditModeTests.Benchmarks
 
                 for (var i = 0; i < iterations; i++)
                 {
-                    result = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
+                    result = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap, maxDistance: 0, inaccurateButFast: false);
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+            }
+
+            Assert.Greater(result!.Count, 0);
+        }
+        [Test]
+        [Explicit]
+        public void VisibilityComputationInaccurateBenchmark()
+        {
+            const int iterations = 10;
+
+            Dictionary<Vector2Int, Bitmap> result = null;
+
+            using (var bitmap = BitmapUtilities.BitmapFromString(Map))
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                for (var i = 0; i < iterations; i++)
+                {
+                    result = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap, maxDistance: 0, inaccurateButFast: true);
                 }
 
                 stopWatch.Stop();

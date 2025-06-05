@@ -32,8 +32,8 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
-using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
+using Tests.PlayModeTests.Utilities;
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
 
 using UnityEngine;
 
@@ -100,7 +100,7 @@ namespace Tests.EditModeTests
 
             var partitions = new List<Partition>
             {
-                new(0, vertices, communicationManager.CalculateZones(vertices))
+                new(0, vertices, () => communicationManager.CalculateZones(vertices))
             };
 
             return new PatrollingMap(vertices, simulationMap, partitions);

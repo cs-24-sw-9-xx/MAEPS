@@ -46,6 +46,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             List<Vector2Int> vertexPositions,
             int amountOfPartitions)
         {
+            var startTime = Time.realtimeSinceStartup;
+
             if (amountOfPartitions == 1)
             {
                 return new HashSet<List<Vector2Int>>() {
@@ -101,6 +103,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 var (remainingCluster, index) = queue.Dequeue();
                 finalClusters[index] = remainingCluster;
             }
+            Debug.LogFormat("Partitioning took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return finalClusters.Values;
         }

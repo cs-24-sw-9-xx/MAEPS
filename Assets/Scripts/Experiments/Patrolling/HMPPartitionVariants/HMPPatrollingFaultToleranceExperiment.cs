@@ -23,23 +23,25 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
+using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
-
+    [Preserve]
     internal class HMPPatrollingFaultToleranceExperiment : MonoBehaviour
     {
         private void Start()
         {
-            const int robotCount = 4;
+            const int robotCount = 6;
             const int seed = 123;
             const int mapSize = 100;
             const string algoName = "HMPPatrollingAlgorithm";
@@ -60,7 +62,7 @@ namespace Maes.Experiments.Patrolling
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
-                    totalCycles: 4,
+                    totalCycles: 100,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,
@@ -70,8 +72,9 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
+                    faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 10000, 20000, 25000),
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance))
             );
 
             var simulator = new MySimulator(scenarios);

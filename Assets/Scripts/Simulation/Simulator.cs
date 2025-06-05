@@ -42,6 +42,10 @@ namespace Maes.Simulation
 
         protected Simulator(IReadOnlyList<TScenario> scenarios, bool autoMaxSpeedInBatchMode = true)
         {
+#if UNITY_EDITOR
+            UnityEngine.Profiling.Profiler.maxUsedMemory = int.MaxValue; // 2 GB
+#endif
+
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
@@ -82,15 +86,8 @@ namespace Maes.Simulation
 
         private void EnqueueScenario(TScenario scenario)
         {
+            Debug.Assert(scenario.MaxLogicTicks >= 0, "MaxLogicTicks cannot be negative!");
             SimulationManager.EnqueueScenario(scenario);
-            SimulationManager.InitialScenarios.Enqueue(scenario);
-        }
-        private void EnqueueScenarios(IEnumerable<TScenario> scenario)
-        {
-            foreach (var simulationScenario in scenario)
-            {
-                SimulationManager.EnqueueScenario(simulationScenario);
-            }
         }
 
         private (int Instances, int InstanceId) ParseCommandLine()

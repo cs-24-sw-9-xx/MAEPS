@@ -26,6 +26,7 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -35,6 +36,7 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
+    [Preserve]
     internal class GroupARobotCountExperiment : MonoBehaviour
     {
         private static readonly List<int> _robotCounts = new() { 1, 2, 4, 8, 16 };
@@ -44,12 +46,12 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator())
             {
-                foreach (var (algorithmName, lambda) in GroupAParameters.StandardAlgorithms)
+                foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
                 {
                     foreach (var robotCount in _robotCounts)
                     {
-                        var (patrollingMapFactory, algorithm) = lambda(robotCount);
-                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, GroupAParameters.StandardMapSize));
+                        var (patrollingMapFactory, algorithm, useGroupBPartition) = lambda(robotCount);
+                        scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, useGroupBPartition, robotCount, GroupAParameters.StandardMapSize));
                     }
                 }
             }

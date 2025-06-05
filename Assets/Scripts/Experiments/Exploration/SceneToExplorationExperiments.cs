@@ -20,9 +20,11 @@
 // Original repository: https://github.com/Molitany/MAES
 
 using UnityEngine.SceneManagement;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Exploration
 {
+    [Preserve]
     public class SceneToExplorationExperiments : ExplorationExperimentBase
     {
         // Start is called before the first frame update

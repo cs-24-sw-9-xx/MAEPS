@@ -5,6 +5,7 @@ using System.Linq;
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -12,7 +13,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using UnityEngine;
 
@@ -72,7 +73,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
         private PatrollingSimulationScenario CreateScenario(Bitmap bitmap, params Vector2Int[] robotPositions)
         {
-            var tilemap = Utilities.BitmapToTilemap(bitmap);
+            var tilemap = Utilities.Utilities.BitmapToTilemap(bitmap);
 
             var robotSpawnPositions = robotPositions.ToList();
 
@@ -89,7 +90,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.Components
 
                         return algorithm;
                     }, dependOnBrokenBehavior: false),
-                mapSpawner: mapSpawner => mapSpawner.GenerateMap(tilemap, 123, brokenCollisionMap: false),
+                mapSpawner: mapSpawner => mapSpawner.GenerateMap(new BitmapConfig(tilemap, 123, brokenCollisionMap: false)),
                 robotConstraints: CreateRobotConstraints(),
                 patrollingMapFactory: map => new PatrollingMap(new[] { new Vertex(0, new Vector2Int(4, 4)) }, map)
             );

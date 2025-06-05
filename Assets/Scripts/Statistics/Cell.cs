@@ -33,10 +33,6 @@ namespace Maes.Statistics
         public bool IsCovered { get; private set; }
         public bool CanBeCovered { get; set; } = true;
 
-        // --- Redundant Coverage ---
-        public int CoverageTimeInTicks; // The amount of ticks that this cell has been covered
-        public int ExplorationTimeInTicks; // The amount of ticks that this has been explored
-
         //  --- Heatmap ---
         public int LastExplorationTimeInTicks; // The last time that this cell was seen by a robot 
         public int LastCoverageTimeInTicks; // The last time that this cell was covered by a robot
@@ -53,7 +49,6 @@ namespace Maes.Statistics
             }
 #endif
 
-            ExplorationTimeInTicks += 1;
             LastExplorationTimeInTicks = currentTimeTicks;
             IsExplored = true;
         }
@@ -67,7 +62,6 @@ namespace Maes.Statistics
             }
 #endif
 
-            CoverageTimeInTicks += 1;
             LastCoverageTimeInTicks = currenTimeTicks;
             IsCovered = true;
         }

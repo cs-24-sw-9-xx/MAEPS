@@ -45,6 +45,8 @@ namespace Maes.Map.Generators
         /// used in the Marching Squares Algorithm.</returns>
         public SimulationMap<Tile> GenerateCaveMap(CaveMapConfig config, float wallHeight = 2.0f)
         {
+            var timeStart = Time.realtimeSinceStartup;
+
             _caveConfig = config;
             _wallHeight = wallHeight;
             var random = new Random(_caveConfig.RandomSeed);
@@ -56,6 +58,8 @@ namespace Maes.Map.Generators
             ResizePlaneToFitMap(_caveConfig.BitMapHeight, _caveConfig.BitMapWidth);
 
             MovePlaneAndWallRoofToFitWallHeight(_wallHeight);
+
+            Debug.LogFormat("GenerateCaveMap took {0}s (MeshGenerator is included)", Time.realtimeSinceStartup - timeStart);
 
             return collisionMap;
         }
@@ -96,7 +100,7 @@ namespace Maes.Map.Generators
             survivingRooms.ForEach(r => r.OffsetCoordsBy(caveConfig.BorderSize, caveConfig.BorderSize));
 
             var meshGen = GetComponent<MeshGenerator>();
-            var collisionMap = meshGen.GenerateMesh((Tile[,])borderedMap.Clone(), wallHeight,
+            var collisionMap = meshGen.GenerateMesh(borderedMap, wallHeight,
                 true, survivingRooms, _caveConfig.BrokenCollisionMap);
 
             foreach (var room in survivingRooms)

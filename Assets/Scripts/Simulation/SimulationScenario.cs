@@ -64,7 +64,7 @@ namespace Maes.Simulation
     {
         public const int DefaultMaxLogicTicks = 100000;
 
-        public readonly SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim;
+        public SimulationEndCriteriaDelegate<TSimulation> HasFinishedSim { get; protected set; }
 
         public MapFactory MapSpawner { get; }
         public RobotFactory<TAlgorithm> RobotSpawner { get; }

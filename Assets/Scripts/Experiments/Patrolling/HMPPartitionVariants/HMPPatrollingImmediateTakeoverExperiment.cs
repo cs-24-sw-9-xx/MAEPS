@@ -22,19 +22,23 @@
 
 using System.Collections.Generic;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
 using Maes.Map.Generators;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
+    [Preserve]
     internal class HMPPatrollingImmediateTakeoverExperiment : MonoBehaviour
     {
         private void Start()
@@ -60,18 +64,19 @@ namespace Maes.Experiments.Patrolling
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
-                    totalCycles: 4,
+                    totalCycles: 100,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm()),
+                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance),
+                    maxLogicTicks: SimulationScenario<PatrollingSimulation, IPatrollingAlgorithm>.DefaultMaxLogicTicks * 100)
             );
 
             var simulator = new MySimulator(scenarios);

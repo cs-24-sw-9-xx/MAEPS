@@ -28,11 +28,12 @@ using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
-
+    [Preserve]
     internal class RandomRedistributionExperiment : MonoBehaviour
     {
         private void Start()
@@ -43,7 +44,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                 scenarios.AddRange(ScenarioUtil.CreateScenarios(
                     seed,
                     nameof(RandomRedistributionWithCRAlgo),
-                    GroupBParameters.Algorithms[nameof(RandomRedistributionWithCRAlgo)],
+                    GroupBParameters.PartitionedAlgorithms[nameof(RandomRedistributionWithCRAlgo)],
                     GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,

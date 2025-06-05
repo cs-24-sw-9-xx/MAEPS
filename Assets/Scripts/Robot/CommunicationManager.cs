@@ -83,13 +83,42 @@ namespace Maes.Robot
         // Messages that were sent last tick and can now be read 
         private readonly List<Message> _readableMessages = new();
 
-        private readonly RayTracingMap<Tile> _rayTracingMap;
+        private RayTracingMap<Tile>? _rayTracingMap;
+
+        // It is only used for DetectWall, so compute it lazily.
+        private RayTracingMap<Tile> RayTracingMap
+        {
+            get
+            {
+                if (_rayTracingMap == null)
+                {
+                    _rayTracingMap = new RayTracingMap<Tile>(_tileMap);
+                }
+
+                return _rayTracingMap;
+            }
+        }
 
         // Set by SetRobotReferences
         private IReadOnlyList<MonaRobot> _robots = null!;
 
+
+        private EnvironmentTaggingMap? _environmentTaggingMap;
+
         // Map for storing and retrieving all tags deposited by robots
-        private readonly EnvironmentTaggingMap _environmentTaggingMap;
+        // It is only used for environment tag based algorithms, so compute it lazily.
+        private EnvironmentTaggingMap EnvironmentTaggingMap
+        {
+            get
+            {
+                if (_environmentTaggingMap == null)
+                {
+                    _environmentTaggingMap = new EnvironmentTaggingMap(_tileMap);
+                }
+
+                return _environmentTaggingMap;
+            }
+        }
 
         private readonly SimulationMap<Tile> _tileMap;
 
@@ -155,8 +184,6 @@ namespace Maes.Robot
             _robotConstraints = robotConstraints;
             _visualizer = visualizer;
             _tileMap = collisionMap;
-            _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
-            _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
             _offset = collisionMap.ScaledOffset;
         }
@@ -364,13 +391,13 @@ namespace Maes.Robot
 
         public void DepositTag(MonaRobot robot, string content)
         {
-            var tag = _environmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
+            var tag = EnvironmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
             _visualizer.AddEnvironmentTag(tag);
         }
 
         public List<EnvironmentTag> ReadNearbyTags(MonaRobot robot)
         {
-            var tags = _environmentTaggingMap.GetTagsNear(robot.transform.position,
+            var tags = EnvironmentTaggingMap.GetTagsNear(robot.transform.position,
                 _robotConstraints.EnvironmentTagReadRange);
 
             return tags;
@@ -417,18 +444,18 @@ namespace Maes.Robot
             var robotPosition = robot.transform.position;
 
             // Perform trace from the center of the robot
-            var result1 = _rayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result1 = RayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance1 = result1 == null ? float.MaxValue : Vector2.Distance(robotPosition, result1.Value.Item1);
             var robotSize = _robotRelativeSize;
 
             // Perform trace from the left side perimeter of the robot
             var offsetLeft = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 90) % 360, robotSize / 2f);
-            var result2 = _rayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result2 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance2 = result2 == null ? float.MaxValue : Vector2.Distance(robotPosition, result2.Value.Item1);
 
             // Finally perform trace from the right side perimeter of the robot
             var offsetRight = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 270) % 360, robotSize / 2f);
-            var result3 = _rayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result3 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance3 = result3 == null ? float.MaxValue : Vector2.Distance(robotPosition, result3.Value.Item1);
 
             // Return the detected wall that is closest to the robot
@@ -449,9 +476,9 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(IEnumerable<Vertex> vertices)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(IReadOnlyList<Vertex> vertices)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count());
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
                 {
                     var bitmap = CalculateCommunicationZone(vertex.Position);

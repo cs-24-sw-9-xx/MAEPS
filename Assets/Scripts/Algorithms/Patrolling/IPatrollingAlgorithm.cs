@@ -35,5 +35,9 @@ namespace Maes.Algorithms.Patrolling
         void SubscribeOnReachVertex(OnReachVertex onReachVertex);
 
         void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo);
+
+        bool HasSeenAllInPartition(int assignedPartition);
+
+        void ResetSeenVerticesForPartition(int partitionId);
     }
 }
