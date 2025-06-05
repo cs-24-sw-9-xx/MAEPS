@@ -81,6 +81,15 @@ namespace Maes.Experiments.Patrolling.GroupB
             { nameof(RandomReactive), (seed) => new RandomReactive(seed) },
         };
 
+        public static readonly Dictionary<string, CreateAlgorithmDelegate> AllPartitionedAlgorithms = new()
+        {
+            {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
+
+            {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
+
+            { nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
+        };
+
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
         {
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
