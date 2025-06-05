@@ -357,26 +357,27 @@ namespace Maes.Robot
 
             PopulateAdjacencyMatrix();
 
+            var addedRobots = new HashSet<int>(_robots.Count);
+
             for (var i = 0; i < _robots.Count; i++)
             {
                 var r1 = _robots[i];
-                if (!_communicationGroups.Any(g => g.Contains(r1.id)))
+                if (!addedRobots.Contains(r1.id))
                 {
-                    _communicationGroups.Add(GetCommunicationGroup(r1.id));
+                    _communicationGroups.Add(GetCommunicationGroup(r1.id, addedRobots));
                 }
             }
         }
 
-        private HashSet<int> GetCommunicationGroup(int robotId)
+        private HashSet<int> GetCommunicationGroup(int robotId, HashSet<int> addedRobots)
         {
-            var keys = new Queue<int>();
+            var keys = new Queue<int>(_robots.Count);
             keys.Enqueue(robotId);
             var resultSet = new HashSet<int> { robotId };
+            addedRobots.Add(robotId);
 
-            while (keys.Count > 0)
+            while (keys.TryDequeue(out var currentKey))
             {
-                var currentKey = keys.Dequeue();
-
                 foreach (var (key, value) in _adjacencyMatrix)
                 {
                     if (key.Item1 != currentKey || !value.TransmissionSuccessful || resultSet.Contains(key.Item2))
@@ -386,6 +387,7 @@ namespace Maes.Robot
 
                     keys.Enqueue(key.Item2);
                     resultSet.Add(key.Item2);
+                    addedRobots.Add(key.Item2);
                 }
             }
 
