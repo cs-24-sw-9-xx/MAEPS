@@ -30,6 +30,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -538,10 +539,9 @@ namespace Maes.Robot
 
             // --- Prepare intersection alphas ---
             var maxSteps = Mathf.CeilToInt(Mathf.Abs(x2 - x1)) + Mathf.CeilToInt(Mathf.Abs(y2 - y1)) + 2;
-            var alphas = new List<float>(maxSteps)
-            {
-                0f, // Start
-            };
+            var alphas = ArrayPool<float>.Shared.Rent(maxSteps);
+            var index = 0;
+            alphas[index++] = 0; // Start
 
             var xStart = Mathf.FloorToInt(x1);
             var xEnd = Mathf.FloorToInt(x2);
@@ -571,7 +571,7 @@ namespace Maes.Robot
                 {
                     if (nextAlphaX is > 0f and < 1f)
                     {
-                        alphas.Add(nextAlphaX);
+                        alphas[index++] = nextAlphaX;
                     }
 
                     xi += xStep;
@@ -582,7 +582,7 @@ namespace Maes.Robot
                 {
                     if (nextAlphaY is > 0f and < 1f)
                     {
-                        alphas.Add(nextAlphaY);
+                        alphas[index++] = nextAlphaY;
                     }
 
                     yi += yStep;
@@ -595,10 +595,10 @@ namespace Maes.Robot
             var wallTileDistance = 0f;
             var otherTileDistance = 0f;
 
-            alphas.Add(1f); // End 
+            alphas[index++] = 1f; // End 
 
             // Process each segment
-            for (var i = 1; i < alphas.Count; i++)
+            for (var i = 1; i < index; i++)
             {
                 var aPrev = alphas[i - 1];
                 var aCurrent = alphas[i];
@@ -624,6 +624,7 @@ namespace Maes.Robot
                     signalStrength -= 4 * segmentLength * _attenuationDict[tileType];
                 }
             }
+            ArrayPool<float>.Shared.Return(alphas, clearArray: false);
 
             var angle = Vector2.Angle(Vector2.right, end - start);
             return CreateCommunicationInfo(angle, wallTileDistance, otherTileDistance, signalStrength);
