@@ -24,12 +24,15 @@ using System.Linq;
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 using Maes.Utilities;
 
 using NUnit.Framework;
+
+using Tests.PlayModeTests.Utilities;
 
 using UnityEngine;
 
