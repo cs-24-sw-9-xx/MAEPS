@@ -26,6 +26,8 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
+
 using Unity.Mathematics;
 
 
