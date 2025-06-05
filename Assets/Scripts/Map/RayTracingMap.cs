@@ -20,6 +20,8 @@
 // Original repository: https://github.com/MalteZA/MAES
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using Maes.Utilities;
 
@@ -232,9 +234,9 @@ namespace Maes.Map
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
                 {
                     // All vertices of the triangle must be within range for the triangle to be considered visible
-                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
-                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines[0].End) <= distance;
-                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines[1].End) <= distance;
+                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines.Line0.Start) <= distance;
+                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines.Line0.End) <= distance;
+                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines.Line1.End) <= distance;
                     if (!withinRange)
                     {
                         break;
@@ -279,7 +281,7 @@ namespace Maes.Map
                 if (!shouldContinue(trace.NextTriangleIndex, triangle.Cell))
                 {
                     // Find intersection point
-                    var intersection = triangle.Lines[trace.EnteringEdge].GetIntersection(intersectionLine, line2Infinite: true)!.Value;
+                    var intersection = triangle.Lines.AsSpan()[trace.EnteringEdge].GetIntersection(intersectionLine, line2Infinite: true)!.Value;
                     // Find the angle of the intersecting line
                     var intersectingLineAngle = triangle.GetLineAngle(trace.EnteringEdge);
                     return (intersection, intersectingLineAngle);
@@ -301,9 +303,9 @@ namespace Maes.Map
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
                 {
                     // All vertices of the triangle must be within range for the triangle to be considered visible
-                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines[0].Start) <= distance;
-                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines[0].End) <= distance;
-                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines[1].End) <= distance;
+                    var withinRange = Vector2.Distance(startingPoint, triangle.Lines.Line0.Start) <= distance;
+                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines.Line0.End) <= distance;
+                    withinRange &= Vector2.Distance(startingPoint, triangle.Lines.Line1.End) <= distance;
                     if (!withinRange)
                     {
                         break;
@@ -316,13 +318,33 @@ namespace Maes.Map
 
         private unsafe struct RayTracingTriangle
         {
-            public readonly Line2D[] Lines;
+            public LinesArray Lines;
             private fixed int _neighbourIndex[3];
             public TCell Cell;
 
+            public struct LinesArray
+            {
+                public Line2D Line0;
+                public Line2D Line1;
+                public Line2D Line2;
+
+                public LinesArray(Line2D line0, Line2D line1, Line2D line2)
+                {
+                    Line0 = line0;
+                    Line1 = line1;
+                    Line2 = line2;
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public ReadOnlySpan<Line2D> AsSpan()
+                {
+                    return MemoryMarshal.CreateReadOnlySpan(ref Line0, 3);
+                }
+            }
+
             public RayTracingTriangle(Vector2 p1, Vector2 p2, Vector2 p3, int diagonalNeighbor, int horizontalNeighbor, int verticalNeighbor)
             {
-                Lines = new[] { new Line2D(p1, p2), new Line2D(p2, p3), new Line2D(p3, p1) };
+                Lines = new LinesArray(new Line2D(p1, p2), new Line2D(p2, p3), new Line2D(p3, p1));
                 _neighbourIndex[0] = diagonalNeighbor;
                 _neighbourIndex[1] = horizontalNeighbor;
                 _neighbourIndex[2] = verticalNeighbor;
@@ -334,6 +356,7 @@ namespace Maes.Map
             // Takes the edge that this tile was entered from, and the linear equation ax+b for the trace 
             public void RayTrace(ref TriangleTrace trace, float angle, Line2D intersectionLine)
             {
+                var lines = Lines.AsSpan();
                 // Variable for storing an intersection and the corresponding edge
                 Vector2? intersection = null;
                 var intersectionEdge = -1;
@@ -347,7 +370,7 @@ namespace Maes.Map
                     }
 
                     // Find the intersection for the current edge
-                    var currentIntersection = Lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
+                    var currentIntersection = lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
 
                     if (currentIntersection == null) // No intersection with this edge
                     {
@@ -414,11 +437,12 @@ namespace Maes.Map
             // initial "entering" edge
             public int FindInitialEnteringEdge(float direction, Line2D intersectionLine)
             {
+                var lines = Lines.AsSpan();
                 var intersectionsAndEdge = stackalloc (Vector2, int)[3];
                 var i = 0;
                 for (var edge = 0; edge < 3; edge++)
                 {
-                    var intersection = Lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
+                    var intersection = lines[edge].GetIntersection(intersectionLine, line2Infinite: true);
                     if (intersection != null)
                     {
                         intersectionsAndEdge[i++] = (intersection.Value, edge);
@@ -461,7 +485,7 @@ namespace Maes.Map
             {
                 return lineIndex switch
                 {
-                    Diagonal when Lines[lineIndex].IsGrowing() => 45,
+                    Diagonal when Lines.AsSpan()[lineIndex].IsGrowing() => 45,
                     Diagonal => -45,
                     Horizontal => 0,
                     _ => 90
