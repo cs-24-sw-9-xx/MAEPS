@@ -50,7 +50,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance), false, 4, mapSize, amountOfCycles: 0));
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "cr", (_) => new ConscientiousReactiveAlgorithm(), map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance), false, 4, mapSize));
                 }
             }
 
