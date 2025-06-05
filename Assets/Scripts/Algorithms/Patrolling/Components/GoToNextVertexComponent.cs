@@ -155,8 +155,16 @@ namespace Maes.Algorithms.Patrolling.Components
 
         private Vertex GetClosestVertexDefault()
         {
-            var robotPartition = _controller.AssignedPartition;
-            var vertices = _patrollingMap.Vertices.Where(x => x.Partition == robotPartition).ToArray();
+            var maxPartition = _patrollingMap.Vertices.Max(v => v.Partition);
+            if (_controller.AssignedPartition > maxPartition)
+            {
+                var newPartition = _controller.AssignedPartition % maxPartition;
+                Debug.LogErrorFormat("No vertices in partition {0}, running in partition {1} instead!", _controller.AssignedPartition, newPartition);
+
+                _controller.AssignedPartition = newPartition;
+            }
+
+            var vertices = _patrollingMap.Vertices.Where(x => x.Partition == _controller.AssignedPartition).ToArray();
             return vertices.GetClosestVertex(target => _controller.EstimateDistanceToTarget(target, dependOnBrokenBehaviour: false) ?? int.MaxValue);
         }
 
