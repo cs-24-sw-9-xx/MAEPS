@@ -6,8 +6,6 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.PlayModeTests.Utilities;
-
 using UnityEngine;
 
 using Debug = UnityEngine.Debug;
