@@ -1,13 +1,19 @@
+using MAEPS.Data.Processor;
 using MAEPS.Data.Processor.Preprocessors;
 using MAEPS.Data.Processor.Utilities;
 
 using ScottPlot;
 
-namespace RatioPlots;
+namespace RatioPlotsDebugger;
 
-public class RatioComputer(string storeInFolderPath, IReadOnlyDictionary<string, IReadOnlyList<string>> folderStructure, string[] groupBys)
+public class RatioDebuggerComputer(
+    string storeInFolderPath,
+    IReadOnlyDictionary<string, IReadOnlyList<string>> folderStructure,
+    string[] groupBys,
+    Func<ExperimentSummary, double> propertyToShowFunc,
+    string propertyToShowName)
 {
-    private record ResultValue(double Ratio, AverageExperimentSummary AverageExperiment);
+    private record ResultValue(double Ratio, double Value);
     private readonly Dictionary<string, List<ResultValue>> _resultValuesByAlgorithm = new();
     private readonly DirectoryInfo _plotsFolderPath = Directory.CreateDirectory(storeInFolderPath);
 
@@ -19,9 +25,13 @@ public class RatioComputer(string storeInFolderPath, IReadOnlyDictionary<string,
             {
                 var values = folder.GroupingValues<double>(groupBys);
                 var ratio = values[0] / values[1];
-                
-                var average = SummaryAlgorithmSeedsCreator.GetAverageOfExperimentSummary(folder);
-                if (average == null)
+
+                ExperimentSummary[] summaries;
+                try
+                {
+                    summaries = SummaryAlgorithmSeedsCreator.GetSummary(folder);
+                }
+                catch (Exception _)
                 {
                     Console.WriteLine($"No average found for folder: {folder}");
                     continue;
@@ -33,8 +43,11 @@ public class RatioComputer(string storeInFolderPath, IReadOnlyDictionary<string,
                     resultValues = [];
                     _resultValuesByAlgorithm[algorithmName] = resultValues;
                 }
-                
-                resultValues.Add(new ResultValue(ratio, average));
+
+                foreach (var summary in summaries)
+                {
+                    resultValues.Add(new ResultValue(ratio, propertyToShowFunc(summary)));
+                }
             }
         }
     }
@@ -44,24 +57,23 @@ public class RatioComputer(string storeInFolderPath, IReadOnlyDictionary<string,
         var plot = new Plot();
         foreach (var (algorithm, resultValues) in _resultValuesByAlgorithm)
         {
-            var sortedResultValues = resultValues.OrderBy(rv => rv.Ratio).ToList();
-            var xValues = sortedResultValues.Select(rv => rv.Ratio).ToArray();
-            var yValues = sortedResultValues.Select(rv => rv.AverageExperiment.AverageIdleness).ToArray();
+            var xValues = resultValues.Select(rv => rv.Ratio).ToArray();
+            var yValues = resultValues.Select(rv => rv.Value).ToArray();
             
-            plot.AddAlgorithmLinePlot(algorithm, xValues, yValues);
+            plot.AddAlgorithmPointPlot(algorithm, xValues, yValues);
             PlotSeparate(algorithm, xValues, yValues);
         }
         
-        var path = Path.Combine(_plotsFolderPath.FullName, "CombineRatioPlot.svg");
+        var path = Path.Combine(_plotsFolderPath.FullName, propertyToShowName + "CombineRatioDebuggerPlot.svg");
         plot.SavePlot(path);
     }
     
     private void PlotSeparate(string algorithmName, double[] xValues, double[] yValues)
     {
         var plot = new Plot();
-        plot.AddAlgorithmLinePlot(algorithmName, xValues, yValues);
+        plot.AddAlgorithmPointPlot(algorithmName, xValues, yValues);
         
-        var path = Path.Combine(_plotsFolderPath.FullName, algorithmName + ".svg");
+        var path = Path.Combine(_plotsFolderPath.FullName, propertyToShowName + algorithmName + ".svg");
         plot.SavePlot(path);
     }
 }

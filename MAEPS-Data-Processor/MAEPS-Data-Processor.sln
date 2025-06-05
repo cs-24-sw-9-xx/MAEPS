@@ -6,6 +6,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BoxPlotProcessor", "BoxPlot
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatioPlots", "RatioPlots\RatioPlots.csproj", "{F023B379-E3B7-4D91-AAAB-806D6839DD61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatioPlotsDebugger", "RatioPlotsDebugger\RatioPlotsDebugger.csproj", "{D2388383-8D02-4C34-9480-9E2126AE8407}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatioPlotHeatmap", "RatioPlotHeatmap\RatioPlotHeatmap.csproj", "{E4DAE9D7-B634-4F45-829F-B577BCAEBB6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatioPlotsLines", "RatioPlotsLines\RatioPlotsLines.csproj", "{8F1D3168-23E5-4507-B5FF-50D186F5EDF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Experiment2Variance", "Experiment2Variance\Experiment2Variance.csproj", "{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +32,21 @@ Global
 		{F023B379-E3B7-4D91-AAAB-806D6839DD61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F023B379-E3B7-4D91-AAAB-806D6839DD61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F023B379-E3B7-4D91-AAAB-806D6839DD61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2388383-8D02-4C34-9480-9E2126AE8407}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2388383-8D02-4C34-9480-9E2126AE8407}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2388383-8D02-4C34-9480-9E2126AE8407}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2388383-8D02-4C34-9480-9E2126AE8407}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4DAE9D7-B634-4F45-829F-B577BCAEBB6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4DAE9D7-B634-4F45-829F-B577BCAEBB6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4DAE9D7-B634-4F45-829F-B577BCAEBB6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4DAE9D7-B634-4F45-829F-B577BCAEBB6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F1D3168-23E5-4507-B5FF-50D186F5EDF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F1D3168-23E5-4507-B5FF-50D186F5EDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F1D3168-23E5-4507-B5FF-50D186F5EDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F1D3168-23E5-4507-B5FF-50D186F5EDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
