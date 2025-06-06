@@ -97,11 +97,6 @@ namespace Maes.Experiments.Patrolling.GroupB
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
         };
 
-        public static readonly Dictionary<string, CreateAlgorithmDelegate> AdaptivePartitionedAlgorithms = new()
-        {
-            {nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
-        };
-
         private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()
         {
             [2400] = new() //2.4 GHz

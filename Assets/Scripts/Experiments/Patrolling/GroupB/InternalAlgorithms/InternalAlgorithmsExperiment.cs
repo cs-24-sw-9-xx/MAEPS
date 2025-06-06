@@ -35,7 +35,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 
     internal class InternalAlgorithmsExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCount = new() { 2, 4, 8 };
+        private static readonly List<int> PartitionCount = new() { 1, 2, 4, 8 };
         private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
 
         private void Start()
