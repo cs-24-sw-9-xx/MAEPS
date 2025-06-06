@@ -39,9 +39,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.PartitionedHeuristi
     /// Partition-based patrolling algorithm with the use of meeting points in a limited communication range.
     /// Proposed by Henrik, Mads, and Puvikaran. 
     /// </summary>
-    public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
+    public sealed class PartitionedHeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed = 0)
+        public PartitionedHeuristicConscientiousReactiveAlgorithm(int seed = 0)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
