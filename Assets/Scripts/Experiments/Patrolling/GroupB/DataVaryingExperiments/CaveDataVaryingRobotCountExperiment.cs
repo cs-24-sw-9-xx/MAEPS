@@ -41,7 +41,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             {
                 foreach (var robotCount in GroupBParameters.RobotCounts)
                 {
-                    foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                    foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                     {
                         scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
                             seed,

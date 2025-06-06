@@ -39,7 +39,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, 50))
             {
-                foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                 {
                     scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
                         seed,
