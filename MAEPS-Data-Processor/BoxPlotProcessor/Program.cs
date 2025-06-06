@@ -35,7 +35,5 @@ foreach (var groupFolder in groupingFolders)
     }
 }
 
-using var boxPlotCreator = new BoxPlotCreator(experimentsFolderPath, groupBys[0], plotSettings);
+using var boxPlotCreator = new BoxPlotCreator(experimentsFolderCopyPath, groupBys[0], plotSettings);
 boxPlotCreator.CreateBoxPlotForAlgorithms(groupingFolders);
-
-

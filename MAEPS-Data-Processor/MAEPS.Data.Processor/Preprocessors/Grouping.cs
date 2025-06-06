@@ -80,13 +80,11 @@ public static class Grouping
             if (!Directory.Exists(groupedFolderPath))
             {
                 Directory.CreateDirectory(groupedFolderPath);
+                groupedFolderPaths.Add(groupedFolderPath);
             }
-            
             var newExperimentFolder = Path.Combine(groupedFolderPath, scenarioName);
             Directory.Move(folder, newExperimentFolder);
-            groupedFolderPaths.Add(groupedFolderPath);
         }
-
         return groupedFolderPaths;
     }
 
@@ -98,7 +96,8 @@ public static class Grouping
     {
         var scenarioFolders = Directory.GetDirectories(folderGroupValue);
         var algorithms = new List<string>();
-
+        var algorithmFolders = new List<string>();
+        
         foreach (var scenarioFolder in scenarioFolders)
         {
             var algorithmName = Path.GetFileName(scenarioFolder).Split('-')[0];
@@ -114,12 +113,13 @@ public static class Grouping
             {
                 Directory.CreateDirectory(algorithmFolder);
                 algorithms.Add(algorithmName);
+                algorithmFolders.Add(algorithmFolder);
             }
 
             var newScenarioFolder = Path.Combine(algorithmFolder, Path.GetFileName(scenarioFolder));
             Directory.Move(scenarioFolder, newScenarioFolder);
         }
 
-        return algorithms;
+        return algorithmFolders;
     }
 }
