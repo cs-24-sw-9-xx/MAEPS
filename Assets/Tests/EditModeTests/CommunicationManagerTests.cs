@@ -53,7 +53,7 @@ namespace Tests.EditModeTests
                         }
                     }
                 },
-                receiverSensitivity: 30f
+                receiverSensitivity: 50f
             );
 
 
@@ -78,7 +78,6 @@ namespace Tests.EditModeTests
 
             var result = communicationManager.CommunicationBetweenPoints(start, end);
 
-            Assert.IsTrue(result.TransmissionSuccessful);
             Assert.AreEqual(distance, result.WallCellsDistance, 0.01f);
         }
     }

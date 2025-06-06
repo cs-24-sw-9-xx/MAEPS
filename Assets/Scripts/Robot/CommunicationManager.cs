@@ -30,7 +30,6 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -143,7 +142,6 @@ namespace Maes.Robot
         private readonly HashSet<MonaRobot> _robotsCalledReadMessagesThisTick = new();
 
         public readonly CommunicationTracker CommunicationTracker;
-        private readonly Dictionary<TileType, float> _attenuationDict;
 
         private readonly struct Message
         {
@@ -188,7 +186,6 @@ namespace Maes.Robot
             _tileMap = collisionMap;
             CommunicationTracker = new CommunicationTracker();
             _offset = collisionMap.ScaledOffset;
-            _attenuationDict = _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency];
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize)
@@ -539,98 +536,100 @@ namespace Maes.Robot
                 return CreateCommunicationInfo(0, 0, 0, signalStrength);
             }
 
-            // --- Prepare intersection alphas ---
-            var maxSteps = Mathf.CeilToInt(Mathf.Abs(x2 - x1)) + Mathf.CeilToInt(Mathf.Abs(y2 - y1)) + 2;
-            var alphas = ArrayPool<float>.Shared.Rent(maxSteps);
-            var index = 0;
-            alphas[index++] = 0; // Start
+            // Collect intersections with grid lines
+            // Alpha is a normalized value representing a point along the line.
+            // 0 is the start point and 1 is the end point of the line.
+            var xyAlphas = new List<float>() { 0f, 1f };
 
-            var xStart = Mathf.FloorToInt(x1);
-            var xEnd = Mathf.FloorToInt(x2);
-            var yStart = Mathf.FloorToInt(y1);
-            var yEnd = Mathf.FloorToInt(y2);
-
-            var xStep = xDiff > 0 ? 1 : -1;
-            var yStep = yDiff > 0 ? 1 : -1;
-
-            var invXDiff = 1.0f / xDiff;
-            var invYDiff = 1.0f / yDiff;
-
-            var xi = xStart + (xDiff > 0 ? 1 : 0);
-            var yi = yStart + (yDiff > 0 ? 1 : 0);
-
-            // Merge X and Y alphas in sorted order
-            var xCount = Mathf.Abs(xEnd - xStart);
-            var yCount = Mathf.Abs(yEnd - yStart);
-
-            var nextAlphaX = xCount > 0 ? (xi - x1) * invXDiff : float.PositiveInfinity;
-            var nextAlphaY = yCount > 0 ? (yi - y1) * invYDiff : float.PositiveInfinity;
-
-            // Add alphas from X and Y grid intersections (in sorted order)
-            while (xCount > 0 || yCount > 0)
+            // X-axis intersections (vertical lines)
+            if (xDiff != 0)
             {
-                if (nextAlphaX < nextAlphaY)
-                {
-                    if (nextAlphaX is > 0f and < 1f)
-                    {
-                        alphas[index++] = nextAlphaX;
-                    }
+                var xStart = Mathf.FloorToInt(x1);
+                var xEnd = Mathf.FloorToInt(x2);
 
-                    xi += xStep;
-                    xCount--;
-                    nextAlphaX = (xi - x1) * invXDiff;
+                if (xDiff > 0)
+                {
+                    for (var i = xStart + 1; i <= xEnd; i++)
+                    {
+                        var alpha = (i - x1) / xDiff;
+                        xyAlphas.Add(alpha);
+                    }
                 }
                 else
                 {
-                    if (nextAlphaY is > 0f and < 1f)
+                    for (var i = xStart; i > xEnd; i--)
                     {
-                        alphas[index++] = nextAlphaY;
+                        var alpha = (i - x1) / xDiff;
+                        xyAlphas.Add(alpha);
                     }
-
-                    yi += yStep;
-                    yCount--;
-                    nextAlphaY = (yi - y1) * invYDiff;
                 }
             }
 
-            // Result containers
-            var wallTileDistance = 0f;
-            var otherTileDistance = 0f;
-
-            alphas[index++] = 1f; // End 
-
-            // Process each segment
-            for (var i = 1; i < index; i++)
+            // Y-axis intersections (horizontal lines)
+            if (yDiff != 0)
             {
-                var aPrev = alphas[i - 1];
-                var aCurrent = alphas[i];
-                var aMid = 0.5f * (aPrev + aCurrent);
-                var midX = x1 + aMid * xDiff;
-                var midY = y1 + aMid * yDiff;
-                var segmentLength = (aCurrent - aPrev) * lineLength;
+                var yStart = Mathf.FloorToInt(y1);
+                var yEnd = Mathf.FloorToInt(y2);
 
-                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midX), Mathf.FloorToInt(midY));
-                var tileType = tile.GetTriangles()[0].Type;
-
-                if (tileType >= TileType.Wall)
+                if (yDiff > 0)
                 {
-                    wallTileDistance += segmentLength;
+                    for (var j = yStart + 1; j <= yEnd; j++)
+                    {
+                        var alpha = (j - y1) / yDiff;
+                        xyAlphas.Add(alpha);
+                    }
                 }
                 else
                 {
-                    otherTileDistance += segmentLength;
+                    for (var j = yStart; j > yEnd; j--)
+                    {
+                        var alpha = (j - y1) / yDiff;
+                        xyAlphas.Add(alpha);
+                    }
+                }
+            }
+
+            // Remove duplicate values and sorting.
+            xyAlphas = xyAlphas.Distinct().ToList();
+            xyAlphas.Sort();
+
+
+            var wallTileDistance = 0f;
+            var otherTileDistance = 0f;
+
+            // Calculate line segments
+            for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
+            {
+                var aPrev = xyAlphas[alphaIndex - 1];
+                var aCurr = xyAlphas[alphaIndex];
+                var aMid = (aPrev + aCurr) / 2f;
+
+                var midPointX = x1 + aMid * xDiff;
+                var midPointY = y1 + aMid * yDiff;
+
+                var distance = (aCurr - aPrev) * lineLength;
+
+                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
+                var tileType = tile.GetTriangles()[0].Type;
+                if (tileType >= TileType.Wall)
+                {
+                    wallTileDistance += distance;
+                }
+                else
+                {
+                    otherTileDistance += distance;
                 }
 
                 if (_robotConstraints.MaterialCommunication)
                 {
-                    signalStrength -= 4 * segmentLength * _attenuationDict[tileType];
+                    // Multiplier on distance to replicate old signal attenuation
+                    signalStrength -= (4 * distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tileType]);
                 }
             }
-            ArrayPool<float>.Shared.Return(alphas, clearArray: false);
 
             var angle = Vector2.Angle(Vector2.right, end - start);
+
             return CreateCommunicationInfo(angle, wallTileDistance, otherTileDistance, signalStrength);
         }
-
     }
 }
