@@ -73,7 +73,7 @@ namespace Maes.Experiments.Patrolling
         public static readonly IReadOnlyAlgorithmsDictionary PartitionedAlgorithms = new AlgorithmsDictionary
         {
             {
-                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new PartitionedHeuristicConscientiousReactive.HMPPatrollingAlgorithm())
+                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new PartitionedHeuristicConscientiousReactive.PartitionedHeuristicConscientiousReactiveAlgorithm())
             }
         };
 
