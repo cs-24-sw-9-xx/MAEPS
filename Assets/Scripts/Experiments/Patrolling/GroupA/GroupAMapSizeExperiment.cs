@@ -21,6 +21,7 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -46,7 +47,7 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator())
             {
-                foreach (var mapSize in _mapSizes)
+                foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
                     foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
                     {
