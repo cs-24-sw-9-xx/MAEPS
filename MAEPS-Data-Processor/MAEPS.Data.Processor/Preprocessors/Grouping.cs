@@ -80,11 +80,11 @@ public static class Grouping
             if (!Directory.Exists(groupedFolderPath))
             {
                 Directory.CreateDirectory(groupedFolderPath);
+                groupedFolderPaths.Add(groupedFolderPath);
             }
             
             var newExperimentFolder = Path.Combine(groupedFolderPath, scenarioName);
             Directory.Move(folder, newExperimentFolder);
-            groupedFolderPaths.Add(groupedFolderPath);
         }
 
         return groupedFolderPaths;
