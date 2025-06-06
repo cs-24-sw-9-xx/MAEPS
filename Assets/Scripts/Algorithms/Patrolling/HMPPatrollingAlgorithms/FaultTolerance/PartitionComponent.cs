@@ -33,11 +33,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator)
+        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, Func<int> getLogicTick)
         {
             _robotId = controller.Id;
             _robotController = controller;
             _partitionGenerator = partitionGenerator;
+            _getLogicTick = getLogicTick;
         }
 
         public int PreUpdateOrder => -900;
@@ -97,6 +98,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly int _robotId;
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
+        private readonly Func<int> _getLogicTick;
 
         public PartitionInfo[] _partitions = null!;
 
@@ -214,8 +216,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                                 _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(
                                     meetingPoint.VertexId, out var meetingTimes2);
                             Debug.Assert(success2);
-                            // HACK: Adding 10 ticks to immediately renegotiate.
-                            var newMeetingTimes = new MeetingTimes(meetingTimes2.NextNextMeetingAtTick, meetingTimes2.NextNextMeetingAtTick + 10);
+
+                            // HACK: Add a "cycle" for next next meeting
+                            var nextNextMeeting = meetingTimes2.NextNextMeetingAtTick - _getLogicTick();
+                            var nextMeeting = meetingTimes2.NextNextMeetingAtTick;
+                            if (nextNextMeeting <= 0)
+                            {
+                                nextMeeting = NextPossibleMeetingTime();
+                                nextNextMeeting = nextMeeting - _getLogicTick();
+                            }
+
+                            var newMeetingTimes = new MeetingTimes(nextMeeting, nextNextMeeting);
                             _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPoint.VertexId, newMeetingTimes);
                         }
                     }
@@ -317,8 +328,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             if (overrideCurrentNextMeetingAtTick)
             {
-                // HACK: Adding 10 ticks to immediately renegotiate.
-                _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPointVertexId, new MeetingTimes(nextMeetingTime, nextMeetingTime + 10));
+                // HACK: Add a "cycle" for next next meeting
+                var nextNextMeeting = nextMeetingTime - _getLogicTick();
+                var nextMeeting = nextMeetingTime;
+                if (nextNextMeeting <= 0)
+                {
+                    nextMeeting = NextPossibleMeetingTime();
+                    nextNextMeeting = nextMeeting - _getLogicTick();
+                }
+                _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPointVertexId, new MeetingTimes(nextMeeting, nextNextMeeting));
             }
             else
             {
