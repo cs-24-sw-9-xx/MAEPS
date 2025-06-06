@@ -26,6 +26,7 @@ using System.Linq;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -77,8 +78,13 @@ namespace Maes.Algorithms.Patrolling
         {
             Debug.Assert(vertices.Max(v => v.Id) < PatrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
 
-            var distanceMatrix = new float[vertices.Count, vertices.Count];
+            // Calculate the estimated distance matrix.
+            var map = Controller.SlamMap.CoarseMap;
+            var collisionMap = MapUtilities.MapToBitMap(map);
+            var estimatedDistanceMatrix = MapUtilities.CalculateDistanceMatrix(collisionMap, vertices.Select(v => v.Position).ToList());
 
+            // The float[,] is used many places, so we just convert it into this format.
+            var distanceMatrix = new float[vertices.Count, vertices.Count];
             for (var i = 0; i < vertices.Count; i++)
             {
                 var v1 = vertices[i];
@@ -93,15 +99,13 @@ namespace Maes.Algorithms.Patrolling
                     }
                     else
                     {
-                        distance = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position, dependOnBrokenBehaviour: false)
-                                   ?? float.MaxValue;
+                        distance = estimatedDistanceMatrix.TryGetValue((v1.Position, v2.Position), out var dist) ? dist : float.MaxValue;
                     }
 
                     distanceMatrix[v1.Id, v2.Id] = distance;
                     distanceMatrix[v2.Id, v1.Id] = distance;
                 }
             }
-
             return distanceMatrix;
         }
 
