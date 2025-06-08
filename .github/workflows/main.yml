@@ -246,7 +246,7 @@ jobs:
 
       - name: Delete debug info
         run: |
-          sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
+          sudo rm -r "build/StandaloneLinux64/StandaloneLinux64_BackUpThisFolder_ButDontShipItWithYourGame/"
 
       - uses: actions/upload-artifact@v4
         with:
