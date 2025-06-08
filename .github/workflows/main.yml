@@ -185,6 +185,7 @@ jobs:
 
       - name: Delete debug info
         run: |
+          ls "build/${{ matrix.targetPlatform.platform }}"
           rm -r "build/${{ matrix.targetPlatform.platform }}"/*DoNotShip/
           rm -r "build/${{ matrix.targetPlatform.platform }}"/*ButDontShipItWithYourGame/
 
