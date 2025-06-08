@@ -188,6 +188,11 @@ jobs:
           projectPath: .
           customParameters: -standaloneBuildSubtarget Player
 
+      - name: Delete debug info
+        run: |
+          rm -r build/{{ matrix.targetPlatform.platform }}/*DoNotShip/
+          rm -r build/{{ matrix.targetPlatform.platform }}/*ButDontShipItWithYourGame/
+
       - uses: actions/upload-artifact@v4
         with:
           name: Build-${{ matrix.targetPlatform.platform }}
@@ -244,6 +249,11 @@ jobs:
           targetPlatform: StandaloneLinux64
           projectPath: .
           customParameters: -standaloneBuildSubtarget Server
+
+      - name: Delete debug info
+        run: |
+          rm -r build/StandaloneLinux64/*DoNotShip/
+          rm -r build/StandaloneLinux64/*ButDontShipItWithYourGame/
 
       - uses: actions/upload-artifact@v4
         with:
