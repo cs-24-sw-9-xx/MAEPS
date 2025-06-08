@@ -185,9 +185,7 @@ jobs:
 
       - name: Delete debug info
         run: |
-          ls "build"
-          ls "build/${{ matrix.targetPlatform.platform }}"
-          rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
+          sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -248,8 +246,7 @@ jobs:
 
       - name: Delete debug info
         run: |
-          rm -r build/StandaloneLinux64/*DoNotShip/
-          rm -r build/StandaloneLinux64/*ButDontShipItWithYourGame/
+          sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
 
       - uses: actions/upload-artifact@v4
         with:
