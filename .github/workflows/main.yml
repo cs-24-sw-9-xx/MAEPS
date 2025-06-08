@@ -185,9 +185,9 @@ jobs:
 
       - name: Delete debug info
         run: |
+          ls "build"
           ls "build/${{ matrix.targetPlatform.platform }}"
-          rm -r "build/${{ matrix.targetPlatform.platform }}"/*DoNotShip/
-          rm -r "build/${{ matrix.targetPlatform.platform }}"/*ButDontShipItWithYourGame/
+          rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
 
       - uses: actions/upload-artifact@v4
         with:
