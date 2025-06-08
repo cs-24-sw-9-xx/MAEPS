@@ -124,11 +124,6 @@ jobs:
           projectPath: .
           testMode: Standalone
           customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Test results (player)
-          path: ${{ steps.testRunner.outputs.artifactsPath }}
   
   build:
     name: Build for ${{ matrix.targetPlatform.platform }}
