@@ -184,6 +184,7 @@ jobs:
           customParameters: -standaloneBuildSubtarget Player
 
       - name: Delete debug info
+        if: ${{ matrix.targetPlatform.platform }} == LinuxStandalone64
         run: |
           sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
 
