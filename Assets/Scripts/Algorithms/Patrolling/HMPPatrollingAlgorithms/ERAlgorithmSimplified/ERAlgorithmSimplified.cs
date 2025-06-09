@@ -70,13 +70,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
         private Vertex NextVertex(Vertex currentVertex)
         {
             // We arrived!
+            var currentPosition = currentVertex.Position;
             _vertexIdToLastVisited[currentVertex.Id] = Math.Max(LogicTicks, _vertexIdToLastVisited[currentVertex.Id]);
             Controller.Broadcast(new VisitMessage(currentVertex.Id, _vertexIdToLastVisited[currentVertex.Id]));
             var bestVertex = currentVertex.Neighbors.First();
             var maxUtility = float.NegativeInfinity;
             foreach (var vertex in currentVertex.Neighbors)
             {
-                var deltaT = Controller.EstimateTimeToTarget(vertex.Position, dependOnBrokenBehaviour: false)!.Value;
+                var deltaT = Controller.TravelEstimator.EstimateTime(currentPosition, vertex.Position, dependOnBrokenBehaviour: false)!.Value;
                 var tNext = LogicTicks + deltaT;
                 var expected = tNext - _vertexIdToLastVisited[vertex.Id];
 
@@ -90,7 +91,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
             }
 
             // We are visiting bestVertex
-            Controller.Broadcast(new VisitMessage(bestVertex.Id, LogicTicks + Controller.EstimateTimeToTarget(bestVertex.Position, dependOnBrokenBehaviour: false)!.Value));
+            Controller.Broadcast(new VisitMessage(bestVertex.Id,
+                LogicTicks + Controller.TravelEstimator.EstimateTime(currentPosition, bestVertex.Position,
+                    dependOnBrokenBehaviour: false)!.Value));
 
             return bestVertex;
         }
