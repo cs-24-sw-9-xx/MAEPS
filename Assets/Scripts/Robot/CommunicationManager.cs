@@ -509,7 +509,7 @@ namespace Maes.Robot
                 for (var y = 0; y < height; y++)
                 {
                     var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f));
-                    if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
+                    if (communicationInfo.TransmissionSuccessful)
                     {
                         bitmap.Set(x, y);
                     }
