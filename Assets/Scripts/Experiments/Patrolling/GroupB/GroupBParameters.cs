@@ -94,7 +94,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         {
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
-            {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
+            {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 0.5f)},
         };
 
         private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()
