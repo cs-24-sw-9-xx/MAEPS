@@ -42,7 +42,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
     /// </summary>
     public sealed class ERAlgorithmSimplified : PatrollingAlgorithm
     {
-        public override string AlgorithmName => "HMPAlgorithm";
+        public override string AlgorithmName => "ERAlgorithm";
 
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
         private MessageComponent _messageComponent = null!;
