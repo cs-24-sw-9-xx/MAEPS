@@ -30,8 +30,15 @@ public static class SummaryAlgorithmSeedsCreator
                 Console.WriteLine("No patrolling.csv found in {0}. Skipping.", scenarioFolderPath);
                 continue;
             }
+            
                 
             var data = CsvDataReader.ReadPatrollingCsv(patrollingCsvPath);
+            var averageFloat = data.Average(ps => ps.AverageGraphIdleness);
+            var averageDouble = data.Average(ps => (double)ps.AverageGraphIdleness);
+            var averageDecimal = data.Average(ps => (decimal)ps.AverageGraphIdleness);
+            
+            Console.WriteLine($"Average Float: {averageFloat}, double: {averageDouble}, decimal: {averageDecimal}");
+                
             var summary = new ExperimentSummary
             {
                 Algorithm = Path.GetFileName(scenarioFolderPath),

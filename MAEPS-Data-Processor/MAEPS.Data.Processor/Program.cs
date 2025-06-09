@@ -20,8 +20,6 @@ internal static class Program
 
     public static void Main(string[] args)
     {
-        DirectoryUtils.SetDefaultDataDirectory();
-        
         var argumentParser = new ArgumentParser();
         argumentParser.ParseArguments(args);
 
@@ -204,7 +202,7 @@ internal static class Program
             var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
             var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
             
-            SaveAggregatedData(outputDirectory, algoData.ToList());
+            SaveAggregatedData(outputDirectory, algoData);
             
             worstIdlenessPlot.AddPlotLine(name, averageWorstIdlenessList);
             averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
@@ -248,7 +246,7 @@ internal static class Program
         csv.WriteRecords(summaries);
     }
 
-    private static void SaveAggregatedData(string path, List<PatrollingSnapshot> data)
+    private static void SaveAggregatedData(string path, IEnumerable<PatrollingSnapshot> data)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
