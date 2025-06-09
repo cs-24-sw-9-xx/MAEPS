@@ -51,6 +51,8 @@ namespace Maes.Simulation
         public int SimulatedPhysicsTicks { get; private set; }
         public float SimulateTimeSeconds { get; private set; }
 
+        private float _startedRealTimeSeconds;
+
         public MapSpawner MapGenerator = null!;
 
         public TRobotSpawner RobotSpawner = null!;
@@ -105,6 +107,8 @@ namespace Maes.Simulation
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
+            _startedRealTimeSeconds = Time.realtimeSinceStartup;
+
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
@@ -245,6 +249,8 @@ namespace Maes.Simulation
             {
                 Tracker.FinishStatistics();
             }
+
+            Debug.LogFormat("Simulation took {0}s total", Time.realtimeSinceStartup - _startedRealTimeSeconds);
         }
 
         public void ShowAllTags()
