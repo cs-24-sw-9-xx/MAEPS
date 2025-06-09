@@ -37,6 +37,10 @@ namespace Maes.Algorithms.Patrolling
 
         private Vertex NextVertex(Vertex currentVertex)
         {
+            if (currentVertex.Neighbors.Count == 0)
+            {
+                return currentVertex;
+            }
             var index = _random.Next(currentVertex.Neighbors.Count);
             return currentVertex.Neighbors.ElementAt(index);
         }
