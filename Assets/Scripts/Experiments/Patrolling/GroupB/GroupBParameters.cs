@@ -104,8 +104,8 @@ namespace Maes.Experiments.Patrolling.GroupB
                 [TileType.Room] = 0.0f,
                 [TileType.Hall] = 0.0f,
                 [TileType.Wall] = 0.0f,
-                [TileType.Concrete] = 15f,
-                [TileType.Wood] = 6.7f,
+                [TileType.Concrete] = 5.5f,
+                [TileType.Wood] = 5.5f,
                 [TileType.Brick] = 5.5f
             }
         };
