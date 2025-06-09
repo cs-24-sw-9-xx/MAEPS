@@ -115,7 +115,7 @@ namespace Maes.Experiments.Patrolling
                 slamRayTraceRange: 0f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls,
                 robotCollisions: false,
-                materialCommunication: true);
+                materialCommunication: false);
         }
 
         public static IEnumerable<int> SeedGenerator(int seedCount = StandardSeedCount, int startSeed = 0)
