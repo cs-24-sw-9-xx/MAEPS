@@ -124,11 +124,6 @@ jobs:
           projectPath: .
           testMode: Standalone
           customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Test results (player)
-          path: ${{ steps.testRunner.outputs.artifactsPath }}
   
   build:
     name: Build for ${{ matrix.targetPlatform.platform }}
@@ -188,6 +183,11 @@ jobs:
           projectPath: .
           customParameters: -standaloneBuildSubtarget Player
 
+      - name: Delete debug info
+        if: ${{ matrix.targetPlatform.platform == 'StandaloneLinux64' }}
+        run: |
+          sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
+
       - uses: actions/upload-artifact@v4
         with:
           name: Build-${{ matrix.targetPlatform.platform }}
@@ -244,6 +244,10 @@ jobs:
           targetPlatform: StandaloneLinux64
           projectPath: .
           customParameters: -standaloneBuildSubtarget Server
+
+      - name: Delete debug info
+        run: |
+          sudo rm -r "build/StandaloneLinux64/StandaloneLinux64_BackUpThisFolder_ButDontShipItWithYourGame/"
 
       - uses: actions/upload-artifact@v4
         with:
