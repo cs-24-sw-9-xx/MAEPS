@@ -76,7 +76,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
             var maxUtility = float.NegativeInfinity;
             foreach (var vertex in currentVertex.Neighbors)
             {
-                var deltaT = Controller.EstimateTimeToTarget(vertex.Position)!.Value;
+                var deltaT = Controller.EstimateTimeToTarget(vertex.Position, dependOnBrokenBehaviour: false)!.Value;
                 var tNext = LogicTicks + deltaT;
                 var expected = tNext - _vertexIdToLastVisited[vertex.Id];
 
@@ -90,7 +90,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
             }
 
             // We are visiting bestVertex
-            Controller.Broadcast(new VisitMessage(bestVertex.Id, LogicTicks + Controller.EstimateTimeToTarget(bestVertex.Position)!.Value));
+            Controller.Broadcast(new VisitMessage(bestVertex.Id, LogicTicks + Controller.EstimateTimeToTarget(bestVertex.Position, dependOnBrokenBehaviour: false)!.Value));
 
             return bestVertex;
         }
