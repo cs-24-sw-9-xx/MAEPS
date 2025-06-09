@@ -42,10 +42,10 @@ namespace Maes.Experiments.Patrolling.GroupB
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                     seed,
                     nameof(AdaptiveRedistributionCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
+                    GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
                     GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,
