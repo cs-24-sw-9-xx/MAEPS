@@ -41,7 +41,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             {
                 foreach (var partitionCount in GroupBParameters.PartitionCounts)
                 {
-                    foreach (var algorithm in GroupBParameters.PartitionedAlgorithms)
+                    foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                     {
                         scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,

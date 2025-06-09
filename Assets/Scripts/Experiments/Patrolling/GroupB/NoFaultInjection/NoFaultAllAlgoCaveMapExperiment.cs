@@ -32,28 +32,25 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class BuildingDataVaryingPartitionCountAdaptiveExperiment : MonoBehaviour
+    internal class NoFaultAllAlgoCaveMapExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(0, 50))
             {
-                foreach (var partitionCount in GroupBParameters.PartitionCounts)
+                foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                 {
-                    foreach (var algorithm in GroupBParameters.AdaptivePartitionedAlgorithms)
-                    {
-                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
-                            seed,
-                            algorithm.Key,
-                            algorithm.Value,
-                            GroupBParameters.StandardRobotCount,
-                            GroupBParameters.StandardMapSize,
-                            GroupBParameters.StandardAmountOfCycles,
-                            GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                            partitionCount,
-                            GroupBParameters.FaultInjection()));
-                    }
+                    scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
+                        seed,
+                        algorithm.Key,
+                        algorithm.Value,
+                        GroupBParameters.StandardRobotCount,
+                        GroupBParameters.StandardMapSize,
+                        GroupBParameters.StandardAmountOfCycles,
+                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                        GroupBParameters.StandardPartitionCount,
+                        GroupBParameters.FaultInjection(robotCount: 1)));
                 }
             }
 
