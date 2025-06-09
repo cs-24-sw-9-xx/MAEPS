@@ -55,7 +55,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
+                    foreach (var (algorithmName, lambda) in GroupAParameters.ReactiveAlgorithms)
                     {
                         foreach (var robotCount in _robotCounts)
                         {
