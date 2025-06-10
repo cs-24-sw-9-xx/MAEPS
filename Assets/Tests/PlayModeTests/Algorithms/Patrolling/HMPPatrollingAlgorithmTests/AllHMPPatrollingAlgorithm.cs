@@ -18,12 +18,12 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     {
         private static readonly AlgorithmFactory[] Cases = new[]
         {
-            new AlgorithmFactory(() => new NoFaultToleranceAlgorithm(), nameof(NoFaultToleranceAlgorithm)),
-            new AlgorithmFactory(() => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
-            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), nameof(ImmediateTakeOverAlgorithm)),
-            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy), nameof(ImmediateTakeOverAlgorithm)),
-            new AlgorithmFactory(() => new RandomTakeoverAlgorithm(), nameof(RandomTakeoverAlgorithm)),
-            new AlgorithmFactory(() => new SingleMeetingPointAlgorithm(), nameof(SingleMeetingPointAlgorithm))
+            new AlgorithmFactory(_ => new NoFaultToleranceAlgorithm(), nameof(NoFaultToleranceAlgorithm)),
+            new AlgorithmFactory(_ => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
+            new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(seed => new RandomTakeoverAlgorithm(seed), nameof(RandomTakeoverAlgorithm)),
+            new AlgorithmFactory(_ => new SingleMeetingPointAlgorithm(), nameof(SingleMeetingPointAlgorithm))
         };
 
         public static IEnumerable TestCases
@@ -39,10 +39,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         public sealed class AlgorithmFactory
         {
-            public readonly Func<PatrollingAlgorithm> AlgorithmFactoryDelegate;
+            public readonly Func<int, PatrollingAlgorithm> AlgorithmFactoryDelegate;
             private readonly string _algorithmName;
 
-            public AlgorithmFactory(Func<PatrollingAlgorithm> algorithmFactoryDelegate, string algorithmName)
+            public AlgorithmFactory(Func<int, PatrollingAlgorithm> algorithmFactoryDelegate, string algorithmName)
             {
                 AlgorithmFactoryDelegate = algorithmFactoryDelegate;
                 _algorithmName = algorithmName;

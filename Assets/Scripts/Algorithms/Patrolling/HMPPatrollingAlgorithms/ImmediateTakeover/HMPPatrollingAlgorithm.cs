@@ -46,12 +46,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed = 0)
+        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _takeoverStrategy = takeoverStrategy;
             _random = new System.Random(seed);
-
         }
 
         private readonly System.Random _random;
