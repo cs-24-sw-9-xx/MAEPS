@@ -18,12 +18,12 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     {
         private static readonly AlgorithmFactory[] Cases = new[]
         {
-            new AlgorithmFactory(_ => new NoFaultToleranceAlgorithm(), nameof(NoFaultToleranceAlgorithm)),
-            new AlgorithmFactory(_ => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
+            new AlgorithmFactory(seed => new NoFaultToleranceAlgorithm(seed), nameof(NoFaultToleranceAlgorithm)),
+            new AlgorithmFactory(seed => new FaultToleranceAlgorithm(seed), nameof(FaultToleranceAlgorithm)),
             new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
             new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
             new AlgorithmFactory(seed => new RandomTakeoverAlgorithm(seed), nameof(RandomTakeoverAlgorithm)),
-            new AlgorithmFactory(_ => new SingleMeetingPointAlgorithm(), nameof(SingleMeetingPointAlgorithm))
+            new AlgorithmFactory(seed => new SingleMeetingPointAlgorithm(seed), nameof(SingleMeetingPointAlgorithm))
         };
 
         public static IEnumerable TestCases

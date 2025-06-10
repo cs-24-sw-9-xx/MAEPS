@@ -33,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 {
     public sealed class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
-        public HeuristicConscientiousReactiveAlgorithm(int seed = 0)
+        public HeuristicConscientiousReactiveAlgorithm(int seed)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(ActualDistanceMethod, seed);
         }

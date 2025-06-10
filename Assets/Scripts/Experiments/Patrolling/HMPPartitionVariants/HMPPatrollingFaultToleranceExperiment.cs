@@ -69,7 +69,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm()),
+                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 10000, 20000, 25000),
