@@ -54,7 +54,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         };
 
         // We both make building and cave maps, so 100 scenarios in total
-        public const int StandardSeedCount = 10;
+        public const int StandardSeedCount = 50;
 
         public static bool StandardHasFinished(ISimulation simulation, out SimulationEndCriteriaReason? reason)
         {
