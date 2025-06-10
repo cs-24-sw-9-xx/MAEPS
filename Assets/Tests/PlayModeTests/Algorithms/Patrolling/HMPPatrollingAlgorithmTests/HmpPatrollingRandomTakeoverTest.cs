@@ -93,7 +93,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: Seed,
                         numberOfRobots: RobotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new WrapperHMPPatrollingAlgorithm(_trackerVertices)),
+                        createAlgorithmDelegate: seed => new WrapperHMPPatrollingAlgorithm(_trackerVertices, seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
@@ -152,9 +152,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private class WrapperHMPPatrollingAlgorithm : IPatrollingAlgorithm
         {
-            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices)
+            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices, int seed)
             {
-                _algorithm = new HMPPatrollingAlgorithm();
+                _algorithm = new HMPPatrollingAlgorithm(seed);
                 _trackerVertices = trackerVertices;
             }
 

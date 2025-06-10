@@ -93,7 +93,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: Seed,
                         numberOfRobots: RobotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new WrapperHMPPatrollingAlgorithm(_trackerVertices, PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)),
+                        createAlgorithmDelegate: seed => new WrapperHMPPatrollingAlgorithm(_trackerVertices, PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
@@ -152,9 +152,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private class WrapperHMPPatrollingAlgorithm : IPatrollingAlgorithm
         {
-            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices, PartitionComponent.TakeoverStrategy takeoverStrategy)
+            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices, PartitionComponent.TakeoverStrategy takeoverStrategy, int seed)
             {
-                _algorithm = new HMPPatrollingAlgorithm(takeoverStrategy);
+                _algorithm = new HMPPatrollingAlgorithm(takeoverStrategy, seed);
                 _trackerVertices = trackerVertices;
             }
 
