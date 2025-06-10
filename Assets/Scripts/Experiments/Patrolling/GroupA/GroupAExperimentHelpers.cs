@@ -46,7 +46,8 @@ namespace Maes.Experiments.Patrolling
                                             collisionMap: buildingConfig,
                                             seed: seed,
                                             numberOfRobots: robotCount,
-                                            createAlgorithmDelegate: algorithm),
+                                            createAlgorithmDelegate: algorithm,
+                                            dependOnBrokenBehavior: false),
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotConstraints: robotConstraints,
                                         statisticsFileName:
