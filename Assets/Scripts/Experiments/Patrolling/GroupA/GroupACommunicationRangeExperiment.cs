@@ -49,7 +49,7 @@ namespace Maes.Experiments.Patrolling
         {
             var scenarios = new List<MySimulationScenario>();
             PatrollingMapFactory patrollingMapFactory = map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance);
-            CreateAlgorithmDelegate algorithm = (_) => new HMPPatrollingAlgorithm();
+            CreateAlgorithmDelegate algorithm = seed => new HMPPatrollingAlgorithm(seed);
             var algorithmName = nameof(HMPPatrollingAlgorithm);
 
             foreach (var seed in GroupAParameters.SeedGenerator())

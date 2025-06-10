@@ -41,7 +41,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.PartitionedHeuristi
     /// </summary>
     public sealed class PartitionedHeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
-        public PartitionedHeuristicConscientiousReactiveAlgorithm(int seed = 0)
+        public PartitionedHeuristicConscientiousReactiveAlgorithm(int seed)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
