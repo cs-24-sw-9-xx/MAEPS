@@ -21,6 +21,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Maes.Algorithms;
 using Maes.UI;
@@ -52,7 +54,11 @@ namespace Maes.Simulation
             SimulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             SimulationManager.AutoMaxSpeedInBatchMode = autoMaxSpeedInBatchMode;
 
-            var (instances, instanceId) = ParseCommandLine();
+            var (instances, instanceId, filter) = ParseCommandLine();
+
+            var filterRegex = new Regex(filter, RegexOptions.CultureInvariant | RegexOptions.Singleline);
+
+            scenarios = scenarios.Where(s => filterRegex.IsMatch(s.StatisticsFileName)).ToList();
 
             // We are running alone. Queue all scenarios.
             if (instances == 0)
@@ -90,15 +96,17 @@ namespace Maes.Simulation
             SimulationManager.EnqueueScenario(scenario);
         }
 
-        private (int Instances, int InstanceId) ParseCommandLine()
+        private static (int Instances, int InstanceId, string Filter) ParseCommandLine()
         {
             var args = Environment.GetCommandLineArgs();
 
             var nextInstances = false;
             var nextInstanceId = false;
+            var nextFilter = false;
 
             var instances = 0;
             var instanceId = 0;
+            var filter = ".*";
 
             foreach (var arg in args)
             {
@@ -116,6 +124,13 @@ namespace Maes.Simulation
                     continue;
                 }
 
+                if (nextFilter)
+                {
+                    filter = arg;
+                    nextFilter = false;
+                    continue;
+                }
+
 
                 switch (arg)
                 {
@@ -125,10 +140,13 @@ namespace Maes.Simulation
                     case "--instanceid":
                         nextInstanceId = true;
                         continue;
+                    case "--filter":
+                        nextFilter = true;
+                        continue;
                 }
             }
 
-            return (instances, instanceId);
+            return (instances, instanceId, filter);
         }
 
         public void PressPlayButton()
