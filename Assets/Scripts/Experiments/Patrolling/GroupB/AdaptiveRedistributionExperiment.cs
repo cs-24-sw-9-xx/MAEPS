@@ -42,7 +42,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                scenarios.AddRange(ScenarioUtil.CreateScenarios(
                     seed,
                     nameof(AdaptiveRedistributionCRAlgo),
                     GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
@@ -51,7 +51,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                     GroupBParameters.StandardAmountOfCycles,
                     GroupBParameters.MaterialRobotConstraints,
                     GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
+                    GroupBParameters.FaultInjection()));
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
