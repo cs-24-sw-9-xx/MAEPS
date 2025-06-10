@@ -14,7 +14,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 {
     public sealed class MeetingComponent : IComponent
     {
-        public delegate int? EstimateTimeDelegate(Vector2Int start, Vector2Int target);
+        public delegate int EstimateTimeDelegate(Vertex start, Vertex target);
 
         public delegate IEnumerable<ComponentWaitForCondition> ExchangeInformationAtMeetingDelegate(Meeting meeting);
         public delegate IEnumerable<ComponentWaitForCondition> OnMissingRobotsAtMeetingDelegate(Meeting meeting, HashSet<int> missingRobotIds);
@@ -23,7 +23,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
-            ExchangeInformationAtMeetingDelegate exchangeInformation)
+            ExchangeInformationAtMeetingDelegate exchangeInformation,
+            GoToNextVertexComponent goToNextVertexComponent)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -31,6 +32,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _estimateTime = estimateTime;
             _controller = controller;
             _exchangeInformation = exchangeInformation;
+            _goToNextVertexComponent = goToNextVertexComponent;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
         }
@@ -42,6 +44,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
+        private readonly GoToNextVertexComponent _goToNextVertexComponent;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
@@ -51,7 +54,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
         {
-            _nextMeeting = GetNextMeeting();
+            _nextMeeting = GetNextMeeting(_goToNextVertexComponent.ApproachingVertex ?? _patrollingMap.Vertices[0]);
             while (true)
             {
                 while (!GoingToMeeting.HasValue)
@@ -117,7 +120,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                         // If everybody is here early we can continue.
                         if (everyBodyHere)
                         {
-                            Debug.Log("Everybody here early!");
                             break;
                         }
                     }
@@ -133,7 +135,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 }
 
                 GoingToMeeting = null;
-                _nextMeeting = GetNextMeeting();
+                _nextMeeting = GetNextMeeting(_goToNextVertexComponent.ApproachingVertex);
             }
         }
 
@@ -150,10 +152,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 return currentVertex;
             }
 
-            var ticksToPatrollingVertex = _estimateTime(currentVertex.Position, suggestedVertexToPatrol.Position);
-            var ticksFromPatrollingVertexToMeetingPoint = _estimateTime(suggestedVertexToPatrol.Position, _nextMeeting.Vertex.Position);
+            var ticksToPatrollingVertex = _estimateTime(currentVertex, suggestedVertexToPatrol);
+            var ticksFromPatrollingVertexToMeetingPoint = _estimateTime(suggestedVertexToPatrol, _nextMeeting.Vertex);
 
-            var totalTicks = (_getLogicTick() + ticksToPatrollingVertex + ticksFromPatrollingVertexToMeetingPoint) ?? int.MaxValue;
+            var totalTicks = _getLogicTick() + ticksToPatrollingVertex + ticksFromPatrollingVertexToMeetingPoint;
 
             if (totalTicks < _nextMeeting.MeetingAtTick)
             {
@@ -162,7 +164,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             GoingToMeeting = _nextMeeting;
             return _nextMeeting.Vertex;
-
         }
 
         public void DebugInfo(StringBuilder stringBuilder)
@@ -179,7 +180,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             }
         }
 
-        private Meeting GetNextMeeting()
+        private Meeting GetNextMeeting(Vertex currentVertex)
         {
             // HACK: Create a fake meeting point if there are no meeting points, due to only having a single robot patrolling.
             if (!_partitionComponent.MeetingPoints.Any())
@@ -263,8 +264,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             bool CanGetThereInTime(int targetVertexId, int meetingTime)
             {
-                var vertexPosition = _patrollingMap.Vertices.Single(v => v.Id == targetVertexId).Position;
-                var timeToTarget = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false), vertexPosition);
+                var targetVertex = _patrollingMap.Vertices.Single(v => v.Id == targetVertexId);
+                var timeToTarget = _estimateTime(currentVertex, targetVertex);
 
                 return timeToTarget + _getLogicTick() <= meetingTime;
             }
@@ -272,9 +273,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             // Whether or not we can go to targetMeeting before going to nextTargetMeeting.
             bool CanGetThereInTime2(Meeting targetMeeting, Meeting nextTargetMeeting)
             {
-                var timeToTargetMeeting = _estimateTime(_controller.SlamMap.CoarseMap.GetCurrentPosition(false),
-                    targetMeeting.Vertex.Position);
-                var timeToNextTargetMeeting = _estimateTime(targetMeeting.Vertex.Position, nextTargetMeeting.Vertex.Position);
+                var timeToTargetMeeting = _estimateTime(currentVertex,
+                    targetMeeting.Vertex);
+                var timeToNextTargetMeeting = _estimateTime(targetMeeting.Vertex, nextTargetMeeting.Vertex);
 
                 return timeToTargetMeeting + timeToNextTargetMeeting + _getLogicTick() <=
                        nextTargetMeeting.MeetingAtTick;

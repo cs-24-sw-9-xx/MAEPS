@@ -83,14 +83,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         {
             _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, _goToNextVertexComponent);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
 
-        private int? EstimateTime(Vector2Int start, Vector2Int target)
+        private int EstimateTime(Vertex start, Vertex target)
         {
-            return Controller.TravelEstimator.OverEstimateTime(start, target, dependOnBrokenBehaviour: false);
+            return Controller.TravelEstimator.OverEstimateTime(PatrollingMap, start, target);
         }
 
         private Vertex GetInitialVertexToPatrol()
@@ -112,16 +112,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         {
             TrackInfo(new ExchangeInfoAtMeetingTrackInfo(meeting, LogicTicks, Controller.Id));
             foreach (var condition in _partitionComponent.ExchangeInformation(meeting.Vertex.Id))
-            {
-                yield return condition;
-            }
-        }
-
-        private IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobotIds)
-        {
-            TrackInfo(new MissingRobotsAtMeetingTrackInfo(meeting, missingRobotIds, Controller.Id));
-
-            foreach (var condition in _partitionComponent.OnMissingRobotAtMeeting(meeting, missingRobotIds))
             {
                 yield return condition;
             }
@@ -324,18 +314,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
             var vertexPositions = PatrollingMap.Vertices
                 .Where(v => partition.VertexIds.Contains(v.Id))
-                .Select(v => v.Position)
                 .ToArray();
 
-            foreach (var (vertexPosition1, vertexPosition2) in vertexPositions.Combinations())
+            foreach (var (vertex1, vertex2) in vertexPositions.Combinations())
             {
-                var ticks = EstimateTime(vertexPosition1, vertexPosition2);
-                if (ticks == null)
-                {
-                    continue;
-                }
+                var ticks = EstimateTime(vertex1, vertex2);
 
-                maxTicks = Mathf.Max(maxTicks, ticks.Value);
+                maxTicks = Mathf.Max(maxTicks, ticks);
             }
 
             return maxTicks;
@@ -350,7 +335,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 int? timeToClosestVertex = null;
                 foreach (var vertex in PatrollingMap.Vertices.Where(v => partitionInfo.VertexIds.Contains(v.Id)))
                 {
-                    var timeToTarget = EstimateTime(Controller.SlamMap.CoarseMap.GetCurrentPosition(), vertex.Position) ?? int.MaxValue;
+                    var timeToTarget = Controller.EstimateTimeToTarget(vertex.Position, dependOnBrokenBehaviour: false);
                     if (timeToClosestVertex == null || timeToTarget < timeToClosestVertex)
                     {
                         timeToClosestVertex = timeToTarget;

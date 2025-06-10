@@ -200,7 +200,7 @@ namespace Maes.Robot
         [ForbiddenKnowledge]
         public void BroadcastMessage(MonaRobot sender, in object messageContents)
         {
-            _queuedMessages.Add(new Message(messageContents, sender, sender.transform.position));
+            _queuedMessages.Add(new Message(messageContents, sender, sender.Transform.position));
             _sentMessagesThisTick++;
         }
 
@@ -331,7 +331,7 @@ namespace Maes.Robot
                 {
                     var r1 = _robots[i];
                     var r2 = _robots[j];
-                    var communication = CommunicationBetweenPoints((Vector2)r1.transform.position - _offset, (Vector2)r2.transform.position - _offset);
+                    var communication = CommunicationBetweenPoints((Vector2)r1.Transform.position - _offset, (Vector2)r2.Transform.position - _offset);
 
                     var reverseCommunication = new CommunicationInfo(communication.Distance,
                         (communication.Angle + 180f) % 360f, communication.WallCellsDistance,
@@ -394,13 +394,13 @@ namespace Maes.Robot
 
         public void DepositTag(MonaRobot robot, string content)
         {
-            var tag = EnvironmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
+            var tag = EnvironmentTaggingMap.AddTag(robot.Transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
             _visualizer.AddEnvironmentTag(tag);
         }
 
         public List<EnvironmentTag> ReadNearbyTags(MonaRobot robot)
         {
-            var tags = EnvironmentTaggingMap.GetTagsNear(robot.transform.position,
+            var tags = EnvironmentTaggingMap.GetTagsNear(robot.Transform.position,
                 _robotConstraints.EnvironmentTagReadRange);
 
             return tags;
@@ -444,7 +444,7 @@ namespace Maes.Robot
             // Perform 3 parallel traces from the robot to determine if
             // a wall will be encountered if the robot moves straight ahead
 
-            var robotPosition = robot.transform.position;
+            var robotPosition = robot.Transform.position;
 
             // Perform trace from the center of the robot
             var result1 = RayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
@@ -453,12 +453,12 @@ namespace Maes.Robot
 
             // Perform trace from the left side perimeter of the robot
             var offsetLeft = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 90) % 360, robotSize / 2f);
-            var result2 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result2 = RayTracingMap.FindIntersection((Vector2)robot.Transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance2 = result2 == null ? float.MaxValue : Vector2.Distance(robotPosition, result2.Value.Item1);
 
             // Finally perform trace from the right side perimeter of the robot
             var offsetRight = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 270) % 360, robotSize / 2f);
-            var result3 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result3 = RayTracingMap.FindIntersection((Vector2)robot.Transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance3 = result3 == null ? float.MaxValue : Vector2.Distance(robotPosition, result3.Value.Item1);
 
             // Return the detected wall that is closest to the robot
@@ -543,10 +543,10 @@ namespace Maes.Robot
             var index = 0;
             alphas[index++] = 0; // Start
 
-            var xStart = Mathf.FloorToInt(x1);
-            var xEnd = Mathf.FloorToInt(x2);
-            var yStart = Mathf.FloorToInt(y1);
-            var yEnd = Mathf.FloorToInt(y2);
+            var xStart = (int)x1;
+            var xEnd = (int)x2;
+            var yStart = (int)y1;
+            var yEnd = (int)y2;
 
             var xStep = xDiff > 0 ? 1 : -1;
             var yStep = yDiff > 0 ? 1 : -1;
@@ -607,7 +607,7 @@ namespace Maes.Robot
                 var midY = y1 + aMid * yDiff;
                 var segmentLength = (aCurrent - aPrev) * lineLength;
 
-                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midX), Mathf.FloorToInt(midY));
+                var tile = _tileMap.GetTileByLocalCoordinate((int)midX, (int)midY);
                 var tileType = tile.GetTriangles()[0].Type;
 
                 if (tileType >= TileType.Wall)

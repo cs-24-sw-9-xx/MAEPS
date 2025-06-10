@@ -1,7 +1,9 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using Maes.Map;
+using Maes.Map.PathFinding;
 
 using UnityEngine;
 
@@ -30,8 +32,20 @@ namespace Maes.Robot
                 return null;
             }
 
+            return EstimateDistance(pathList);
+        }
+
+        public float EstimateDistance(PatrollingMap patrollingMap, Vertex start, Vertex target)
+        {
+            var pathList = patrollingMap.Paths[(start.Id, target.Id)];
+
+            return EstimateDistance(pathList);
+        }
+
+        private float EstimateDistance(Vector2Int[] pathList)
+        {
             var distance = 0f;
-            for (var i = 0; i < pathList.Count() - 1; i++)
+            for (var i = 0; i < pathList.Length - 1; i++)
             {
                 // Get current point and next point
                 var point1 = pathList[i];
@@ -39,6 +53,16 @@ namespace Maes.Robot
 
                 // Calculate the Euclidean distance between the two points
                 distance += Vector2.Distance(point1, point2);
+            }
+            return distance;
+        }
+
+        private float EstimateDistance(IReadOnlyList<PathStep> pathList)
+        {
+            var distance = 0f;
+            foreach (var pathStep in pathList)
+            {
+                distance += Vector2Int.Distance(pathStep.Start, pathStep.End);
             }
             return distance;
         }
@@ -60,13 +84,31 @@ namespace Maes.Robot
             }
 
             // An estimation for the distance it takes the robot to reach terminal speed.
-            const float distForMaxSpeed = 2.5f;
             var distance = EstimateDistance(start, target, acceptPartialPaths: acceptPartialPaths, beOptimistic: beOptimistic, dependOnBrokenBehaviour: dependOnBrokenBehaviour);
             if (distance == null)
             {
                 return null;
             }
-            var dist = distance.Value;
+
+            return EstimateTime(distance.Value);
+        }
+
+        public int EstimateTime(PatrollingMap patrollingMap, Vertex start, Vertex target)
+        {
+            if (start == target)
+            {
+                return 0;
+            }
+
+            var distance = EstimateDistance(patrollingMap, start, target);
+
+            return EstimateTime(distance);
+        }
+
+        private int EstimateTime(float distance)
+        {
+            const float distForMaxSpeed = 2.5f;
+            var dist = distance;
             var startDist = Math.Min(dist, distForMaxSpeed);
             // If the distance is small, it's characterized by a quadratic function.
             var startTime = (int)Math.Floor(Math.Pow(CorrectForRelativeMoveSpeed(startDist, RelativeMoveSpeed), 0.85));
@@ -96,6 +138,20 @@ namespace Maes.Robot
             {
                 return null;
             }
+
+            return OverEstimateTime(estimate.Value);
+        }
+
+        public int OverEstimateTime(PatrollingMap patrollingMap, Vertex start, Vertex target)
+        {
+            var estimate = EstimateTime(patrollingMap, start, target);
+
+            return OverEstimateTime(estimate);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int OverEstimateTime(int estimate)
+        {
             return (int)(estimate * 1.3);
         }
 

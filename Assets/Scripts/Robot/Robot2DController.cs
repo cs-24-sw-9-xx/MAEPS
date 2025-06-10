@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 using Maes.Map;
@@ -259,6 +260,7 @@ namespace Maes.Robot
         }
 
         // The robot is rotated relative to Unity's coordinate system, so 'up' is actually forward for the robot
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 GetForwardDirectionVector()
         {
             return Transform.up;

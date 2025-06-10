@@ -196,7 +196,14 @@ namespace Maes.Simulation
                 return;
             }
 
-            if (Application.isBatchMode && AutoMaxSpeedInBatchMode && PlayState != SimulationPlayState.FastAsPossible)
+            const bool force =
+#if MAEPS_GUI
+                false;
+#else
+                true;
+#endif
+
+            if ((Application.isBatchMode || force) && AutoMaxSpeedInBatchMode && PlayState != SimulationPlayState.FastAsPossible)
             {
                 AttemptSetPlayState(SimulationPlayState.FastAsPossible);
             }
