@@ -292,9 +292,7 @@ namespace Maes.Robot
 
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                PopulateCommunicationGroups();
-
-                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick, _communicationGroups);
+                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
             }
         }
 

@@ -19,9 +19,6 @@
 // 
 // Original repository: https://github.com/MalteZA/MAES
 
-using System.Collections.Generic;
-using System.Linq;
-
 using Maes.Statistics.Snapshots;
 
 namespace Maes.Statistics.Trackers
@@ -30,42 +27,14 @@ namespace Maes.Statistics.Trackers
     {
         public CommunicationSnapshot LatestSnapshot { get; private set; }
 
-        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount, HashSet<HashSet<int>> communicationGroups)
+        public void CreateSnapshot(int tick, int receivedMessageCount, int sentMessageCount)
         {
             if (tick == 0)
             {
                 return;
             }
 
-            var interconnected = CalculateInterconnected(communicationGroups);
-            var biggestClusterSizePercentage = CalculateBiggestClusterSizePercentage(communicationGroups);
-
-            LatestSnapshot = new CommunicationSnapshot(tick, interconnected, biggestClusterSizePercentage, receivedMessageCount, sentMessageCount);
-        }
-
-        private float CalculateBiggestClusterSizePercentage(HashSet<HashSet<int>> communicationGroups)
-        {
-            if (communicationGroups.Count == 0)
-            {
-                return 0f;
-            }
-
-            // if we have exactly one group, then every agent must be in it!
-            if (communicationGroups.Count == 1)
-            {
-                return 100.0f;
-            }
-            else
-            {
-                var totalRobots = communicationGroups.Sum(g => g.Count);
-                var biggestCluster = communicationGroups.Select(g => g.Count).Max();
-                return (float)biggestCluster / (float)totalRobots * 100f;
-            }
-        }
-
-        private bool CalculateInterconnected(HashSet<HashSet<int>> communicationGroups)
-        {
-            return communicationGroups.Count == 1;
+            LatestSnapshot = new CommunicationSnapshot(tick, receivedMessageCount, sentMessageCount);
         }
     }
 }
