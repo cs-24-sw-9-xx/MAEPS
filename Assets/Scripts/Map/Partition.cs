@@ -83,15 +83,23 @@ namespace Maes.Map
             Vertices = vertices;
         }
 
-        public void AddNeighborPartition(Partition partition)
+        public void AddNeighbourPartition(Partition partition)
         {
             if (!_neighborPartitions.Add(partition))
             {
                 return;
             }
 
+            foreach (var vertex in Vertices)
+            {
+                foreach (var neighbour in partition.Vertices)
+                {
+                    vertex.AddNeighbor(neighbour);
+                }
+            }
+
             CalculateIntersectionAndRatio(partition);
-            partition.AddNeighborPartition(this);
+            partition.AddNeighbourPartition(this);
         }
 
         public void CalculateIntersectionAndRatio(Partition otherPartition)
