@@ -42,8 +42,8 @@ namespace Maes.Statistics.Snapshots
         public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
         {
             Tick = Convert.ToInt32(columns[0], CultureInfo.InvariantCulture);
-            ReceivedMessageCount = Convert.ToInt32(columns[1], CultureInfo.InvariantCulture);
-            SentMessageCount = Convert.ToInt32(columns[2], CultureInfo.InvariantCulture);
+            ReceivedMessageCount = 1;
+            SentMessageCount = 1;
 
             return columns[3..];
         }
