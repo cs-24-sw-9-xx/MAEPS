@@ -56,13 +56,14 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var vertexPositionsList = vertexPositions.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
-            var allVertices = AllConnectedWaypointConnector.ConnectVertices(vertexPositions);
+            var allVertices = new List<Vertex>();
+            var nextId = 0;
             var partitionId = 0;
             var partitions = new List<Partition>();
 
             foreach (var cluster in clusters)
             {
-                var vertices = allVertices.Where(v => cluster.Contains(v.Position)).ToList();
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(cluster, distanceMatrix, nextId);
                 // Assign the partition and color to each vertex in the cluster
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
                 foreach (var vertex in vertices)
@@ -71,6 +72,8 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                     vertex.Color = clusterColor;
                 }
 
+                allVertices.AddRange(vertices);
+                nextId = vertices.Select(v => v.Id).Max() + 1;
                 partitions.Add(new Partition(partitionId, vertices, () => communicationManager.CalculateZones(vertices)));
                 partitionId++;
             }
@@ -81,7 +84,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 {
                     if (partition.PartitionId != otherPartition.PartitionId)
                     {
-                        partition.AddNeighborPartition(otherPartition);
+                        partition.AddNeighbourPartition(otherPartition);
                     }
                 }
             }

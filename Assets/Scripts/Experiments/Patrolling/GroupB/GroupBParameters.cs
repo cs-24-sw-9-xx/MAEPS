@@ -127,7 +127,6 @@ namespace Maes.Experiments.Patrolling.GroupB
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true,
                 robotCollisions: false,
-                attenuationDictionary: Frequencies,
                 materialCommunication: materialCommunication);
         }
 
