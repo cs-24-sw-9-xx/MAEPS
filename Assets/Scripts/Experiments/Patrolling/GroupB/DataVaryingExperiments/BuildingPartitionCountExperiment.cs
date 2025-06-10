@@ -32,7 +32,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class BuildingDataVaryingPartitionCountExperiment : MonoBehaviour
+    internal class BuildingPartitionCountExperiment : MonoBehaviour
     {
         private void Start()
         {
