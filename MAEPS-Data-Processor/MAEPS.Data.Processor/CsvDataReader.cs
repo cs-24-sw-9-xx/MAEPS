@@ -27,7 +27,6 @@ public static class CsvDataReader
             }
             
             var patrollingSnapshot = new PatrollingSnapshot();
-            Console.WriteLine(line);
             var lastBits = patrollingSnapshot.ReadRow(columnValues);
             Debug.Assert(lastBits.Length == 0);
             patrollingSnapshots.Add(patrollingSnapshot);
