@@ -144,7 +144,7 @@ public class RatioLinesComputer(
             var filePath = Path.Combine(storeInFolderPath, fileName);
             plot.SavePng(filePath, 1600, 900);
             Console.WriteLine($"Saved global worst idleness plot to {filePath}");
-            WriteData(dataList, $"AllWorstIdleness-{mapSize}");
+            WriteData(dataList, $"AllWorstIdleness_{mapType}_{mapSize}");
         }
     }
 
