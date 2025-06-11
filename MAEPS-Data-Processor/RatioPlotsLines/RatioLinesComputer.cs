@@ -135,12 +135,12 @@ public class RatioLinesComputer(
                 xValues ??= source.Select(p => p.X).ToArray();
             }
 
-            plot.Axes.SetLimits(0, _maxGlobalRobotCount + 1, 0, maxWorstIdleness + 150000);
+            plot.Axes.SetLimits(0, _maxGlobalRobotCount + 1, 0, maxWorstIdleness + 10000);
             plot.YLabel("Ticks");
             plot.XLabel("Robot count");
             plot.Title($"Worst Idleness - {mapSize}");
             plot.ShowLegend(Alignment.UpperRight);
-            var fileName = $"AllWorstIdleness-{mapSize}.png";
+            var fileName = $"AllWorstIdleness_{mapType}_{mapSize}.png";
             var filePath = Path.Combine(storeInFolderPath, fileName);
             plot.SavePng(filePath, 1600, 900);
             Console.WriteLine($"Saved global worst idleness plot to {filePath}");

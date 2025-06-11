@@ -75,6 +75,18 @@ public static class DataPreProcessor
             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
             File.Move(file, destinationPath);
         }
+
+        foreach (var folders in Directory.GetDirectories(experimentsCopyFolderPath, "*", SearchOption.TopDirectoryOnly))
+        {
+            var name = Path.GetFileName(folders);
+            if (name == mapType)
+            {
+                continue;
+            }
+            Directory.Delete(folders, true);
+        }
+        
+        
         Console.WriteLine($"Copy folder including {mapType} data to folder: " + experimentsFolderMapTypePath);
 
         return experimentsFolderMapTypePath;
