@@ -30,4 +30,49 @@ public static class DataPreProcessor
 
         return experimentsFolderCopyPath;
     }
+    
+    public static string[] SplitMapTypesDataFolder(string experimentsCopyFolderPath, bool regenerate = true)
+    {
+        var experimentsFolderBuildingMapPath = Split(experimentsCopyFolderPath, "BuildingMap", regenerate);
+        var experimentsFolderCaveMapPath = Split(experimentsCopyFolderPath, "CaveMap", regenerate);
+        
+        return [experimentsFolderBuildingMapPath, experimentsFolderCaveMapPath];
+    }
+
+
+    private static string Split(string experimentsCopyFolderPath, string mapType, bool regenerate)
+    {
+        var experimentsFolderMapTypePath = Path.Combine(experimentsCopyFolderPath, mapType);
+        
+        if (Directory.Exists(experimentsFolderMapTypePath))
+        {
+            if (!regenerate)
+            {
+                Console.WriteLine($"Folder for mapType {mapType} already exists: " + experimentsFolderMapTypePath);
+                return experimentsFolderMapTypePath;
+            }
+            
+            Console.WriteLine($"Removing existing mapType {mapType} folder: " + experimentsFolderMapTypePath);
+            Directory.Delete(experimentsFolderMapTypePath, true);
+        }
+        
+        Directory.CreateDirectory(experimentsFolderMapTypePath);
+        
+        foreach (var file in Directory.GetFiles(experimentsCopyFolderPath, "*", SearchOption.AllDirectories))
+        {
+            if (!file.Contains(mapType))
+            {
+                continue;
+            }
+
+            var relativePath = Path.GetRelativePath(experimentsCopyFolderPath, file);
+            var destinationPath = Path.Combine(experimentsFolderMapTypePath, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            File.Move(file, destinationPath);
+        }
+        Console.WriteLine($"Copy folder including {mapType} data to folder: " + experimentsFolderMapTypePath);
+
+        return experimentsFolderMapTypePath;
+        
+    }
 }

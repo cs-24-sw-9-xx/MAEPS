@@ -1,9 +1,5 @@
-﻿using System.Globalization;
-
-using MAEPS.Data.Processor.Preprocessors;
+﻿using MAEPS.Data.Processor.Preprocessors;
 using MAEPS.Data.Processor.Utilities;
-
-using ScottPlot.DataSources;
 
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
@@ -25,17 +21,23 @@ if (groupBys.Length != 2)
 var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, true);
 
 var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "RatioLines", regenerate: regenerate);
-var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(dataFolder);
 
-var ratioPlotter = new RatioLinesComputer(dataFolder, groupBys);
-foreach (var algorithmFolder in algorithmFolders)
+var mapTypeFolders = DataPreProcessor.SplitMapTypesDataFolder(dataFolder, regenerate: regenerate);
+
+foreach (var mapTypeFolder in mapTypeFolders)
 {
-    var groupedFolderPaths = Grouping.GroupScenariosByGroupingValue(groupBys, algorithmFolder);
-    Parallel.ForEach(groupedFolderPaths, groupedFolderPath =>
-    {
-        SummaryAlgorithmSeedsCreator.CreateSummaryFromScenarios(groupedFolderPath, regenerate: regenerate);
-    });
-    ratioPlotter.GenerateRatioData(algorithmFolder, groupedFolderPaths);
-}
+    var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(mapTypeFolder);
 
-ratioPlotter.SaveGlobalWorstIdlenessPlots();
+    var ratioPlotter = new RatioLinesComputer(mapTypeFolder, groupBys);
+    foreach (var algorithmFolder in algorithmFolders)
+    {
+        var groupedFolderPaths = Grouping.GroupScenariosByGroupingValue(groupBys, algorithmFolder);
+        Parallel.ForEach(groupedFolderPaths, groupedFolderPath =>
+        {
+            SummaryAlgorithmSeedsCreator.CreateSummaryFromScenarios(groupedFolderPath, regenerate: regenerate);
+        });
+        ratioPlotter.GenerateRatioData(algorithmFolder, groupedFolderPaths);
+    }
+
+    ratioPlotter.SaveGlobalWorstIdlenessPlots();
+}
