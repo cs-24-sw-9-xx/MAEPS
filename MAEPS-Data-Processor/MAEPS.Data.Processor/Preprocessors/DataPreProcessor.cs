@@ -55,10 +55,11 @@ public static class DataPreProcessor
             Console.WriteLine($"Removing existing mapType {mapType} folder: " + experimentsFolderMapTypePath);
             Directory.Delete(experimentsFolderMapTypePath, true);
         }
-        
+
+        var files = Directory.GetFiles(experimentsCopyFolderPath, "*", SearchOption.AllDirectories);
         Directory.CreateDirectory(experimentsFolderMapTypePath);
         
-        foreach (var file in Directory.GetFiles(experimentsCopyFolderPath, "*", SearchOption.AllDirectories))
+        foreach (var file in files)
         {
             if (!file.Contains(mapType))
             {
