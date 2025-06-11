@@ -36,6 +36,17 @@ public static class DataPreProcessor
         var experimentsFolderBuildingMapPath = Split(experimentsCopyFolderPath, "BuildingMap", regenerate);
         var experimentsFolderCaveMapPath = Split(experimentsCopyFolderPath, "CaveMap", regenerate);
         
+        foreach (var folders in Directory.GetDirectories(experimentsCopyFolderPath, "*", SearchOption.TopDirectoryOnly))
+        {
+            var name = Path.GetFileName(folders);
+            if (name is "BuildingMap" or "CaveMap")
+            {
+                continue;
+            }
+            Directory.Delete(folders, true);
+            Console.WriteLine(folders);
+        }
+        
         return
         [
             ("BuildingMap", experimentsFolderBuildingMapPath),
@@ -75,18 +86,6 @@ public static class DataPreProcessor
             Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
             File.Move(file, destinationPath);
         }
-
-        foreach (var folders in Directory.GetDirectories(experimentsCopyFolderPath, "*", SearchOption.TopDirectoryOnly))
-        {
-            var name = Path.GetFileName(folders);
-            if (name is "BuildingMap" or "CaveMap")
-            {
-                continue;
-            }
-            Directory.Delete(folders, true);
-            Console.WriteLine(folders);
-        }
-        
         
         Console.WriteLine($"Copy folder including {mapType} data to folder: " + experimentsFolderMapTypePath);
 
