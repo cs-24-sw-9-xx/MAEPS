@@ -22,7 +22,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private PatrollingSimulator _maes;
 
-        private void CreateAndEnqueueScenario(Func<PatrollingAlgorithm> algorithmFactory)
+        private void CreateAndEnqueueScenario(Func<int, PatrollingAlgorithm> algorithmFactory)
         {
             var robotConstraints = new RobotConstraints(
                 mapKnown: true,
@@ -43,7 +43,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: Seed,
                         numberOfRobots: RobotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => algorithmFactory()),
+                        createAlgorithmDelegate: seed => algorithmFactory(seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",

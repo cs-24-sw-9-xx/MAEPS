@@ -71,7 +71,7 @@ namespace Maes.Experiments.Patrolling
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)),
+                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",

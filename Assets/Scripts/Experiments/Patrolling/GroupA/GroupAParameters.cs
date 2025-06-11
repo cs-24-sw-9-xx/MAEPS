@@ -82,11 +82,11 @@ namespace Maes.Experiments.Patrolling
         public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantHMPVariants = new AlgorithmsDictionary
         {
             { "ImmediateTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed)) },
             { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)) },
             { "RandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new RandomTakeover.HMPPatrollingAlgorithm()) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed)) },
             { "SingleMeetingPoint.HMPPatrollingAlgorithm",
                 _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleMeetingPoint.HMPPatrollingAlgorithm()) },
             { "FaultTolerance.HMPPatrollingAlgorithm",
