@@ -42,23 +42,34 @@ namespace Maes.Simulation
 
         private readonly GameObject _maesGameObject;
 
+        private readonly bool _exiting = false;
+
         protected Simulator(IReadOnlyList<TScenario> scenarios, bool autoMaxSpeedInBatchMode = true)
         {
 #if UNITY_EDITOR
             UnityEngine.Profiling.Profiler.maxUsedMemory = int.MaxValue; // 2 GB
 #endif
+            var (instances, instanceId, filter, printScenarioCount) = ParseCommandLine();
+
+            var filterRegex = new Regex(filter, RegexOptions.CultureInvariant | RegexOptions.Singleline);
+
+            scenarios = scenarios.Where(s => filterRegex.IsMatch(s.StatisticsFileName)).ToList();
+
+            if (printScenarioCount)
+            {
+                Debug.LogFormat("Scenario Count: {0}", scenarios.Count);
+                Application.Quit(0);
+                _exiting = true;
+
+                // We expect exceptions, but is ok.
+                return;
+            }
 
             // Initialize the simulator by loading the prefab from the resources and then instantiating the prefab
             var prefab = LoadSimulatorGameObject();
             _maesGameObject = Object.Instantiate(prefab);
             SimulationManager = _maesGameObject.GetComponentInChildren<SimulationManager<TSimulation, TAlgorithm, TScenario>>();
             SimulationManager.AutoMaxSpeedInBatchMode = autoMaxSpeedInBatchMode;
-
-            var (instances, instanceId, filter) = ParseCommandLine();
-
-            var filterRegex = new Regex(filter, RegexOptions.CultureInvariant | RegexOptions.Singleline);
-
-            scenarios = scenarios.Where(s => filterRegex.IsMatch(s.StatisticsFileName)).ToList();
 
             // We are running alone. Queue all scenarios.
             if (instances == 0)
@@ -96,7 +107,7 @@ namespace Maes.Simulation
             SimulationManager.EnqueueScenario(scenario);
         }
 
-        private static (int Instances, int InstanceId, string Filter) ParseCommandLine()
+        private static (int Instances, int InstanceId, string Filter, bool PrintScenarioCount) ParseCommandLine()
         {
             var args = Environment.GetCommandLineArgs();
 
@@ -107,6 +118,7 @@ namespace Maes.Simulation
             var instances = 0;
             var instanceId = 0;
             var filter = ".*";
+            var printScenarioCount = false;
 
             foreach (var arg in args)
             {
@@ -143,14 +155,22 @@ namespace Maes.Simulation
                     case "--filter":
                         nextFilter = true;
                         continue;
+                    case "--scenario-count":
+                        printScenarioCount = true;
+                        continue;
                 }
             }
 
-            return (instances, instanceId, filter);
+            return (instances, instanceId, filter, printScenarioCount);
         }
 
         public void PressPlayButton()
         {
+            if (_exiting)
+            {
+                return;
+            }
+
             if (SimulationManager.PlayState == SimulationPlayState.Play)
             {
                 throw new InvalidOperationException("Cannot start simulation when it is already in play mode");
