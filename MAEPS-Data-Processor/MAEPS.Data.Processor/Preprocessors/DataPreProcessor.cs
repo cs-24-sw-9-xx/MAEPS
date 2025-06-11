@@ -79,7 +79,7 @@ public static class DataPreProcessor
         foreach (var folders in Directory.GetDirectories(experimentsCopyFolderPath, "*", SearchOption.TopDirectoryOnly))
         {
             var name = Path.GetFileName(folders);
-            if (name == mapType)
+            if (name is "BuildingMap" or "CaveMap")
             {
                 continue;
             }
