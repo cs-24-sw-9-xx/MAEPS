@@ -44,7 +44,6 @@ public static class DataPreProcessor
                 continue;
             }
             Directory.Delete(folders, true);
-            Console.WriteLine(folders);
         }
         
         return
