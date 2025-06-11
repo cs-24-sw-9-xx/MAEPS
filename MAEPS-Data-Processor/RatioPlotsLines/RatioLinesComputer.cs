@@ -135,7 +135,7 @@ public class RatioLinesComputer(
                 xValues ??= source.Select(p => p.X).ToArray();
             }
 
-            plot.Axes.SetLimits(0, _maxGlobalRobotCount + 1, 0, maxWorstIdleness + 10000);
+            plot.Axes.SetLimits(0, _maxGlobalRobotCount + 1, 0, maxWorstIdleness + 1000);
             plot.YLabel("Ticks");
             plot.XLabel("Robot count");
             plot.Title($"Worst Idleness - {mapSize}");
