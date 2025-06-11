@@ -52,9 +52,15 @@ namespace Maes.Experiments.Patrolling
                 .Concat(FaultTolerantHMPVariants)
                 .Concat(CyclicAlgorithms)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            FaultTolerantAlgorithms = ReactiveAlgorithms
+                .Concat(FaultTolerantHMPVariants)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         public static readonly IReadOnlyAlgorithmsDictionary AllAlgorithms;
+
+        public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantAlgorithms;
 
         public static readonly IReadOnlyAlgorithmsDictionary
             ReactiveAlgorithms = new AlgorithmsDictionary
