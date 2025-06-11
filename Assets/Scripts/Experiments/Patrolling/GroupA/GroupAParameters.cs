@@ -96,7 +96,9 @@ namespace Maes.Experiments.Patrolling
             { "SingleMeetingPoint.HMPPatrollingAlgorithm",
                 _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new SingleMeetingPoint.HMPPatrollingAlgorithm(seed)) },
             { "FaultTolerance.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed)) }
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false)) },
+            { "FaultTolerance.Variant.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, true)) }
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
