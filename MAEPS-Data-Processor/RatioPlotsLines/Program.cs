@@ -24,11 +24,11 @@ var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderNa
 
 var mapTypeFolders = DataPreProcessor.SplitMapTypesDataFolder(dataFolder, regenerate: regenerate);
 
-foreach (var mapTypeFolder in mapTypeFolders)
+foreach (var (mapType, folder) in mapTypeFolders)
 {
-    var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(mapTypeFolder);
+    var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(folder);
 
-    var ratioPlotter = new RatioLinesComputer(mapTypeFolder, groupBys);
+    var ratioPlotter = new RatioLinesComputer(folder, groupBys, mapType);
     foreach (var algorithmFolder in algorithmFolders)
     {
         var groupedFolderPaths = Grouping.GroupScenariosByGroupingValue(groupBys, algorithmFolder);

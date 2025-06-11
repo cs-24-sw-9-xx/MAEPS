@@ -6,7 +6,8 @@ using ScottPlot.Plottables;
 
 public class RatioLinesComputer(
     string storeInFolderPath,
-    string[] groupBys)
+    string[] groupBys,
+    string mapType)
 {
 
     private readonly Dictionary<int, Plot> _globalWorstIdlenessPlots = new();
@@ -85,7 +86,7 @@ public class RatioLinesComputer(
             plot.Axes.SetLimits(0, maxRobotCount + 1, 0, maxIdleness + 1000);
             plot.YLabel("Ticks");
             plot.XLabel("Robot count");
-            plot.Title($"{algorithmName} - {mapSize}");
+            plot.Title($"{algorithmName} - {mapType} - {mapSize}");
             plot.Legend.IsVisible = false;
             
             var dataList = new Dictionary<double, List<(string, double)>>();
@@ -99,11 +100,11 @@ public class RatioLinesComputer(
 
                 yValuesAlg.Add((algorithmName, idleness));
             }
-            WriteData(dataList, $"{algorithmName}-{mapSize}");
+            WriteData(dataList, $"{algorithmName}_{mapType}_{mapSize}");
         }
 
         multiplot.Layout = new ScottPlot.MultiplotLayouts.Columns();
-        var fileName = $"{algorithmName}.png";
+        var fileName = $"{algorithmName}_{mapType}.png";
         var filePath = Path.Combine(storeInFolderPath, fileName);
         multiplot.SavePng(filePath, 700 * dataByMapSize.Keys.Count, 600);
     }

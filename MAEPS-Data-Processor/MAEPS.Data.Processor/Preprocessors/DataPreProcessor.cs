@@ -31,12 +31,16 @@ public static class DataPreProcessor
         return experimentsFolderCopyPath;
     }
     
-    public static string[] SplitMapTypesDataFolder(string experimentsCopyFolderPath, bool regenerate = true)
+    public static (string maptype, string folderPath)[] SplitMapTypesDataFolder(string experimentsCopyFolderPath, bool regenerate = true)
     {
         var experimentsFolderBuildingMapPath = Split(experimentsCopyFolderPath, "BuildingMap", regenerate);
         var experimentsFolderCaveMapPath = Split(experimentsCopyFolderPath, "CaveMap", regenerate);
         
-        return [experimentsFolderBuildingMapPath, experimentsFolderCaveMapPath];
+        return
+        [
+            ("BuildingMap", experimentsFolderBuildingMapPath),
+            ("CaveMap", experimentsFolderCaveMapPath)
+        ];
     }
 
 
