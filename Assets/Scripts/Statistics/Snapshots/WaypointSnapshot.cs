@@ -1,5 +1,7 @@
-using System;
+#if NET9_0_OR_GREATER
 using System.Globalization;
+#endif
+
 using System.IO;
 
 using Maes.Statistics.Csv;
@@ -37,12 +39,18 @@ namespace Maes.Statistics.Snapshots
             streamWriter.Write(NumberOfVisit);
         }
 
-        public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
+#if NET9_0_OR_GREATER
+        public void ReadRow(ReadOnlySpan<char> columns, ref MemoryExtensions.SpanSplitEnumerator<char> enumerator)
         {
-            Tick = Convert.ToInt32(columns[0], CultureInfo.InvariantCulture);
-            Idleness = Convert.ToInt32(columns[1], CultureInfo.InvariantCulture);
-            NumberOfVisit = Convert.ToInt32(columns[2], CultureInfo.InvariantCulture);
-            return columns[3..];
+            enumerator.MoveNext();
+            Tick = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            Idleness = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            NumberOfVisit = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
         }
+#endif
     }
 }

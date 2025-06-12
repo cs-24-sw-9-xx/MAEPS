@@ -1,5 +1,7 @@
-using System;
+#if NET9_0_OR_GREATER
 using System.Globalization;
+#endif
+
 using System.IO;
 
 using Maes.Statistics.Csv;
@@ -50,15 +52,23 @@ namespace Maes.Statistics.Snapshots
             streamWriter.Write(NumberOfRobots);
         }
 
-        public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
+#if NET9_0_OR_GREATER
+        public void ReadRow(ReadOnlySpan<char> columns, ref MemoryExtensions.SpanSplitEnumerator<char> enumerator)
         {
-            columns = CommunicationSnapshot.ReadRow(columns);
-            Explored = Convert.ToSingle(columns[0], CultureInfo.InvariantCulture);
-            Covered = Convert.ToSingle(columns[1], CultureInfo.InvariantCulture);
-            AverageAgentDistance = Convert.ToSingle(columns[2], CultureInfo.InvariantCulture);
-            NumberOfRobots = Convert.ToInt32(columns[3], CultureInfo.InvariantCulture);
+            CommunicationSnapshot.ReadRow(columns, ref enumerator);
 
-            return columns[4..];
+            enumerator.MoveNext();
+            Explored = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            Covered = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            AverageAgentDistance = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            NumberOfRobots = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
         }
+#endif
     }
 }
