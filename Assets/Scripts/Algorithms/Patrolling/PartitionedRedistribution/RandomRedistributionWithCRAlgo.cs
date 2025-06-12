@@ -33,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
     /// </summary>
     public sealed class RandomRedistributionWithCRAlgo : PatrollingAlgorithm
     {
-        public RandomRedistributionWithCRAlgo(int seed, int probabilityFactor)
+        public RandomRedistributionWithCRAlgo(int seed, float probabilityFactor)
         {
             _seed = seed;
             _probabilityFactor = probabilityFactor;
@@ -45,7 +45,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
         private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private RandomRedistributionComponent _redistributionComponent = null!;
         private readonly int _seed;
-        private readonly int _probabilityFactor;
+        private readonly float _probabilityFactor;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
