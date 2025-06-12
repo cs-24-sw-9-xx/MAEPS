@@ -22,6 +22,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Simulation.Patrolling;
@@ -41,8 +42,17 @@ namespace Maes.Experiments.Patrolling
     [Preserve]
     internal class GroupAFaultInjectionExperiment : MonoBehaviour
     {
+        public string FilterRegex = ".*";
+
         private static readonly List<int> _mapSizes = new() { 150 };
         private static readonly List<int> _robotCounts = new() { 8 };
+        private static readonly List<int[]> _faultInjections = new List<int[]>
+        {
+            new int[] {500},
+            new int[] {500, 1000},
+            new int[] {1000, 1001},
+            new int[] {500, 1000, 1500},
+        };
         private static readonly IEnumerable<string> scenarioFilters = new List<string>
         {
             // Paste the name of a scenario here to filter only that scenario e.g.:
@@ -51,7 +61,7 @@ namespace Maes.Experiments.Patrolling
 
         private void Start()
         {
-
+            var regex = new Regex(FilterRegex, RegexOptions.Singleline | RegexOptions.CultureInvariant);
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(10))
             {
@@ -61,11 +71,13 @@ namespace Maes.Experiments.Patrolling
                     {
                         foreach (var robotCount in _robotCounts)
                         {
-                            var faultInjection =
-                                new DestroyRobotsAtSpecificTickFaultInjection(seed, 100 * mapSize, 200 * mapSize,
-                                    300 * mapSize);
-                            var (patrollingMapFactory, algorithm) = lambda(robotCount);
-                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, mapSize, faultInjection: faultInjection));
+                            foreach (var faultInjectionTimes in _faultInjections)
+                            {
+                                var faultInjection =
+                                    new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes);
+                                var (patrollingMapFactory, algorithm) = lambda(robotCount);
+                                scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, mapSize, faultInjection: faultInjection));
+                            }
                         }
                     }
                 }
@@ -75,6 +87,8 @@ namespace Maes.Experiments.Patrolling
             {
                 scenarios = scenarios.Where(scenario => scenarioFilters.Any(filter => scenario.StatisticsFileName.Contains(filter))).ToList();
             }
+
+            scenarios = scenarios.Where(s => regex.IsMatch(s.StatisticsFileName)).ToList();
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
 
