@@ -74,7 +74,7 @@ namespace Maes.Experiments.Patrolling
                             foreach (var faultInjectionTimes in _faultInjections)
                             {
                                 var faultInjection =
-                                    new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes);
+                                    new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes.Select(tick => tick * mapSize).ToArray());
                                 var (patrollingMapFactory, algorithm) = lambda(robotCount);
                                 scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, mapSize, faultInjection: faultInjection));
                             }
