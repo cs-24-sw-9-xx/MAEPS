@@ -4,6 +4,8 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MAEPS.Data.Processor.Utilities;
+
+using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using ScottPlot;
 
@@ -250,14 +252,13 @@ internal static class Program
 
     private static void SaveAggregatedData(string path, string name, List<PatrollingSnapshot> data)
     {
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        using var csv1 = new CsvDataWriter<PatrollingSnapshot>(Path.Combine(path, $"{name}AggregatedData.csv"));
+        foreach (var snapshot in data)
         {
-            HasHeaderRecord = true
-        };
-        
-        using var writer = new StreamWriter(Path.Combine(path, $"{name}AggregatedData.csv"));
-        using var csv = new CsvWriter(writer, config);
-        csv.WriteRecords(data);
+            csv1.AddRecord(snapshot);
+        }
+
+        csv1.Finish();
     }
     
     private static void AddPlotLine(this Plot plot, string name, List<double> data)

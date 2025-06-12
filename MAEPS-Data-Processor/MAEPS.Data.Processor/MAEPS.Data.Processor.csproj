@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <Compile Include="..\..\Assets\Scripts\Statistics\Csv\ICsvData.cs" />
+        <Compile Include="..\..\Assets\Scripts\Statistics\Csv\CsvDataWriter.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Snapshots\*.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Writer\TypeConverter\*.cs" />
     </ItemGroup>
