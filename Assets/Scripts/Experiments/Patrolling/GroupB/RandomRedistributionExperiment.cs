@@ -50,7 +50,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                     GroupBParameters.StandardAmountOfCycles,
                     GroupBParameters.MaterialRobotConstraints,
                     GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
+                    GroupBParameters.FaultInjection()));
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");

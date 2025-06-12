@@ -45,13 +45,13 @@ namespace Maes.Experiments.Patrolling.GroupB
                 scenarios.AddRange(ScenarioUtil.CreateScenarios(
                     seed,
                     nameof(AdaptiveRedistributionCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
+                    GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
                     GroupBParameters.StandardRobotCount,
                     GroupBParameters.StandardMapSize,
                     GroupBParameters.StandardAmountOfCycles,
                     GroupBParameters.MaterialRobotConstraints,
                     GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
+                    GroupBParameters.FaultInjection()));
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
