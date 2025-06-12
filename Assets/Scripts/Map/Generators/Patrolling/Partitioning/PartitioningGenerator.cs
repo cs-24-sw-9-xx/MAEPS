@@ -55,7 +55,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
             var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map, maxDistance);
             var vertexPositionsList = vertexPositions.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
-            var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
+            var clusters = SpectralBisectionPartitioningGenerator.GeneratorOld(distanceMatrix, vertexPositionsList, amountOfPartitions);
             var allVertices = new List<Vertex>();
             var nextId = 0;
             var partitionId = 0;
