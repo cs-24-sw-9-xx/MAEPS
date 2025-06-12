@@ -40,6 +40,8 @@ namespace Maes.Robot
         public Outline outLine = null!;
         public int id = -1;
 
+        public Transform Transform = null!;
+
         // Set by Awake
         public ISimulation Simulation { get; private set; } = null!;
 
@@ -81,6 +83,7 @@ namespace Maes.Robot
 
         private void Awake()
         {
+            Transform = transform;
             _tagPost = Resources.Load<GameObject>("TagPost");
             _envTagHolder = GameObject.Find("EnvTagHolder").transform;
             var rigidBody = GetComponent<Rigidbody2D>();

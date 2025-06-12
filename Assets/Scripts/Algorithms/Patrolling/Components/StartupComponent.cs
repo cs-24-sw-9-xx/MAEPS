@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components
 {
     /// <summary>
@@ -60,7 +62,10 @@ namespace Maes.Algorithms.Patrolling.Components
 
             if (_robotController.Id == 0)
             {
+                var startTime = Time.realtimeSinceStartup;
                 var message = _messageFactory(DiscoveredRobots);
+                Debug.LogFormat("Startup Component: Startup took {0}s", Time.realtimeSinceStartup - startTime);
+
                 foreach (var component in StartupComponents)
                 {
                     component.Message = message;

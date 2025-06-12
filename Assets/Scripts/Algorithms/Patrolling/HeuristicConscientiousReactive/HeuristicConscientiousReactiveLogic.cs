@@ -20,7 +20,6 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -60,12 +59,25 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
             // Calculate the normalized distance estimation of the neighbors
             var normalizedDistances = CalculateNormalizedDistance(currentVertex, neighbors, _distanceEstimator);
 
-            var bestVertices = UtilityFunction(normalizedIdleness, normalizedDistances).ToArray();
-            var minUtilityValue = bestVertices.Min(i => i.Value);
-            bestVertices = bestVertices.Where(i => i.Value == minUtilityValue).ToArray();
-            var nextVertex = bestVertices.ElementAt(_random.Next(bestVertices.Length)).Vertex;
+            var normalizeVertices = UtilityFunction(normalizedIdleness, normalizedDistances);
 
-            return nextVertex;
+            var bestVertices = new List<Vertex>();
+            var min = float.PositiveInfinity;
+
+            foreach (var normalizedValue in normalizeVertices)
+            {
+                if (normalizedValue.Value < min)
+                {
+                    bestVertices.Clear();
+                    bestVertices.Add(normalizedValue.Vertex);
+                }
+                else if (normalizedValue.Value == min)
+                {
+                    bestVertices.Add(normalizedValue.Vertex);
+                }
+            }
+
+            return bestVertices[_random.Next(bestVertices.Count)];
         }
 
         private static IEnumerable<NormalizedValue> UtilityFunction(List<NormalizedValue> normalizedIdleness, List<NormalizedValue> normalizedDistances)
@@ -113,10 +125,8 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
         private static List<NormalizedValue> CalculateNormalizedDistance(Vertex currentVertex, IReadOnlyCollection<Vertex> neighbours, DistanceEstimator distanceEstimator)
         {
             var distanceEstimations = neighbours.Select(vertex => (Vertex: vertex, dist: distanceEstimator(currentVertex, vertex))).ToList();
-            if (distanceEstimations.Any(estimation => estimation.dist < 0))
-            {
-                throw new Exception("Distance estimation must be positive");
-            }
+            Debug.Assert(distanceEstimations.All(e => e.dist >= 0));
+
             var minDistance = distanceEstimations.Min(x => x.dist);
             var maxDistance = distanceEstimations.Max(x => x.dist);
             var normalizedDistance = new List<NormalizedValue>();
