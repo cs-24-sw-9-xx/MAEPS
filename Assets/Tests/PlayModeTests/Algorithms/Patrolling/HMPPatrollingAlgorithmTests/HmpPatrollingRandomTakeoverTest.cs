@@ -22,6 +22,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms;
 using Maes.Algorithms.Patrolling;
@@ -138,7 +139,8 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
                 foreach (var (robotId, expected) in _generatedRobotVertices)
                 {
-                    if (!_observedRobotVertices[robotId].SetEquals(expected))
+                    // Check that the robot visits all vertices in its partition and at least one vertex outside its partition (due to taking over another partition)
+                    if (!(_observedRobotVertices[robotId].Intersect(expected).Count() == expected.Count() && _observedRobotVertices[robotId].Except(expected).Any()))
                     {
                         IsRobotPatrollingOwnPartition = false;
                         return IsRobotPatrollingOwnPartition;
