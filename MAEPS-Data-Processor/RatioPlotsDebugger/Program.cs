@@ -1,7 +1,8 @@
-﻿using MAEPS.Data.Processor.Preprocessors;
-using MAEPS.Data.Processor.Utilities;
+﻿
 
-using RatioPlots;
+using MAEPS.Data.Processor.Preprocessors;
+using MAEPS.Data.Processor.Utilities;
+using RatioPlotsDebugger;
 
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
@@ -20,9 +21,9 @@ if (groupBys.Length != 2)
     return;
 }
 
-var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, false);
+var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, true);
 
-var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "Ratio", regenerate: regenerate);
+var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "RatioDebugger", regenerate: regenerate);
 var folderStructure = new Dictionary<string, IReadOnlyList<string>>();
 var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(dataFolder);
 foreach (var algorithmFolder in algorithmFolders)
@@ -35,6 +36,6 @@ foreach (var algorithmFolder in algorithmFolders)
     folderStructure[algorithmFolder] = groupedFolderPaths;
 }
 
-var ratioPlotter = new RatioComputer(dataFolder, folderStructure, groupBys);
+var ratioPlotter = new RatioDebuggerComputer(dataFolder, folderStructure, groupBys, summery => summery.AverageIdleness, "averageIdleness");
 ratioPlotter.GenerateRatioData();
 ratioPlotter.CreatePlots();
