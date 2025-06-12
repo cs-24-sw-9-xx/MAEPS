@@ -54,6 +54,7 @@ namespace Maes.Experiments.Patrolling
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             FaultTolerantAlgorithms = ReactiveAlgorithms
+                .Concat(CyclicAlgorithms)
                 .Concat(FaultTolerantHMPVariants)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
@@ -65,8 +66,8 @@ namespace Maes.Experiments.Patrolling
         public static readonly IReadOnlyAlgorithmsDictionary
             ReactiveAlgorithms = new AlgorithmsDictionary
             {
-                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm()) },
-                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed)) },
+                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm(true)) },
+                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed, true)) },
                 { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new HeuristicConscientiousReactiveAlgorithm(seed)) },
                 { nameof(ERAlgorithmSimplified), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ERAlgorithmSimplified())}
             };
