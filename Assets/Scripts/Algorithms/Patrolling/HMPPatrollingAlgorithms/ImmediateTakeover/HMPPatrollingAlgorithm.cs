@@ -291,7 +291,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(partition);
-            return 2 * (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
+            return maxTravelTime + (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(UnfinishedPartitionInfo partition)
