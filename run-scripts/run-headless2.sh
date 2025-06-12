@@ -21,8 +21,9 @@ EXPERIMENT="$3"
 
 SCENARIO_COUNT="$("$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout -batchmode -nographics --experiment "$EXPERIMENT" --scenario-count "${@:4}" | grep 'Scenario Count: ' | sed 's/.*Scenario Count: //')"
 
-START="$(( (SCENARIO_COUNT / TOTAL_SERVERS) * SERVER_ID ))"
-END="$(( ((SCENARIO_COUNT / TOTAL_SERVERS) * (SERVER_ID + 1)) - 1 ))"
+START="$(( SERVER_ID ))"
+INCREMENT="$TOTAL_SERVERS"
+END="$(( SCENARIO_COUNT - 1))"
 
 echo "Scenario Count: $SCENARIO_COUNT"
 echo "Start: $START"
@@ -30,4 +31,4 @@ echo "End: $END"
 
 
 # Timeout a job after an hour
-seq $START $END | parallel --timeout 3600 --ungroup "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout -batchmode -nographics --instances "$SCENARIO_COUNT" --experiment "$EXPERIMENT" "${@:4}" --instanceid {}\| ts "\"[%Y-%m-%d %H:%M:%S (instance {})]\"" | tee output.log
+seq "$START" "$INCREMENT" "$END" | parallel --timeout 3600 --ungroup "$SCRIPT_DIR/@EXECUTABLE_NAME" -logFile /dev/stdout -batchmode -nographics --instances "$SCENARIO_COUNT" --experiment "$EXPERIMENT" "${@:4}" --instanceid {}\| ts "\"[%Y-%m-%d %H:%M:%S (instance {})]\"" | tee output.log
