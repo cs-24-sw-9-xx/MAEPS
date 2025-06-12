@@ -46,10 +46,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
         private readonly bool _forceTheThing;
+        private readonly bool _agreeWhenMeetingEarly;
 
-        public HMPPatrollingAlgorithm(int seed, bool forceTheThing)
+        public HMPPatrollingAlgorithm(int seed, bool forceTheThing, bool agreeWhenMeetingEarly)
         {
             _forceTheThing = forceTheThing;
+            _agreeWhenMeetingEarly = agreeWhenMeetingEarly;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
@@ -86,7 +88,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         {
             _partitionComponent = new PartitionComponent(controller, GeneratePartitions, _forceTheThing, () => LogicTicks);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, _agreeWhenMeetingEarly);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }

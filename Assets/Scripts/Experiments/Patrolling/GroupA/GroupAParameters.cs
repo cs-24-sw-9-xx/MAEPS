@@ -97,9 +97,13 @@ namespace Maes.Experiments.Patrolling
             { "SingleMeetingPoint.HMPPatrollingAlgorithm",
                 _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new SingleMeetingPoint.HMPPatrollingAlgorithm(seed)) },
             { "FaultTolerance.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false, true)) },
             { "FaultTolerance.Variant.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, true)) }
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, true, true)) },
+            { "FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false, false)) },
+            { "FaultTolerance.NoMeetEarlyFixup.Variant.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, true, false)) },
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
