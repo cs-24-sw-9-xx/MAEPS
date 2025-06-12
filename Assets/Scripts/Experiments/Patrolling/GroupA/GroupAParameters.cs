@@ -103,7 +103,7 @@ namespace Maes.Experiments.Patrolling
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
-        public const int StandardMapSize = 200;
+        public const int StandardMapSize = 150;
         public const int StandardRobotCount = 8;
         public const int StandardSeedCount = 100;
         public const float MaxDistance = 25f;
