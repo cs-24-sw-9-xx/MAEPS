@@ -116,21 +116,25 @@ internal static class Program
 
         var data = patrollingData[Path.GetFileName(algorithmDirectory)];
         
+        var worstIdleness = CalculateAverageIdleness(data, ps => ps.WorstGraphIdleness);
+        var averageIdleness = CalculateAverageIdleness(data, ps => ps.AverageGraphIdleness);
+        
         var worstIdlenessPlot = GeneratePlot(
             "Aggregated - Worst Idleness",
-            "Worst Idleness",
-            CalculateAverageIdleness(data, ps => ps.WorstGraphIdleness));
+            "Worst Idleness", worstIdleness);
         
         var averageIdlenessPlot = GeneratePlot(
             "Aggregated - Average Idleness",
             "Average Idleness",
-            CalculateAverageIdleness(data, ps => ps.AverageGraphIdleness));
+            averageIdleness);
         
         if (s_plotFailedRobots)
         {
             worstIdlenessPlot.AddDeadRobotsVerticalLines(data);
             averageIdlenessPlot.AddDeadRobotsVerticalLines(data);
         }
+        
+        
         
         SavePlot(worstIdlenessPlot, algorithmDirectory, "WorstGraphIdleness.png");
         SavePlot(averageIdlenessPlot, algorithmDirectory, "AverageGraphIdleness.png");
@@ -148,6 +152,37 @@ internal static class Program
             NumberOfRobotsStart = data.First().NumberOfRobots,
             NumberOfRobotsEnd = data.Last().NumberOfRobots
         };
+    }
+
+    struct AggregatedSnapshot : ICsvData
+    {
+        public int Tick { get; set; }
+        public double Idleness { get; set; }
+        
+        public AggregatedSnapshot(int tick, double idleness) 
+        {
+            Tick = tick;
+            Idleness = idleness;
+        }
+
+        public void WriteHeader(StreamWriter streamWriter, char delimiter)
+        {
+            streamWriter.Write(nameof(Tick));
+            streamWriter.Write(delimiter);
+            streamWriter.Write(nameof(Idleness));
+        }
+
+        public void WriteRow(StreamWriter streamWriter, char delimiter)
+        {
+            streamWriter.Write(Tick);
+            streamWriter.Write(delimiter);
+            streamWriter.Write(Idleness);
+        }
+
+        public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private static void GenerateIndividualPlots(string algoName, string path, List<PatrollingSnapshot> data)
@@ -206,7 +241,27 @@ internal static class Program
             var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
             var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
             
-            SaveAggregatedData(outputDirectory, name, algoData.ToList());
+            //SaveAggregatedData(outputDirectory, name, algoData.ToList());
+            
+            using (var csv = new CsvDataWriter<AggregatedSnapshot>(Path.Combine(outputDirectory, name+ "WorstGraphIdleness.csv")))
+            {
+                for (var i = 0; i < averageWorstIdlenessList.Count; i++)
+                {
+                    csv.AddRecord(new AggregatedSnapshot(i, averageWorstIdlenessList[i]));
+                }
+                
+                csv.Finish();
+            }
+            
+            using (var csv = new CsvDataWriter<AggregatedSnapshot>(Path.Combine(outputDirectory, name+ "AverageGraphIdleness.csv")))
+            {
+                for (var i = 0; i < averageAvgIdlenessList.Count; i++)
+                {
+                    csv.AddRecord(new AggregatedSnapshot(i, averageAvgIdlenessList[i]));
+                }
+                
+                csv.Finish();
+            }
             
             worstIdlenessPlot.AddPlotLine(name,  averageWorstIdlenessList);
             averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
