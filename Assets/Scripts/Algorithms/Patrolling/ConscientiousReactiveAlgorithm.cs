@@ -1,3 +1,5 @@
+using System.Linq;
+
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
@@ -24,9 +26,9 @@ namespace Maes.Algorithms.Patrolling
             return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
         }
 
-        private static Vertex NextVertex(Vertex currentVertex)
+        private Vertex NextVertex(Vertex currentVertex)
         {
-            return ConscientiousReactiveLogic.NextVertex(currentVertex);
+            return ConscientiousReactiveLogic.NextVertex(currentVertex, currentVertex.Neighbors.Where(v => v.Partition == Controller.AssignedPartition).ToList());
         }
     }
 }
