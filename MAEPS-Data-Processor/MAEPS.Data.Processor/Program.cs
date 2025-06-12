@@ -204,9 +204,9 @@ internal static class Program
             var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
             var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
             
-            SaveAggregatedData(outputDirectory, algoData.ToList());
+            SaveAggregatedData(outputDirectory, name, algoData.ToList());
             
-            worstIdlenessPlot.AddPlotLine(name, averageWorstIdlenessList);
+            worstIdlenessPlot.AddPlotLine(name,  averageWorstIdlenessList);
             averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
         }
         
@@ -248,14 +248,14 @@ internal static class Program
         csv.WriteRecords(summaries);
     }
 
-    private static void SaveAggregatedData(string path, List<PatrollingSnapshot> data)
+    private static void SaveAggregatedData(string path, string name, List<PatrollingSnapshot> data)
     {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             HasHeaderRecord = true
         };
         
-        using var writer = new StreamWriter(Path.Combine(path, "AggregatedData.csv"));
+        using var writer = new StreamWriter(Path.Combine(path, $"{name}AggregatedData.csv"));
         using var csv = new CsvWriter(writer, config);
         csv.WriteRecords(data);
     }
