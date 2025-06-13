@@ -219,7 +219,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private int EstimatePartitionMeetingIntervalTicks(HashSet<Vertex> vertexIds, int numberOfMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(vertexIds);
-            return maxTravelTime + (int)Math.Ceiling((double)vertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
+            return (int)Math.Ceiling((double)vertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(HashSet<Vertex> vertices)
