@@ -62,14 +62,32 @@ namespace Maes.Experiments.Patrolling
             scenarios.Add(
                 new MySimulationScenario(
                     seed: seed,
-                    totalCycles: 100,
+                    totalCycles: 10,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
                         collisionMap: buildingConfig,
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(seed, false, true)),
+                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(seed, false, false)),
+                    mapSpawner: generator => generator.GenerateMap(mapConfig),
+                    robotConstraints: robotConstraints,
+                    faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 10000, 20000, 25000),
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-{constraintName}-robots-{robotCount}-SpawnTogether",
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance))
+            );
+
+            scenarios.Add(
+                new MySimulationScenario(
+                    seed: seed,
+                    totalCycles: 10,
+                    stopAfterDiff: false,
+                    robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsTogether(
+                        collisionMap: buildingConfig,
+                        seed: seed,
+                        numberOfRobots: robotCount,
+                        suggestedStartingPoint: null,
+                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(seed, false, false)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     faultInjection: new DestroyRobotsAtSpecificTickFaultInjection(seed, 10000, 20000, 25000),
