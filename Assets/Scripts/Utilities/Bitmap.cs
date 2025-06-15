@@ -394,7 +394,7 @@ namespace Maes.Utilities
             {
                 for (var i = 0; i < _length; i++)
                 {
-                    if (math.countbits(_bits[i]) > 0)
+                    if (_bits[i] > 0)
                     {
                         return true;
                     }
@@ -422,6 +422,7 @@ namespace Maes.Utilities
             private readonly Bitmap _bitmap;
 
             private int _index;
+            private ulong _values;
 
             public VisibilityBitmapEnumerator(Bitmap bitmap)
             {
@@ -429,28 +430,37 @@ namespace Maes.Utilities
                 Current = Vector2Int.zero;
 
                 _index = -1;
+                _values = 0;
             }
 
             public bool MoveNext()
             {
-                while (true)
+                while (_values == 0)
                 {
-                    if (_bitmap._length <= (++_index / 64))
+                    if (_bitmap._length <= ++_index)
                     {
                         return false;
                     }
 
-                    if (_bitmap.Contains(_index))
-                    {
-                        Current = new Vector2Int(_index / _bitmap.Height, _index % _bitmap.Height);
-                        return true;
-                    }
+                    _values = _bitmap._bits[_index];
                 }
+
+                // Find the least significant bit.
+                // Then unset it from values.
+                var leadingBit = math.tzcnt(_values);
+                _values &= ~(1ul << leadingBit);
+
+                // Use the bit and index to find the next vector in the bitmap.
+                var bitIndex = _index * 64 + leadingBit;
+                Current = new Vector2Int(bitIndex / _bitmap.Height, bitIndex % _bitmap.Height);
+
+                return true;
             }
 
             public void Reset()
             {
-                throw new NotImplementedException();
+                _index = -1;
+                _values = 0;
             }
 
             /// <inheritdoc />

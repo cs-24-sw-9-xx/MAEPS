@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using Maes.Utilities;
@@ -5,6 +6,8 @@ using Maes.Utilities;
 using NUnit.Framework;
 
 using Tests.PlayModeTests.Utilities;
+
+using UnityEngine;
 
 using Debug = UnityEngine.Debug;
 
@@ -221,6 +224,74 @@ namespace Tests.EditModeTests.Benchmarks
 
                     Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
                 }
+            }
+        }
+
+        [Test]
+        [Explicit]
+        public void BitmapEnumeratorBenchmark()
+        {
+            const int iterations = 100000;
+
+            var count = 0;
+
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                // Benchmark
+                for (var i = 0; i < iterations; i++)
+                {
+                    using (var enumerator = bitmap.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+
+                Assert.AreEqual(count, bitmap.Count * iterations);
+            }
+        }
+
+        [Test]
+        [Explicit]
+        public void BitmapEnumeratorHashsetComparisonBenchmark()
+        {
+            const int iterations = 100000;
+
+            var count = 0;
+
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            {
+                var hashMap = new HashSet<Vector2Int>(bitmap);
+
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                // Benchmark
+                for (var i = 0; i < iterations; i++)
+                {
+                    using (var enumerator = hashMap.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+
+                Assert.AreEqual(count, bitmap.Count * iterations);
             }
         }
     }
