@@ -52,16 +52,23 @@ namespace Maes.Experiments.Patrolling
                 .Concat(FaultTolerantHMPVariants)
                 .Concat(CyclicAlgorithms)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            FaultTolerantAlgorithms = ReactiveAlgorithms
+                .Concat(CyclicAlgorithms)
+                .Concat(FaultTolerantHMPVariants)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
 
         public static readonly IReadOnlyAlgorithmsDictionary AllAlgorithms;
 
+        public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantAlgorithms;
+
         public static readonly IReadOnlyAlgorithmsDictionary
             ReactiveAlgorithms = new AlgorithmsDictionary
             {
-                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm()) },
-                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed)) },
-                { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new HeuristicConscientiousReactiveAlgorithm()) },
+                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm(true)) },
+                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed, true)) },
+                { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new HeuristicConscientiousReactiveAlgorithm(seed)) },
                 { nameof(ERAlgorithmSimplified), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ERAlgorithmSimplified())}
             };
 
@@ -75,26 +82,26 @@ namespace Maes.Experiments.Patrolling
         public static readonly IReadOnlyAlgorithmsDictionary PartitionedAlgorithms = new AlgorithmsDictionary
         {
             {
-                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new PartitionedHeuristicConscientiousReactive.PartitionedHeuristicConscientiousReactiveAlgorithm())
+                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new PartitionedHeuristicConscientiousReactive.PartitionedHeuristicConscientiousReactiveAlgorithm(seed))
             }
         };
 
         public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantHMPVariants = new AlgorithmsDictionary
         {
             { "ImmediateTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed)) },
             { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy)) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)) },
             { "RandomTakeover.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new RandomTakeover.HMPPatrollingAlgorithm()) },
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed)) },
             { "SingleMeetingPoint.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleMeetingPoint.HMPPatrollingAlgorithm()) },
-            { "FaultTolerance.HMPPatrollingAlgorithm",
-                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new FaultTolerance.HMPPatrollingAlgorithm()) }
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new SingleMeetingPoint.HMPPatrollingAlgorithm(seed, false)) },
+            { "FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false, false)) },
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
-        public const int StandardMapSize = 200;
+        public const int StandardMapSize = 150;
         public const int StandardRobotCount = 8;
         public const int StandardSeedCount = 100;
         public const float MaxDistance = 25f;
@@ -115,7 +122,7 @@ namespace Maes.Experiments.Patrolling
                 distributeSlam: false,
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 0f,
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls,
+                calculateSignalTransmissionProbability: (totalDistance, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls || totalDistance <= 1.0f,
                 robotCollisions: false,
                 materialCommunication: false);
         }

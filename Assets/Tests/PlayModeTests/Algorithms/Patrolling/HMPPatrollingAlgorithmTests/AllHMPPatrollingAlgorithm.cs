@@ -18,12 +18,16 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
     {
         private static readonly AlgorithmFactory[] Cases = new[]
         {
-            new AlgorithmFactory(() => new NoFaultToleranceAlgorithm(), nameof(NoFaultToleranceAlgorithm)),
-            new AlgorithmFactory(() => new FaultToleranceAlgorithm(), nameof(FaultToleranceAlgorithm)),
-            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy), nameof(ImmediateTakeOverAlgorithm)),
-            new AlgorithmFactory(() => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy), nameof(ImmediateTakeOverAlgorithm)),
-            new AlgorithmFactory(() => new RandomTakeoverAlgorithm(), nameof(RandomTakeoverAlgorithm)),
-            new AlgorithmFactory(() => new SingleMeetingPointAlgorithm(), nameof(SingleMeetingPointAlgorithm))
+            new AlgorithmFactory(seed => new NoFaultToleranceAlgorithm(seed), nameof(NoFaultToleranceAlgorithm)),
+            new AlgorithmFactory(seed => new FaultToleranceAlgorithm(seed, false, true), nameof(FaultToleranceAlgorithm)),
+            new AlgorithmFactory(seed => new FaultToleranceAlgorithm(seed, true, true), nameof(FaultToleranceAlgorithm) + ".Variant"),
+            new AlgorithmFactory(seed => new FaultToleranceAlgorithm(seed, false, false), nameof(FaultToleranceAlgorithm) + ".NoMeetEarlyFixup"),
+            new AlgorithmFactory(seed => new FaultToleranceAlgorithm(seed, true, false), nameof(FaultToleranceAlgorithm) + ".NoMeetEarlyFixup.Variant"),
+            new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(seed => new ImmediateTakeOverAlgorithm(PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed), nameof(ImmediateTakeOverAlgorithm)),
+            new AlgorithmFactory(seed => new RandomTakeoverAlgorithm(seed), nameof(RandomTakeoverAlgorithm)),
+            new AlgorithmFactory(seed => new SingleMeetingPointAlgorithm(seed, true), nameof(SingleMeetingPointAlgorithm) + ".MeetEarly"),
+            new AlgorithmFactory(seed => new SingleMeetingPointAlgorithm(seed, false), nameof(SingleMeetingPointAlgorithm))
         };
 
         public static IEnumerable TestCases
@@ -39,10 +43,10 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         public sealed class AlgorithmFactory
         {
-            public readonly Func<PatrollingAlgorithm> AlgorithmFactoryDelegate;
+            public readonly Func<int, PatrollingAlgorithm> AlgorithmFactoryDelegate;
             private readonly string _algorithmName;
 
-            public AlgorithmFactory(Func<PatrollingAlgorithm> algorithmFactoryDelegate, string algorithmName)
+            public AlgorithmFactory(Func<int, PatrollingAlgorithm> algorithmFactoryDelegate, string algorithmName)
             {
                 AlgorithmFactoryDelegate = algorithmFactoryDelegate;
                 _algorithmName = algorithmName;

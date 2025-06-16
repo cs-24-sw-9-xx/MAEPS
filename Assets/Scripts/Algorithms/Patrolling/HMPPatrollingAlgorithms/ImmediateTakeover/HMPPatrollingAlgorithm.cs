@@ -46,12 +46,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed = 0)
+        public HMPPatrollingAlgorithm(PartitionComponent.TakeoverStrategy takeoverStrategy, int seed)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _takeoverStrategy = takeoverStrategy;
             _random = new System.Random(seed);
-
         }
 
         private readonly System.Random _random;
@@ -292,7 +291,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(partition);
-            return 2 * (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
+            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(UnfinishedPartitionInfo partition)

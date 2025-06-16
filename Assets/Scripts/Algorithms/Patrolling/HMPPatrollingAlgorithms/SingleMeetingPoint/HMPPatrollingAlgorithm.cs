@@ -43,8 +43,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed = 0)
+        private readonly bool _meetEarly;
+
+        public HMPPatrollingAlgorithm(int seed, bool meetEarly)
         {
+            _meetEarly = meetEarly;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
@@ -81,7 +84,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         {
             _partitionComponent = new PartitionComponent(controller, GenerateAssignments);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, _partitionComponent, ExchangeInformation);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, _partitionComponent, ExchangeInformation, _meetEarly, controller);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
@@ -216,7 +219,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private int EstimatePartitionMeetingIntervalTicks(HashSet<Vertex> vertexIds, int numberOfMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(vertexIds);
-            return 2 * (int)Math.Ceiling((double)vertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
+            return (int)Math.Ceiling((double)vertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(HashSet<Vertex> vertices)

@@ -61,11 +61,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
 
-        private Assignment[] _assignments = null!;
+        public Assignment[] _assignments = null!;
 
         private StartupComponent<PartitionGeneratorResult, PartitionComponent> _startupComponent = null!;
 
-        private VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
+        public VirtualStigmergyComponent<int, int, PartitionComponent> _partitionIdToRobotIdVirtualStigmergyComponent =
             null!;
 
         private PatrollingMap _patrollingMap = null!;

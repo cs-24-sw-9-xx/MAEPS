@@ -60,7 +60,7 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: seed,
                         numberOfRobots: robotCount,
                         suggestedStartingPoint: spawnAtVertexPosition,
-                        createAlgorithmDelegate: (_) => new HMPPatrollingAlgorithm()),
+                        createAlgorithmDelegate: seed => new HMPPatrollingAlgorithm(seed)),
                     mapSpawner: _ => simulationMap,
                     patrollingMapFactory: _ => patrollingMap,
                     robotConstraints: _robotConstraints,
