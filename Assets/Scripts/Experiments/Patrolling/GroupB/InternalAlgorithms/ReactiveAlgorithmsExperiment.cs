@@ -35,30 +35,28 @@ namespace Maes.Experiments.Patrolling.GroupB
 
     internal class ReactiveAlgorithmsExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCount = new() { 1, 2, 4, 8 };
-        private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
-
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var algName in AlgorithmName)
+                foreach (var (algName, lambda) in GroupAParameters.ReactiveAlgorithms)
                 {
-                    foreach (var count in PartitionCount)
+                    foreach (var count in GroupBParameters.RobotCounts)
                     {
+                        var (patrollingMapFactory, algorithm) = lambda(count);
 
-                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,
                             algName,
-                            GroupBParameters.Algorithms[algName],
-                            GroupBParameters.StandardRobotCount,
+                            algorithm,
+                            count,
                             GroupBParameters.StandardMapSize,
                             GroupBParameters.StandardAmountOfCycles,
                             GroupBParameters.GlobalRobotConstraints,
-                            count,
-                            GroupBParameters.FaultInjection(robotCount: 1))); // robotCount = 1 for no fault injection
-
+                            1,
+                            GroupBParameters.FaultInjection(robotCount: 1),
+                            patrollingMapFactory)); // robotCount = 1 for no fault injection
                     }
                 }
             }

@@ -23,7 +23,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
-            ExchangeInformationAtMeetingDelegate exchangeInformation)
+            ExchangeInformationAtMeetingDelegate exchangeInformation,
+            bool agreeWhenMeetingEarly)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -31,6 +32,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _estimateTime = estimateTime;
             _controller = controller;
             _exchangeInformation = exchangeInformation;
+            _agreeWhenMeetingEarly = agreeWhenMeetingEarly;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
         }
@@ -42,6 +44,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly IRobotController _controller;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
+        private readonly bool _agreeWhenMeetingEarly;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
@@ -87,7 +90,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                             .Where(m => m.MeetingVertexId == meeting.Vertex.Id).ToList();
 
                         // Agree on meeting time.
-                        if (alreadyHereMessages.Any())
+                        if (_agreeWhenMeetingEarly && alreadyHereMessages.Any())
                         {
                             var maxMeetingAtTick = Math.Max(meeting.MeetingAtTick,
                                 alreadyHereMessages.Max(m => m.MeetingAtTick));

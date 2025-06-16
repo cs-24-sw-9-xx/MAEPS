@@ -45,8 +45,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed = 0)
+        private readonly bool _forceTheThing;
+        private readonly bool _agreeWhenMeetingEarly;
+
+        public HMPPatrollingAlgorithm(int seed, bool forceTheThing, bool agreeWhenMeetingEarly)
         {
+            _forceTheThing = forceTheThing;
+            _agreeWhenMeetingEarly = agreeWhenMeetingEarly;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
         }
         public override string AlgorithmName => "HMPAlgorithm";
@@ -81,9 +86,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _partitionComponent = new PartitionComponent(controller, GeneratePartitions);
+            _partitionComponent = new PartitionComponent(controller, GeneratePartitions, _forceTheThing, () => LogicTicks);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, _agreeWhenMeetingEarly);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }
@@ -315,7 +320,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(partition);
-            return 2 * (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
+            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(UnfinishedPartitionInfo partition)

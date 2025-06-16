@@ -81,10 +81,22 @@ namespace Maes.Map
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, CoarseGrainedMap coarseMap)
         {
-            var startTime = Time.realtimeSinceStartup;
-
             using var bitmap = MapUtilities.MapToBitMap(coarseMap);
 
+            var hash = bitmap.Hash();
+            foreach (var vertexPosition in vertices.Select(v => v.Position))
+            {
+                hash.Append(vertexPosition.x);
+                hash.Append(vertexPosition.y);
+            }
+
+            return Cache<IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>>, PatrollingMap>.GetOrInsert(
+                () => CreatePathsImplementation(vertices, bitmap), hash);
+        }
+
+        private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePathsImplementation(IReadOnlyList<Vertex> vertices, Bitmap bitmap)
+        {
+            var startTime = Time.realtimeSinceStartup;
             var paths = new ConcurrentDictionary<(int, int), IReadOnlyList<PathStep>>();
             Parallel.ForEach(vertices, vertex =>
             {

@@ -7,7 +7,7 @@ namespace Maes.FaultInjections.DestroyRobots
     /// </summary>
     public class DestroyRobotsAtSpecificTickFaultInjection : DestroyRobotBaseFaultInjection
     {
-        private readonly int[] _destroyAtTicks;
+        public readonly int[] DestroyAtTicks;
         private int _index;
 
         /// <summary>
@@ -17,13 +17,13 @@ namespace Maes.FaultInjections.DestroyRobots
         /// <param name="destroyAtTicks">Ticks at which robots should be destroyed.</param>
         public DestroyRobotsAtSpecificTickFaultInjection(int seed, params int[] destroyAtTicks) : base(seed)
         {
-            _destroyAtTicks = destroyAtTicks;
-            Array.Sort(_destroyAtTicks);
+            DestroyAtTicks = destroyAtTicks;
+            Array.Sort(DestroyAtTicks);
         }
 
         protected override bool ShouldDestroy(int logicTick)
         {
-            if (_index < _destroyAtTicks.Length && logicTick == _destroyAtTicks[_index])
+            if (_index < DestroyAtTicks.Length && logicTick == DestroyAtTicks[_index])
             {
                 _index++;
                 return true;

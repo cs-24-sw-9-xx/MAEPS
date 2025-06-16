@@ -33,11 +33,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator)
+        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, bool forceTheThing, Func<int> getLogicTicks)
         {
             _robotId = controller.Id;
             _robotController = controller;
             _partitionGenerator = partitionGenerator;
+            _forceTheThing = forceTheThing;
+            _getLogicTicks = getLogicTicks;
         }
 
         public int PreUpdateOrder => -900;
@@ -97,6 +99,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly int _robotId;
         private readonly IRobotController _robotController;
         private readonly PartitionGenerator _partitionGenerator;
+        private readonly bool _forceTheThing;
+        private readonly Func<int> _getLogicTicks;
 
         public PartitionInfo[] _partitions = null!;
 
@@ -214,8 +218,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                                 _meetingPointVertexIdToMeetingTimesStigmergyComponent.TryGetNonSending(
                                     meetingPoint.VertexId, out var meetingTimes2);
                             Debug.Assert(success2);
+
                             // HACK: Adding 10 ticks to immediately renegotiate.
                             var newMeetingTimes = new MeetingTimes(meetingTimes2.NextNextMeetingAtTick, meetingTimes2.NextNextMeetingAtTick + 10);
+                            if (_forceTheThing)
+                            {
+                                newMeetingTimes = meetingTimes2;
+                            }
+
                             _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPoint.VertexId, newMeetingTimes);
                         }
                     }
@@ -318,7 +328,20 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             if (overrideCurrentNextMeetingAtTick)
             {
                 // HACK: Adding 10 ticks to immediately renegotiate.
-                _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPointVertexId, new MeetingTimes(nextMeetingTime, nextMeetingTime + 10));
+                var newMeetingTimes = new MeetingTimes(nextMeetingTime, nextMeetingTime + 10);
+                if (_forceTheThing)
+                {
+                    var latestCurrent = MeetingPoints.Select(m => m.meetingTimes.CurrentNextMeetingAtTick)
+                        .Append(_getLogicTicks()).Max();
+                    var soonestNext = MeetingPoints.Select(m => m.meetingTimes.NextNextMeetingAtTick).Where(m => m > latestCurrent).OrderBy(m => m).FirstOrDefault();
+                    if (soonestNext != default)
+                    {
+                        var newCurrentNext = latestCurrent + (soonestNext - latestCurrent) / 2;
+                        newMeetingTimes = new MeetingTimes(newCurrentNext, nextMeetingTime);
+                    }
+                }
+
+                _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPointVertexId, newMeetingTimes);
             }
             else
             {

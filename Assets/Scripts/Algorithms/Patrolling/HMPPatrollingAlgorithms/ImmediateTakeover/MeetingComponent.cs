@@ -82,11 +82,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
 
                 var meeting = GoingToMeeting.Value;
                 var otherRobotIds = meeting.MeetingPoint.RobotIds.Where(id => id != _robotIdClass.Value).ToHashSet();
-
+                // If the robot is not at the meeting point, then wait until it is
+                if (_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false) != meeting.Vertex.Position)
+                {
+                    yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+                    continue;
+                }
                 // Wait until all other robots are at the meeting point
-                var senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
+                var senseNearByRobotIds = new HashSet<int>();
                 while (!senseNearByRobotIds.SetEquals(otherRobotIds) && _getLogicTick() < meeting.MeetingAtTick)
                 {
+                    SenseNearbyRobots.SendRobotId(_controller, meeting, _robotIdClass);
                     yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
                     senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 }
@@ -296,7 +302,6 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             /// <returns>Returns the ids of the robots that are sensed and going to the same meeting.</returns>
             public static HashSet<int> GetRobotIds(IRobotController controller, Meeting meeting, StrongBox<int> robotIdClass)
             {
-                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, robotIdClass.Value));
                 var robotIds = new HashSet<int>();
                 var messages = controller.ReceiveBroadcast().OfType<GoingToMeetingMessage>();
 
@@ -309,6 +314,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                 }
 
                 return robotIds;
+            }
+
+            public static void SendRobotId(IRobotController controller, Meeting meeting, StrongBox<int> robotIdClass)
+            {
+                controller.Broadcast(new GoingToMeetingMessage(meeting.MeetingPoint, meeting.MeetingAtTick, robotIdClass.Value));
             }
 
             /// <summary>

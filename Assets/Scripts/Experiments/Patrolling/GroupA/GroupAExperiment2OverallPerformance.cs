@@ -21,10 +21,8 @@
 // Puvikaran Santhirasegaram
 
 using System.Collections.Generic;
+using System.Linq;
 
-using Maes.Algorithms.Patrolling;
-using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
-using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -33,8 +31,6 @@ using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
-    using static Maes.Map.RobotSpawners.RobotSpawner<IPatrollingAlgorithm>;
-
     using MySimulationScenario = PatrollingSimulationScenario;
     using MySimulator = PatrollingSimulator;
 
@@ -42,23 +38,30 @@ namespace Maes.Experiments.Patrolling
     /// AAU group cs-25-ds-10-17
     /// </summary>
     [Preserve]
-    internal class GroupACommunicationRangeExperiment : MonoBehaviour
+    internal class GroupAExperiment2OverallPerformance : MonoBehaviour
     {
-        private readonly List<float> _communicationRangeThroughWalls = new List<float>() { 0, 1f, 2f, 3f, 4f, 5f };
+        private static readonly IEnumerable<string> scenarioFilters = new List<string>
+        {
+            // Paste the name of a scenario here to filter only that scenario e.g.:
+            //"SingleCycleChristofides-seed-3-size-150-robots-8-constraints-Standard-BuildingMap-SpawnApart"
+        };
+
         private void Start()
         {
+            Debug.Log("Starting Group A Experiment 2: Overall Performance");
             var scenarios = new List<MySimulationScenario>();
-            PatrollingMapFactory patrollingMapFactory = map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance);
-            CreateAlgorithmDelegate algorithm = seed => new HMPPatrollingAlgorithm(seed);
-            var algorithmName = nameof(HMPPatrollingAlgorithm);
-
-            foreach (var seed in GroupAParameters.SeedGenerator())
+            foreach (var seed in GroupAParameters.SeedGenerator(100))
             {
-                foreach (var communicationRangeThroughWalls in _communicationRangeThroughWalls)
+                foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
                 {
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, GroupAParameters.StandardRobotCount, GroupAParameters.StandardMapSize, communicationRangeThroughWalls));
+                    var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
+                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory));
                 }
+            }
 
+            if (scenarioFilters is not null && scenarioFilters.Any())
+            {
+                scenarios = scenarios.Where(scenario => scenarioFilters.Any(filter => scenario.StatisticsFileName.Contains(filter))).ToList();
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");

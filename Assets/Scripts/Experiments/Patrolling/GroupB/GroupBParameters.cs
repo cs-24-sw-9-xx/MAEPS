@@ -38,6 +38,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             8,
             16,
             32,
+            64,
         };
         public static readonly List<int> PartitionCounts = new()
         {
@@ -127,6 +128,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true,
                 robotCollisions: false,
+                attenuationDictionary: Frequencies,
                 materialCommunication: materialCommunication);
         }
 

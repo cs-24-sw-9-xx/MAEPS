@@ -6,6 +6,7 @@ using System.Text;
 
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
+using Maes.Robot;
 
 using UnityEngine;
 
@@ -21,13 +22,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
             Func<int> getLogicTick,
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, PartitionComponent partitionComponent,
-            ExchangeInformationAtMeetingDelegate exchangeInformation)
+            ExchangeInformationAtMeetingDelegate exchangeInformation,
+            bool meetEarly,
+            IRobotController controller)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
             _getLogicTick = getLogicTick;
             _estimateTime = estimateTime;
             _exchangeInformation = exchangeInformation;
+            _meetEarly = meetEarly;
+            _controller = controller;
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
         }
@@ -38,10 +43,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         private readonly Func<int> _getLogicTick;
         private readonly EstimateTimeDelegate _estimateTime;
         private readonly ExchangeInformationAtMeetingDelegate _exchangeInformation;
+        private readonly bool _meetEarly;
+        private readonly IRobotController _controller;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
 
         private Meeting _nextMeeting;
+
+        private int _skipCycle = -1;
         private Meeting? GoingToMeeting { get; set; }
 
         [SuppressMessage("ReSharper", "IteratorNeverReturns")]
@@ -59,16 +68,68 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
 
                 var meeting = GoingToMeeting.Value;
 
-                // Wait until all other robots are at the meeting point
-                var ticksToWait = meeting.MeetingAtTick - _getLogicTick();
-                if (ticksToWait > 0)
+                if (_meetEarly)
                 {
-                    yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
+                    while (meeting.MeetingAtTick - _getLogicTick() > 0)
+                    {
+                        // Wait until we are on the meeting vertex.
+                        if (_controller.SlamMap.CoarseMap.GetCurrentPosition(dependOnBrokenBehavior: false) != meeting.Vertex.Position)
+                        {
+                            yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+                            continue;
+                        }
+
+                        // Tell our neighbors we are already here.
+                        _controller.Broadcast(new AlreadyHereMessage(_controller.Id));
+
+                        yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
+
+                        var alreadyHereMessages = _controller.ReceiveBroadcast().OfType<AlreadyHereMessage>().ToList();
+
+                        // Are all robots already here?
+                        var robotsHere = alreadyHereMessages.Select(m => m.RobotId).Append(_controller.Id).ToHashSet();
+                        var everyBodyHere = true;
+                        for (var partitionId = 0; partitionId < _partitionComponent._assignments.Length; partitionId++)
+                        {
+                            if (_partitionComponent._assignments[partitionId].VertexIds.Contains(meeting.Vertex.Id))
+                            {
+                                var success = _partitionComponent._partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(
+                                    partitionId, out var partitionRobotId);
+                                Debug.Assert(success);
+
+                                if (!robotsHere.Contains(partitionRobotId))
+                                {
+                                    everyBodyHere = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // If everybody is here early we can continue.
+                        if (everyBodyHere)
+                        {
+                            Debug.Log("Everybody here early!");
+                            break;
+                        }
+                    }
                 }
                 else
                 {
-                    Debug.Log("Time has already passed!");
+                    // Wait until all other robots are at the meeting point
+                    var ticksToWait = meeting.MeetingAtTick - _getLogicTick();
+                    if (ticksToWait > 0)
+                    {
+                        yield return ComponentWaitForCondition.WaitForLogicTicks(ticksToWait, shouldContinue: true);
+                    }
+                    else
+                    {
+                        Debug.Log("Time has already passed!");
+                    }
                 }
+
+                var meetingPoint = _partitionComponent.MeetingPoint;
+                var cycleIndex = (_getLogicTick() - meetingPoint.FirstMeetingAtTick) / meetingPoint.CycleIntervalTicks;
+                _skipCycle = cycleIndex;
 
                 foreach (var waitForCondition in _exchangeInformation(meeting))
                 {
@@ -126,6 +187,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
         {
             var meetingPoint = _partitionComponent.MeetingPoint;
             var cycleIndex = (_getLogicTick() - meetingPoint.FirstMeetingAtTick) / meetingPoint.CycleIntervalTicks;
+            if (cycleIndex == _skipCycle)
+            {
+                cycleIndex++;
+            }
+
             var nextMeetingTime = (cycleIndex + 1) * meetingPoint.CycleIntervalTicks + meetingPoint.FirstMeetingAtTick;
 
             return new Meeting(_patrollingMap.Vertices.Single(v => v.Id == meetingPoint.VertexId), nextMeetingTime);
@@ -158,6 +224,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint
             public override int GetHashCode()
             {
                 return HashCode.Combine(Vertex.Id, MeetingAtTick);
+            }
+        }
+
+        public sealed class AlreadyHereMessage
+        {
+            public int RobotId { get; }
+
+            public AlreadyHereMessage(int robotId)
+            {
+                RobotId = robotId;
             }
         }
     }
