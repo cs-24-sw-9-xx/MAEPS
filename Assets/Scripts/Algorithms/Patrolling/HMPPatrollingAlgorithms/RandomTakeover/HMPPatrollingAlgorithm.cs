@@ -46,10 +46,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed)
+        private readonly Func<UnfinishedPartitionInfo, int, int, int> _partitionMeetingIntervalEstimator;
+
+        public HMPPatrollingAlgorithm(int seed,
+            Func<UnfinishedPartitionInfo, int, int, int>? partitionMeetingIntervalEstimator = null)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _random = new System.Random(seed);
+            _partitionMeetingIntervalEstimator = partitionMeetingIntervalEstimator ?? DefaultPartitionMeetingIntervalEstimator;
         }
 
         private readonly System.Random _random;
@@ -323,10 +327,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
             return estimatedPartitionMeetingIntervalTicks.Max();
         }
 
-        private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
+        private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOfMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(partition);
-            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
+            return _partitionMeetingIntervalEstimator(partition, numberOfMeetingPoints, maxTravelTime);
+        }
+
+        private static int DefaultPartitionMeetingIntervalEstimator(UnfinishedPartitionInfo partition, int numberOfMeetingPoints, int maxTravelTime)
+        {
+            // Default formula: (partition size / number of meeting points) * max travel time
+            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(UnfinishedPartitionInfo partition)
