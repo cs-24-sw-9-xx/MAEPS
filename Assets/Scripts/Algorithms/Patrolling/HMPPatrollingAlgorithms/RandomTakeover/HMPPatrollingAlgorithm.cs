@@ -46,10 +46,15 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        private readonly Func<UnfinishedPartitionInfo, int, int, int> _partitionMeetingIntervalEstimator;
+        /// <summary>
+        /// Takes a partition, the number of meeting points (M), and the max travel time (D), and return the estimated interval between meetings.
+        /// </summary>
+        public delegate int PartitionMeetingIntervalEstimator(UnfinishedPartitionInfo partition, int numberOfMeetingPoints, int maxTravelTime);
+
+        private readonly PartitionMeetingIntervalEstimator _partitionMeetingIntervalEstimator;
 
         public HMPPatrollingAlgorithm(int seed,
-            Func<UnfinishedPartitionInfo, int, int, int>? partitionMeetingIntervalEstimator = null)
+            PartitionMeetingIntervalEstimator? partitionMeetingIntervalEstimator = null)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _random = new System.Random(seed);
