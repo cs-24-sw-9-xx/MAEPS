@@ -20,12 +20,9 @@
 // Mads Beyer Mogensen,
 // Puvikaran Santhirasegaram
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling;
-using Maes.Map.RobotSpawners;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -51,14 +48,14 @@ namespace Maes.Experiments.Patrolling
 
         private void Start()
         {
-            var algorithms = new[] 
+            var algorithms = new[]
             {
                 ("HMP", GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"]),
                 ("HMP-IT", GroupAParameters.FaultTolerantHMPVariants["ImmediateTakeover.HMPPatrollingAlgorithm"]),
                 ("HMP-QRT", GroupAParameters.FaultTolerantHMPVariants["QuasiRandomTakeover.HMPPatrollingAlgorithm"]),
-            };;
-            
-            
+            }; ;
+
+
             Debug.Log("Starting Group A Experiment 2: Overall Performance");
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(100))

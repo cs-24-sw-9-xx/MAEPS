@@ -4,7 +4,7 @@ namespace Maes.Algorithms.Patrolling
     {
 
     }
-    
+
     public struct MeetingHeldTrackInfo : ITrackInfo
     {
         public MeetingHeldTrackInfo(int meetingId)

@@ -98,7 +98,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                     yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
                     senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
                 }
-                
+
                 var robotWithLowestId = senseNearByRobotIds.Append(_robotIdClass.Value).Min();
                 if (robotWithLowestId == _robotIdClass.Value)
                 {

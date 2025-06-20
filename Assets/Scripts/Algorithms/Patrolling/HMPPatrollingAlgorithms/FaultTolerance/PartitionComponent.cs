@@ -43,7 +43,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _trackInfo = trackInfo;
         }
 
-        private OnTrackInfo _trackInfo;
+        private readonly OnTrackInfo _trackInfo;
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
@@ -207,7 +207,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             {
                 _trackInfo(new MeetingHeldTrackInfo(meetingPointVertexId));
             }
-            
+
             // Lets see if we actually should take over the partition
             if (_overTakingMeetingPoint == meetingPointVertexId)
             {
