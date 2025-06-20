@@ -54,7 +54,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         };
 
         // We both make building and cave maps, so 100 scenarios in total
-        public const int StandardSeedCount = 10;
+        public const int StandardSeedCount = 50;
 
         public static bool StandardHasFinished(ISimulation simulation, out SimulationEndCriteriaReason? reason)
         {
@@ -94,7 +94,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         {
             {nameof(GlobalRedistributionWithCRAlgo), (_) =>  new GlobalRedistributionWithCRAlgo()},
 
-            {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
+            {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 0.5f)},
         };
 
         private static readonly Dictionary<uint, Dictionary<TileType, float>> Frequencies = new()

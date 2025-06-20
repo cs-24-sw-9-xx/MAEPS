@@ -36,13 +36,13 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
     {
         private readonly IRobotController _controller;
         private readonly IPatrollingAlgorithm _algorithm;
-        private readonly int _probabilityFactor;
+        private readonly float _probabilityFactor;
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly Random _random;
         public int PreUpdateOrder => -450;
         public int PostUpdateOrder => -450;
 
-        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, IPatrollingAlgorithm algorithm, int seed, int probabilityFactor)
+        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, IPatrollingAlgorithm algorithm, int seed, float probabilityFactor)
         {
             _controller = controller;
             _algorithm = algorithm;
@@ -57,11 +57,8 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             {
                 if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
                 {
-                    if (SwitchPartition())
-                    {
-                        _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
-                    }
-
+                    SwitchPartition();
+                    _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 }
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
@@ -69,14 +66,14 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private bool SwitchPartition()
         {
-            if (_partitionIds.Count < 2 || _probabilityFactor <= 0 || _random.Next(_probabilityFactor) != 0)
+            if (_partitionIds.Count < 2 || _probabilityFactor <= 0 || _random.NextDouble() >= _probabilityFactor)
             {
                 return false;
             }
 
             var availablePartitions = _partitionIds.Where(id => id != _controller.AssignedPartition).ToList();
             var randomPartitionId = availablePartitions[_random.Next(availablePartitions.Count)];
-            Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId} algo: {_algorithm.AlgorithmName}");
+            Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId} algo: {_algorithm.AlgorithmName} with probability {_probabilityFactor}");
             _controller.AssignedPartition = randomPartitionId;
             return true;
         }
