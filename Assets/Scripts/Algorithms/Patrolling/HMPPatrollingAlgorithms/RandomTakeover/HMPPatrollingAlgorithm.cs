@@ -46,10 +46,19 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
     /// </summary>
     public sealed class HMPPatrollingAlgorithm : PatrollingAlgorithm
     {
-        public HMPPatrollingAlgorithm(int seed)
+        /// <summary>
+        /// Takes a partition, the number of meeting points (M), and the max travel time (D), and return the estimated interval between meetings.
+        /// </summary>
+        public delegate int PartitionMeetingIntervalEstimator(UnfinishedPartitionInfo partition, int numberOfMeetingPoints, int maxTravelTime);
+
+        private readonly PartitionMeetingIntervalEstimator _partitionMeetingIntervalEstimator;
+
+        public HMPPatrollingAlgorithm(int seed,
+            PartitionMeetingIntervalEstimator? partitionMeetingIntervalEstimator = null)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
             _random = new System.Random(seed);
+            _partitionMeetingIntervalEstimator = partitionMeetingIntervalEstimator ?? DefaultPartitionMeetingIntervalEstimator;
         }
 
         private readonly System.Random _random;
@@ -323,10 +332,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover
             return estimatedPartitionMeetingIntervalTicks.Max();
         }
 
-        private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOdMeetingPoints)
+        private int EstimatePartitionMeetingIntervalTicks(UnfinishedPartitionInfo partition, int numberOfMeetingPoints)
         {
             var maxTravelTime = EstimateMaxTravelTimeForPartition(partition);
-            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOdMeetingPoints) * maxTravelTime;
+            return _partitionMeetingIntervalEstimator(partition, numberOfMeetingPoints, maxTravelTime);
+        }
+
+        private static int DefaultPartitionMeetingIntervalEstimator(UnfinishedPartitionInfo partition, int numberOfMeetingPoints, int maxTravelTime)
+        {
+            // Default formula: (partition size / number of meeting points) * max travel time
+            return (int)Math.Ceiling((double)partition.VertexIds.Count / numberOfMeetingPoints) * maxTravelTime;
         }
 
         private int EstimateMaxTravelTimeForPartition(UnfinishedPartitionInfo partition)
