@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RatioPlotsLines", "RatioPlo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Experiment2Variance", "Experiment2Variance\Experiment2Variance.csproj", "{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupbyAlgorithm", "GroupbyAlgorithm\GroupbyAlgorithm.csproj", "{40390E25-1334-43B0-85FA-232AE7F20733}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A751F15-0C57-4AF0-B98C-DEC87D1641DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40390E25-1334-43B0-85FA-232AE7F20733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40390E25-1334-43B0-85FA-232AE7F20733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40390E25-1334-43B0-85FA-232AE7F20733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40390E25-1334-43B0-85FA-232AE7F20733}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
