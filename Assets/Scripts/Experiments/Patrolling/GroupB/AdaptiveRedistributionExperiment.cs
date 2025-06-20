@@ -42,16 +42,19 @@ namespace Maes.Experiments.Patrolling.GroupB
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                    seed,
-                    nameof(AdaptiveRedistributionCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
-                    GroupBParameters.StandardRobotCount,
-                    GroupBParameters.StandardMapSize,
-                    GroupBParameters.StandardAmountOfCycles,
-                    GroupBParameters.MaterialRobotConstraints,
-                    GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
+                foreach (var count in GroupBParameters.RobotCounts)
+                {
+                    scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                        seed,
+                        nameof(AdaptiveRedistributionCRAlgo),
+                        GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
+                        count,
+                        GroupBParameters.StandardMapSize,
+                        GroupBParameters.StandardAmountOfCycles,
+                        GroupBParameters.MaterialRobotConstraints,
+                        GroupBParameters.StandardPartitionCount,
+                        GroupBParameters.FaultInjection()));
+                }
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");

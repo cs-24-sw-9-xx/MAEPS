@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -32,27 +33,30 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class BuildingDataVaryingRobotCountExperiment : MonoBehaviour
+    internal class ReactiveAlgorithmsExperiment : MonoBehaviour
     {
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var robotCount in GroupBParameters.RobotCounts)
+                foreach (var (algName, lambda) in GroupAParameters.ReactiveAlgorithms)
                 {
-                    foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
+                    foreach (var count in GroupBParameters.RobotCounts)
                     {
+                        var (patrollingMapFactory, algorithm) = lambda(count);
+
                         scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,
-                            algorithm.Key,
-                            algorithm.Value,
-                            robotCount,
+                            algName,
+                            algorithm,
+                            count,
                             GroupBParameters.StandardMapSize,
                             GroupBParameters.StandardAmountOfCycles,
-                            GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                            GroupBParameters.StandardPartitionCount,
-                            GroupBParameters.FaultInjection(robotCount: robotCount)));
+                            GroupBParameters.GlobalRobotConstraints,
+                            1,
+                            GroupBParameters.FaultInjection(robotCount: 1),
+                            patrollingMapFactory)); // robotCount = 1 for no fault injection
                     }
                 }
             }

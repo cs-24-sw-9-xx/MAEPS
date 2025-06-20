@@ -26,6 +26,8 @@
 using System;
 using System.Collections.Generic;
 
+using JetBrains.Annotations;
+
 using Maes.Experiments.Patrolling.GroupB;
 using Maes.FaultInjections;
 using Maes.Map.Generators;
@@ -64,7 +66,7 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<PatrollingSimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            var scenarioBuilding = CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method(), null);
             var scenarioCave = CreateCaveMapScenario(seed, algorithmName, algorithm, "CaveMap", robotCount, caveMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
@@ -94,13 +96,14 @@ namespace Maes.Experiments.Patrolling
             int cycles,
             RobotConstraints robotConstraints,
             int partitionNumber,
-            (string Params, Func<IFaultInjection> Method) faultInjection)
+            (string Params, Func<IFaultInjection> Method) faultInjection,
+            [CanBeNull] PatrollingMapFactory factory = null)
         {
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            return CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method());
+            return CreateMapScenario(seed, algorithmName, algorithm, "BuildingMap", robotCount, buildingMapConfig, cycles, robotConstraints, partitionNumber, faultInjection.Params, faultInjection.Method(), factory);
         }
 
-        private static PatrollingSimulationScenario CreateMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, IMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection)
+        private static PatrollingSimulationScenario CreateMapScenario(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, string mapName, int robotCount, IMapConfig mapConfig, int cycles, RobotConstraints robotConstraints, int partitionNumber, string faultInjectionParams, IFaultInjection? faultInjection, [CanBeNull] PatrollingMapFactory factory)
         {
             return new PatrollingSimulationScenario(
                                         seed: seed,
@@ -113,6 +116,7 @@ namespace Maes.Experiments.Patrolling
                                             createAlgorithmDelegate: algorithm,
                                             dependOnBrokenBehavior: false),
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
+                                        patrollingMapFactory: factory,
                                         robotConstraints: robotConstraints,
                                         faultInjection: faultInjection,
                                         partitions: partitionNumber,
