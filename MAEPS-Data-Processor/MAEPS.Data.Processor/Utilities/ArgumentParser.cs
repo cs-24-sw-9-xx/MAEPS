@@ -86,4 +86,17 @@ public class ArgumentParser
         
         return value.Split(',').Select(v => v.Trim()).ToArray();
     }
+    
+    public string[] GetArgumentList(string key, string[] defaultValue)
+    {
+        if (!_arguments.TryGetValue(key, out var value))
+        {
+            return defaultValue;
+        }
+
+        value = value.Trim('(', ')');
+        
+        
+        return value.Split(',').Select(v => v.Trim()).ToArray();
+    }
 }

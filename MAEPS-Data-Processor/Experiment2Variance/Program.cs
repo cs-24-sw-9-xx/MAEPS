@@ -11,18 +11,24 @@ if (!Path.Exists(experimentsFolderPath))
     return;
 }
 
+var groupBys = argumentParser.GetArgumentList("--groupBy", []);
 var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, true);
 
+
 var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "Variance", regenerate: regenerate);
-
-var mapTypeFolders = DataPreProcessor.SplitMapTypesDataFolder(dataFolder, regenerate: regenerate);
-
-foreach (var (mapType, folder) in mapTypeFolders)
+var groupedFolderPaths = Grouping.GroupScenariosByGroupingValue(groupBys, dataFolder);
+foreach (var groupedFolderPath in groupedFolderPaths)
 {
-    var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(folder);
-    
-    Parallel.ForEach(algorithmFolders, algorithmFolder =>
+    var mapTypeFolders = DataPreProcessor.SplitMapTypesDataFolder(groupedFolderPath, regenerate: regenerate);
+
+    foreach (var (_, folder) in mapTypeFolders)
     {
-        VarianceAlgorithmCreator.CreateVarianceFromScenarios(algorithmFolder, regenerate: regenerate);
-    });
+        var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(folder);
+    
+        Parallel.ForEach(algorithmFolders, algorithmFolder =>
+        {
+            VarianceAlgorithmCreator.CreateVarianceFromScenarios(algorithmFolder, regenerate: regenerate);
+        });
+    }
 }
+
