@@ -20,6 +20,12 @@ public static class CsvDataReader
             }
 
             var columnValues = line.Split(';');
+            
+            if (columnValues.Length == 11)
+            {
+                columnValues = [columnValues[0], ..columnValues.Skip(3)]; // Skip the first 3 columns
+            }
+            
             var patrollingSnapshot = new PatrollingSnapshot();
             var lastBits = patrollingSnapshot.ReadRow(columnValues);
             Debug.Assert(lastBits.Length == 0);
