@@ -61,13 +61,17 @@ namespace Maes.Experiments.Patrolling
 
         private void Start()
         {
+            var algorithms = new[]
+            {
+                ("HMP", GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"]),
+            }; ;
             var regex = new Regex(FilterRegex, RegexOptions.Singleline | RegexOptions.CultureInvariant);
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(10))
             {
                 foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.FaultTolerantAlgorithms)
+                    foreach (var (algorithmName, lambda) in algorithms)
                     {
                         foreach (var robotCount in _robotCounts)
                         {

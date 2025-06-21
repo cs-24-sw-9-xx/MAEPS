@@ -2,10 +2,12 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -57,6 +59,8 @@ namespace Maes.Statistics.Trackers
 
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly Thread _writerThread;
+        
+        private readonly string _statisticsFolderPath;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
@@ -178,8 +182,21 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
+            using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath, "ReceivedNewMeetingtimeForOtherThanVisiting.txt"));
+            writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
+            writer.Close();
+            
             _snapshots.CompleteAdding();
             _writerThread.Join();
+        }
+        
+        private sealed class InvariantStreamWriter : StreamWriter
+        {
+            public InvariantStreamWriter(string path) : base(path)
+            {
+            }
+
+            public override IFormatProvider FormatProvider => CultureInfo.InvariantCulture;
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)

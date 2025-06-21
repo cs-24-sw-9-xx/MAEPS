@@ -48,11 +48,13 @@ namespace Maes.Algorithms.Patrolling.Components
     public sealed class VirtualStigmergyComponent<TKey, TValue, TMarker> : IComponent
         where TKey : notnull
     {
+        public delegate void OnNewUpdateDelegate(TKey key, ValueInfo valueInfo);
         public delegate ValueInfo OnConflictDelegate(TKey key, ValueInfo localValueInfo, ValueInfo incomingValueInfo);
 
         private readonly Dictionary<TKey, ValueInfo> _localKnowledge = new();
 
         private readonly OnConflictDelegate _onConflictDelegate;
+        private readonly OnNewUpdateDelegate _onNewUpdateDelegate;
         private readonly IRobotController _controller;
 
         private readonly bool _isStruct;
@@ -73,7 +75,7 @@ namespace Maes.Algorithms.Patrolling.Components
         /// </summary>
         /// <param name="onConflictDelegate">A function to call to resolve conflicts.</param>
         /// <param name="controller">The robot controller.</param>
-        public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, IRobotController controller)
+        public VirtualStigmergyComponent(OnConflictDelegate onConflictDelegate, IRobotController controller, OnNewUpdateDelegate? onNewUpdateDelegate = null)
         {
             var valueType = typeof(TValue);
             if (!valueType.IsValueType && valueType.GetInterface(nameof(ICloneable)) == null)
@@ -86,6 +88,8 @@ namespace Maes.Algorithms.Patrolling.Components
 
             _onConflictDelegate = onConflictDelegate;
             _controller = controller;
+
+            _onNewUpdateDelegate = onNewUpdateDelegate ?? ((key, value) => { });
         }
 
         /// <inheritdoc />
@@ -150,6 +154,7 @@ namespace Maes.Algorithms.Patrolling.Components
                 // I don't know if we should do this the paper is not clear on it.
                 // But it makes no sense to do conflict resolution if we are not going to do something like this.
                 _localKnowledge[message.Key] = newValueInfo;
+                _onNewUpdateDelegate(message.Key, newValueInfo);
                 BroadcastMessage(VirtualStigmergyMessage.CreatePutMessage(message.Key, newValueInfo.Value, newValueInfo.Timestamp, newValueInfo.RobotId));
 
                 return;
@@ -157,6 +162,7 @@ namespace Maes.Algorithms.Patrolling.Components
 
             // Message timestamp must be newer than ours here.
             _localKnowledge[message.Key] = new ValueInfo(message.Timestamp, message.RobotId, message.Value!);
+            _onNewUpdateDelegate(message.Key, _localKnowledge[message.Key]);
             BroadcastMessage(VirtualStigmergyMessage.CreatePutMessage(message.Key, message.Value!, message.Timestamp, message.RobotId));
         }
 
@@ -203,6 +209,7 @@ namespace Maes.Algorithms.Patrolling.Components
             }
 
             _localKnowledge[message.Key] = newValueInfo;
+            _onNewUpdateDelegate(message.Key, newValueInfo);
         }
 
         /// <summary>
