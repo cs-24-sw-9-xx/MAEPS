@@ -204,7 +204,7 @@ namespace Maes.Statistics.Trackers
                     writer.Close();
                 }
             }
-            
+
             if (ERAlgorithmSimplified.RecievedMeessageOfVisitMessage.Count > 0)
             {
                 using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
@@ -216,7 +216,7 @@ namespace Maes.Statistics.Trackers
                 }
                 writer.Close();
             }
-            
+
 
             _snapshots.CompleteAdding();
             _writerThread.Join();

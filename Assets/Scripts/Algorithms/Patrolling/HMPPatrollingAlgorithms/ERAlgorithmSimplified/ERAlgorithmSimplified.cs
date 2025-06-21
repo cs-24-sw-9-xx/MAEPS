@@ -42,9 +42,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
     /// </summary>
     public sealed class ERAlgorithmSimplified : PatrollingAlgorithm
     {
-        
+
         public static Dictionary<VisitMessage, (int count, int lasttick)> RecievedMeessageOfVisitMessage = new();
-        
+
         public override string AlgorithmName => "ERAlgorithm";
 
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -135,7 +135,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
                         var (count, _) = RecievedMeessageOfVisitMessage[message];
                         count++;
                         RecievedMeessageOfVisitMessage[message] = (count, _algorithm.LogicTicks);
-                        
+
                         _algorithm._vertexIdToLastVisited[message.VertexId] =
                             Math.Max(_algorithm._vertexIdToLastVisited[message.VertexId], message.LastVisited);
                     }
