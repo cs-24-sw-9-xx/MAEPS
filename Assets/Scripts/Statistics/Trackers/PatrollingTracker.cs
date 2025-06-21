@@ -189,7 +189,7 @@ namespace Maes.Statistics.Trackers
                 writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
                 writer.Close();
             }
-            
+
             using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
                        "ReceivedNewMeetingtimeForOtherThanVisitingRobots.csv")))
             {
@@ -200,7 +200,7 @@ namespace Maes.Statistics.Trackers
                 }
                 writer.Close();
             }
-            
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
         }

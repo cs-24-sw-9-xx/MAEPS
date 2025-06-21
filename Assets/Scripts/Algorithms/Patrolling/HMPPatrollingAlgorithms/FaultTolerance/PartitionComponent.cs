@@ -139,7 +139,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             if (expectedRobotIds.Contains(_robotId))
             {
                 ReceivedNewMeetingtimeForOtherThanVisiting++;
-                
+
                 if (!ReceivedNewMeetingtimeForOtherThanVisitingByRobotId.TryAdd(valueInfo.RobotId, 1))
                 {
                     ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
