@@ -23,6 +23,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
@@ -37,23 +38,20 @@ namespace Maes.Experiments.Patrolling.GroupB
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
+            foreach (var seed in Enumerable.Range(0, 10))
             {
                 foreach (var robotCount in GroupBParameters.RobotCounts)
                 {
-                    foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
-                    {
                         scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,
-                            algorithm.Key,
-                            algorithm.Value,
+                            nameof(ConscientiousReactiveAlgorithm),
+                            GroupBParameters.Algorithms[nameof(ConscientiousReactiveAlgorithm)],
                             robotCount,
                             GroupBParameters.StandardMapSize,
                             GroupBParameters.StandardAmountOfCycles,
-                            GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                            GroupBParameters.GlobalRobotConstraints,
                             GroupBParameters.StandardPartitionCount,
-                            GroupBParameters.FaultInjection(robotCount: robotCount)));
-                    }
+                            GroupBParameters.FaultInjection(robotCount: 1)));
                 }
             }
 
