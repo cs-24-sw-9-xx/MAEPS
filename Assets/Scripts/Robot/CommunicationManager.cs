@@ -522,12 +522,9 @@ namespace Maes.Robot
         // https://doi.org/10.1118/1.595715
         public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end)
         {
-            var x1 = start.x;
-            var y1 = start.y;
-            var x2 = end.x;
-            var y2 = end.y;
-            var xDiff = x2 - x1;
-            var yDiff = y2 - y1;
+            // Calculate the line length
+            var xDiff = end.x - start.x;
+            var yDiff = end.y - start.y;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
 
             var signalStrength = _robotConstraints.TransmitPower;
@@ -537,35 +534,36 @@ namespace Maes.Robot
                 return CreateCommunicationInfo(0, 0, 0, signalStrength);
             }
 
-            // --- Prepare intersection alphas ---
-            var maxSteps = Mathf.CeilToInt(Mathf.Abs(x2 - x1)) + Mathf.CeilToInt(Mathf.Abs(y2 - y1)) + 2;
-            var alphas = ArrayPool<float>.Shared.Rent(maxSteps);
+            // Allocate array for alphas
+            var xIntersects = Mathf.CeilToInt(Mathf.Abs(xDiff));
+            var yIntersects = Mathf.CeilToInt(Mathf.Abs(yDiff));
+
+            // Add 2 for start and end
+            var alphas = ArrayPool<float>.Shared.Rent(xIntersects + yIntersects + 2);
             var index = 0;
-            alphas[index++] = 0; // Start
 
-            var xStart = Mathf.FloorToInt(x1);
-            var xEnd = Mathf.FloorToInt(x2);
-            var yStart = Mathf.FloorToInt(y1);
-            var yEnd = Mathf.FloorToInt(y2);
+            // Start value.
+            alphas[index++] = 0;
 
-            var xStep = xDiff > 0 ? 1 : -1;
-            var yStep = yDiff > 0 ? 1 : -1;
-
-            var invXDiff = 1.0f / xDiff;
-            var invYDiff = 1.0f / yDiff;
+            var xStart = Mathf.FloorToInt(start.x);
+            var yStart = Mathf.FloorToInt(start.y);
 
             var xi = xStart + (xDiff > 0 ? 1 : 0);
             var yi = yStart + (yDiff > 0 ? 1 : 0);
 
-            // Merge X and Y alphas in sorted order
-            var xCount = Mathf.Abs(xEnd - xStart);
-            var yCount = Mathf.Abs(yEnd - yStart);
+            var xStep = xDiff > 0 ? 1 : -1;
+            var yStep = yDiff > 0 ? 1 : -1;
 
-            var nextAlphaX = xCount > 0 ? (xi - x1) * invXDiff : float.PositiveInfinity;
-            var nextAlphaY = yCount > 0 ? (yi - y1) * invYDiff : float.PositiveInfinity;
+            // Use precomputed values for inverse of x and y differences. Avoids division in the loop.
+            var invXDiff = 1.0f / xDiff;
+            var invYDiff = 1.0f / yDiff;
+
+            // Calculate initial alpha values for X and Y grid intersections
+            var nextAlphaX = xIntersects > 0 ? (xi - start.x) * invXDiff : float.PositiveInfinity;
+            var nextAlphaY = yIntersects > 0 ? (yi - start.y) * invYDiff : float.PositiveInfinity;
 
             // Add alphas from X and Y grid intersections (in sorted order)
-            while (xCount > 0 || yCount > 0)
+            while (xIntersects > 0 || yIntersects > 0)
             {
                 if (nextAlphaX < nextAlphaY)
                 {
@@ -575,8 +573,8 @@ namespace Maes.Robot
                     }
 
                     xi += xStep;
-                    xCount--;
-                    nextAlphaX = (xi - x1) * invXDiff;
+                    xIntersects--;
+                    nextAlphaX = (xi - start.x) * invXDiff;
                 }
                 else
                 {
@@ -586,27 +584,29 @@ namespace Maes.Robot
                     }
 
                     yi += yStep;
-                    yCount--;
-                    nextAlphaY = (yi - y1) * invYDiff;
+                    yIntersects--;
+                    nextAlphaY = (yi - start.y) * invYDiff;
                 }
             }
 
-            // Result containers
             var wallTileDistance = 0f;
             var otherTileDistance = 0f;
 
-            alphas[index++] = 1f; // End 
+            // Add end value.
+            alphas[index++] = 1f;
 
-            // Process each segment
+            // Process each line segment.
             for (var i = 1; i < index; i++)
             {
+                // Calculate segment length
                 var aPrev = alphas[i - 1];
                 var aCurrent = alphas[i];
-                var aMid = 0.5f * (aPrev + aCurrent);
-                var midX = x1 + aMid * xDiff;
-                var midY = y1 + aMid * yDiff;
                 var segmentLength = (aCurrent - aPrev) * lineLength;
 
+                // Get tile type for segment
+                var aMid = 0.5f * (aPrev + aCurrent);
+                var midX = start.x + aMid * xDiff;
+                var midY = start.y + aMid * yDiff;
                 var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midX), Mathf.FloorToInt(midY));
                 var tileType = tile.GetTriangles()[0].Type;
 
