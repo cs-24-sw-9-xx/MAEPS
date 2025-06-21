@@ -41,10 +41,10 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IReadOnlyList<int> _partitionIds;
         private readonly PatrollingMap _patrollingMap;
         private readonly Random _random;
-        
+
         public int PreUpdateOrder => -450;
         public int PostUpdateOrder => -450;
-        
+
         public RandomRedistributionComponent(
             IRobotController controller,
             IReadOnlyList<Vertex> vertices,
@@ -60,14 +60,14 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             _partitionIds = vertices.Select(v => v.Partition).Distinct().ToList();
             _random = new Random(seed);
         }
-        
+
         public RandomRedistributionComponent(
             IRobotController controller,
             IReadOnlyList<Vertex> vertices,
             IPatrollingAlgorithm algorithm,
             int seed,
             PatrollingMap patrollingMap,
-            float probabilityFactor) 
+            float probabilityFactor)
             : this(controller, vertices, algorithm, seed, patrollingMap, (_) => probabilityFactor)
         {
         }
@@ -89,7 +89,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         {
             var prob = _probabilityFactor(
                 _patrollingMap.Partitions.Single(p => p.PartitionId == _controller.AssignedPartition));
-            if (_partitionIds.Count == 1 || 
+            if (_partitionIds.Count == 1 ||
                 _random.NextDouble() >= prob)
             {
                 Debug.Log($"Robot {_controller.Id} stayed");

@@ -89,7 +89,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
 
             { nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
-            
+
             { nameof(PartitionSizeRedistribution), (s) => new PartitionSizeRedistribution(s)},
         };
 
