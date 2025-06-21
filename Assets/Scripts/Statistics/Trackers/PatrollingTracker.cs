@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplified;
 using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
 using Maes.Map;
 using Maes.Map.Generators;
@@ -183,23 +184,39 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
-            using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
-                       "ReceivedNewMeetingtimeForOtherThanVisiting.txt")))
+            if (PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting != 0)
             {
-                writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
-                writer.Close();
-            }
-
-            using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
-                       "ReceivedNewMeetingtimeForOtherThanVisitingRobots.csv")))
-            {
-                writer.WriteLine("RobotId,ReceivedFromOther");
-                foreach (var (robotId, value) in PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisitingByRobotId)
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeForOtherThanVisiting.txt")))
                 {
-                    writer.WriteLine($"{robotId},{value}");
+                    writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
+                    writer.Close();
+                }
+
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeForOtherThanVisitingRobots.csv")))
+                {
+                    writer.WriteLine("RobotId,ReceivedFromOther");
+                    foreach (var (robotId, value) in PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisitingByRobotId)
+                    {
+                        writer.WriteLine($"{robotId},{value}");
+                    }
+                    writer.Close();
+                }
+            }
+            
+            if (ERAlgorithmSimplified.RecievedMeessageOfVisitMessage.Count > 0)
+            {
+                using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                    "messageERALGORITHM.csv"));
+                writer.WriteLine("Count,LastTick");
+                foreach (var (_, (count, lasttick)) in ERAlgorithmSimplified.RecievedMeessageOfVisitMessage)
+                {
+                    writer.WriteLine($"{count},{lasttick}");
                 }
                 writer.Close();
             }
+            
 
             _snapshots.CompleteAdding();
             _writerThread.Join();

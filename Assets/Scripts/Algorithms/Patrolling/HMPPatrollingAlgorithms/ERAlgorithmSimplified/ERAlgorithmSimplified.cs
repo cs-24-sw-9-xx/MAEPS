@@ -42,6 +42,9 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
     /// </summary>
     public sealed class ERAlgorithmSimplified : PatrollingAlgorithm
     {
+        
+        public static Dictionary<VisitMessage, (int count, int lasttick)> RecievedMeessageOfVisitMessage = new();
+        
         public override string AlgorithmName => "ERAlgorithm";
 
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
@@ -90,10 +93,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
                 }
             }
 
-            // We are visiting bestVertex
-            Controller.Broadcast(new VisitMessage(bestVertex.Id,
+            var m = new VisitMessage(bestVertex.Id,
                 LogicTicks + Controller.TravelEstimator.EstimateTime(currentPosition, bestVertex.Position,
-                    dependOnBrokenBehaviour: false)!.Value));
+                    dependOnBrokenBehaviour: false)!.Value);
+            // We are visiting bestVertex
+            Controller.Broadcast(m);
+
+            RecievedMeessageOfVisitMessage[m] = (0, LogicTicks);
 
             return bestVertex;
         }
@@ -126,6 +132,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
                 {
                     foreach (var message in _robotController.ReceiveBroadcast().OfType<VisitMessage>())
                     {
+                        var (count, _) = RecievedMeessageOfVisitMessage[message];
+                        count++;
+                        RecievedMeessageOfVisitMessage[message] = (count, _algorithm.LogicTicks);
+                        
                         _algorithm._vertexIdToLastVisited[message.VertexId] =
                             Math.Max(_algorithm._vertexIdToLastVisited[message.VertexId], message.LastVisited);
                     }
@@ -134,7 +144,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplifi
             }
         }
 
-        private sealed class VisitMessage
+        public sealed class VisitMessage
         {
             public readonly int VertexId;
             public readonly int LastVisited;
