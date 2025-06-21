@@ -18,11 +18,12 @@ public static class CsvDataReader
             {
                 return patrollingSnapshots;
             }
+            
+            var lineSpan = line.AsSpan();
 
-            var columnValues = line.Split(';');
+            var columnValues = lineSpan.Split(';');
             var patrollingSnapshot = new PatrollingSnapshot();
-            var lastBits = patrollingSnapshot.ReadRow(columnValues);
-            Debug.Assert(lastBits.Length == 0);
+            patrollingSnapshot.ReadRow(lineSpan, ref columnValues);
             patrollingSnapshots.Add(patrollingSnapshot);
         }
     }
