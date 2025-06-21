@@ -48,8 +48,6 @@ namespace Maes.Experiments.Patrolling
         private static readonly List<int> _robotCounts = new() { 8 };
         private static readonly List<int[]> _faultInjections = new List<int[]>
         {
-            new int[] {500},
-            new int[] {500, 1000},
             new int[] {1000, 1001},
             new int[] {500, 1000, 1500},
         };
@@ -67,7 +65,7 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.FaultTolerantAlgorithms)
+                    foreach (var (algorithmName, lambda) in GroupAParameters.TakeoverVariants)
                     {
                         foreach (var robotCount in _robotCounts)
                         {
