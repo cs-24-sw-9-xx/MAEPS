@@ -15,7 +15,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     public class PartitionComponent : IComponent
     {
         public static int ReceivedNewMeetingtimeForOtherThanVisiting = 0;
-        
+
         public readonly struct MeetingTimes
         {
             public readonly int CurrentNextMeetingAtTick;
@@ -127,14 +127,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             {
                 return;
             }
-            
+
             var expectedRobotIds = MeetingPointsByVertexId[key].PartitionIds.Select(p =>
             {
                 var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
                 Debug.Assert(success);
                 return assignedRobot;
             }).ToHashSet();
-            
+
             if (expectedRobotIds.Contains(_robotId))
             {
                 ReceivedNewMeetingtimeForOtherThanVisiting++;
@@ -194,7 +194,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
             }
         }
-        
+
         private int? _meetingPointVertexId = null;
 
         public IEnumerable<ComponentWaitForCondition> ExchangeInformation(int meetingPointVertexId)

@@ -59,7 +59,7 @@ namespace Maes.Statistics.Trackers
 
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly Thread _writerThread;
-        
+
         private readonly string _statisticsFolderPath;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
@@ -67,6 +67,7 @@ namespace Maes.Statistics.Trackers
             PatrollingMap map, string statisticsFolderPath, bool saveWaypointData) : base(collisionMap, visualizer, scenario.RobotConstraints,
             tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
+            _statisticsFolderPath = statisticsFolderPath;
             _saveWaypointData = saveWaypointData;
             _simulation = simulation;
             _vertices = new VertexDetails[map.Vertices.Count];
@@ -185,11 +186,11 @@ namespace Maes.Statistics.Trackers
             using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath, "ReceivedNewMeetingtimeForOtherThanVisiting.txt"));
             writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
             writer.Close();
-            
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
         }
-        
+
         private sealed class InvariantStreamWriter : StreamWriter
         {
             public InvariantStreamWriter(string path) : base(path)
