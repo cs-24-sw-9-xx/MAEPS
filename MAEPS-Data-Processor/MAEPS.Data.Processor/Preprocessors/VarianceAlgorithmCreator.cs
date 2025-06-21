@@ -149,6 +149,7 @@ public static class NumberOfMeetingsAlgorithmCreator
                 var tick = group.Key;
                 var receivedNewFromToMyMeetingHmp = group.Average(s => s.receivedNewFromToMyMeetingHmp);
                 var receivedNewFromToMyMeetingHmpStd = group.Select(s => (double)s.receivedNewFromToMyMeetingHmp).StandardDeviation();
+                receivedNewFromToMyMeetingHmpStd = double.IsNaN(receivedNewFromToMyMeetingHmpStd) ? 0 : receivedNewFromToMyMeetingHmpStd;
 
                 return new NumberOfRecievedNewFromToMyMeetingHMPData(tick, receivedNewFromToMyMeetingHmp, receivedNewFromToMyMeetingHmpStd);
             }).OrderBy(v => v.Tick);
