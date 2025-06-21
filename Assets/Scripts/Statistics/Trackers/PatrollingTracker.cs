@@ -203,6 +203,17 @@ namespace Maes.Statistics.Trackers
                     }
                     writer.Close();
                 }
+                
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeAtTicks.csv")))
+                {
+                    writer.WriteLine("Tick");
+                    foreach (var value in PartitionComponent.ReceivedNewMeetingtimeAtTicks)
+                    {
+                        writer.WriteLine($"{value}");
+                    }
+                    writer.Close();
+                }
             }
 
             if (ERAlgorithmSimplified.RecievedMeessageOfVisitMessage.Count > 0)

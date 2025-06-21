@@ -16,6 +16,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     {
         public static int ReceivedNewMeetingtimeForOtherThanVisiting = 0;
         public static Dictionary<int, int> ReceivedNewMeetingtimeForOtherThanVisitingByRobotId = new();
+        public static List<int> ReceivedNewMeetingtimeAtTicks = new();
 
         public readonly struct MeetingTimes
         {
@@ -144,6 +145,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 {
                     ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
                 }
+                
+                ReceivedNewMeetingtimeAtTicks.Add(_getLogicTicks());
             }
         }
 
