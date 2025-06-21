@@ -90,3 +90,107 @@ public static class VarianceAlgorithmCreator
         double AverageGraphIdlenessStd
     );
 }
+
+public static class NumberOfMeetingsAlgorithmCreator
+{
+    private const string NumberOfRecievedNewFromToMyMeetingHMPFileName = "NumberOfRecievedNewFromToMyMeetingHMP.csv";
+
+    /// <summary>
+    /// </summary>
+    /// <param name="scenariosFolderPath">The path to the folder that contains the scenarios as folders</param>
+    /// <param name="regenerate">If true, it regenerate the summary file </param>
+    public static void CreateNumberOfRecievedNewFromToMyMeetingHMPFromScenarios(string scenariosFolderPath, bool regenerate)
+    {
+        if (SummaryExists(scenariosFolderPath) && !regenerate)
+        {
+            Console.WriteLine("NumberOfRecievedNewFromToMyMeetingHMP already exists. Skipping for {0}", scenariosFolderPath);
+            return;
+        }
+        
+        Console.WriteLine("Create NumberOfRecievedNewFromToMyMeetingHMP for {0}", scenariosFolderPath);
+        var snapshots = new List<DataProcessed>();
+        
+        foreach (var scenarioFolderPath in Directory.GetDirectories(scenariosFolderPath))
+        {
+            var patrollingCsvPath = Path.Combine(scenarioFolderPath, "ReceivedNewMeetingtimeAtTicks.csv");
+            if (!File.Exists(patrollingCsvPath))
+            {
+                Console.WriteLine("No ReceivedNewMeetingtimeAtTicks.csv found in {0}. Skipping.", scenarioFolderPath);
+                continue;
+            }
+            
+            // Read the CSV file using CsvHelper
+            using var reader = new StreamReader(patrollingCsvPath);
+            using var csv = new CsvHelper.CsvReader(reader, CultureInfo.InvariantCulture);
+            var data = csv.GetRecords<DataRaw>().ToList();
+            
+            snapshots.AddRange(data.GroupBy(s => s.Tick)
+                .Select(group => new DataProcessed
+                {
+                    Tick = group.Key,
+                    receivedNewFromToMyMeetingHmp = group.Count()
+                }));
+        }
+        GenerateVariance(scenariosFolderPath, snapshots);
+        Console.WriteLine("Summary created for {0}", scenariosFolderPath);
+    }
+
+    private static void GenerateVariance(string scenariosFolderPath, List<DataProcessed> snapshots)
+    {
+        if (snapshots.Count == 0)
+        {
+            Console.WriteLine("No data found for {0}. Skipping.", scenariosFolderPath);
+            return;
+        }
+        
+        var datas = snapshots.GroupBy(snapshot => snapshot.Tick)
+            .Select(group =>
+            {
+                var tick = group.Key;
+                var receivedNewFromToMyMeetingHmp = group.Average(s => s.receivedNewFromToMyMeetingHmp);
+                var receivedNewFromToMyMeetingHmpStd = group.Select(s => (double)s.receivedNewFromToMyMeetingHmp).StandardDeviation();
+
+                return new NumberOfRecievedNewFromToMyMeetingHMPData(tick, receivedNewFromToMyMeetingHmp, receivedNewFromToMyMeetingHmpStd);
+            }).OrderBy(v => v.Tick);
+        
+        var config = new CsvHelper.Configuration.CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true
+        };
+            
+        using var writer = new StreamWriter(GetSummaryPath(scenariosFolderPath));
+        using var csv = new CsvHelper.CsvWriter(writer, config);
+    
+        csv.WriteRecords(datas);
+    }
+    
+
+
+    private static string GetSummaryPath(string folderPath)
+    {
+        return Path.Combine(folderPath, NumberOfRecievedNewFromToMyMeetingHMPFileName);
+    }
+
+    private static bool SummaryExists(string folderPath)
+    {
+        return File.Exists(GetSummaryPath(folderPath));
+    }
+
+
+    private record NumberOfRecievedNewFromToMyMeetingHMPData(
+        int Tick,
+        double ReceivedNewFromToMyMeetingHmp,
+        double ReceivedNewFromToMyMeetingHmpStd
+    );
+
+    private class DataRaw
+    {
+        public int Tick { get; set; }
+    }
+    
+    private class DataProcessed
+    {
+        public int Tick { get; set; }
+        public int receivedNewFromToMyMeetingHmp { get; set; }
+    }
+}
