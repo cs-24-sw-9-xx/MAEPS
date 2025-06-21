@@ -15,6 +15,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     public class PartitionComponent : IComponent
     {
         public static int ReceivedNewMeetingtimeForOtherThanVisiting = 0;
+        public static Dictionary<int, int> ReceivedNewMeetingtimeForOtherThanVisitingByRobotId = new();
 
         public readonly struct MeetingTimes
         {
@@ -138,6 +139,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             if (expectedRobotIds.Contains(_robotId))
             {
                 ReceivedNewMeetingtimeForOtherThanVisiting++;
+                
+                if (!ReceivedNewMeetingtimeForOtherThanVisitingByRobotId.TryAdd(valueInfo.RobotId, 1))
+                {
+                    ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
+                }
             }
         }
 

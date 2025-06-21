@@ -183,10 +183,24 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
-            using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath, "ReceivedNewMeetingtimeForOtherThanVisiting.txt"));
-            writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
-            writer.Close();
-
+            using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                       "ReceivedNewMeetingtimeForOtherThanVisiting.txt")))
+            {
+                writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
+                writer.Close();
+            }
+            
+            using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                       "ReceivedNewMeetingtimeForOtherThanVisitingRobots.csv")))
+            {
+                writer.WriteLine("RobotId,ReceivedFromOther");
+                foreach (var (robotId, value) in PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisitingByRobotId)
+                {
+                    writer.WriteLine($"{robotId},{value}");
+                }
+                writer.Close();
+            }
+            
             _snapshots.CompleteAdding();
             _writerThread.Join();
         }
