@@ -34,21 +34,42 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     public sealed class RandomRedistributionComponent : IComponent
     {
+        public delegate float ProbabilityFunction(Partition partition);
+        private readonly ProbabilityFunction _probabilityFactor;
         private readonly IRobotController _controller;
         private readonly IPatrollingAlgorithm _algorithm;
-        private readonly float _probabilityFactor;
         private readonly IReadOnlyList<int> _partitionIds;
+        private readonly PatrollingMap _patrollingMap;
         private readonly Random _random;
+        
         public int PreUpdateOrder => -450;
         public int PostUpdateOrder => -450;
-
-        public RandomRedistributionComponent(IRobotController controller, IReadOnlyList<Vertex> vertices, IPatrollingAlgorithm algorithm, int seed, float probabilityFactor)
+        
+        public RandomRedistributionComponent(
+            IRobotController controller,
+            IReadOnlyList<Vertex> vertices,
+            IPatrollingAlgorithm algorithm,
+            int seed,
+            PatrollingMap patrollingMap,
+            ProbabilityFunction probabilityFactor)
         {
             _controller = controller;
             _algorithm = algorithm;
+            _patrollingMap = patrollingMap;
             _probabilityFactor = probabilityFactor;
             _partitionIds = vertices.Select(v => v.Partition).Distinct().ToList();
             _random = new Random(seed);
+        }
+        
+        public RandomRedistributionComponent(
+            IRobotController controller,
+            IReadOnlyList<Vertex> vertices,
+            IPatrollingAlgorithm algorithm,
+            int seed,
+            PatrollingMap patrollingMap,
+            float probabilityFactor) 
+            : this(controller, vertices, algorithm, seed, patrollingMap, (_) => probabilityFactor)
+        {
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -66,14 +87,18 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
 
         private bool SwitchPartition()
         {
-            if (_partitionIds.Count < 2 || _probabilityFactor <= 0 || _random.NextDouble() >= _probabilityFactor)
+            var prob = _probabilityFactor(
+                _patrollingMap.Partitions.Single(p => p.PartitionId == _controller.AssignedPartition));
+            if (_partitionIds.Count == 1 || 
+                _random.NextDouble() >= prob)
             {
+                Debug.Log($"Robot {_controller.Id} stayed");
                 return false;
             }
 
             var availablePartitions = _partitionIds.Where(id => id != _controller.AssignedPartition).ToList();
             var randomPartitionId = availablePartitions[_random.Next(availablePartitions.Count)];
-            Debug.Log($"Robot {_controller.Id} is switching to partition {randomPartitionId} algo: {_algorithm.AlgorithmName} with probability {_probabilityFactor}");
+            Debug.Log($"Robot {_controller.Id} switching partition: {_controller.AssignedPartition} -> {randomPartitionId} algo: {_algorithm.AlgorithmName} with probability {prob}");
             _controller.AssignedPartition = randomPartitionId;
             return true;
         }

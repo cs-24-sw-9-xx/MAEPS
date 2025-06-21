@@ -51,6 +51,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             { nameof(GlobalRedistributionWithCRAlgo), GlobalRobotConstraints },
             { nameof(AdaptiveRedistributionCRAlgo), MaterialRobotConstraints },
             { nameof(RandomRedistributionWithCRAlgo), MaterialRobotConstraints },
+            { nameof(PartitionSizeRedistribution), MaterialRobotConstraints },
         };
 
         // We both make building and cave maps, so 100 scenarios in total
@@ -88,6 +89,8 @@ namespace Maes.Experiments.Patrolling.GroupB
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
 
             { nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
+            
+            { nameof(PartitionSizeRedistribution), (s) => new PartitionSizeRedistribution(s)},
         };
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()

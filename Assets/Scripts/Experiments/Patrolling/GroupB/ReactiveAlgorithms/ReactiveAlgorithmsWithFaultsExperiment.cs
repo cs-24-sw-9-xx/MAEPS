@@ -23,37 +23,36 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling.PartitionedRedistribution;
+using Maes.Algorithms.Patrolling;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
-using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    [Preserve]
-    internal class AdaptiveRedistributionExperiment : MonoBehaviour
+    internal class ReactiveAlgorithmsWithFaultsExperiment : MonoBehaviour
     {
+        private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
+
         private void Start()
         {
-            var counts = new List<int>() { 16, 32, 64 };
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var count in counts)
+                foreach (var algName in AlgorithmName)
                 {
-                    scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                    scenarios.AddRange(ScenarioUtil.CreateScenarios(
                         seed,
-                        nameof(AdaptiveRedistributionCRAlgo),
-                        GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
-                        count,
+                        algName,
+                        GroupBParameters.Algorithms[algName],
+                        GroupBParameters.StandardRobotCount,
                         GroupBParameters.StandardMapSize,
                         GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.MaterialRobotConstraints,
-                        GroupBParameters.StandardPartitionCount,
+                        GroupBParameters.GlobalRobotConstraints,
+                        1,
                         GroupBParameters.FaultInjection()));
                 }
             }

@@ -53,7 +53,7 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, this, seed: _seed, probabilityFactor: _probabilityFactor);
+            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, this, seed: _seed, patrollingMap, probabilityFactor: _probabilityFactor);
 
             return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
         }

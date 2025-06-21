@@ -38,7 +38,7 @@ namespace Maes.Map
     {
         private readonly Func<IReadOnlyDictionary<Vector2Int, Bitmap>> _communicationZonesMaker;
         public int PartitionId { get; }
-        public IReadOnlyList<Vertex> Vertices { get; }
+        public IList<Vertex> Vertices { get; }
 
         private Bitmap? _communicationZone;
 
@@ -76,7 +76,7 @@ namespace Maes.Map
         private readonly Dictionary<int, Bitmap> _intersectionZones = new();
         private readonly Dictionary<int, float> _communicationRatio = new();
 
-        public Partition(int partitionId, IReadOnlyList<Vertex> vertices, Func<IReadOnlyDictionary<Vector2Int, Bitmap>> communicationZonesMaker)
+        public Partition(int partitionId, IList<Vertex> vertices, Func<IReadOnlyDictionary<Vector2Int, Bitmap>> communicationZonesMaker)
         {
             _communicationZonesMaker = communicationZonesMaker;
             PartitionId = partitionId;
@@ -106,7 +106,7 @@ namespace Maes.Map
         {
             var communicationZoneIntersection = new Bitmap(CommunicationZone.Width, CommunicationZone.Height);
 
-            foreach (var (position, vertexComZone) in otherPartition.WaypointsCommunicationZones)
+            foreach (var (_, vertexComZone) in otherPartition.WaypointsCommunicationZones)
             {
                 using var intersection = Bitmap.Intersection(CommunicationZone, vertexComZone);
                 communicationZoneIntersection.Union(intersection);
@@ -117,10 +117,16 @@ namespace Maes.Map
             _communicationRatio[otherPartition.PartitionId] = ratio;
         }
 
+        public void RemoveVertex(Partition partition, Vertex vertex)
+        {
+            Vertices.Remove(vertex);
+            vertex.Partition = partition.PartitionId;
+            partition.Vertices.Add(vertex);
+        }
 
 
         [MustDisposeResource]
-        private static Bitmap CreatePartitionCommunicationZone(IReadOnlyList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
+        private static Bitmap CreatePartitionCommunicationZone(IList<Vertex> vertices, IReadOnlyDictionary<Vector2Int, Bitmap> communicationZones)
         {
             // Extract dimensions from the first available Bitmap
             var firstBitmap = communicationZones.First().Value;
