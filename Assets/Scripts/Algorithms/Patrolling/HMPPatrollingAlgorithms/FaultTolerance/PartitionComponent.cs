@@ -145,7 +145,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 {
                     ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
                 }
-                
+
                 ReceivedNewMeetingtimeAtTicks.Add(_getLogicTicks());
             }
         }
