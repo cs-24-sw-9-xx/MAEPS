@@ -120,33 +120,32 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public void OnNewUpdateDelegate(int key, VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>.ValueInfo valueInfo)
         {
-            if (_meetingPointVertexId != null && _meetingPointVertexId == key)
+            if (_meetingPointVertexId != null)
             {
-                return;
-            }
-
-            if (valueInfo.RobotId == _robotId)
-            {
-                return;
-            }
-
-            var expectedRobotIds = MeetingPointsByVertexId[key].PartitionIds.Select(p =>
-            {
-                var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
-                Debug.Assert(success);
-                return assignedRobot;
-            }).ToHashSet();
-
-            if (expectedRobotIds.Contains(_robotId))
-            {
-                ReceivedNewMeetingtimeForOtherThanVisiting++;
-
-                if (!ReceivedNewMeetingtimeForOtherThanVisitingByRobotId.TryAdd(valueInfo.RobotId, 1))
+                if (_meetingPointVertexId == key)
                 {
-                    ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
+                    // We are at the meeting point, so we don't care about this update.
+                    return;
                 }
+                
+                var expectedRobotIds = MeetingPointsByVertexId[key].PartitionIds.Select(p =>
+                {
+                    var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
+                    Debug.Assert(success);
+                    return assignedRobot;
+                }).ToHashSet();
 
-                ReceivedNewMeetingtimeAtTicks.Add(_getLogicTicks());
+                if (expectedRobotIds.Contains(_robotId))
+                {
+                    ReceivedNewMeetingtimeForOtherThanVisiting++;
+
+                    if (!ReceivedNewMeetingtimeForOtherThanVisitingByRobotId.TryAdd(valueInfo.RobotId, 1))
+                    {
+                        ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
+                    }
+
+                    ReceivedNewMeetingtimeAtTicks.Add(_getLogicTicks());
+                }
             }
         }
 
