@@ -27,6 +27,13 @@ namespace Maes.Map.RobotSpawners
             algorithm.SetGlobalPatrollingMap(_patrollingMap);
             algorithm.SetPatrollingMap(_patrollingMap.Clone());
             algorithm.SubscribeOnReachVertex(_tracker.OnReachedVertex);
+            algorithm.SubscribeOnTrackInfo(trackInfo =>
+            {
+                if (trackInfo is MeetingHeldTrackInfo meetingHeldTrackInfo)
+                {
+                    _tracker.MeetingHeld(meetingHeldTrackInfo);
+                }
+            });
 
             return robot;
         }

@@ -2,10 +2,12 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 
+using Maes.Algorithms.Patrolling;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -58,11 +60,17 @@ namespace Maes.Statistics.Trackers
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly Thread _writerThread;
 
+        // Meeting id is the same as the vertex id
+        private readonly Dictionary<int, int> _numberOfMeetingHeldByMeetingId = new();
+
+        private readonly string _statisticsFolderPath;
+
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map, string statisticsFolderPath, bool saveWaypointData) : base(collisionMap, visualizer, scenario.RobotConstraints,
             tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
+            _statisticsFolderPath = statisticsFolderPath;
             _saveWaypointData = saveWaypointData;
             _simulation = simulation;
             _vertices = new VertexDetails[map.Vertices.Count];
@@ -97,6 +105,19 @@ namespace Maes.Statistics.Trackers
 
             _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
             _writerThread.Start(_cancellationTokenSource.Token);
+        }
+
+        public void MeetingHeld(MeetingHeldTrackInfo meetingHeldTrackInfo)
+        {
+            var meetingId = meetingHeldTrackInfo.MeetingId;
+            if (_numberOfMeetingHeldByMeetingId.TryGetValue(meetingId, out var numberOfMeetings))
+            {
+                _numberOfMeetingHeldByMeetingId[meetingId] = numberOfMeetings + 1;
+            }
+            else
+            {
+                _numberOfMeetingHeldByMeetingId[meetingId] = 1;
+            }
         }
 
         private void WriterThread(object cancellationTokenObject)
@@ -176,8 +197,27 @@ namespace Maes.Statistics.Trackers
             }
         }
 
+        private sealed class InvariantStreamWriter : StreamWriter
+        {
+            public InvariantStreamWriter(string path) : base(path)
+            {
+            }
+
+            public override IFormatProvider FormatProvider => CultureInfo.InvariantCulture;
+        }
+
         public override void FinishStatistics()
         {
+            using var streamWriter = new InvariantStreamWriter(Path.Join(_statisticsFolderPath, "meetingsHeldStats.csv"));
+            streamWriter.WriteLine("MeetingId,NumberOfMeetings");
+            foreach (var (meetingId, numberOfMeetings) in _numberOfMeetingHeldByMeetingId.OrderBy(kv => kv.Key))
+            {
+                streamWriter.WriteLine($"{meetingId},{numberOfMeetings}");
+            }
+            streamWriter.Close();
+
+            Debug.Log("Total meetings held: " + _numberOfMeetingHeldByMeetingId.Values.Sum());
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
         }
