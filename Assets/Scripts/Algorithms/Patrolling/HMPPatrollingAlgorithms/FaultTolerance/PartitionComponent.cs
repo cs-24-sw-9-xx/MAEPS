@@ -127,7 +127,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                     // We are at the meeting point, so we don't care about this update.
                     return;
                 }
-                
+
                 var expectedRobotIds = MeetingPointsByVertexId[key].PartitionIds.Select(p =>
                 {
                     var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
