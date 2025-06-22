@@ -178,7 +178,7 @@ namespace Maes.Statistics.Trackers
                 _visualizer.ShowDefaultColor(vertexDetails.Vertex);
             }
         }
-        
+
         private readonly string _statisticsFolderPath;
 
         public override void FinishStatistics()
@@ -193,11 +193,11 @@ namespace Maes.Statistics.Trackers
                 }
                 writer.Close();
             }
-            
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
         }
-        
+
         private sealed class InvariantStreamWriter : StreamWriter
         {
             public InvariantStreamWriter(string path) : base(path)

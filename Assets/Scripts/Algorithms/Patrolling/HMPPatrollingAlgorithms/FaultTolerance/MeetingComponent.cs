@@ -15,7 +15,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     public sealed class MeetingComponent : IComponent
     {
         public static List<int> Waiting = new();
-        
+
         public delegate int? EstimateTimeDelegate(Vector2Int start, Vector2Int target);
 
         public delegate IEnumerable<ComponentWaitForCondition> ExchangeInformationAtMeetingDelegate(Meeting meeting);
@@ -139,8 +139,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 {
                     Waiting.Add(waited);
                 }
-                
-                
+
+
                 foreach (var waitForCondition in _exchangeInformation(meeting))
                 {
                     yield return waitForCondition;
