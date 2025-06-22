@@ -14,6 +14,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 {
     public sealed class MeetingComponent : IComponent
     {
+        public static List<int> Waiting = new();
+        
         public delegate int? EstimateTimeDelegate(Vector2Int start, Vector2Int target);
 
         public delegate IEnumerable<ComponentWaitForCondition> ExchangeInformationAtMeetingDelegate(Meeting meeting);
@@ -65,6 +67,8 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                 }
 
                 var meeting = GoingToMeeting.Value;
+
+                var start = _getLogicTick();
 
                 // Wait until all other robots are at the meeting point
                 if (meeting.MeetingAtTick - _getLogicTick() > 0)
@@ -130,6 +134,13 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
                     Debug.Log("Time has already passed!");
                 }
 
+                var waited = _getLogicTick() - start;
+                if (waited > 3)
+                {
+                    Waiting.Add(waited);
+                }
+                
+                
                 foreach (var waitForCondition in _exchangeInformation(meeting))
                 {
                     yield return waitForCondition;
