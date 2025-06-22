@@ -89,7 +89,7 @@ namespace Maes.Algorithms.Patrolling.Components
             if (_doingCollisionRecovery)
             {
                 stringBuilder.Append("Doing collision avoidance\n");
-            }
+            } 
         }
 
         /// <summary>

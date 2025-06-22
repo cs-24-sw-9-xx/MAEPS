@@ -119,11 +119,16 @@ namespace Maes.Algorithms.Patrolling.Components
 
                 if (_abortingTask != null)
                 {
-                    while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance)
+                    do
                     {
                         _controller.PathAndMoveTo(ApproachingVertex.Position, dependOnBrokenBehaviour: false);
+                        if (_controller.IsCurrentlyColliding)
+                        {
+                            _controller.StopCurrentTask();
+                            break;
+                        }
                         yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
-                    }
+                    } while (GetRelativePositionTo(ApproachingVertex.Position).Distance > MinDistance);
                     _abortingTask = null;
                 }
 
