@@ -47,12 +47,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
     {
         private readonly bool _forceTheThing;
         private readonly bool _agreeWhenMeetingEarly;
+        private readonly bool _sendAll;
 
-        public HMPPatrollingAlgorithm(int seed, bool forceTheThing, bool agreeWhenMeetingEarly)
+        public HMPPatrollingAlgorithm(int seed, bool forceTheThing, bool agreeWhenMeetingEarly, bool sendAll)
         {
             _forceTheThing = forceTheThing;
             _agreeWhenMeetingEarly = agreeWhenMeetingEarly;
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(DistanceMethod, seed);
+            _sendAll = sendAll;
         }
         public override string AlgorithmName => "HMPAlgorithm";
 
@@ -86,7 +88,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
-            _partitionComponent = new PartitionComponent(controller, GeneratePartitions, _forceTheThing, () => LogicTicks);
+            _partitionComponent = new PartitionComponent(controller, GeneratePartitions, _forceTheThing, () => LogicTicks, _sendAll);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
             _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, _agreeWhenMeetingEarly);
 

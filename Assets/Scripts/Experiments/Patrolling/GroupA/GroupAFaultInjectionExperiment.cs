@@ -67,17 +67,16 @@ namespace Maes.Experiments.Patrolling
             {
                 foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.FaultTolerantAlgorithms)
+                    foreach (var robotCount in _robotCounts)
                     {
-                        foreach (var robotCount in _robotCounts)
+                        foreach (var faultInjectionTimes in _faultInjections)
                         {
-                            foreach (var faultInjectionTimes in _faultInjections)
-                            {
-                                var faultInjection =
-                                    new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes.Select(tick => tick * mapSize).ToArray());
-                                var (patrollingMapFactory, algorithm) = lambda(robotCount);
-                                scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory, robotCount, mapSize, faultInjection: faultInjection));
-                            }
+                            var faultInjection =
+                                new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes.Select(tick => tick * mapSize).ToArray());
+                            var (patrollingMapFactory1, algorithm1) = GroupAParameters.FaultTolerantHMPVariants["NoSendAllFaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
+                            var (patrollingMapFactory2, algorithm2) = GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
+                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP.NoSendAll", algorithm1, patrollingMapFactory1, robotCount, mapSize, faultInjection: faultInjection));
+                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP", algorithm2, patrollingMapFactory2, robotCount, mapSize, faultInjection: faultInjection));
                         }
                     }
                 }
