@@ -21,7 +21,6 @@
 // Jakob Meyer Olsen
 
 using System.Collections.Generic;
-using System.Linq;
 
 using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
@@ -40,19 +39,16 @@ namespace Maes.Experiments.Patrolling.GroupB
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
-            {
-                scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                    seed,
-                    nameof(AdaptiveRedistributionCRAlgo),
-                    GroupBParameters.PartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
-                    GroupBParameters.StandardRobotCount,
-                    GroupBParameters.StandardMapSize,
-                    GroupBParameters.StandardAmountOfCycles,
-                    GroupBParameters.MaterialRobotConstraints,
-                    GroupBParameters.StandardPartitionCount,
-                    GroupBParameters.FaultInjection(seed)));
-            }
+            scenarios.AddRange(ScenarioUtil.CreateScenarios(
+                123,
+                nameof(AdaptiveRedistributionCRAlgo),
+                GroupBParameters.AllPartitionedAlgorithms[nameof(AdaptiveRedistributionCRAlgo)],
+                GroupBParameters.StandardRobotCount,
+                GroupBParameters.StandardMapSize,
+                GroupBParameters.StandardAmountOfCycles,
+                GroupBParameters.MaterialRobotConstraints,
+                GroupBParameters.StandardPartitionCount,
+                GroupBParameters.FaultInjection()));
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
 
