@@ -73,8 +73,10 @@ namespace Maes.Experiments.Patrolling
                         {
                             var faultInjection =
                                 new DestroyRobotsAtSpecificTickFaultInjection(seed, faultInjectionTimes.Select(tick => tick * mapSize).ToArray());
-                            var (patrollingMapFactory, algorithm) = GroupAParameters.FaultTolerantHMPVariants["NoSendAllFaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
-                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP.NoSendAll", algorithm, patrollingMapFactory, robotCount, mapSize, faultInjection: faultInjection));
+                            var (patrollingMapFactory1, algorithm1) = GroupAParameters.FaultTolerantHMPVariants["NoSendAllFaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
+                            var (patrollingMapFactory2, algorithm2) = GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
+                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP.NoSendAll", algorithm1, patrollingMapFactory1, robotCount, mapSize, faultInjection: faultInjection));
+                            scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP", algorithm2, patrollingMapFactory2, robotCount, mapSize, faultInjection: faultInjection));
                         }
                     }
                 }
