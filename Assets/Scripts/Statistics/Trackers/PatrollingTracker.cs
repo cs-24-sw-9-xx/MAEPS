@@ -2,10 +2,12 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -63,6 +65,7 @@ namespace Maes.Statistics.Trackers
             PatrollingMap map, string statisticsFolderPath, bool saveWaypointData) : base(collisionMap, visualizer, scenario.RobotConstraints,
             tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
+            _statisticsFolderPath = statisticsFolderPath;
             _saveWaypointData = saveWaypointData;
             _simulation = simulation;
             _vertices = new VertexDetails[map.Vertices.Count];
@@ -176,10 +179,32 @@ namespace Maes.Statistics.Trackers
             }
         }
 
+        private readonly string _statisticsFolderPath;
+
         public override void FinishStatistics()
         {
+            using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                       "Waiting.csv")))
+            {
+                writer.WriteLine("Waiting");
+                foreach (var value in MeetingComponent.Waiting)
+                {
+                    writer.WriteLine($"{value}");
+                }
+                writer.Close();
+            }
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
+        }
+
+        private sealed class InvariantStreamWriter : StreamWriter
+        {
+            public InvariantStreamWriter(string path) : base(path)
+            {
+            }
+
+            public override IFormatProvider FormatProvider => CultureInfo.InvariantCulture;
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)
