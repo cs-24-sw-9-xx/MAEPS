@@ -23,7 +23,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 using Maes.Map;
 
@@ -71,20 +70,8 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 
         private static IEnumerable<NormalizedValue> UtilityFunction(List<NormalizedValue> normalizedIdleness, List<NormalizedValue> normalizedDistances)
         {
-            if (normalizedIdleness.Count != normalizedDistances.Count)
-            {
-                throw new Exception("Length of normalizedIdleness and distanceEstimation must be equal");
-            }
-#if DEBUG
-            var stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("Vertex Id | Normalized Idleness | Normalized Distance | Sum");
-            foreach (var idleness in normalizedIdleness.OrderBy(x => x.Vertex.Id))
-            {
-                var normalizedDistance = normalizedDistances.Single(x => x.Vertex.Id == idleness.Vertex.Id);
-                stringBuilder.AppendLine(idleness.Vertex.Id + " | " + idleness.Value + " | " + normalizedDistance.Value + " | " + (idleness.Value + normalizedDistance.Value));
-            }
-            Debug.Log(stringBuilder.ToString());
-#endif
+            Debug.Assert(normalizedIdleness.Count == normalizedDistances.Count);
+
             var result = from idleness in normalizedIdleness
                          join distance in normalizedDistances on idleness.Vertex.Id equals distance.Vertex.Id
                          select new NormalizedValue(idleness.Vertex, idleness.Value + distance.Value);

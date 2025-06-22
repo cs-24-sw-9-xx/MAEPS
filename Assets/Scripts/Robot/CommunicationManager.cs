@@ -30,6 +30,7 @@
 // 
 // Original repository: https://github.com/Molitany/MAES
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -83,13 +84,42 @@ namespace Maes.Robot
         // Messages that were sent last tick and can now be read 
         private readonly List<Message> _readableMessages = new();
 
-        private readonly RayTracingMap<Tile> _rayTracingMap;
+        private RayTracingMap<Tile>? _rayTracingMap;
+
+        // It is only used for DetectWall, so compute it lazily.
+        private RayTracingMap<Tile> RayTracingMap
+        {
+            get
+            {
+                if (_rayTracingMap == null)
+                {
+                    _rayTracingMap = new RayTracingMap<Tile>(_tileMap);
+                }
+
+                return _rayTracingMap;
+            }
+        }
 
         // Set by SetRobotReferences
         private IReadOnlyList<MonaRobot> _robots = null!;
 
+
+        private EnvironmentTaggingMap? _environmentTaggingMap;
+
         // Map for storing and retrieving all tags deposited by robots
-        private readonly EnvironmentTaggingMap _environmentTaggingMap;
+        // It is only used for environment tag based algorithms, so compute it lazily.
+        private EnvironmentTaggingMap EnvironmentTaggingMap
+        {
+            get
+            {
+                if (_environmentTaggingMap == null)
+                {
+                    _environmentTaggingMap = new EnvironmentTaggingMap(_tileMap);
+                }
+
+                return _environmentTaggingMap;
+            }
+        }
 
         private readonly SimulationMap<Tile> _tileMap;
 
@@ -113,6 +143,7 @@ namespace Maes.Robot
         private readonly HashSet<MonaRobot> _robotsCalledReadMessagesThisTick = new();
 
         public readonly CommunicationTracker CommunicationTracker;
+        private readonly Dictionary<TileType, float> _attenuationDict;
 
         private readonly struct Message
         {
@@ -155,10 +186,9 @@ namespace Maes.Robot
             _robotConstraints = robotConstraints;
             _visualizer = visualizer;
             _tileMap = collisionMap;
-            _rayTracingMap = new RayTracingMap<Tile>(collisionMap);
-            _environmentTaggingMap = new EnvironmentTaggingMap(collisionMap);
             CommunicationTracker = new CommunicationTracker();
             _offset = collisionMap.ScaledOffset;
+            _attenuationDict = _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency];
         }
 
         public void SetRobotRelativeSize(float robotRelativeSize)
@@ -262,9 +292,7 @@ namespace Maes.Robot
 
             if (GlobalSettings.ShouldWriteCsvResults && _localTickCounter % GlobalSettings.TicksPerStatsSnapShot == 0)
             {
-                PopulateCommunicationGroups();
-
-                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick, _communicationGroups);
+                CommunicationTracker.CreateSnapshot(_localTickCounter, _receivedMessagesLastTick, _sentMessagesLastTick);
             }
         }
 
@@ -327,26 +355,27 @@ namespace Maes.Robot
 
             PopulateAdjacencyMatrix();
 
+            var addedRobots = new HashSet<int>(_robots.Count);
+
             for (var i = 0; i < _robots.Count; i++)
             {
                 var r1 = _robots[i];
-                if (!_communicationGroups.Any(g => g.Contains(r1.id)))
+                if (!addedRobots.Contains(r1.id))
                 {
-                    _communicationGroups.Add(GetCommunicationGroup(r1.id));
+                    _communicationGroups.Add(GetCommunicationGroup(r1.id, addedRobots));
                 }
             }
         }
 
-        private HashSet<int> GetCommunicationGroup(int robotId)
+        private HashSet<int> GetCommunicationGroup(int robotId, HashSet<int> addedRobots)
         {
-            var keys = new Queue<int>();
+            var keys = new Queue<int>(_robots.Count);
             keys.Enqueue(robotId);
             var resultSet = new HashSet<int> { robotId };
+            addedRobots.Add(robotId);
 
-            while (keys.Count > 0)
+            while (keys.TryDequeue(out var currentKey))
             {
-                var currentKey = keys.Dequeue();
-
                 foreach (var (key, value) in _adjacencyMatrix)
                 {
                     if (key.Item1 != currentKey || !value.TransmissionSuccessful || resultSet.Contains(key.Item2))
@@ -356,6 +385,7 @@ namespace Maes.Robot
 
                     keys.Enqueue(key.Item2);
                     resultSet.Add(key.Item2);
+                    addedRobots.Add(key.Item2);
                 }
             }
 
@@ -364,13 +394,13 @@ namespace Maes.Robot
 
         public void DepositTag(MonaRobot robot, string content)
         {
-            var tag = _environmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
+            var tag = EnvironmentTaggingMap.AddTag(robot.transform.position, new EnvironmentTag(robot.id, robot.ClaimTag(), content));
             _visualizer.AddEnvironmentTag(tag);
         }
 
         public List<EnvironmentTag> ReadNearbyTags(MonaRobot robot)
         {
-            var tags = _environmentTaggingMap.GetTagsNear(robot.transform.position,
+            var tags = EnvironmentTaggingMap.GetTagsNear(robot.transform.position,
                 _robotConstraints.EnvironmentTagReadRange);
 
             return tags;
@@ -417,18 +447,18 @@ namespace Maes.Robot
             var robotPosition = robot.transform.position;
 
             // Perform trace from the center of the robot
-            var result1 = _rayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result1 = RayTracingMap.FindIntersection(robotPosition, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance1 = result1 == null ? float.MaxValue : Vector2.Distance(robotPosition, result1.Value.Item1);
             var robotSize = _robotRelativeSize;
 
             // Perform trace from the left side perimeter of the robot
             var offsetLeft = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 90) % 360, robotSize / 2f);
-            var result2 = _rayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result2 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetLeft, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance2 = result2 == null ? float.MaxValue : Vector2.Distance(robotPosition, result2.Value.Item1);
 
             // Finally perform trace from the right side perimeter of the robot
             var offsetRight = Geometry.VectorFromDegreesAndMagnitude((globalAngle + 270) % 360, robotSize / 2f);
-            var result3 = _rayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
+            var result3 = RayTracingMap.FindIntersection((Vector2)robot.transform.position + offsetRight, globalAngle, range, (_, tile) => !Tile.IsWall(tile.Type));
             var distance3 = result3 == null ? float.MaxValue : Vector2.Distance(robotPosition, result3.Value.Item1);
 
             // Return the detected wall that is closest to the robot
@@ -449,9 +479,9 @@ namespace Maes.Robot
             return closestWall;
         }
 
-        public Dictionary<Vector2Int, Bitmap> CalculateZones(IEnumerable<Vertex> vertices)
+        public Dictionary<Vector2Int, Bitmap> CalculateZones(IReadOnlyList<Vertex> vertices)
         {
-            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count());
+            Dictionary<Vector2Int, Bitmap> vertexPositionsMultiThread = new(vertices.Count);
             Parallel.ForEach(vertices, vertex =>
                 {
                     var bitmap = CalculateCommunicationZone(vertex.Position);
@@ -477,7 +507,7 @@ namespace Maes.Robot
                 for (var y = 0; y < height; y++)
                 {
                     var communicationInfo = CommunicationBetweenPoints(new Vector2(position.x, position.y), new Vector2(x + 0.5f, y + 0.5f));
-                    if (communicationInfo.SignalStrength >= _robotConstraints.ReceiverSensitivity)
+                    if (communicationInfo.TransmissionSuccessful)
                     {
                         bitmap.Set(x, y);
                     }
@@ -492,12 +522,9 @@ namespace Maes.Robot
         // https://doi.org/10.1118/1.595715
         public CommunicationInfo CommunicationBetweenPoints(Vector2 start, Vector2 end)
         {
-            var x1 = start.x;
-            var y1 = start.y;
-            var x2 = end.x;
-            var y2 = end.y;
-            var xDiff = x2 - x1;
-            var yDiff = y2 - y1;
+            // Calculate the line length
+            var xDiff = end.x - start.x;
+            var yDiff = end.y - start.y;
             var lineLength = Mathf.Sqrt(xDiff * xDiff + yDiff * yDiff);
 
             var signalStrength = _robotConstraints.TransmitPower;
@@ -507,100 +534,101 @@ namespace Maes.Robot
                 return CreateCommunicationInfo(0, 0, 0, signalStrength);
             }
 
-            // Collect intersections with grid lines
-            // Alpha is a normalized value representing a point along the line.
-            // 0 is the start point and 1 is the end point of the line.
-            var xyAlphas = new List<float>() { 0f, 1f };
+            // Allocate array for alphas
+            var xIntersects = Mathf.CeilToInt(Mathf.Abs(xDiff));
+            var yIntersects = Mathf.CeilToInt(Mathf.Abs(yDiff));
 
-            // X-axis intersections (vertical lines)
-            if (xDiff != 0)
+            // Add 2 for start and end
+            var alphas = ArrayPool<float>.Shared.Rent(xIntersects + yIntersects + 2);
+            var index = 0;
+
+            // Start value.
+            alphas[index++] = 0;
+
+            var xStart = Mathf.FloorToInt(start.x);
+            var yStart = Mathf.FloorToInt(start.y);
+
+            var xi = xStart + (xDiff > 0 ? 1 : 0);
+            var yi = yStart + (yDiff > 0 ? 1 : 0);
+
+            var xStep = xDiff > 0 ? 1 : -1;
+            var yStep = yDiff > 0 ? 1 : -1;
+
+            // Use precomputed values for inverse of x and y differences. Avoids division in the loop.
+            var invXDiff = 1.0f / xDiff;
+            var invYDiff = 1.0f / yDiff;
+
+            // Calculate initial alpha values for X and Y grid intersections
+            var nextAlphaX = xIntersects > 0 ? (xi - start.x) * invXDiff : float.PositiveInfinity;
+            var nextAlphaY = yIntersects > 0 ? (yi - start.y) * invYDiff : float.PositiveInfinity;
+
+            // Add alphas from X and Y grid intersections (in sorted order)
+            while (xIntersects > 0 || yIntersects > 0)
             {
-                var xStart = Mathf.FloorToInt(x1);
-                var xEnd = Mathf.FloorToInt(x2);
-
-                if (xDiff > 0)
+                if (nextAlphaX < nextAlphaY)
                 {
-                    for (var i = xStart + 1; i <= xEnd; i++)
+                    if (nextAlphaX is > 0f and < 1f)
                     {
-                        var alpha = (i - x1) / xDiff;
-                        xyAlphas.Add(alpha);
+                        alphas[index++] = nextAlphaX;
                     }
+
+                    xi += xStep;
+                    xIntersects--;
+                    nextAlphaX = (xi - start.x) * invXDiff;
                 }
                 else
                 {
-                    for (var i = xStart; i > xEnd; i--)
+                    if (nextAlphaY is > 0f and < 1f)
                     {
-                        var alpha = (i - x1) / xDiff;
-                        xyAlphas.Add(alpha);
+                        alphas[index++] = nextAlphaY;
                     }
+
+                    yi += yStep;
+                    yIntersects--;
+                    nextAlphaY = (yi - start.y) * invYDiff;
                 }
             }
-
-            // Y-axis intersections (horizontal lines)
-            if (yDiff != 0)
-            {
-                var yStart = Mathf.FloorToInt(y1);
-                var yEnd = Mathf.FloorToInt(y2);
-
-                if (yDiff > 0)
-                {
-                    for (var j = yStart + 1; j <= yEnd; j++)
-                    {
-                        var alpha = (j - y1) / yDiff;
-                        xyAlphas.Add(alpha);
-                    }
-                }
-                else
-                {
-                    for (var j = yStart; j > yEnd; j--)
-                    {
-                        var alpha = (j - y1) / yDiff;
-                        xyAlphas.Add(alpha);
-                    }
-                }
-            }
-
-            // Remove duplicate values and sorting.
-            xyAlphas = xyAlphas.Distinct().ToList();
-            xyAlphas.Sort();
-
 
             var wallTileDistance = 0f;
             var otherTileDistance = 0f;
 
-            // Calculate line segments
-            for (var alphaIndex = 1; alphaIndex < xyAlphas.Count; alphaIndex++)
+            // Add end value.
+            alphas[index++] = 1f;
+
+            // Process each line segment.
+            for (var i = 1; i < index; i++)
             {
-                var aPrev = xyAlphas[alphaIndex - 1];
-                var aCurr = xyAlphas[alphaIndex];
-                var aMid = (aPrev + aCurr) / 2f;
+                // Calculate segment length
+                var aPrev = alphas[i - 1];
+                var aCurrent = alphas[i];
+                var segmentLength = (aCurrent - aPrev) * lineLength;
 
-                var midPointX = x1 + aMid * xDiff;
-                var midPointY = y1 + aMid * yDiff;
-
-                var distance = (aCurr - aPrev) * lineLength;
-
-                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midPointX), Mathf.FloorToInt(midPointY));
+                // Get tile type for segment
+                var aMid = 0.5f * (aPrev + aCurrent);
+                var midX = start.x + aMid * xDiff;
+                var midY = start.y + aMid * yDiff;
+                var tile = _tileMap.GetTileByLocalCoordinate(Mathf.FloorToInt(midX), Mathf.FloorToInt(midY));
                 var tileType = tile.GetTriangles()[0].Type;
+
                 if (tileType >= TileType.Wall)
                 {
-                    wallTileDistance += distance;
+                    wallTileDistance += segmentLength;
                 }
                 else
                 {
-                    otherTileDistance += distance;
+                    otherTileDistance += segmentLength;
                 }
 
                 if (_robotConstraints.MaterialCommunication)
                 {
-                    // Multiplier on distance to replicate old signal attenuation
-                    signalStrength -= (4 * distance * _robotConstraints.AttenuationDictionary[_robotConstraints.Frequency][tileType]);
+                    signalStrength -= 4 * segmentLength * _attenuationDict[tileType];
                 }
             }
+            ArrayPool<float>.Shared.Return(alphas, clearArray: false);
 
             var angle = Vector2.Angle(Vector2.right, end - start);
-
             return CreateCommunicationInfo(angle, wallTileDistance, otherTileDistance, signalStrength);
         }
+
     }
 }

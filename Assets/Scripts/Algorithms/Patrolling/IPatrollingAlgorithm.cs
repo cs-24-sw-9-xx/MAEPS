@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using Maes.Algorithms.Patrolling.TrackInfos;
 using Maes.Map;
 
 using UnityEngine;
@@ -36,5 +35,9 @@ namespace Maes.Algorithms.Patrolling
         void SubscribeOnReachVertex(OnReachVertex onReachVertex);
 
         void SubscribeOnTrackInfo(OnTrackInfo onTrackInfo);
+
+        bool HasSeenAllInPartition(int assignedPartition);
+
+        void ResetSeenVerticesForPartition(int partitionId);
     }
 }

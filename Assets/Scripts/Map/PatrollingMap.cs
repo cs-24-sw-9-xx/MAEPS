@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Maes.Map.Generators;
 using Maes.Map.PathFinding;
@@ -36,7 +38,7 @@ namespace Maes.Map
             Paths = paths;
             Partitions = new List<Partition>
             {
-                new Partition(0, vertices, vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
+                new Partition(0, vertices, () => vertices.ToDictionary(v => v.Position, _ => new Bitmap(1, 1)))
             };
         }
 
@@ -79,20 +81,53 @@ namespace Maes.Map
 
         private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePaths(IReadOnlyList<Vertex> vertices, CoarseGrainedMap coarseMap)
         {
-            var startTime = Time.realtimeSinceStartup;
+            using var bitmap = MapUtilities.MapToBitMap(coarseMap);
 
-            var aStar = new MyAStar();
-            var paths = new Dictionary<(int, int), IReadOnlyList<PathStep>>();
-            foreach (var vertex in vertices)
+            var hash = bitmap.Hash();
+            foreach (var vertexPosition in vertices.Select(v => v.Position))
+            {
+                hash.Append(vertexPosition.x);
+                hash.Append(vertexPosition.y);
+            }
+
+            return Cache<IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>>, PatrollingMap>.GetOrInsert(
+                () => CreatePathsImplementation(vertices, bitmap), hash);
+        }
+
+        private static IReadOnlyDictionary<(int, int), IReadOnlyList<PathStep>> CreatePathsImplementation(IReadOnlyList<Vertex> vertices, Bitmap bitmap)
+        {
+            var startTime = Time.realtimeSinceStartup;
+            var paths = new ConcurrentDictionary<(int, int), IReadOnlyList<PathStep>>();
+            Parallel.ForEach(vertices, vertex =>
             {
                 foreach (var neighbor in vertex.Neighbors)
                 {
-                    var path = MyAStar.GetNonBrokenPath(vertex.Position, neighbor.Position, coarseMap) ?? throw new InvalidOperationException("No path from vertex to neighbor");
+                    // This way we make sure that we don't calculate the reverse ones as well.
+                    if (vertex.Id > neighbor.Id)
+                    {
+                        continue;
+                    }
+
+
+                    var path = NewAStar.FindPathForPatrollingMap(vertex.Position, neighbor.Position, bitmap)?.ToArray() ??
+                               throw new InvalidOperationException("No path from vertex to neighbor");
                     var pathSteps = MyAStar.PathToStepsCheap(path);
 
-                    paths.Add((vertex.Id, neighbor.Id), pathSteps);
+                    var reversedPathSteps = new List<PathStep>(pathSteps.Count);
+                    for (var i = pathSteps.Count - 1; i >= 0; i--)
+                    {
+                        var pathStep = pathSteps[i];
+                        var reversedPathStep = new PathStep(pathStep.End, pathStep.Start, null!);
+                        reversedPathSteps.Add(reversedPathStep);
+                    }
+
+                    var success1 = paths.TryAdd((vertex.Id, neighbor.Id), pathSteps);
+                    var success2 = paths.TryAdd((neighbor.Id, vertex.Id), reversedPathSteps);
+
+                    Debug.Assert(success1);
+                    Debug.Assert(success2);
                 }
-            }
+            });
 
             Debug.LogFormat("Create Paths took {0} s", Time.realtimeSinceStartup - startTime);
 

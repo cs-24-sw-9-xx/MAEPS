@@ -33,7 +33,7 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 {
     public sealed class HeuristicConscientiousReactiveAlgorithm : PatrollingAlgorithm
     {
-        public HeuristicConscientiousReactiveAlgorithm(int seed = 0)
+        public HeuristicConscientiousReactiveAlgorithm(int seed)
         {
             _heuristicConscientiousReactiveLogic = new HeuristicConscientiousReactiveLogic(ActualDistanceMethod, seed);
         }
@@ -43,14 +43,12 @@ namespace Maes.Algorithms.Patrolling.HeuristicConscientiousReactive
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            return new IComponent[] { _goToNextVertexComponent };
         }
 
         private Vertex NextVertex(Vertex currentVertex)

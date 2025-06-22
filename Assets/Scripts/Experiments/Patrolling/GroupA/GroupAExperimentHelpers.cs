@@ -23,8 +23,11 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
+using Maes.FaultInjections;
+using Maes.FaultInjections.DestroyRobots;
 using Maes.Map.Generators;
 using Maes.Robot;
+using Maes.Simulation;
 using Maes.Simulation.Patrolling;
 
 namespace Maes.Experiments.Patrolling
@@ -35,55 +38,53 @@ namespace Maes.Experiments.Patrolling
 
     internal static class GroupAExperimentHelpers
     {
-        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, BuildingMapConfig mapConfig, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false)
+        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, IMapConfig mapConfig, string mapName, int robotCount, RobotConstraints robotConstraints, IFaultInjection? faultInjection = null)
         {
+            var faultInjectionString = string.Empty;
+            if (faultInjection is DestroyRobotsAtSpecificTickFaultInjection fi)
+            {
+                faultInjectionString = $"-faultinjection-{string.Join(",", fi.DestroyAtTicks)}";
+            }
             return new MySimulationScenario(
                                         seed: seed,
-                                        totalCycles: GroupAParameters.StandardAmountOfCycles,
+                                        totalCycles: int.MaxValue,
                                         stopAfterDiff: false,
                                         robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                                             collisionMap: buildingConfig,
                                             seed: seed,
                                             numberOfRobots: robotCount,
-                                            createAlgorithmDelegate: algorithm),
+                                            createAlgorithmDelegate: algorithm,
+                                            dependOnBrokenBehavior: false),
+                                        faultInjection: faultInjection,
                                         mapSpawner: generator => generator.GenerateMap(mapConfig),
                                         robotConstraints: robotConstraints,
                                         statisticsFileName:
-                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-BuildingMap-SpawnApart",
+                                        $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-{mapName}{faultInjectionString}-SpawnApart",
                                         patrollingMapFactory: patrollingMapFactory,
-                                        maxLogicTicks: shouldFail ? 0 : GroupAParameters.StandardAmountOfCycles * MySimulationScenario.DefaultMaxLogicTicks);
+                                        hasFinishedSim: (PatrollingSimulation simulation,
+                                            out SimulationEndCriteriaReason? reason) =>
+                                        {
+                                            if (simulation.SimulatedLogicTicks >= mapConfig.WidthInTiles * 2000)
+                                            {
+                                                reason = new SimulationEndCriteriaReason("We done", true);
+                                                return true;
+                                            }
+
+                                            reason = null;
+                                            return false;
+                                        });
         }
 
-        public static MySimulationScenario ScenarioConstructor(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, CaveMapConfig mapConfig, int robotCount, RobotConstraints robotConstraints, bool shouldFail = false)
-        {
-            return new MySimulationScenario(
-                                       seed: seed,
-                                       totalCycles: GroupAParameters.StandardAmountOfCycles,
-                                       stopAfterDiff: false,
-                                       robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
-                                           collisionMap: buildingConfig,
-                                           seed: seed,
-                                           numberOfRobots: robotCount,
-                                           createAlgorithmDelegate: algorithm),
-                                       mapSpawner: generator => generator.GenerateMap(mapConfig),
-                                       robotConstraints: robotConstraints,
-                                       statisticsFileName:
-                                       $"{algorithmName}-seed-{seed}-size-{mapConfig.HeightInTiles}-robots-{robotCount}-constraints-{GroupAParameters.StandardRobotConstraintName}-CaveMap-SpawnApart",
-                                       patrollingMapFactory: patrollingMapFactory,
-                                       maxLogicTicks: shouldFail ? 0 : GroupAParameters.StandardAmountOfCycles * MySimulationScenario.DefaultMaxLogicTicks);
-        }
-
-        public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f, bool shouldFail = false)
+        public static IEnumerable<MySimulationScenario> CreateScenarios(int seed, string algorithmName, CreateAlgorithmDelegate algorithm, PatrollingMapFactory? patrollingMapFactory, int robotCount = GroupAParameters.StandardRobotCount, int mapSize = GroupAParameters.StandardMapSize, float communicationDistanceThroughWalls = 0f, IFaultInjection faultInjection = null)
         {
             var scenarios = new List<MySimulationScenario>();
             var buildingMapConfig = new BuildingMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var caveMapConfig = new CaveMapConfig(seed, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
-            var scenarioBuilding = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, buildingMapConfig, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
-            var scenarioCave = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, caveMapConfig, robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), shouldFail);
+            var scenarioBuilding = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, buildingMapConfig, "BuildingMap", robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), faultInjection);
+            var scenarioCave = ScenarioConstructor(seed, algorithmName, algorithm, patrollingMapFactory, caveMapConfig, "CaveMap", robotCount, GroupAParameters.CreateRobotConstraints(communicationDistanceThroughWalls), faultInjection);
             scenarios.Add(scenarioBuilding);
             scenarios.Add(scenarioCave);
             return scenarios;
         }
-
     }
 }

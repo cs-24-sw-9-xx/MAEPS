@@ -22,56 +22,89 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Algorithms.Patrolling;
 using Maes.Algorithms.Patrolling.HeuristicConscientiousReactive;
-using Maes.Algorithms.Patrolling.PartitionedAlgorithms;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplified;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
 
 using static Maes.Map.RobotSpawners.RobotSpawner<Maes.Algorithms.Patrolling.IPatrollingAlgorithm>;
 
+using FaultTolerance = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
+using ImmediateTakeover = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover;
+using PartitionedHeuristicConscientiousReactive = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.PartitionedHeuristicConscientiousReactive;
+using RandomTakeover = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.RandomTakeover;
+using SingleMeetingPoint = Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.SingleMeetingPoint;
+
 namespace Maes.Experiments.Patrolling
 {
+    using AlgorithmsDictionary = Dictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate)>>;
+    using IReadOnlyAlgorithmsDictionary = IReadOnlyDictionary<string, Func<int, (PatrollingMapFactory, CreateAlgorithmDelegate)>>;
     internal static class GroupAParameters
     {
-        /// <summary>
-        /// Supply the function with the robot count and it will return the patrolling map factory and the algorithm.
-        /// </summary>
-        public static readonly Dictionary<string, Func<int, (PatrollingMapFactory?, CreateAlgorithmDelegate)>> StandardAlgorithms = new()
+        static GroupAParameters()
         {
-            { nameof(ConscientiousReactiveAlgorithm), (_) => (null, (_) => new ConscientiousReactiveAlgorithm()) },
+            AllAlgorithms = ReactiveAlgorithms
+                .Concat(PartitionedAlgorithms)
+                .Concat(FaultTolerantHMPVariants)
+                .Concat(CyclicAlgorithms)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            // ConscientiousReactiveAlgorithm with partitioning
-            /*
-            { nameof(ConscientiousReactiveAlgorithm)+ "+partitioning", (robotCount) => ((map) =>
-                PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, robotCount, CreateRobotConstraints()),
-                 (_) => new ConscientiousReactiveAlgorithm()) },
-                 */
-    
-            // The map is different for each seed, so the algorithm can just use the same seed for all maps.
-            { nameof(RandomReactive), (_) => (null, (_) => new RandomReactive(1)) },
+            FaultTolerantAlgorithms = ReactiveAlgorithms
+                .Concat(CyclicAlgorithms)
+                .Concat(FaultTolerantHMPVariants)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
 
-            // Algorithms that use all-waypoint-connected-maps
-            { nameof(HeuristicConscientiousReactiveAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HeuristicConscientiousReactiveAlgorithm()) },
-            { nameof(SingleCycleChristofides), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new SingleCycleChristofides()) },
+        public static readonly IReadOnlyAlgorithmsDictionary AllAlgorithms;
 
-            // Algorithms that use all-waypoint-connected-maps and partitioning
-            { nameof(PartitionedHeuristicConscientiousReactive), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new PartitionedHeuristicConscientiousReactive(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))) },
-            { nameof(HMPPatrollingAlgorithm), (_) => (AllWaypointConnectedGenerator.MakePatrollingMap, (_) => new HMPPatrollingAlgorithm
-            (
-                new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
-            ))
-            },
+        public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantAlgorithms;
+
+        public static readonly IReadOnlyAlgorithmsDictionary
+            ReactiveAlgorithms = new AlgorithmsDictionary
+            {
+                { nameof(ConscientiousReactiveAlgorithm), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ConscientiousReactiveAlgorithm(true)) },
+                { nameof(RandomReactive), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomReactive(seed, true)) },
+                { nameof(HeuristicConscientiousReactiveAlgorithm), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new HeuristicConscientiousReactiveAlgorithm(seed)) },
+                { nameof(ERAlgorithmSimplified), _ => (map => ReverseNearestNeighborGenerator.MakePatrollingMap(map, MaxDistance), _ => new ERAlgorithmSimplified())}
+            };
+
+        public static readonly IReadOnlyAlgorithmsDictionary CyclicAlgorithms = new AlgorithmsDictionary
+        {
+            {
+                nameof(SingleCycleChristofides), _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), _ => new SingleCycleChristofides())
+            }
+        };
+
+        public static readonly IReadOnlyAlgorithmsDictionary PartitionedAlgorithms = new AlgorithmsDictionary
+        {
+            {
+                "Partitioned.HeuristicConscientiousReactiveAlgorithm", _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new PartitionedHeuristicConscientiousReactive.PartitionedHeuristicConscientiousReactiveAlgorithm(seed))
+            }
+        };
+
+        public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantHMPVariants = new AlgorithmsDictionary
+        {
+            { "ImmediateTakeover.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed)) },
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)) },
+            { "RandomTakeover.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed)) },
+            { "SingleMeetingPoint.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new SingleMeetingPoint.HMPPatrollingAlgorithm(seed, false)) },
+            { "FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new FaultTolerance.HMPPatrollingAlgorithm(seed, false, false)) },
         };
 
         public const int StandardAmountOfCycles = 100; // Should be changed to 1000 for the final experiment?
-        public const int StandardMapSize = 200;
+        public const int StandardMapSize = 150;
         public const int StandardRobotCount = 8;
         public const int StandardSeedCount = 100;
+        public const float MaxDistance = 25f;
 
         public static readonly string StandardRobotConstraintName = "Standard";
 
@@ -89,19 +122,19 @@ namespace Maes.Experiments.Patrolling
                 distributeSlam: false,
                 environmentTagReadRange: 100f,
                 slamRayTraceRange: 0f,
-                calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls,
+                calculateSignalTransmissionProbability: (totalDistance, distanceThroughWalls) => distanceThroughWalls <= communicationDistanceThroughWalls || totalDistance <= 1.0f,
                 robotCollisions: false,
-                materialCommunication: true);
+                materialCommunication: false);
         }
 
-        public static IEnumerable<int> SeedGenerator(int seedCount = StandardSeedCount)
+        public static IEnumerable<int> SeedGenerator(int seedCount = StandardSeedCount, int startSeed = 0)
         {
-            var seeds = new List<int>();
-            for (var i = 0; i < seedCount; i++)
+            if (seedCount < 1)
             {
-                seeds.Add(i);
+                throw new ArgumentException("Seed count must be at least 1.", nameof(seedCount));
             }
-            return seeds;
+
+            return Enumerable.Range(startSeed, seedCount);
         }
     }
 }

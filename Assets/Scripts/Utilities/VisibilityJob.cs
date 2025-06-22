@@ -17,21 +17,22 @@
 // 
 // Contributors: Mads Beyer Mogensen
 
-using System;
 using System.Runtime.CompilerServices;
 
 using Unity.Burst;
 using Unity.Burst.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
-
-using UnityEngine;
+using Unity.Mathematics;
 
 namespace Maes.Utilities
 {
     [BurstCompile(FloatPrecision.Low, FloatMode.Default, CompileSynchronously = true, DisableSafetyChecks = true, OptimizeFor = OptimizeFor.Performance)]
     public struct VisibilityJob : IJob
     {
+        [ReadOnly]
+        public bool InaccurateButFast;
+
         [ReadOnly]
         public int Width;
 
@@ -68,14 +69,43 @@ namespace Maes.Utilities
                     continue;
                 }
 
-                for (var x = 0; x < Width; x++)
+                if (InaccurateButFast)
                 {
+                    // Top row
+                    for (var x = 1; x < Width - 1; x++)
+                    {
+                        GridRayTracingLineOfSight(x, 0, outerY);
+                    }
+
+                    // Bottom row
+                    for (var x = 1; x < Width - 1; x++)
+                    {
+                        GridRayTracingLineOfSight(x, Height - 1, outerY);
+                    }
+
+                    // Left column
                     for (var y = 0; y < Height; y++)
                     {
-                        var innerIndex = GetMapIndex(x, y);
-                        if (Hint.Likely(!GetMapValue(innerIndex)))
+                        GridRayTracingLineOfSight(0, y, outerY);
+                    }
+
+                    // Right column
+                    for (var y = 0; y < Height; y++)
+                    {
+                        GridRayTracingLineOfSight(Width - 1, y, outerY);
+                    }
+                }
+                else
+                {
+                    for (var x = 0; x < Width; x++)
+                    {
+                        for (var y = 0; y < Height; y++)
                         {
-                            GridRayTracingLineOfSight(x, y, outerY);
+                            var innerIndex = GetMapIndex(x, y);
+                            if (Hint.Likely(!GetMapValue(innerIndex)))
+                            {
+                                GridRayTracingLineOfSight(x, y, outerY);
+                            }
                         }
                     }
                 }
@@ -91,9 +121,23 @@ namespace Maes.Utilities
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: AssumeRange(0, int.MaxValue)]
+        private int GetMapIndex(int2 pos)
+        {
+            return pos.x * Height + pos.y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: AssumeRange(0, int.MaxValue)]
         private int GetVisibilityMapIndex([AssumeRange(0, int.MaxValue)] int x, [AssumeRange(0, int.MaxValue)] int y, [AssumeRange(0, int.MaxValue)] int outerY)
         {
             return GetMapIndex(x, y) + Map.Length * outerY * 64;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: AssumeRange(0, int.MaxValue)]
+        private int GetVisibilityMapIndex(int2 pos, [AssumeRange(0, int.MaxValue)] int outerY)
+        {
+            return GetMapIndex(pos) + Map.Length * outerY * 64;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,64 +154,45 @@ namespace Maes.Utilities
 
         private void GridRayTracingLineOfSight([AssumeRange(0, int.MaxValue)] int endX, [AssumeRange(0, int.MaxValue)] int endY, [AssumeRange(0, int.MaxValue)] int outerY)
         {
-            var x = X;
-            var y = outerY;
+            var pos = new int2(X, outerY);
+            var end = new int2(endX, endY);
 
-            var diffX = endX - X;
-            var diffY = endY - outerY;
+            var diff = end - pos;
 
-            var stepX = Math.Sign(diffX);
-            var stepY = Math.Sign(diffY);
+            var step = math.sign(diff);
 
-            var angle = Mathf.Atan2(-diffY, diffX);
+            var delta = math.abs(diff);
+            var tDelta = math.rcp(delta);
+            var tMax = tDelta * 0.5f;
 
-            var cosAngle = Mathf.Cos(angle);
-            var sinAngle = Mathf.Sin(angle);
-
-            var tMaxX = 0.5f / cosAngle;
-            var tMaxY = 0.5f / sinAngle;
-
-            var tDeltaX = tMaxX * 2.0f;
-            var tDeltaY = tMaxY * 2.0f;
-
-            var manhattenDistance = Math.Abs(endX - X) + Math.Abs(endY - outerY);
+            var manhattenDistance = math.csum(math.abs(diff));
             Hint.Assume(manhattenDistance >= 0);
 
-            var visibilityIndex = GetVisibilityMapIndex(x, y, outerY);
-            SetVisibilityMapValue(visibilityIndex);
+            SetVisibilityMapValue(GetVisibilityMapIndex(pos, outerY));
 
             for (var t = 0; t < manhattenDistance; t++)
             {
-                if (Mathf.Abs(tMaxX) < Mathf.Abs(tMaxY))
-                {
-                    tMaxX += tDeltaX;
-                    x += stepX;
-                }
-                else
-                {
-                    tMaxY += tDeltaY;
-                    y += stepY;
-                }
+                var selectX = math.abs(tMax.x) < math.abs(tMax.y);
+                tMax += math.select(new float2(0f, tDelta.y), new float2(tDelta.x, 0f), selectX);
+                pos += math.select(new int2(0, step.y), new int2(step.x, 0), selectX);
 
                 if (MaxDistance != 0f)
                 {
                     // Exit if we are over MaxDistance
-                    var distX = X - x;
-                    var distY = outerY - y;
+                    var distX = X - pos.x;
+                    var distY = outerY - pos.y;
                     if (distX * distX + distY * distY > MaxDistance * MaxDistance)
                     {
                         return;
                     }
                 }
 
-                var mapIndex = GetMapIndex(x, y);
-                if (GetMapValue(mapIndex))
+                if (GetMapValue(GetMapIndex(pos)))
                 {
                     return;
                 }
 
-                visibilityIndex = GetVisibilityMapIndex(x, y, outerY);
-                SetVisibilityMapValue(visibilityIndex);
+                SetVisibilityMapValue(GetVisibilityMapIndex(pos, outerY));
             }
         }
     }

@@ -25,11 +25,9 @@ using System.Collections.Generic;
 
 using Maes.Algorithms;
 using Maes.Algorithms.Patrolling;
-using Maes.Algorithms.Patrolling.TrackInfos;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map;
 using Maes.Map.Generators;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
@@ -75,7 +73,6 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private void CreateAndEnqueueScenario()
         {
-
             var robotConstraints = new RobotConstraints(
                 mapKnown: true,
                 distributeSlam: false,
@@ -95,11 +92,11 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
                         seed: Seed,
                         numberOfRobots: RobotCount,
                         suggestedStartingPoint: null,
-                        createAlgorithmDelegate: _ => new WrapperHMPPatrollingAlgorithm(_trackerVertices)),
+                        createAlgorithmDelegate: seed => new WrapperHMPPatrollingAlgorithm(_trackerVertices, seed)),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
                     statisticsFileName: $"test",
-                    patrollingMapFactory: AllWaypointConnectedGenerator.MakePatrollingMap)
+                    patrollingMapFactory: map => AllWaypointConnectedGenerator.MakePatrollingMap(map))
             )};
 
             _maes = new PatrollingSimulator(scenarios);
@@ -154,10 +151,9 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
 
         private class WrapperHMPPatrollingAlgorithm : IPatrollingAlgorithm
         {
-            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices)
+            public WrapperHMPPatrollingAlgorithm(TrackerVertices trackerVertices, int seed)
             {
-                _algorithm = new HMPPatrollingAlgorithm(new MeetingPointTimePartitionGenerator(
-                    new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator)));
+                _algorithm = new HMPPatrollingAlgorithm(seed);
                 _trackerVertices = trackerVertices;
             }
 
@@ -213,6 +209,16 @@ namespace Tests.PlayModeTests.Algorithms.Patrolling.HMPPatrollingAlgorithmTests
             public string GetDebugInfo()
             {
                 return _algorithm.GetDebugInfo();
+            }
+
+            public bool HasSeenAllInPartition(int assignedPartition)
+            {
+                throw new System.NotImplementedException();
+            }
+
+            public void ResetSeenVerticesForPartition(int partitionId)
+            {
+                throw new System.NotImplementedException();
             }
         }
     }

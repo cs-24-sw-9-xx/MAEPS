@@ -23,13 +23,13 @@
 using System.Collections.Generic;
 
 using Maes.Algorithms.Patrolling;
-using Maes.Map.Generators.Patrolling.Partitioning;
-using Maes.Map.Generators.Patrolling.Partitioning.MeetingPoints;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.NoFaultTolerance;
 using Maes.Map.Generators.Patrolling.Waypoints.Generators;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
@@ -41,17 +41,15 @@ namespace Maes.Experiments.Patrolling
     /// <summary>
     /// AAU group cs-25-ds-10-17
     /// </summary>
+    [Preserve]
     internal class GroupACommunicationRangeExperiment : MonoBehaviour
     {
         private readonly List<float> _communicationRangeThroughWalls = new List<float>() { 0, 1f, 2f, 3f, 4f, 5f };
         private void Start()
         {
             var scenarios = new List<MySimulationScenario>();
-            PatrollingMapFactory patrollingMapFactory = AllWaypointConnectedGenerator.MakePatrollingMap;
-            CreateAlgorithmDelegate algorithm = (_) => new HMPPatrollingAlgorithm
-            (
-                new MeetingPointTimePartitionGenerator(new AdapterToPartitionGenerator(SpectralBisectionPartitioningGenerator.Generator))
-            );
+            PatrollingMapFactory patrollingMapFactory = map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance);
+            CreateAlgorithmDelegate algorithm = seed => new HMPPatrollingAlgorithm(seed);
             var algorithmName = nameof(HMPPatrollingAlgorithm);
 
             foreach (var seed in GroupAParameters.SeedGenerator())

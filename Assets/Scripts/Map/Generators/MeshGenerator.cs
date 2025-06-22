@@ -48,12 +48,6 @@ namespace Maes.Map.Generators
                  "Enabling this can impact performance of map generation by up to 2x")]
         public bool Include3DCollider = false;
 
-        // Uses the marching squares algorithm to smooth out the grid and create a continuous wall around the rooms
-        private SquareGrid? _squareGrid2D;
-        // Since the squares have an index and this index is depending on the 
-        // order of the vertices, we have to include an additional grid for 3D.
-        private SquareGrid? _squareGrid3D;
-
         private List<Node> _vertices2D = new();
         private List<Node> _vertices3D = new();
 
@@ -76,17 +70,8 @@ namespace Maes.Map.Generators
         private readonly HashSet<int> _checkedVertices2D = new();
         private readonly HashSet<int> _checkedVertices3D = new();
 
-        private List<Node> _gizmoWallVertices = new();
-        private Dictionary<TileType, List<int>> _gizmoWallTriangles = new();
-        internal void ClearMesh()
+        private void ClearData()
         {
-            _squareGrid2D = null;
-            _squareGrid3D = null;
-            //Destroy(InnerWalls3D.gameObject.GetComponent<MeshCollider>());
-            InnerWalls3D.sharedMesh?.Clear();
-            //Destroy(InnerWalls2D.gameObject.GetComponent<MeshCollider>());
-            InnerWalls2D.sharedMesh?.Clear();
-            WallRoof.sharedMesh?.Clear();
             _vertices2D.Clear();
             _vertices3D.Clear();
             _triangles2D.Clear();
@@ -99,6 +84,20 @@ namespace Maes.Map.Generators
             _checkedVertices3D.Clear();
         }
 
+        internal void ClearMesh()
+        {
+            Destroy(InnerWalls3D.sharedMesh);
+            Destroy(InnerWalls2D.sharedMesh);
+            Destroy(WallRoof.sharedMesh);
+
+            ClearData();
+        }
+
+        private void OnDestroy()
+        {
+            ClearMesh();
+        }
+
         internal SimulationMap<Tile> GenerateMesh(Tile[,] map, float wallHeight,
             bool disableCornerRounding, List<Room> rooms, bool brokenCollisionMap)
         {
@@ -109,33 +108,33 @@ namespace Maes.Map.Generators
 
             // Generate grid of squares containing control nodes and between nodes 
             // for the marching square algorithm
-            _squareGrid2D = new SquareGrid(map);
-            _squareGrid3D = new SquareGrid(map);
+            var squareGrid2D = new SquareGrid(map);
+            var squareGrid3D = new SquareGrid(map);
 
             _vertices2D = new List<Node>();
             _triangles2D = new Dictionary<TileType, List<int>>();
             _vertices3D = new List<Node>();
             _triangles3D = new Dictionary<TileType, List<int>>();
 
-            for (var x = 0; x < _squareGrid2D.Squares.GetLength(0); x++)
+            for (var x = 0; x < squareGrid2D.Squares.GetLength(0); x++)
             {
-                for (var y = 0; y < _squareGrid2D.Squares.GetLength(1); y++)
+                for (var y = 0; y < squareGrid2D.Squares.GetLength(1); y++)
                 {
                     // Create triangles from all the points in the squares
                     // assigned to variables "vertices" and "triangles"
-                    TriangulateSquare(_squareGrid2D.Squares[x, y], false, disableCornerRounding);
+                    TriangulateSquare(squareGrid2D.Squares[x, y], false, disableCornerRounding);
                 }
             }
 
             if (Include3DCollider)
             {
-                for (var x = 0; x < _squareGrid3D.Squares.GetLength(0); x++)
+                for (var x = 0; x < squareGrid3D.Squares.GetLength(0); x++)
                 {
-                    for (var y = 0; y < _squareGrid3D.Squares.GetLength(1); y++)
+                    for (var y = 0; y < squareGrid3D.Squares.GetLength(1); y++)
                     {
                         // Create triangles from all the points in the squares
                         // assigned to variables "vertices" and "triangles"
-                        TriangulateSquare(_squareGrid3D.Squares[x, y], true, disableCornerRounding);
+                        TriangulateSquare(squareGrid3D.Squares[x, y], true, disableCornerRounding);
                     }
                 }
             }
@@ -157,8 +156,12 @@ namespace Maes.Map.Generators
 
             Generate2DColliders();
 
-            var collisionMap = GenerateCollisionMap(_squareGrid2D, map,
-                new Vector2(_squareGrid2D.XOffset, _squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
+            var collisionMap = GenerateCollisionMap(squareGrid2D, map,
+                new Vector2(squareGrid2D.XOffset, squareGrid2D.YOffset), disableCornerRounding, rooms, brokenCollisionMap: brokenCollisionMap);
+
+            // A lot of stuff is stored as member variables.
+            // Let's clear them now we don't need them anymore.
+            ClearData();
 
             Debug.LogFormat("GenerateMesh took {0}s", Time.realtimeSinceStartup - startTime);
             return collisionMap;
@@ -169,6 +172,7 @@ namespace Maes.Map.Generators
             // Create roof mesh
             var wallRoofMesh = new Mesh
             {
+                name = "Wall Roof",
                 vertices = _vertices2D.Select(vertex => vertex.Position).ToArray()
             };
             var subMesh = 0;
@@ -185,7 +189,7 @@ namespace Maes.Map.Generators
             wallRoofMesh.RecalculateNormals();
 
             // Apply mesh to wall roof
-            WallRoof.mesh = wallRoofMesh;
+            WallRoof.sharedMesh = wallRoofMesh;
         }
 
         private static SimulationMap<Tile> GenerateCollisionMap(SquareGrid squareGrid, Tile[,] tileMap, Vector3 offset,
@@ -326,7 +330,7 @@ namespace Maes.Map.Generators
 
             var wallVertices = new List<Node>();
             var wallTriangles = new Dictionary<TileType, List<int>>();
-            var innerWallsMesh = new Mesh();
+            var innerWallsMesh = new Mesh { name = "Inner Walls" + (isMesh3D ? "3D" : "2D") };
 
             var outlines = isMesh3D ? _outlines3D : _outlines2D;
 
@@ -394,10 +398,6 @@ namespace Maes.Map.Generators
 
             innerWallsMesh.subMeshCount = wallIndexType.Keys.Count;
 
-            // Debug variables
-            _gizmoWallVertices = wallVertices;
-            _gizmoWallTriangles = wallTriangles;
-
             innerWallsMesh.vertices = wallVertices.Select(vertex => vertex.Position).ToArray();
 
             var subMeshIndex = 0;
@@ -410,11 +410,11 @@ namespace Maes.Map.Generators
 
             if (isMesh3D)
             {
-                InnerWalls3D.mesh = innerWallsMesh;
+                InnerWalls3D.sharedMesh = innerWallsMesh;
             }
             else
             {
-                InnerWalls2D.mesh = innerWallsMesh;
+                InnerWalls2D.sharedMesh = innerWallsMesh;
             }
         }
 
@@ -943,47 +943,5 @@ namespace Maes.Map.Generators
                 Right = new Node(Position + Vector3.right / 2f, type);
             }
         }
-
-#if UNITY_EDITOR
-        private void OnDrawGizmos()
-        {
-            foreach (var (type, vertices) in _gizmoWallTriangles)
-            {
-
-                Gizmos.color = type switch
-                {
-                    TileType.Wall => Color.black,
-                    TileType.Room => Color.white,
-                    TileType.Hall => Color.gray,
-                    TileType.Wood => Color.green,
-                    TileType.Concrete => Color.yellow,
-                    TileType.Brick => Color.red,
-                    _ => Color.blue
-                };
-
-                //Handles.color = type switch
-                //{
-                //    TileType.Wall => Color.black,
-                //    TileType.Room => Color.white,
-                //    TileType.Hall => Color.gray,
-                //    TileType.Concrete => Color.yellow,
-                //    TileType.Wood => Color.green,
-                //    TileType.Brick => Color.red,
-                //    _ => Color.blue
-                //};
-
-                for (var index = 0; index < vertices.Count - 1; index++)
-                {
-                    var vec = _gizmoWallVertices[vertices[index]].Position;
-                    vec.Set(vec.x, vec.z, vec.y);
-                    var vec2 = _gizmoWallVertices[vertices[index + 1]].Position;
-                    vec2.Set(vec2.x, vec2.z, vec2.y);
-                    Gizmos.DrawLine(vec, vec2);
-                    //Handles.Label(vec, index.ToString());
-                }
-
-            }
-        }
-#endif
     }
 }

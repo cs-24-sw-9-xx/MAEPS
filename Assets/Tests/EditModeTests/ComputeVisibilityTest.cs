@@ -5,7 +5,7 @@ using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
 
 using Unity.Collections;
 using Unity.Jobs;
@@ -286,7 +286,7 @@ namespace Tests.EditModeTests
         {
             using (var bitmap = BitmapUtilities.BitmapFromString(Map))
             {
-                var waypoints = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap);
+                var waypoints = GreedyMostVisibilityWaypointGenerator.ComputeVisibility(bitmap, maxDistance: 0, inaccurateButFast: false);
 
                 // Check that there are no waypoints inside the wall
                 foreach (var (waypoint, _) in waypoints)

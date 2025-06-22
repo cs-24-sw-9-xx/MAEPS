@@ -272,7 +272,7 @@ namespace Maes.Map
             return _tiles[localCoordinate.x, localCoordinate.y];
         }
 
-        public enum SlamTileStatus
+        public enum SlamTileStatus : byte
         {
             Unseen,
             Open,

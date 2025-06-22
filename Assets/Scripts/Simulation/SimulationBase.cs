@@ -51,6 +51,8 @@ namespace Maes.Simulation
         public int SimulatedPhysicsTicks { get; private set; }
         public float SimulateTimeSeconds { get; private set; }
 
+        private float _startedRealTimeSeconds;
+
         public MapSpawner MapGenerator = null!;
 
         public TRobotSpawner RobotSpawner = null!;
@@ -83,9 +85,9 @@ namespace Maes.Simulation
         public CommunicationManager CommunicationManager { get; private set; } = null!;
 
 
-        private MonaRobot? _selectedRobot;
+        public MonaRobot? SelectedRobot { get; private set; }
 
-        public bool HasSelectedRobot => _selectedRobot != null;
+        public bool HasSelectedRobot => SelectedRobot != null;
 
         private VisibleTagInfoHandler? _selectedTag;
 
@@ -105,6 +107,8 @@ namespace Maes.Simulation
         // Sets up the simulation by generating the map and spawning the robots
         public virtual void SetScenario(TScenario scenario)
         {
+            _startedRealTimeSeconds = Time.realtimeSinceStartup;
+
             _scenario = scenario;
             var mapInstance = Instantiate(MapGenerator, transform);
             _collisionMap = scenario.MapSpawner(mapInstance);
@@ -127,7 +131,7 @@ namespace Maes.Simulation
 
             CommunicationManager.SetRobotReferences(Robots);
             FaultInjection = scenario.FaultInjection;
-
+            FaultInjection?.SetDestroyFunc(DestroyRobot);
             Directory.CreateDirectory(StatisticsFolderPath);
         }
 
@@ -144,19 +148,19 @@ namespace Maes.Simulation
         public void SetSelectedRobot(MonaRobot? newSelectedRobot)
         {
             // Disable outline on previously selected robot
-            if (_selectedRobot != null)
+            if (SelectedRobot != null)
             {
-                _selectedRobot.HideOutline();
+                SelectedRobot.HideOutline();
             }
 
-            _selectedRobot = newSelectedRobot;
+            SelectedRobot = newSelectedRobot;
             if (newSelectedRobot != null)
             {
                 newSelectedRobot.ShowOutline();
             }
 
             Tracker.SetVisualizedRobot(newSelectedRobot);
-            if (_selectedRobot == null)
+            if (SelectedRobot == null)
             {
                 SimInfoUIController.ClearSelectedRobot();
             }
@@ -214,17 +218,17 @@ namespace Maes.Simulation
         public void UpdateDebugInfo()
         {
 #if MAEPS_GUI
-            if (_selectedRobot is not null)
+            if (SelectedRobot is not null)
             {
                 if (GlobalSettings.IsRosMode)
                 {
-                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.Algorithm.GetDebugInfo());
+                    SimInfoUIController.UpdateAlgorithmDebugInfo(SelectedRobot.Algorithm.GetDebugInfo());
                     // SimInfoUIController.UpdateControllerDebugInfo(_selectedRobot.Controller.GetDebugInfo());
                 }
                 else
                 {
-                    SimInfoUIController.UpdateAlgorithmDebugInfo(_selectedRobot.Algorithm.GetDebugInfo());
-                    SimInfoUIController.UpdateControllerDebugInfo(_selectedRobot.Controller.GetDebugInfo());
+                    SimInfoUIController.UpdateAlgorithmDebugInfo(SelectedRobot.Algorithm.GetDebugInfo());
+                    SimInfoUIController.UpdateControllerDebugInfo(SelectedRobot.Controller.GetDebugInfo());
                 }
 
             }
@@ -245,6 +249,8 @@ namespace Maes.Simulation
             {
                 Tracker.FinishStatistics();
             }
+
+            Debug.LogFormat("Simulation took {0}s total", Time.realtimeSinceStartup - _startedRealTimeSeconds);
         }
 
         public void ShowAllTags()
@@ -254,15 +260,31 @@ namespace Maes.Simulation
 
         public void ShowSelectedTags()
         {
-            if (_selectedRobot != null)
+            if (SelectedRobot != null)
             {
-                _debugVisualizer.RenderSelectedVisibleTags(_selectedRobot.id);
+                _debugVisualizer.RenderSelectedVisibleTags(SelectedRobot.id);
             }
         }
 
         public void ClearVisualTags()
         {
             _debugVisualizer.HideAllTags();
+        }
+
+        public bool DestroyRobot(MonaRobot robot)
+        {
+            if (SelectedRobot == robot)
+            {
+                SetSelectedRobot(null);
+            }
+
+            if (Robots.Remove(robot))
+            {
+                robot.DestroyRobot();
+                return true;
+            }
+
+            return false;
         }
 
         public abstract bool HasFinishedSim();

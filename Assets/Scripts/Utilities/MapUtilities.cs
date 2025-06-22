@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
@@ -116,25 +118,29 @@ namespace Maes.Utilities
         /// <returns></returns>
         public static Dictionary<(Vector2Int, Vector2Int), int> CalculateDistanceMatrix(Bitmap map, IReadOnlyCollection<Vector2Int> vertices)
         {
-            Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
+            var startTime = Time.realtimeSinceStartup;
+            ConcurrentDictionary<(Vector2Int, Vector2Int), int> shortestGridPath = new();
+            var verticesSet = new HashSet<Vector2Int>(vertices);
 
-            foreach (var vertex in vertices)
+            Parallel.ForEach(vertices, vertex =>
             {
-                BreadthFirstSearch(vertex, shortestGridPath, vertices, map);
-            }
+                BreadthFirstSearch(vertex, shortestGridPath, verticesSet, map);
+            });
 
-            return shortestGridPath;
+            Debug.LogFormat("CalculateDistanceMatrix took {0}s", Time.realtimeSinceStartup - startTime);
+
+            return shortestGridPath.ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         // BFS to find the distance of the shortest path from the start position to all other vertices
-        private static void BreadthFirstSearch(Vector2Int startPosition, Dictionary<(Vector2Int, Vector2Int), int> shortestGridPath, IReadOnlyCollection<Vector2Int> vertexPositions, Bitmap map)
+        private static void BreadthFirstSearch(Vector2Int startPosition, ConcurrentDictionary<(Vector2Int, Vector2Int), int> shortestGridPath, HashSet<Vector2Int> vertexPositions, Bitmap map)
         {
             var queue = new Queue<Vector2Int>();
-            var visited = new HashSet<Vector2Int>();
+            using var visited = new Bitmap(map.Width, map.Height);
             var distanceMap = new Dictionary<Vector2Int, int>();
 
             queue.Enqueue(startPosition);
-            visited.Add(startPosition);
+            visited.Set(startPosition.x, startPosition.y);
             distanceMap[startPosition] = 0;
 
             while (queue.Count > 0)
@@ -146,10 +152,13 @@ namespace Maes.Utilities
                 {
                     var neighbor = current + direction;
 
-                    if (IsWalkable(neighbor, map) && !visited.Contains(neighbor))
+                    Debug.Assert(neighbor.x >= 0 && neighbor.x < map.Width);
+                    Debug.Assert(neighbor.y >= 0 && neighbor.y < map.Height);
+
+                    if (!map.Contains(neighbor.x, neighbor.y) && !visited.Contains(neighbor))
                     {
                         queue.Enqueue(neighbor);
-                        visited.Add(neighbor);
+                        visited.Set(neighbor.x, neighbor.y);
                         distanceMap[neighbor] = currentDistance + 1;
 
                         if (vertexPositions.Contains(neighbor))
@@ -159,14 +168,6 @@ namespace Maes.Utilities
                     }
                 }
             }
-        }
-
-        // Function to check if a position is within bounds and walkable
-        private static bool IsWalkable(Vector2Int pos, Bitmap map)
-        {
-            return pos.x >= 0 && pos.x < map.Width &&
-                   pos.y >= 0 && pos.y < map.Height &&
-                   !map.Contains(pos.x, pos.y);
         }
     }
 }

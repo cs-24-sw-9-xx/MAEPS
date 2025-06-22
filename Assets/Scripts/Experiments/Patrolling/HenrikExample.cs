@@ -31,12 +31,14 @@ using Maes.Robot;
 using Maes.Simulation.Exploration;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling
 {
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
+    [Preserve]
     internal class HenrikExample : MonoBehaviour
     {
         private void Start()

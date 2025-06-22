@@ -11,8 +11,7 @@
         "Unity.Robotics.ROSTCPConnector.Editor",
         "Unity.Robotics.ROSTCPConnector.MessageGeneration",
         "Unity.Robotics.ROSTCPConnector.Messages",
-        "YamlDotNet",
-        "EditModeTests"
+        "YamlDotNet"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

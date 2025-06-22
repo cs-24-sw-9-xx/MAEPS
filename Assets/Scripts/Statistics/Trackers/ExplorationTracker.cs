@@ -27,6 +27,7 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Exploration;
+using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Exploration;
 using Maes.UI.Visualizers.Exploration.VisualizationModes;
@@ -61,6 +62,7 @@ namespace Maes.Statistics.Trackers
         private readonly RayTracingMap<Cell>.CellFunction _shouldContinueFromCellDelegate;
 
         private readonly CsvDataWriter<ExplorationSnapshot> _snapShotWriter;
+        private readonly RayTracingMap<Cell> _rayTracingMap;
 
 
         public ExplorationTracker(ExplorationSimulation simulation, SimulationMap<Tile> collisionMap, ExplorationVisualizer explorationVisualizer, RobotConstraints constraints, ExplorationSimulationScenario scenario)
@@ -81,6 +83,8 @@ namespace Maes.Statistics.Trackers
 
             var path = $"{GlobalSettings.StatisticsOutPutPath}{scenario.StatisticsFileName}";
             _snapShotWriter = new CsvDataWriter<ExplorationSnapshot>(path);
+
+            _rayTracingMap = new RayTracingMap<Cell>(_map);
         }
 
         protected override void CreateSnapShot(CommunicationSnapshot communicationSnapshot)
@@ -262,7 +266,6 @@ namespace Maes.Statistics.Trackers
                 if (!cell.IsExplored)
                 {
                     cell.LastExplorationTimeInTicks = CurrentTick;
-                    cell.ExplorationTimeInTicks += 1;
 
                     _newlyExploredTriangles.Add((index, cell));
                     ExploredTriangles++;

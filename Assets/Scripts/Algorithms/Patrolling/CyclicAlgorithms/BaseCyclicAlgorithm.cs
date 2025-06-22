@@ -26,6 +26,7 @@ using System.Linq;
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Map;
 using Maes.Robot;
+using Maes.Utilities;
 
 using UnityEngine;
 
@@ -39,15 +40,13 @@ namespace Maes.Algorithms.Patrolling
     {
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
         private List<Vertex> _patrollingCycle = new();
 
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
 
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            return new IComponent[] { _goToNextVertexComponent };
         }
 
         private Vertex NextVertex(Vertex currentVertex)
@@ -77,19 +76,32 @@ namespace Maes.Algorithms.Patrolling
         {
             Debug.Assert(vertices.Max(v => v.Id) < PatrollingMap.Vertices.Count, $"Vertex ID {vertices.Max(v => v.Id)} is out of bounds for the patrolling map with {vertices.Count} vertices.");
 
+            // Calculate the estimated distance matrix.
+            var map = Controller.SlamMap.CoarseMap;
+            var collisionMap = MapUtilities.MapToBitMap(map);
+            var estimatedDistanceMatrix = MapUtilities.CalculateDistanceMatrix(collisionMap, vertices.Select(v => v.Position).ToList());
+
+            // The float[,] is used many places, so we just convert it into this format.
             var distanceMatrix = new float[vertices.Count, vertices.Count];
-            foreach (var v1 in vertices)
+            for (var i = 0; i < vertices.Count; i++)
             {
-                foreach (var v2 in vertices)
+                var v1 = vertices[i];
+                for (var j = i; j < vertices.Count; j++)
                 {
-                    if (v1.Id == v2.Id)
+                    var v2 = vertices[j];
+                    float distance;
+
+                    if (i == j)
                     {
-                        distanceMatrix[v1.Id, v2.Id] = 0;
+                        distance = 0;
                     }
                     else
                     {
-                        distanceMatrix[v1.Id, v2.Id] = Controller.TravelEstimator.EstimateDistance(v1.Position, v2.Position, dependOnBrokenBehaviour: false) ?? float.MaxValue;
+                        distance = estimatedDistanceMatrix.TryGetValue((v1.Position, v2.Position), out var dist) ? dist : float.MaxValue;
                     }
+
+                    distanceMatrix[v1.Id, v2.Id] = distance;
+                    distanceMatrix[v2.Id, v1.Id] = distance;
                 }
             }
             return distanceMatrix;

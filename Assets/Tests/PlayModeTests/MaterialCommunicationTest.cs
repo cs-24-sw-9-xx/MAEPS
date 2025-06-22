@@ -183,7 +183,7 @@ namespace Tests.PlayModeTests
         [Test(ExpectedResult = null)]
         public IEnumerator Broadcast_TransmissionFailedTest()
         {
-            InitSimulator(generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(1), RandomSeed, borderSize: 2),
+            InitSimulator(generator => generator.GenerateMap(new BitmapConfig(GenerateMapWithHorizontalWallInMiddle(1), RandomSeed, borderSize: 2)),
                 new List<Vector2Int> { new(-4, -4), new(8, 8) },
                 new Dictionary<uint, Dictionary<TileType, float>>
                 {
@@ -295,7 +295,7 @@ namespace Tests.PlayModeTests
         {
             var foundWallDistance = float.PositiveInfinity;
             InitSimulator(
-                generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
+                generator => generator.GenerateMap(new BitmapConfig(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2)),
                 new List<Vector2Int> { new(0, -2), new(0, 3 + wallThickness) },
                 transmissionSuccessCalculatorFunc:
                 (_, wallDistance) =>

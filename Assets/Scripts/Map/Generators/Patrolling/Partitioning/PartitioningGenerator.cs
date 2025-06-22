@@ -47,12 +47,12 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         public delegate IEnumerable<List<Vector2Int>> PartitioningGeneratorDelegate(
             Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions, int numberOfPartitions);
 
-        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints)
+        public static PatrollingMap MakePatrollingMapWithSpectralBisectionPartitions(SimulationMap<Tile> simulationMap, int amountOfPartitions, RobotConstraints robotConstraints, float maxDistance = 0f)
         {
             var communicationManager =
                 new CommunicationManager(simulationMap, robotConstraints, new DebuggingVisualizer());
             using var map = MapUtilities.MapToBitMap(simulationMap);
-            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map);
+            var vertexPositions = GreedyMostVisibilityWaypointGenerator.VertexPositionsFromMap(map, maxDistance);
             var vertexPositionsList = vertexPositions.ToList();
             var distanceMatrix = MapUtilities.CalculateDistanceMatrix(map, vertexPositionsList);
             var clusters = SpectralBisectionPartitioningGenerator.Generator(distanceMatrix, vertexPositionsList, amountOfPartitions);
@@ -63,7 +63,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
             foreach (var cluster in clusters)
             {
-                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(map, cluster, nextId);
+                var vertices = ReverseNearestNeighborWaypointConnector.ConnectVertices(cluster, distanceMatrix, nextId);
 
                 // Assign the partition and color to each vertex in the cluster
                 var clusterColor = Random.ColorHSV(0f, 1f, 0.5f, 1f, 0.5f, 1f);
@@ -75,7 +75,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
 
                 allVertices.AddRange(vertices);
                 nextId = vertices.Select(v => v.Id).Max() + 1;
-                partitions.Add(new Partition(partitionId, vertices, communicationManager.CalculateZones(vertices)));
+                partitions.Add(new Partition(partitionId, vertices, () => communicationManager.CalculateZones(vertices)));
                 partitionId++;
             }
 

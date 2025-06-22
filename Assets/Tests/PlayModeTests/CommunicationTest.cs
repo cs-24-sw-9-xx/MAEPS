@@ -256,7 +256,7 @@ namespace Tests.PlayModeTests
         {
             var foundWallDistance = float.PositiveInfinity;
             InitSimulator(
-                generator => generator.GenerateMap(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2),
+                generator => generator.GenerateMap(new BitmapConfig(GenerateMapWithHorizontalWallInMiddle(wallThickness), RandomSeed, borderSize: 2)),
                     transmissionSuccessCalculatorFunc:
                     (_, wallDistance) =>
                     {

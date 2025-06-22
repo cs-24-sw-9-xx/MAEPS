@@ -16,6 +16,11 @@ namespace Maes.Simulation.Patrolling
         public bool StopAfterDiff { get; }
         public int Partitions { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether waypoint data should be saved during the simulation.
+        /// </summary>
+        public bool SaveWaypointData { get; }
+
         public PatrollingSimulationScenario(int seed,
             int totalCycles,
             bool stopAfterDiff,
@@ -27,7 +32,8 @@ namespace Maes.Simulation.Patrolling
             PatrollingMapFactory? patrollingMapFactory = null,
             IFaultInjection? faultInjection = null,
             int maxLogicTicks = DefaultMaxLogicTicks,
-            int partitions = 1)
+            int partitions = 1,
+            bool saveWaypointData = false)
             : base(seed,
                 robotSpawner,
                 hasFinishedSim,
@@ -40,8 +46,28 @@ namespace Maes.Simulation.Patrolling
             TotalCycles = totalCycles;
             StopAfterDiff = stopAfterDiff;
             Partitions = partitions;
+            SaveWaypointData = saveWaypointData;
             PatrollingMapFactory = patrollingMapFactory ?? ((map) =>
                 PartitioningGenerator.MakePatrollingMapWithSpectralBisectionPartitions(map, partitions, RobotConstraints));
+            HasFinishedSim = hasFinishedSim ?? DefaultHasFinishedSim;
+        }
+
+        private bool DefaultHasFinishedSim(PatrollingSimulation simulation, out SimulationEndCriteriaReason? reason)
+        {
+            if (simulation.HasFinishedSim())
+            {
+                reason = new SimulationEndCriteriaReason("Success", true);
+                return true;
+            }
+
+            if (simulation.SimulatedLogicTicks > MaxLogicTicks)
+            {
+                reason = new SimulationEndCriteriaReason($"Max ticks ({MaxLogicTicks}) reached (stuck?). Completed cycle: {simulation.PatrollingTracker.CurrentCycle} out of {simulation.PatrollingTracker.TotalCycles}", false);
+                return true;
+            }
+
+            reason = null;
+            return false;
         }
     }
 }

@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using Maes.Utilities;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities;
+using Tests.PlayModeTests.Utilities;
+
+using UnityEngine;
 
 using Debug = UnityEngine.Debug;
 
@@ -74,7 +77,7 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 100000000;
 
-            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 1))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 1))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -97,7 +100,7 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 100000000;
 
-            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 1))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 1))
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -120,9 +123,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap1 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 2))
+            using (var bitmap1 = BitmapUtilities.CreateRandomBitmap(100, 100, 2))
             {
-                using (var bitmap2 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 3))
+                using (var bitmap2 = BitmapUtilities.CreateRandomBitmap(100, 100, 3))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -146,9 +149,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap1 = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 2))
+            using (var bitmap1 = BitmapUtilities.CreateRandomBitmap(100, 100, 2))
             {
-                using (var bitmap2 = Utilities.BitmapUtilities.CreateRandomBitmap(60, 60, 3))
+                using (var bitmap2 = BitmapUtilities.CreateRandomBitmap(60, 60, 3))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -172,9 +175,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 1000000;
 
-            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
             {
-                using (var otherBitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 4))
+                using (var otherBitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 4))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -201,9 +204,9 @@ namespace Tests.EditModeTests.Benchmarks
         {
             const int iterations = 10000;
 
-            using (var bitmap = Utilities.BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
             {
-                using (var otherBitmap = Utilities.BitmapUtilities.CreateRandomBitmap(60, 60, 4))
+                using (var otherBitmap = BitmapUtilities.CreateRandomBitmap(60, 60, 4))
                 {
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
@@ -221,6 +224,74 @@ namespace Tests.EditModeTests.Benchmarks
 
                     Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
                 }
+            }
+        }
+
+        [Test]
+        [Explicit]
+        public void BitmapEnumeratorBenchmark()
+        {
+            const int iterations = 100000;
+
+            var count = 0;
+
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            {
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                // Benchmark
+                for (var i = 0; i < iterations; i++)
+                {
+                    using (var enumerator = bitmap.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+
+                Assert.AreEqual(count, bitmap.Count * iterations);
+            }
+        }
+
+        [Test]
+        [Explicit]
+        public void BitmapEnumeratorHashsetComparisonBenchmark()
+        {
+            const int iterations = 100000;
+
+            var count = 0;
+
+            using (var bitmap = BitmapUtilities.CreateRandomBitmap(100, 100, 5))
+            {
+                var hashMap = new HashSet<Vector2Int>(bitmap);
+
+                var stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                // Benchmark
+                for (var i = 0; i < iterations; i++)
+                {
+                    using (var enumerator = hashMap.GetEnumerator())
+                    {
+                        while (enumerator.MoveNext())
+                        {
+                            count++;
+                        }
+                    }
+                }
+
+                stopWatch.Stop();
+
+                Debug.LogFormat("Took {0} ms with {1} iterations", stopWatch.ElapsedMilliseconds, iterations);
+
+                Assert.AreEqual(count, bitmap.Count * iterations);
             }
         }
     }

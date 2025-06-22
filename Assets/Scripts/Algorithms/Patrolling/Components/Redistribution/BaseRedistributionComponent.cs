@@ -25,6 +25,8 @@ using System.Collections.Generic;
 using Maes.Map;
 using Maes.Robot;
 
+using UnityEngine;
+
 namespace Maes.Algorithms.Patrolling.Components.Redistribution
 {
     /// <summary>
@@ -43,6 +45,8 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IPatrollingAlgorithm _algorithm;
         private readonly Dictionary<int, bool> _receivedCommunication;
         private readonly System.Random _random;
+        private readonly Stack<int> _partitionStack = new();
+        private readonly Dictionary<int, bool> _hasLeftPartitionIntersection = new();
 
         /// <summary>
         /// Method to be implemented by derived classes to update the redistribution tracker on failure.
@@ -71,6 +75,15 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             _map = map;
             _algorithm = algorithm;
             _random = new System.Random(seed);
+            SetHasLeftIntersectionFlagToFalse();
+        }
+
+        private void SetHasLeftIntersectionFlagToFalse()
+        {
+            foreach (var partition in _map.Partitions)
+            {
+                _hasLeftPartitionIntersection[partition.PartitionId] = false;
+            }
         }
 
         public IEnumerable<ComponentWaitForCondition> PreUpdateLogic()
@@ -133,45 +146,65 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     {
                         _currentPartitionIntersection.Add(partitionId);
                     }
+                    if (_hasLeftPartitionIntersection[partitionId]
+                    && _algorithm.HasSeenAllInPartition(_controller.AssignedPartition)
+                    && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
+                    {
+                        UpdateRedistributionTracker(partitionId);
+                    }
                 }
                 else
                 {
                     if (_currentPartitionIntersection.Contains(partitionId))
                     {
-                        if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
-                        {
-                            UpdateTrackerOnSuccess(partitionId);
-                            _trackerUpdateTimestamp = _algorithm.LogicTicks;
-                            _receivedCommunication[partitionId] = false;
-                        }
-                        else
-                        {
-                            UpdateTrackerOnFailure(partitionId);
-                            if (SwitchPartition(partitionId))
-                            {
-                                return;
-                            }
-                        }
+                        _hasLeftPartitionIntersection[partitionId] = true;
+                        UpdateRedistributionTracker(partitionId);
                         _currentPartitionIntersection.Remove(partitionId);
+                        return;
+                    }
+                    if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition) && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
+                    {
+                        UpdateRedistributionTracker(partitionId);
                     }
                 }
             }
         }
 
-        private bool SwitchPartition(int partitionId)
+        private void UpdateRedistributionTracker(int partitionId)
         {
+            if (_receivedCommunication.TryGetValue(partitionId, out var hasCommunication) && hasCommunication)
+            {
+                UpdateTrackerOnSuccess(partitionId);
+                _trackerUpdateTimestamp = _algorithm.LogicTicks;
+                _receivedCommunication[partitionId] = false;
+            }
+            else
+            {
+                UpdateTrackerOnFailure(partitionId);
+                SwitchPartition(partitionId);
+            }
+        }
+
+        private void SwitchPartition(int partitionId)
+        {
+            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition) && _partitionStack.Count > 0 && _partitionStack.Peek() == partitionId)
+            {
+                return;
+            }
             var randomValue = (float)_random.NextDouble();
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
+                _partitionStack.Clear();
+                _partitionStack.Push(_controller.AssignedPartition);
+                Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId} algo: {_algorithm.AlgorithmName}");
+                _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 _controller.AssignedPartition = partition.PartitionId;
                 _currentPartition = partition;
                 _redistributionTracker.Clear();
                 _currentPartitionIntersection.Clear();
-                return true;
+                SetHasLeftIntersectionFlagToFalse();
             }
-
-            return false;
         }
 
         private sealed class RedistributionMessage

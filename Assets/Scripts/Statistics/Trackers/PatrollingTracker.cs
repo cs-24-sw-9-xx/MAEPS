@@ -10,6 +10,7 @@ using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
 using Maes.Simulation.Patrolling;
+using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using Maes.UI.Visualizers.Patrolling;
 using Maes.UI.Visualizers.Patrolling.VisualizationModes;
@@ -47,20 +48,22 @@ namespace Maes.Statistics.Trackers
         private float _lastCycleAverageGraphIdleness;
         private int _lastCycle;
 
-        private readonly ArrayPool<WaypointSnapshot> _waypointSnapshotPool;
+        private readonly ArrayPool<WaypointSnapshot>? _waypointSnapshotPool;
         private readonly BlockingCollection<(PatrollingSnapshot, WaypointSnapshot[])> _snapshots = new();
 
         private readonly CsvDataWriter<PatrollingSnapshot> _patrollingSnapshotWriter;
-        private readonly CsvDataWriter<WaypointSnapshot>[] _waypointSnapShots;
+        private readonly CsvDataWriter<WaypointSnapshot>[]? _waypointSnapShots;
+        private readonly bool _saveWaypointData;
 
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly Thread _writerThread;
 
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
-            PatrollingMap map, string statisticsFolderPath) : base(collisionMap, visualizer, scenario.RobotConstraints,
+            PatrollingMap map, string statisticsFolderPath, bool saveWaypointData) : base(collisionMap, visualizer, scenario.RobotConstraints,
             tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
+            _saveWaypointData = saveWaypointData;
             _simulation = simulation;
             _vertices = new VertexDetails[map.Vertices.Count];
             for (var i = 0; i < _vertices.Length; i++)
@@ -69,7 +72,6 @@ namespace Maes.Statistics.Trackers
                 Debug.Assert(_vertices[i].Vertex.Id == i);
             }
 
-            _waypointSnapshotPool = ArrayPool<WaypointSnapshot>.Create();
 
             _visualizer.CreateVisualizers(_vertices, map);
             _visualizer.SetCommunicationZoneVertices(collisionMap, map, simulation.CommunicationManager);
@@ -82,13 +84,16 @@ namespace Maes.Statistics.Trackers
             var patrollingFilename = Path.Join(statisticsFolderPath, "patrolling");
             _patrollingSnapshotWriter = new CsvDataWriter<PatrollingSnapshot>(patrollingFilename);
 
+            if (saveWaypointData)
+            {
+                _waypointSnapshotPool = ArrayPool<WaypointSnapshot>.Create();
+                var waypointFolderPath = Path.Join(statisticsFolderPath, "waypoints/");
+                Directory.CreateDirectory(waypointFolderPath);
 
-            var waypointFolderPath = Path.Join(statisticsFolderPath, "waypoints/");
-            Directory.CreateDirectory(waypointFolderPath);
-
-            _waypointSnapShots = _vertices.Select(v =>
-                new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath,
-                    $"{v.Vertex.Position.x}_{v.Vertex.Position.y}"))).ToArray();
+                _waypointSnapShots = _vertices.Select(v =>
+                    new CsvDataWriter<WaypointSnapshot>(Path.Join(waypointFolderPath,
+                        $"{v.Vertex.Position.x}_{v.Vertex.Position.y}"))).ToArray();
+            }
 
             _writerThread = new Thread(WriterThread) { Priority = ThreadPriority.BelowNormal };
             _writerThread.Start(_cancellationTokenSource.Token);
@@ -105,12 +110,17 @@ namespace Maes.Statistics.Trackers
 
                     _patrollingSnapshotWriter.AddRecord(patrollingSnapshot);
 
-                    for (var i = 0; i < _vertices.Length; i++)
+                    if (!_saveWaypointData)
                     {
-                        _waypointSnapShots[i].AddRecord(waypointSnapshots[i]);
+                        continue;
                     }
 
-                    _waypointSnapshotPool.Return(waypointSnapshots, clearArray: false);
+                    for (var i = 0; i < _vertices.Length; i++)
+                    {
+                        _waypointSnapShots![i].AddRecord(waypointSnapshots[i]);
+                    }
+
+                    _waypointSnapshotPool!.Return(waypointSnapshots, clearArray: false);
                 }
             }
             catch (InvalidOperationException)
@@ -122,10 +132,13 @@ namespace Maes.Statistics.Trackers
                 _patrollingSnapshotWriter.Finish();
                 _patrollingSnapshotWriter.Dispose();
 
-                foreach (var csvWriter in _waypointSnapShots)
+                if (_saveWaypointData)
                 {
-                    csvWriter.Finish();
-                    csvWriter.Dispose();
+                    foreach (var csvWriter in _waypointSnapShots!)
+                    {
+                        csvWriter.Finish();
+                        csvWriter.Dispose();
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -134,9 +147,12 @@ namespace Maes.Statistics.Trackers
                 // Don't write the statistics as retaliation.
                 _patrollingSnapshotWriter.Dispose();
 
-                foreach (var csvWriter in _waypointSnapShots)
+                if (_saveWaypointData)
                 {
-                    csvWriter.Dispose();
+                    foreach (var csvWriter in _waypointSnapShots!)
+                    {
+                        csvWriter.Dispose();
+                    }
                 }
             }
         }
@@ -233,13 +249,17 @@ namespace Maes.Statistics.Trackers
                 new PatrollingSnapshot(communicationSnapshot, CurrentGraphIdleness, WorstGraphIdleness,
                     TotalDistanceTraveled, AverageGraphIdleness, CurrentCycle, _simulation.NumberOfActiveRobots);
 
-            var waypointSnapshots = _waypointSnapshotPool.Rent(_vertices.Length);
-
-            for (var i = 0; i < _vertices.Length; i++)
+            var waypointSnapshots = Array.Empty<WaypointSnapshot>();
+            if (_saveWaypointData)
             {
-                var vertex = _vertices[i].Vertex;
-                waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
-                    vertex.NumberOfVisits);
+                waypointSnapshots = _waypointSnapshotPool!.Rent(_vertices.Length);
+
+                for (var i = 0; i < _vertices.Length; i++)
+                {
+                    var vertex = _vertices[i].Vertex;
+                    waypointSnapshots[i] = new WaypointSnapshot(CurrentTick, CurrentTick - vertex.LastTimeVisitedTick,
+                        vertex.NumberOfVisits);
+                }
             }
 
             _snapshots.Add((patrollingSnapshot, waypointSnapshots));

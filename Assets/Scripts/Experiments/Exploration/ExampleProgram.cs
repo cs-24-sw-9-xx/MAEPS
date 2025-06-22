@@ -32,13 +32,14 @@ using Maes.Robot;
 using Maes.Simulation.Exploration;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Exploration
 {
     using MySimulationScenario = ExplorationSimulationScenario;
     using MySimulator = ExplorationSimulator;
     using RobotSpawner = RobotSpawner<IExplorationAlgorithm>;
-
+    [Preserve]
     internal class ExampleProgram : MonoBehaviour
     {
         private void Start()

@@ -21,9 +21,11 @@
 
 using System;
 
+using UnityEngine;
+
 namespace Maes.Map.Generators
 {
-    public struct CaveMapConfig
+    public struct CaveMapConfig : IMapConfig
     {
         // CollisionMap size is always +1 larger in both axis
         // due to the marching squares algorithm using 4 points per square
@@ -55,7 +57,6 @@ namespace Maes.Map.Generators
         public int NeighbourWallsNeededToStayWall { get; }
 
         public bool BrokenCollisionMap { get; }
-
 
         internal CaveMapConfig(MaesYamlConfigLoader.MaesConfigType config, int seed) : this(
             randomSeed: seed,
@@ -109,6 +110,12 @@ namespace Maes.Map.Generators
 
             NeighbourWallsNeededToStayWall = neighbourWallsNeededToStayWall;
             BrokenCollisionMap = brokenCollisionMap;
+        }
+
+        public readonly SimulationMap<Tile> GenerateMap(GameObject gameObject, float wallHeight = 2)
+        {
+            var caveGenerator = gameObject.AddComponent<CaveGenerator>();
+            return caveGenerator.GenerateCaveMap(this, wallHeight);
         }
     }
 }

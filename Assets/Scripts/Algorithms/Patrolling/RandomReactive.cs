@@ -14,10 +14,12 @@ namespace Maes.Algorithms.Patrolling
     /// </summary>
     public sealed class RandomReactive : PatrollingAlgorithm
     {
+        private readonly bool _useBuiltinCollisionAvoidance;
         private readonly Random _random;
 
-        public RandomReactive(int seed)
+        public RandomReactive(int seed, bool useBuiltinCollisionAvoidance = false)
         {
+            _useBuiltinCollisionAvoidance = useBuiltinCollisionAvoidance;
             _random = new Random(seed);
         }
 
@@ -30,13 +32,21 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-            _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
+            if (!_useBuiltinCollisionAvoidance)
+            {
+                _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
+                return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            }
 
-            return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
+            return new IComponent[] { _goToNextVertexComponent };
         }
 
         private Vertex NextVertex(Vertex currentVertex)
         {
+            if (currentVertex.Neighbors.Count == 0)
+            {
+                return currentVertex;
+            }
             var index = _random.Next(currentVertex.Neighbors.Count);
             return currentVertex.Neighbors.ElementAt(index);
         }

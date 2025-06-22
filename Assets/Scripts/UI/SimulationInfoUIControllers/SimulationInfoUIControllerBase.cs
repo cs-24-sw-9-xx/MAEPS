@@ -48,6 +48,8 @@ namespace Maes.UI.SimulationInfoUIControllers
 
         private Button _stickyCameraButton = null!;
 
+        private Button _destroyRobotButton = null!;
+
         public TSimulation? Simulation => simulationManager.CurrentSimulation;
 
         public SimulationManager<TSimulation, TAlgorithm, TScenario> simulationManager = null!;
@@ -65,6 +67,7 @@ namespace Maes.UI.SimulationInfoUIControllers
         {
 #if MAEPS_GUI
             _stickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
+            _destroyRobotButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("DestroySelectedRobotButton");
 
             _robotControllerValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("RobotControllerValueLabel");
             _algorithmValueLabel = modeSpecificUiDocument.rootVisualElement.Q<Label>("AlgorithmValueLabel");
@@ -76,6 +79,15 @@ namespace Maes.UI.SimulationInfoUIControllers
             {
                 cameraController.stickyCam = !cameraController.stickyCam;
                 _stickyCameraButton.EnableInClassList("toggled", cameraController.stickyCam);
+            });
+
+            _destroyRobotButton.RegisterCallback<ClickEvent>(_ =>
+            {
+                var robot = Simulation?.SelectedRobot;
+                if (robot is not null)
+                {
+                    Simulation?.DestroyRobot(robot);
+                }
             });
 
             AfterStart();

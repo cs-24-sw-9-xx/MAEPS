@@ -26,7 +26,7 @@ using Maes.Robot;
 
 using NUnit.Framework;
 
-using Tests.EditModeTests.Utilities.MapInterpreter.MapBuilder;
+using Tests.PlayModeTests.Utilities.MapInterpreter.MapBuilder;
 
 using Unity.Mathematics;
 
@@ -53,7 +53,7 @@ namespace Tests.EditModeTests
                         }
                     }
                 },
-                receiverSensitivity: 50f
+                receiverSensitivity: 30f
             );
 
 
@@ -78,6 +78,7 @@ namespace Tests.EditModeTests
 
             var result = communicationManager.CommunicationBetweenPoints(start, end);
 
+            Assert.IsTrue(result.TransmissionSuccessful);
             Assert.AreEqual(distance, result.WallCellsDistance, 0.01f);
         }
     }

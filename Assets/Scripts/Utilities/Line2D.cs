@@ -1,4 +1,5 @@
 // Copyright 2024 MAES
+// Copyright 2025 MAEPS
 // 
 // This file is part of MAES
 // 
@@ -15,7 +16,7 @@
 // You should have received a copy of the GNU General Public License along
 // with MAES. If not, see http://www.gnu.org/licenses/.
 // 
-// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen,
+// Contributors: Rasmus Borrisholt Schmidt, Andreas Sebastian Sørensen, Thor Beregaard, Malte Z. Andreasen, Philip I. Holler and Magnus K. Jensen, Mads Beyer Mogensen
 // 
 // Original repository: https://github.com/Molitany/MAES
 
@@ -30,203 +31,72 @@ namespace Maes.Utilities
 {
     public readonly struct Line2D : IEquatable<Line2D>
     {
-        public readonly Vector2 Start, End, MidPoint;
-        private readonly float _minY, _maxY;
-        private readonly float _minX, _maxX;
+        public readonly Vector2 Start;
+        public readonly Vector2 End;
 
-        private readonly bool _isVertical;
-        private readonly bool _isHorizontal;
-
-        // Describe line by ax + b
-        private readonly float _a;
-        private readonly float _b;
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Line2D(Vector2 start, Vector2 end)
         {
             Start = start;
             End = end;
-            MidPoint = (start + end) / 2f;
-
-            if (start.x > end.x)
-            {
-                (start, end) = (end, start);
-            }
-
-            _minY = Mathf.Min(start.y, end.y);
-            _maxY = Mathf.Max(start.y, end.y);
-
-            _minX = Mathf.Min(start.x, end.x);
-            _maxX = Mathf.Max(start.x, end.x);
-
-            _isVertical = Mathf.Approximately(_minX, _maxX);
-            _isHorizontal = !_isVertical && Mathf.Approximately(_minY, _maxY);
-
-            if (!_isVertical)
-            {
-                _a = (end.y - start.y) / (_maxX - _minX);
-                _b = start.y - _a * start.x;
-            }
-            else
-            {
-                _a = (end.x - start.x) / (_maxY - _minY);
-                _b = start.x - _a * start.y;
-            }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private float SlopeIntercept(float x)
-        {
-            return _a * x + _b;
-        }
-
 
         // Returns true if the y value of the line grows as x increases
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsGrowing()
         {
-#if DEBUG
-            if (_isVertical || _isHorizontal)
-            {
-                throw new Exception("Cannot call IsGrowing on Horizontal or Vertical lines");
-            }
-#endif
-
-            return _a > 0f;
+            return Start.y < End.y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool SameOrientation(Line2D otherLine)
+        public Vector2? GetIntersection(Line2D otherLine, bool line2Infinite = false)
         {
-            return _isVertical && otherLine._isVertical || _isHorizontal && otherLine._isHorizontal;
+            return GetIntersection(this, otherLine, line2Infinite);
         }
 
-        private (Vector2 linePoint, Vector2 otherLinePoint) GetClosestPoints(Line2D otherLine)
+        // Implemented based on https://web.archive.org/web/20120311005255/https://paulbourke.net/geometry/lineline2d/
+        public static Vector2? GetIntersection(Line2D line1, Line2D line2, bool line2Infinite = false)
         {
-            var linePoints = Rasterize();
-            var otherLinePoints = otherLine.Rasterize().ToArray();
-            (Vector2 linePoint, Vector2 otherLinePoint) result = (Vector2.zero, Vector2.zero);
-            var minDistance = float.MaxValue;
-            foreach (var point in linePoints)
-            {
-                foreach (var otherPoint in otherLinePoints)
-                {
-                    var distance = Vector2.Distance(point, otherPoint);
-                    if (minDistance > distance)
-                    {
-                        minDistance = distance;
-                        result = (point, otherPoint);
-                    }
-                }
-            }
-            return result;
-        }
+            var x1 = line1.Start.x;
+            var y1 = line1.Start.y;
 
-        public Vector2? GetIntersection(Line2D otherLine, bool infinite = false)
-        {
-            if (_a - otherLine._a is < 0.0001f and > -0.0001f)
-            {
-                if (SameOrientation(otherLine))
-                {
-                    if (_b - otherLine._b is < 0.0001f and > -0.0001f)
-                    {
-                        var closestPoints = GetClosestPoints(otherLine);
-                        return (closestPoints.linePoint + closestPoints.otherLinePoint) / 2;
-                    }
+            var x2 = line1.End.x;
+            var y2 = line1.End.y;
 
-                    return null;
-                }
+            var x3 = line2.Start.x;
+            var y3 = line2.Start.y;
 
-                return _isVertical ? new(_b, otherLine._b) : new(otherLine._b, _b);
-            }
+            var x4 = line2.End.x;
+            var y4 = line2.End.y;
 
-            if (otherLine._isVertical)
-            {
-                return otherLine.GetIntersection(_a, _b, infinite);
-            }
+            var denominator = ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 
-            return GetIntersection(otherLine._a, otherLine._b, infinite);
-        }
-
-        // Checks for intersection with an infinite line described by a_1 x + b_2 
-        public Vector2? GetIntersection(float a2, float b2, bool infinite = false)
-        {
-            if (_isVertical) // Special case
-            {
-                // This line is vertical. Simply plug x coordinate of this line into equation to find y intersection
-                var yIntersection = Start.x * a2 + b2;
-
-                // Return intersection if it is within bounds of this line
-
-                if (infinite || yIntersection <= _maxY && yIntersection >= _minY)
-                {
-                    return new Vector2(Start.x, yIntersection);
-                }
-
-                return null;
-            }
-
-            if (_isHorizontal) // Optimization
-            {
-                // Parallel lines case
-                if (a2 - _a is < 0.0001f and > -0.0001f)
-                {
-                    if (b2 - _b is < 0.0001f and > -0.0001f)
-                    {
-                        return MidPoint;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-
-                // y = ax + b, solved for x gives x = (y - b) / a (using the y of this horizontal line)
-                var xIntersection = (Start.y - b2) / a2;
-                // Return intersection if it is within bounds of this line
-                if (infinite || xIntersection >= _minX && xIntersection <= _maxX)
-                {
-                    return new Vector2(xIntersection, Start.y);
-                }
-
-                return null;
-            }
-
-            // Parallel lines case
-            if (a2 - _a is < 0.0001f and > -0.0001f)
-            {
-                // If the two parallel lines intersect then return the midpoint of this line as intersection
-                if (b2 - _b is < 0.0001f and > -0.0001f)
-                {
-                    return MidPoint;
-                }
-
-                return null;
-            }
-
-            // Debug.Log($"({b_2} - {_b}) / ({_a} - {a_2}) ");
-            var intersectX = (b2 - _b) / (_a - a2);
-            // Check if intersection is outside line segment
-            if (!infinite && intersectX - _minX < -0.0001f || _maxX - intersectX < -0.0001f)
+            // Lines are parallel if this is 0.
+            if (denominator == 0f)
             {
                 return null;
             }
 
-            var intersectY = _a * intersectX + _b;
-            // Debug.Log("Line : " + _a + "x + " + _b + " intersects with " + a_2 + "x + " + b_2 + 
-            //           " at " + intersectX + ", " + intersectY);
-            return new Vector2(intersectX, intersectY);
-        }
+            var ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3))
+                     / denominator;
 
-        /// <summary>
-        /// Check if line contains all points of other line
-        /// </summary>
-        /// <param name="other"> the other line</param>
-        /// <returns>true if line contains all points and false if it does not</returns>
-        public bool Contains(Line2D other)
-        {
-            var points = Rasterize();
-            var otherPoints = other.Rasterize();
-            return otherPoints.All(point => points.Contains(point));
+            var intersection = new Vector2(x1 + ua * (x2 - x1), y1 + ua * (y2 - y1));
+
+            if (line2Infinite && ua is >= 0f and <= 1f)
+            {
+                return intersection;
+            }
+
+            var ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3))
+                     / denominator;
+
+
+            if (ua is >= 0f and <= 1f && ub is >= 0f and <= 1f)
+            {
+                return intersection;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -236,8 +106,30 @@ namespace Maes.Utilities
         /// <returns>List of points</returns>
         public IEnumerable<Vector2> Rasterize(float granularity = 1)
         {
-            var start = _isVertical ? Start.y : Start.x;
-            var end = _isVertical ? End.y : End.x;
+            var minY = Mathf.Min(Start.y, End.y);
+            var maxY = Mathf.Max(Start.y, End.y);
+
+            var minX = Mathf.Min(Start.x, End.x);
+            var maxX = Mathf.Max(Start.x, End.x);
+
+            var isVertical = Mathf.Approximately(minX, maxX);
+
+            float a;
+            float b;
+
+            if (!isVertical)
+            {
+                a = (End.y - Start.y) / (maxX - minX);
+                b = Start.y - a * Start.x;
+            }
+            else
+            {
+                a = (End.x - Start.x) / (maxY - minY);
+                b = Start.x - a * Start.y;
+            }
+
+            var start = isVertical ? Start.y : Start.x;
+            var end = isVertical ? End.y : End.x;
             if (start > end)
             {
                 (end, start) = (start, end);
@@ -246,15 +138,9 @@ namespace Maes.Utilities
             var points = new List<Vector2>();
             for (var x = start; x <= end; x += granularity)
             {
-                points.Add(_isVertical ? new Vector2(SlopeIntercept(x), x) : new Vector2(x, SlopeIntercept(x)));
+                points.Add(isVertical ? new Vector2(SlopeIntercept(a, b, x), x) : new Vector2(x, SlopeIntercept(a, b, x)));
             }
             return points.Distinct();
-        }
-
-        public bool EqualLineSegment(Line2D other)
-        {
-            return (Start == other.Start && End == other.End) || (Start == other.End && End == other.Start);
-
         }
 
         public static bool operator ==(Line2D left, Line2D right)
@@ -269,9 +155,7 @@ namespace Maes.Utilities
 
         public bool Equals(Line2D other)
         {
-            return Mathf.Approximately(_a, other._a)
-                   && Mathf.Approximately(_b, other._b) &&
-                   _isVertical == other._isVertical;
+            return Start == other.Start && End == other.End;
         }
 
         public override bool Equals(object? obj)
@@ -281,7 +165,13 @@ namespace Maes.Utilities
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(_isVertical, _a, _b);
+            return HashCode.Combine(Start, End);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static float SlopeIntercept(float a, float b, float x)
+        {
+            return a * x + b;
         }
     }
 }

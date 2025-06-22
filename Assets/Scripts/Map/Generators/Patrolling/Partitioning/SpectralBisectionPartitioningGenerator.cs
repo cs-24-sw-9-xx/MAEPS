@@ -22,6 +22,8 @@
 
 using System.Collections.Generic;
 
+using Maes.Utilities;
+
 using MathNet.Numerics.LinearAlgebra;
 
 using UnityEngine;
@@ -34,6 +36,38 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
     /// </summary>
     public static class SpectralBisectionPartitioningGenerator
     {
+        public static IEnumerable<List<Vector2Int>> Generator(
+            Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix,
+            List<Vector2Int> vertexPositions,
+            int amountOfPartitions
+        )
+        {
+            var priorityQueue = new PriorityQueue<List<Vector2Int>, int>(new IntDescendingComparer());
+            priorityQueue.Enqueue(vertexPositions, amountOfPartitions);
+
+            while (priorityQueue.Count < amountOfPartitions)
+            {
+                var biggestCluster = priorityQueue.Dequeue();
+                var (cluster1, cluster2) = Bisection(distanceMatrix, biggestCluster);
+
+                priorityQueue.Enqueue(cluster1, cluster1.Count);
+                priorityQueue.Enqueue(cluster2, cluster2.Count);
+            }
+
+            while (priorityQueue.TryDequeue(out var cluster, out _))
+            {
+                yield return cluster;
+            }
+        }
+
+        private sealed class IntDescendingComparer : IComparer<int>
+        {
+            public int Compare(int x, int y)
+            {
+                return y.CompareTo(x);
+            }
+        }
+
         /// <summary>
         /// Generate partitions using the spectral bisection algorithm.
         /// </summary>
@@ -41,11 +75,13 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
         /// <param name="vertexPositions"></param>
         /// <param name="amountOfPartitions"></param>
         /// <returns></returns>
-        public static IEnumerable<List<Vector2Int>> Generator(
+        public static IEnumerable<List<Vector2Int>> GeneratorOld(
             Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix,
             List<Vector2Int> vertexPositions,
             int amountOfPartitions)
         {
+            var startTime = Time.realtimeSinceStartup;
+
             if (amountOfPartitions == 1)
             {
                 return new HashSet<List<Vector2Int>>() {
@@ -53,21 +89,13 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 };
             }
 
-            var initialClusters = Bisection(distanceMatrix, vertexPositions);
-
-            if (amountOfPartitions == 2 || initialClusters[0].Count == 0 || initialClusters[1].Count == 0)
-            {
-                return new HashSet<List<Vector2Int>>() {
-                    { initialClusters[0] },
-                    { initialClusters[1] }
-                };
-            }
+            var (initialCluster1, initialCluster2) = Bisection(distanceMatrix, vertexPositions);
 
             var finalClusters = new Dictionary<int, List<Vector2Int>>();
             var queue = new Queue<(List<Vector2Int>, int)>();
 
-            queue.Enqueue((initialClusters[0], 0));
-            queue.Enqueue((initialClusters[1], 1));
+            queue.Enqueue((initialCluster1, 0));
+            queue.Enqueue((initialCluster2, 1));
 
             var clusterIndex = 2;
 
@@ -81,9 +109,9 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                     continue;
                 }
 
-                var subPartition = Bisection(distanceMatrix, currentCluster);
+                var (subPartition1, subPartition2) = Bisection(distanceMatrix, currentCluster);
 
-                foreach (var sub in subPartition)
+                foreach (var sub in new[] { subPartition1, subPartition2 })
                 {
                     if (finalClusters.Count < amountOfPartitions)
                     {
@@ -101,13 +129,14 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 var (remainingCluster, index) = queue.Dequeue();
                 finalClusters[index] = remainingCluster;
             }
+            Debug.LogFormat("Partitioning took {0} seconds", Time.realtimeSinceStartup - startTime);
 
             return finalClusters.Values;
         }
 
 
         // Bisection algorithm to partition the graph
-        private static List<List<Vector2Int>> Bisection(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions)
+        private static (List<Vector2Int> Cluster1, List<Vector2Int> Cluster2) Bisection(Dictionary<(Vector2Int, Vector2Int), int> distanceMatrix, List<Vector2Int> vertexPositions)
         {
             var amountOfVertices = vertexPositions.Count;
             var adjacencyMatrix = PartitioningGenerator.AdjacencyMatrix(distanceMatrix, vertexPositions, amountOfVertices);
@@ -133,7 +162,7 @@ namespace Maes.Map.Generators.Patrolling.Partitioning
                 }
             }
 
-            return new List<List<Vector2Int>> { cluster1, cluster2 };
+            return (cluster1, cluster2);
         }
     }
 }
