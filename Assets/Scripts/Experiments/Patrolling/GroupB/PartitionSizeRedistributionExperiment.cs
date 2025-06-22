@@ -40,7 +40,7 @@ namespace Maes.Experiments.Patrolling.GroupB
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
-            foreach (var seed in Enumerable.Range(0, 10))
+            foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
                 scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                     seed,

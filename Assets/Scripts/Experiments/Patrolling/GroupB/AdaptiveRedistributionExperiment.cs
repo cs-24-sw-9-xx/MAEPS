@@ -39,11 +39,10 @@ namespace Maes.Experiments.Patrolling.GroupB
     {
         private void Start()
         {
-            var counts = new List<int>() { 16, 32, 64 };
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var count in counts)
+                foreach (var count in GroupBParameters.RobotCounts)
                 {
                     scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                         seed,
@@ -54,7 +53,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                         GroupBParameters.StandardAmountOfCycles,
                         GroupBParameters.MaterialRobotConstraints,
                         GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection()));
+                        GroupBParameters.FaultInjection(robotCount: count)));
                 }
             }
 
