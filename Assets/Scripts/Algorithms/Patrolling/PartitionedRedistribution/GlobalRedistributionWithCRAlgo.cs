@@ -20,6 +20,8 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
+using System.Linq;
+
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Map;
@@ -51,9 +53,9 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
             return new IComponent[] { _goToNextVertexComponent, _heartbeatComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
 
-        private static Vertex NextVertex(Vertex currentVertex)
+        private Vertex NextVertex(Vertex currentVertex)
         {
-            return ConscientiousReactiveLogic.NextVertex(currentVertex);
+            return ConscientiousReactiveLogic.NextVertex(currentVertex, currentVertex.Neighbors.Where(v => v.Partition == Controller.AssignedPartition).ToList());
         }
     }
 }
