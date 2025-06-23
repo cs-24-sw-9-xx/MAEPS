@@ -4,23 +4,6 @@ namespace MAEPS.Data.Processor.Utilities;
 
 public static class DirectoryUtils
 {
-    public static void SetDefaultDataDirectory()
-    {
-        // Change directory to the data folder
-        var directoryInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-        do
-        {
-            directoryInfo = directoryInfo.Parent;
-            if (directoryInfo == null)
-            {
-                throw new Exception("Could not find data folder");
-            }
-        } while (directoryInfo.Name != "MAEPS");
-        
-        Console.WriteLine("Found data directory {0}", directoryInfo.FullName + "/data");
-        Directory.SetCurrentDirectory(directoryInfo.FullName + "/data");
-    }
-    
     public static void GroupScenarios(string groupBy, string experimentsFolderPath)
     {
         var scenariosByGroupValue = Directory.GetDirectories(experimentsFolderPath);

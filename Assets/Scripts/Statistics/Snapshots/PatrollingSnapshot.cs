@@ -1,5 +1,7 @@
-using System;
+#if NET9_0_OR_GREATER
 using System.Globalization;
+#endif
+
 using System.IO;
 
 using Maes.Statistics.Csv;
@@ -64,16 +66,29 @@ namespace Maes.Statistics.Snapshots
             streamWriter.Write(NumberOfRobots);
         }
 
-        public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
+#if NET9_0_OR_GREATER
+        public void ReadRow(ReadOnlySpan<char> columns, ref MemoryExtensions.SpanSplitEnumerator<char> enumerator)
         {
-            columns = CommunicationSnapshot.ReadRow(columns);
-            GraphIdleness = Convert.ToSingle(columns[0], CultureInfo.InvariantCulture);
-            WorstGraphIdleness = Convert.ToInt32(columns[1], CultureInfo.InvariantCulture);
-            TotalDistanceTraveled = Convert.ToSingle(columns[2], CultureInfo.InvariantCulture);
-            CompletedCycles = Convert.ToInt32(columns[3], CultureInfo.InvariantCulture);
-            AverageGraphIdleness = Convert.ToSingle(columns[4], CultureInfo.InvariantCulture);
-            NumberOfRobots = Convert.ToInt32(columns[5], CultureInfo.InvariantCulture);
-            return columns[6..];
+            CommunicationSnapshot.ReadRow(columns, ref enumerator);
+
+            enumerator.MoveNext();
+            GraphIdleness = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            WorstGraphIdleness = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            TotalDistanceTraveled = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+
+            enumerator.MoveNext();
+            CompletedCycles = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            AverageGraphIdleness = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            NumberOfRobots = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
         }
+#endif
     }
 }

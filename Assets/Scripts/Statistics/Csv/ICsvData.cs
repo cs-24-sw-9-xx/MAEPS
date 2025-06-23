@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 
 namespace Maes.Statistics.Csv
@@ -9,6 +8,8 @@ namespace Maes.Statistics.Csv
 
         void WriteRow(StreamWriter streamWriter, char delimiter);
 
-        ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns);
+#if NET9_0_OR_GREATER
+        void ReadRow(ReadOnlySpan<char> columns, ref MemoryExtensions.SpanSplitEnumerator<char> enumerator);
+#endif
     }
 }

@@ -39,6 +39,26 @@ namespace Maes.Statistics.Snapshots
             streamWriter.Write(SentMessageCount);
         }
 
+#if NET9_0_OR_GREATER
+        public void ReadRow(ReadOnlySpan<char> columns, ref MemoryExtensions.SpanSplitEnumerator<char> enumerator)
+        {
+            enumerator.MoveNext();
+            Tick = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+
+            enumerator.MoveNext();
+            AgentsInterconnected = bool.Parse(columns[enumerator.Current]);
+            
+            enumerator.MoveNext();
+            BiggestClusterPercentage = float.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            ReceivedMessageCount = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+            
+            enumerator.MoveNext();
+            SentMessageCount = int.Parse(columns[enumerator.Current], CultureInfo.InvariantCulture);
+        }
+#endif
+
         public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
         {
             Tick = Convert.ToInt32(columns[0], CultureInfo.InvariantCulture);
