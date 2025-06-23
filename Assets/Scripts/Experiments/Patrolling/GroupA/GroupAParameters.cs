@@ -86,6 +86,28 @@ namespace Maes.Experiments.Patrolling
             }
         };
 
+        public static readonly IReadOnlyAlgorithmsDictionary TakeoverVariants = new AlgorithmsDictionary
+        {
+            { "ImmediateTakeover.HMPPatrollingAlgorithm.Ceil(V/M)*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed)) },
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm.Ceil(V/M)*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed)) },
+            { "RandomTakeover.HMPPatrollingAlgorithm.Ceil(V/M)*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed)) },
+            { "ImmediateTakeover.HMPPatrollingAlgorithm.2*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed, (p, m, d) => 2*d)) },
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm.2*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed, (p, m, d) => 2*d)) },
+            { "RandomTakeover.HMPPatrollingAlgorithm.2*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed, (p, m, d) => 2*d)) },
+            { "ImmediateTakeover.HMPPatrollingAlgorithm.2.5*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.ImmediateTakeoverStrategy, seed, (p, m, d) => (int)Math.Ceiling(2.5*d))) },
+            { "QuasiRandomTakeover.HMPPatrollingAlgorithm.2.5*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new ImmediateTakeover.HMPPatrollingAlgorithm(ImmediateTakeover.PartitionComponent.TakeoverStrategy.QuasiRandomStrategy, seed, (p, m, d) => (int)Math.Ceiling(2.5*d))) },
+            { "RandomTakeover.HMPPatrollingAlgorithm.2.5*D",
+                _ => (map => AllWaypointConnectedGenerator.MakePatrollingMap(map, MaxDistance), seed => new RandomTakeover.HMPPatrollingAlgorithm(seed, (p, m, d) => (int)Math.Ceiling(2.5*d))) }
+        };
+
         public static readonly IReadOnlyAlgorithmsDictionary FaultTolerantHMPVariants = new AlgorithmsDictionary
         {
             { "ImmediateTakeover.HMPPatrollingAlgorithm",
