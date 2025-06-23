@@ -14,6 +14,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 {
     public class PartitionComponent : IComponent
     {
+        public static int ReceivedNewMeetingtimeForOtherThanVisiting = 0;
+        public static Dictionary<int, int> ReceivedNewMeetingtimeForOtherThanVisitingByRobotId = new();
+        public static List<int> ReceivedNewMeetingtimeAtTicks = new();
+
         public readonly struct MeetingTimes
         {
             public readonly int CurrentNextMeetingAtTick;
@@ -114,6 +118,37 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         private PatrollingMap _patrollingMap = null!;
 
+        public void OnNewUpdateDelegate(int key, VirtualStigmergyComponent<int, MeetingTimes, PartitionComponent>.ValueInfo valueInfo)
+        {
+            if (_meetingPointVertexId != null && _meetingPointVertexId == key)
+            {
+                return;
+            }
+
+            if (valueInfo.RobotId == _robotId)
+            {
+                return;
+            }
+
+            var expectedRobotIds = MeetingPointsByVertexId[key].PartitionIds.Select(p =>
+            {
+                var success = _partitionIdToRobotIdVirtualStigmergyComponent.TryGetNonSending(p, out var assignedRobot);
+                Debug.Assert(success);
+                return assignedRobot;
+            }).ToHashSet();
+
+            if (expectedRobotIds.Contains(_robotId))
+            {
+                ReceivedNewMeetingtimeForOtherThanVisiting++;
+
+                if (!ReceivedNewMeetingtimeForOtherThanVisitingByRobotId.TryAdd(valueInfo.RobotId, 1))
+                {
+                    ReceivedNewMeetingtimeForOtherThanVisitingByRobotId[valueInfo.RobotId]++;
+                }
+
+                ReceivedNewMeetingtimeAtTicks.Add(_getLogicTicks());
+            }
+        }
 
         public IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
@@ -121,7 +156,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _startupComponent = new StartupComponent<IReadOnlyDictionary<int, PartitionInfo>, PartitionComponent>(controller, GeneratePartitions);
 
             _partitionIdToRobotIdVirtualStigmergyComponent = new(OnPartitionConflict, controller);
-            _meetingPointVertexIdToMeetingTimesStigmergyComponent = new(OnMeetingConflict, controller);
+            _meetingPointVertexIdToMeetingTimesStigmergyComponent = new(OnMeetingConflict, controller, OnNewUpdateDelegate);
 
             return new IComponent[] { _startupComponent, _partitionIdToRobotIdVirtualStigmergyComponent, _meetingPointVertexIdToMeetingTimesStigmergyComponent };
         }
@@ -169,8 +204,11 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             }
         }
 
+        private int? _meetingPointVertexId = null;
+
         public IEnumerable<ComponentWaitForCondition> ExchangeInformation(int meetingPointVertexId)
         {
+            _meetingPointVertexId = meetingPointVertexId;
             _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
@@ -352,6 +390,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
+            _meetingPointVertexId = null;
         }
 
         public IEnumerable<ComponentWaitForCondition> OnMissingRobotAtMeeting(MeetingComponent.Meeting meeting, HashSet<int> missingRobots)
