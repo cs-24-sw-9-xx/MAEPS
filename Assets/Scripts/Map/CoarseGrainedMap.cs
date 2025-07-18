@@ -436,9 +436,12 @@ namespace Maes.Map
         public PathStep[]? GetTnfPathAsPathSteps(Vector2Int target)
         {
             var path = GetPath(target, beOptimistic: false);
+            //string paths = string.Join(", ", path.Select(step => $"({step.x}, {step.y})"));
+            //UnityEngine.Debug.LogWarning($"GetTnfPathAsPathSteps found path: {paths}");
             return path == null
                 ? null
-                : _aStar.PathToSteps(path);
+                : MyAStar.PathToStepsCheap(path).ToArray();
+//                : _aStar.PathToSteps(path);
         }
 
         public bool BrokenCollisionMap => _slamMap.BrokenCollisionMap;
