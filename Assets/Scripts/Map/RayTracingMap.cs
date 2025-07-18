@@ -181,6 +181,7 @@ namespace Maes.Map
         // Casts a trace starting at given point, moving in the given direction. The given function will be called on
         // each cell that is encountered. If the function returns true the trace will continue to the next cell,
         // if it returns false the trace will terminate. The trace automatically terminates when it exits map bounds.
+		// called only in ExplorationTracker.cs
         public void Raytrace(Vector2 startingPoint, float angleDegrees, float distance,
             CellFunction shouldContinueFromCell)
         {
@@ -205,11 +206,13 @@ namespace Maes.Map
             // If a trace travels diagonally in the bottom half of a tile, it will cross at least 4 tiles
             var minimumTracesBeforeDistanceCheck = (int)(distance / MaxTraceLengthPerTriangle);
             var maxTraces = distance * 8;
+
+            var crossedTriangles = new int[(int)maxTraces+2];
             while (true)
             {
                 if (traceCount > maxTraces)
                 { // Safety measure for avoiding infinite loops 
-                    throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}. Angle: {angleDegrees}");
+                    throw new Exception($"INFINITE LOOP: {startingPoint.x}, {startingPoint.y}. Distance: {distance}. Angle: {angleDegrees}, tracecount {traceCount}");
                 }
 
                 // Invoke the given function on the cell, and only continue if it returns true
@@ -229,6 +232,21 @@ namespace Maes.Map
                 }
 
                 triangle = _traceableTriangles[trace.NextTriangleIndex];
+
+                bool duplicateFound = false;
+                for (var i = 0; i < traceCount - 2; i++)
+                {
+                    if (crossedTriangles[i] == trace.NextTriangleIndex)
+                    {
+                        duplicateFound = true;
+                        break;
+                    }
+                }
+                if (duplicateFound)
+                {
+                    break;
+                }
+                crossedTriangles[traceCount - 2] = trace.NextTriangleIndex;
 
                 // Optimization - Only start performance distance checks once we have performed a certain amount of traces
                 if (traceCount >= minimumTracesBeforeDistanceCheck)
