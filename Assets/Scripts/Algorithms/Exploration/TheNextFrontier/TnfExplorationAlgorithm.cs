@@ -291,6 +291,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         private void CollisionMitigation()
         {
+            Debug.LogWarning($"Robot {_robotId} bonked into something, trying to recover.");
             if (_robotController.Status != RobotStatus.Idle)
             {
                 return;
@@ -377,6 +378,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             {
                 frontier.UtilityValue = UtilityFunction(frontier, normalizerConstant);
             }
+
             return _frontiers.OrderByDescending(f => f.UtilityValue).First();
 
         }
@@ -384,9 +386,21 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
         private void MoveToFrontier(Frontier bestFrontier)
         {
             var targetCell = GetFrontierMoveTarget(bestFrontier);
+
             var path = _map.GetTnfPathAsPathSteps(targetCell);
             if (path == null)
             {
+                Debug.LogWarning($"No path found at time {_logicTicks} seconds to target cell {targetCell} from robot position {_robotPosInt}.");
+                /*
+				var robot = _map.TileToWorld(_map.GetCurrentPosition());
+                foreach (var cell in bestFrontier.Cells) {
+                        var point1 = _map.TileToWorld(cell.Item1);
+                        Debug.DrawLine(robot, point1, Color.blue, 3);
+                }
+				var point2 = _map.TileToWorld(targetCell);
+				Debug.DrawLine(robot, point2, Color.white, 3);
+                */
+
                 _frontiers!.Remove(bestFrontier);
                 if (!_frontiers.Any())
                 {
@@ -397,6 +411,16 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
                 MoveToFrontier(newFrontier);
                 return;
             }
+			/*
+            var paths = string.Join(", ", path.Select(step => $"({step.Start.x}, {step.Start.y}) -> ({step.End.x}, {step.End.y})"));
+            Debug.Log($"Robot {_robotId} found path to target cell {targetCell}: {paths}");
+            foreach (var step in path)
+            {
+                var start = _map.TileToWorld(step.Start);
+                var end = _map.TileToWorld(step.End);
+                Debug.DrawLine(start, end, Color.pink, 3);
+            }
+			*/
 
             _path = new LinkedList<PathStep>(path);
             if (!_path.Any())
@@ -408,6 +432,13 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             var nextStep = _path.First;
             _path.Remove(nextStep);
             _nextTileInPath = nextStep.Value;
+/*
+            Debug.LogWarning($"going now from {robot} to {_nextTileInPath.Value.End}");
+
+            var start2 = _map.TileToWorld(_nextTileInPath.Value.Start);
+            var end2 = _map.TileToWorld(_nextTileInPath.Value.End);
+            Debug.DrawLine(start2, end2, Color.orange, 3);
+*/
             StartMoving();
         }
 
