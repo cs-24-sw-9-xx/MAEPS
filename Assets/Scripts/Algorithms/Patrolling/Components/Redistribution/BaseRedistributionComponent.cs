@@ -21,6 +21,7 @@
 // Jakob Meyer Olsen
 // Mads Beyer Mogensen
 using System.Collections.Generic;
+using System.Linq;
 
 using Maes.Map;
 using Maes.Robot;
@@ -45,7 +46,7 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
         private readonly IPatrollingAlgorithm _algorithm;
         private readonly Dictionary<int, bool> _receivedCommunication;
         private readonly System.Random _random;
-        private readonly Stack<int> _partitionStack = new();
+        private int _lastPartition = 0;
         private readonly Dictionary<int, bool> _hasLeftPartitionIntersection = new();
 
         /// <summary>
@@ -142,13 +143,10 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             {
                 if (intersectionZone.Contains(robotPosition))
                 {
-                    if (!_currentPartitionIntersection.Contains(partitionId))
-                    {
-                        _currentPartitionIntersection.Add(partitionId);
-                    }
+                    _currentPartitionIntersection.Add(partitionId);
                     if (_hasLeftPartitionIntersection[partitionId]
-                    && _algorithm.HasSeenAllInPartition(_controller.AssignedPartition)
-                    && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
+                        && _algorithm.HasSeenAllInPartition(_controller.AssignedPartition)
+                        && _trackerUpdateTimestamp <= _algorithm.LogicTicks - 500)
                     {
                         UpdateRedistributionTracker(partitionId);
                     }
@@ -168,6 +166,23 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
                     }
                 }
             }
+
+            if (_algorithm.HasSeenAllInPartition(_controller.AssignedPartition))
+            {
+                switch (_currentPartition.IntersectionZones.Keys.Count())
+                {
+                    case 0:
+                        return;
+                    case 1:
+                        SwitchPartition(_currentPartition.IntersectionZones.Keys.First());
+                        return;
+                    default:
+                        SwitchPartition(_currentPartition.IntersectionZones.Keys.Contains(_lastPartition)
+                            ? _currentPartition.IntersectionZones.Keys.Where(x => x != _lastPartition).OrderBy(x => _random.Next()).First()
+                            : _currentPartition.IntersectionZones.Keys.OrderBy(x => _random.Next()).First());
+                        break;
+                }
+            }
         }
 
         private void UpdateRedistributionTracker(int partitionId)
@@ -181,22 +196,16 @@ namespace Maes.Algorithms.Patrolling.Components.Redistribution
             else
             {
                 UpdateTrackerOnFailure(partitionId);
-                SwitchPartition(partitionId);
             }
         }
 
         private void SwitchPartition(int partitionId)
         {
-            if (!_algorithm.HasSeenAllInPartition(_controller.AssignedPartition) && _partitionStack.Count > 0 && _partitionStack.Peek() == partitionId)
-            {
-                return;
-            }
             var randomValue = (float)_random.NextDouble();
             if (randomValue <= _redistributionTracker[partitionId])
             {
                 var partition = _map.Partitions[partitionId];
-                _partitionStack.Clear();
-                _partitionStack.Push(_controller.AssignedPartition);
+                _lastPartition = partitionId;
                 Debug.Log($"Robot {_controller.Id} is switching from {_controller.AssignedPartition} to partition {partition.PartitionId} algo: {_algorithm.AlgorithmName}");
                 _algorithm.ResetSeenVerticesForPartition(_controller.AssignedPartition);
                 _controller.AssignedPartition = partition.PartitionId;

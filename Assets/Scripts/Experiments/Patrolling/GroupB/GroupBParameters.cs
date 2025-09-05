@@ -101,11 +101,11 @@ namespace Maes.Experiments.Patrolling.GroupB
         {
             [2400] = new() //2.4 GHz
             {
-                [TileType.Room] = 0.25f,
-                [TileType.Hall] = 0.25f,
-                [TileType.Wall] = 0.25f,
-                [TileType.Concrete] = 15f,
-                [TileType.Wood] = 6.7f,
+                [TileType.Room] = 0.0f,
+                [TileType.Hall] = 0.0f,
+                [TileType.Wall] = 0.0f,
+                [TileType.Concrete] = 5.5f,
+                [TileType.Wood] = 5.5f,
                 [TileType.Brick] = 5.5f
             }
         };
@@ -127,6 +127,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, _) => true,
                 robotCollisions: false,
+                attenuationDictionary: Frequencies,
                 materialCommunication: materialCommunication);
         }
 
