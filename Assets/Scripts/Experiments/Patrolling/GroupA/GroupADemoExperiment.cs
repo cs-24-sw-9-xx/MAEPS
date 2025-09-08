@@ -37,7 +37,7 @@ namespace Maes.Experiments.Patrolling.GroupA
         {
             var scenarios = new List<MySimulationScenario>();
             PatrollingMapFactory patrollingMapFactory = map => AllWaypointConnectedGenerator.MakePatrollingMap(map, GroupAParameters.MaxDistance);
-            CreateAlgorithmDelegate algorithm = seed => new HMPPatrollingAlgorithm(seed, false, false);
+            CreateAlgorithmDelegate algorithm = seed => new HMPPatrollingAlgorithm(seed, false, false, true);
 
             var mapConfig = new CaveMapConfig(
                 Seed, brokenCollisionMap: false);
