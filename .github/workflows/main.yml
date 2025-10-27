@@ -63,7 +63,7 @@ jobs:
           projectPath: .
           customParameters: --burst-disable-compilation -standaloneBuildSubtarget Player
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Test results (playmode)
           path: ${{ steps.testRunner.outputs.artifactsPath }}
@@ -188,7 +188,7 @@ jobs:
         run: |
           sudo rm -r "build/${{ matrix.targetPlatform.platform }}/${{ matrix.targetPlatform.platform }}_BackUpThisFolder_ButDontShipItWithYourGame/"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Build-${{ matrix.targetPlatform.platform }}
           path: build
@@ -249,7 +249,7 @@ jobs:
         run: |
           sudo rm -r "build/StandaloneLinux64/StandaloneLinux64_BackUpThisFolder_ButDontShipItWithYourGame/"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Build-StandaloneLinux64-Server
           path: build
@@ -322,7 +322,7 @@ jobs:
       - name: Publish Data Processor
         run: dotnet publish MAEPS-Data-Processor/MAEPS.Data.Processor/MAEPS.Data.Processor.csproj --configuration Release --output publish-data-processor
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: MAEPS-Data-Processor
           path: publish-data-processor
