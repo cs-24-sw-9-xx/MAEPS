@@ -2,10 +2,13 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplified;
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance;
 using Maes.Map;
 using Maes.Map.Generators;
 using Maes.Robot;
@@ -58,11 +61,14 @@ namespace Maes.Statistics.Trackers
         private readonly CancellationTokenSource _cancellationTokenSource = new();
         private readonly Thread _writerThread;
 
+        private readonly string _statisticsFolderPath;
+
         public PatrollingTracker(PatrollingSimulation simulation, SimulationMap<Tile> collisionMap,
             PatrollingVisualizer visualizer, PatrollingSimulationScenario scenario,
             PatrollingMap map, string statisticsFolderPath, bool saveWaypointData) : base(collisionMap, visualizer, scenario.RobotConstraints,
             tile => new Cell(isExplorable: !Tile.IsWall(tile.Type)), simulation.CommunicationManager)
         {
+            _statisticsFolderPath = statisticsFolderPath;
             _saveWaypointData = saveWaypointData;
             _simulation = simulation;
             _vertices = new VertexDetails[map.Vertices.Count];
@@ -178,8 +184,62 @@ namespace Maes.Statistics.Trackers
 
         public override void FinishStatistics()
         {
+            if (PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting != 0)
+            {
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeForOtherThanVisiting.txt")))
+                {
+                    writer.WriteLine(PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisiting);
+                    writer.Close();
+                }
+
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeForOtherThanVisitingRobots.csv")))
+                {
+                    writer.WriteLine("RobotId,ReceivedFromOther");
+                    foreach (var (robotId, value) in PartitionComponent.ReceivedNewMeetingtimeForOtherThanVisitingByRobotId)
+                    {
+                        writer.WriteLine($"{robotId},{value}");
+                    }
+                    writer.Close();
+                }
+
+                using (var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                           "ReceivedNewMeetingtimeAtTicks.csv")))
+                {
+                    writer.WriteLine("Tick");
+                    foreach (var value in PartitionComponent.ReceivedNewMeetingtimeAtTicks)
+                    {
+                        writer.WriteLine($"{value}");
+                    }
+                    writer.Close();
+                }
+            }
+
+            if (ERAlgorithmSimplified.RecievedMeessageOfVisitMessage.Count > 0)
+            {
+                using var writer = new InvariantStreamWriter(Path.Join(_statisticsFolderPath,
+                    "messageERALGORITHM.csv"));
+                writer.WriteLine("Count,LastTick");
+                foreach (var (_, (count, lasttick)) in ERAlgorithmSimplified.RecievedMeessageOfVisitMessage)
+                {
+                    writer.WriteLine($"{count},{lasttick}");
+                }
+                writer.Close();
+            }
+
+
             _snapshots.CompleteAdding();
             _writerThread.Join();
+        }
+
+        private sealed class InvariantStreamWriter : StreamWriter
+        {
+            public InvariantStreamWriter(string path) : base(path)
+            {
+            }
+
+            public override IFormatProvider FormatProvider => CultureInfo.InvariantCulture;
         }
 
         protected override void OnLogicUpdate(List<MonaRobot> robots)
