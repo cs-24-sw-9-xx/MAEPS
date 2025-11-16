@@ -30,4 +30,65 @@ public static class DataPreProcessor
 
         return experimentsFolderCopyPath;
     }
+    
+    public static (string maptype, string folderPath)[] SplitMapTypesDataFolder(string experimentsCopyFolderPath, bool regenerate = true)
+    {
+        var experimentsFolderBuildingMapPath = Split(experimentsCopyFolderPath, "BuildingMap", regenerate);
+        var experimentsFolderCaveMapPath = Split(experimentsCopyFolderPath, "CaveMap", regenerate);
+        
+        foreach (var folders in Directory.GetDirectories(experimentsCopyFolderPath, "*", SearchOption.TopDirectoryOnly))
+        {
+            var name = Path.GetFileName(folders);
+            if (name is "BuildingMap" or "CaveMap")
+            {
+                continue;
+            }
+            Directory.Delete(folders, true);
+        }
+        
+        return
+        [
+            ("BuildingMap", experimentsFolderBuildingMapPath),
+            ("CaveMap", experimentsFolderCaveMapPath)
+        ];
+    }
+
+
+    private static string Split(string experimentsCopyFolderPath, string mapType, bool regenerate)
+    {
+        var experimentsFolderMapTypePath = Path.Combine(experimentsCopyFolderPath, mapType);
+        
+        if (Directory.Exists(experimentsFolderMapTypePath))
+        {
+            if (!regenerate)
+            {
+                Console.WriteLine($"Folder for mapType {mapType} already exists: " + experimentsFolderMapTypePath);
+                return experimentsFolderMapTypePath;
+            }
+            
+            Console.WriteLine($"Removing existing mapType {mapType} folder: " + experimentsFolderMapTypePath);
+            Directory.Delete(experimentsFolderMapTypePath, true);
+        }
+
+        var files = Directory.GetFiles(experimentsCopyFolderPath, "*", SearchOption.AllDirectories);
+        Directory.CreateDirectory(experimentsFolderMapTypePath);
+        
+        foreach (var file in files)
+        {
+            if (!file.Contains(mapType))
+            {
+                continue;
+            }
+
+            var relativePath = Path.GetRelativePath(experimentsCopyFolderPath, file);
+            var destinationPath = Path.Combine(experimentsFolderMapTypePath, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+            File.Move(file, destinationPath);
+        }
+        
+        Console.WriteLine($"Copy folder including {mapType} data to folder: " + experimentsFolderMapTypePath);
+
+        return experimentsFolderMapTypePath;
+        
+    }
 }

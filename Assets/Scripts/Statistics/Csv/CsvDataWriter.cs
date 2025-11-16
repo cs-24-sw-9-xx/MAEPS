@@ -2,8 +2,6 @@ using System;
 using System.Globalization;
 using System.IO;
 
-using UnityEngine;
-
 namespace Maes.Statistics.Csv
 {
     public sealed class CsvDataWriter<TSnapShot> : IDisposable
@@ -46,8 +44,6 @@ namespace Maes.Statistics.Csv
             }
 
             File.Move(_tempPath, _path);
-
-            Debug.LogFormat("Wrote statistics to {0}", _path);
 
             _finished = true;
         }
