@@ -490,7 +490,6 @@ Parameters:
             //int[] robotsNumbers = { 1 };
             int[] robotsNumbers = { 16 };
 
-
             config.communication = "Material"; // this is fixed
             config.mapType = "building";
             //config.mapType = "cave";

@@ -604,6 +604,16 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
                 count++;
                 return;
             }
+			/*
+            var paths = string.Join(", ", path.Select(step => $"({step.Start.x}, {step.Start.y}) -> ({step.End.x}, {step.End.y})"));
+            Debug.Log($"Robot {_robotId} found path to target cell {targetCell}: {paths}");
+            foreach (var step in path)
+            {
+                var start = _map.TileToWorld(step.Start);
+                var end = _map.TileToWorld(step.End);
+                Debug.DrawLine(start, end, Color.pink, 3);
+            }
+			*/
 
             var frontierCells = string.Join(", ", bestFrontier.Cells.Select(c => $"({c.Item1.x}, {c.Item1.y})"));
             var paths = string.Join(", ", path.Select(step => $"({step.Start.x}, {step.Start.y}) -> ({step.End.x}, {step.End.y})"));
