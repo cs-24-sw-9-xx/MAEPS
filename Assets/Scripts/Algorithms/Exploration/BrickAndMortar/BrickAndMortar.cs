@@ -25,7 +25,6 @@ namespace Maes.Algorithms.Exploration.BrickAndMortar
 
         private RobotConstraints _constraints;
         private IRobotController _controller;
-        private int _randomSeed;
         private Random _tagIdGenerator;
 
         private int depositedTagsCount = 0;
@@ -144,7 +143,6 @@ namespace Maes.Algorithms.Exploration.BrickAndMortar
         
         public BrickAndMortar(RobotConstraints constraints, int randomSeed) {
             _constraints = constraints;
-            _randomSeed = randomSeed;
             _tagIdGenerator = new Random(randomSeed);
             
             // The maximum diagonal distance between two points is 1.5 tiles

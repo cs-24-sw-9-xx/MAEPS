@@ -75,12 +75,14 @@ namespace Maes.UI.SimulationInfoUIControllers
 
             _coordinatesLabel = uIDocument.rootVisualElement.Q<Label>("CoordinatesLabel");
 
+            if (_stickyCameraButton is not null)
             _stickyCameraButton.RegisterCallback<ClickEvent>(_ =>
             {
                 cameraController.stickyCam = !cameraController.stickyCam;
                 _stickyCameraButton.EnableInClassList("toggled", cameraController.stickyCam);
             });
 
+            if (_destroyRobotButton is not null)
             _destroyRobotButton.RegisterCallback<ClickEvent>(_ =>
             {
                 var robot = Simulation?.SelectedRobot;

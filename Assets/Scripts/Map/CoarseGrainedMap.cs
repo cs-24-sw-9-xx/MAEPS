@@ -435,7 +435,7 @@ namespace Maes.Map
         /// </summary>
         public PathStep[]? GetTnfPathAsPathSteps(Vector2Int target)
         {
-            var path = GetPath(target, beOptimistic: false);
+            var path = GetPath(target, beOptimistic: true);
             //string paths = string.Join(", ", path.Select(step => $"({step.x}, {step.y})"));
             //UnityEngine.Debug.LogWarning($"GetTnfPathAsPathSteps found path: {paths}");
             return path == null

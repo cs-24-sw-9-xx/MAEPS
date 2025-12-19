@@ -31,6 +31,156 @@ using Maes.Utilities;
 
 using UnityEngine;
 
+
+
+#if UNITY_EDITOR
+using System.IO;
+using UnityEditor;
+#endif
+
+public static class DebugScreenshotHelper
+{
+    private static bool doDebug = true;
+
+#if UNITY_EDITOR
+    private static void DrawPngLine(Texture2D myTexture, UnityEngine.Vector3 a1, UnityEngine.Vector3 a2, Color color = new Color())
+    {
+        UnityEngine.Vector3 b1 = Camera.main.WorldToViewportPoint(a1);
+        UnityEngine.Vector3 b2 = Camera.main.WorldToViewportPoint(a2);
+        float x1 = b1.x * myTexture.width;
+        float y1 = b1.y * myTexture.height;
+        float x2 = b2.x * myTexture.width;
+        float y2 = b2.y * myTexture.height;
+        float dy = y2 - y1;
+        float dx = x2 - x1;
+
+        if (Mathf.Abs(dy) > Mathf.Abs(dx))
+        {
+            if (y1 < y2)
+            {
+                float z = y2;
+                y2 = y1;
+                y1 = z;
+                z = x2;
+                x2 = x1;
+                x1 = z;
+            }
+            for (float y = y2; y < y1; y++)
+            {
+                float x = x2 + (y - y2) * (x1 - x2) / (y1 - y2);
+                myTexture.SetPixel((int)(x), (int)(y), color);
+            }
+        }
+        else
+        {
+            if (x1 < x2)
+            {
+                float z = y2;
+                y2 = y1;
+                y1 = z;
+                z = x2;
+                x2 = x1;
+                x1 = z;
+            }
+            for (float x = x2; x < x1; x++)
+            {
+                float y = y2 + (x - x2) * (y1 - y2) / (x1 - x2);
+                myTexture.SetPixel((int)(x), (int)(y), color);
+            }
+        }
+    }
+#endif
+
+    public static void CaptureAndDump(string filename,
+                            string? message = null,
+                            List<UnityEngine.Vector3>? from = null,
+                            List<UnityEngine.Vector3>? to = null,
+                            List<Color>? colors = null)
+    {
+#if UNITY_EDITOR
+        if (!doDebug) return;
+
+        if (message != null && filename != null)
+        {
+            // Save file
+            string dir = Path.Combine(Application.persistentDataPath, "debug");
+            Directory.CreateDirectory(dir);
+            string messagepath = Path.Combine(dir, filename + ".txt");
+            File.WriteAllText(messagepath, message);
+        }
+
+        if (from != null)
+        {
+            try
+            {
+                for (int i = 0; i < from.Count; i++)
+                {
+                    var a = from[i];
+                    var b = to[i];
+                    var c = colors[i];
+                    Debug.DrawLine(a, b, c, 3, false);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[DebugScreenshotHelper] Failed: {ex}");
+            }
+        }
+
+        if (from != null && filename != null)
+            {
+                try
+                {
+                    Camera cam = Camera.main;
+                    if (cam == null)
+                    {
+                        Debug.LogError("[DebugScreenshotHelper] No main camera found!");
+                        return;
+                    }
+
+                    // Create a temporary RT
+                    RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 24);
+                    cam.targetTexture = rt;
+                    cam.Render(); // force immediate render
+
+                    // Read from the RT
+                    RenderTexture.active = rt;
+                    Texture2D tex = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+                    tex.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+                    for (int i = 0; i < from.Count; i++)
+                    {
+                        var a = from[i];
+                        var b = to[i];
+                        var c = colors[i];
+                        DrawPngLine(tex, a, b, c);
+                    }
+                    tex.Apply();
+
+                    // Save file
+                    string dir = Path.Combine(Application.persistentDataPath, "debug");
+                    Directory.CreateDirectory(dir);
+                    string imagepath = Path.Combine(dir, filename + ".png");
+                    File.WriteAllBytes(imagepath, tex.EncodeToPNG());
+
+                    // Cleanup
+                    cam.targetTexture = null;
+                    RenderTexture.active = null;
+                    Object.Destroy(rt);
+                    Object.Destroy(tex);
+
+                    // Pause editor
+                    //Debug.Break();
+                }
+                catch (System.Exception ex)
+                {
+                    Debug.LogError($"[DebugScreenshotHelper] Failed: {ex}");
+                }
+            }
+#endif
+    }
+}
+
+
 namespace Maes.Algorithms.Exploration.TheNextFrontier
 {
     public class TnfExplorationAlgorithm : IExplorationAlgorithm
@@ -67,7 +217,6 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         // Set by SetController
         private IRobotController _robotController = null!;
-
         // Set by SetController
         private CoarseGrainedMap _map = null!;
 
@@ -77,8 +226,8 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
 
         private List<Frontier>? _frontiers;
 
-        private Vector2 _robotPos;
-        private Vector2Int _robotPosInt;
+        private Vector2 _robotPos = new Vector2(0, 0);
+        private Vector2Int _robotPosInt = new Vector2Int(0, 0);
         private int _robotId = -1;
         private LinkedList<PathStep>? _path;
         private PathStep? _nextTileInPath;
@@ -92,6 +241,7 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
         private bool _isCommunicating;
         private int _ticksSpentColliding;
         private readonly List<(int, Vector2)> _currentDestinations = new();
+        private const float _weightInfo = 1f, _weightDistance = 1f, _weightCoordination = 1f, _weightFrontier = 0f;
 
 
         private class Frontier
@@ -182,9 +332,27 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             return sum;
         }
 
+        private float FrontierCoordinationFactor(Frontier frontier)
+        {
+            if (_currentDestinations.Count <= 0)
+            {
+                return 0;
+            }
+            var sum = 0f;
+
+            foreach (var destination in _currentDestinations)
+            {
+                var destinationCoordinates = destination.Item2;
+                var normalizerConstant = _frontiers!.Max(f => f.Cells.Select(c => Vector2.Distance(destinationCoordinates, c.Item1)).Max());
+                sum += WavefrontNormalized(frontier, destinationCoordinates, normalizerConstant);
+            }
+            _currentDestinations.Clear();
+            return sum;
+        }
+
         private float UtilityFunction(Frontier frontier, float normalizerConstant)
         {
-            return InformationFactor(frontier) + DistanceFactor(frontier, _robotPos, normalizerConstant) - CoordinationFactor(frontier);
+            return _weightInfo * InformationFactor(frontier) + _weightDistance * DistanceFactor(frontier, _robotPos, normalizerConstant) - _weightCoordination * CoordinationFactor(frontier) - _weightFrontier * FrontierCoordinationFactor(frontier);
         }
 
         public IEnumerable<WaitForCondition> PreUpdateLogic()
@@ -362,11 +530,11 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             {
                 _robotTnfStatus = TnfStatus.AwaitNextFrontier;
             }
-
         }
 
         private Frontier? CalculateNextFrontier(Vector2 currentPosition)
         {
+            string message = currentPosition.ToString() + "\n";
             _frontiers = GetFrontiers();
 
             if (_frontiers.Count <= 0)
@@ -377,68 +545,101 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
             foreach (var frontier in _frontiers)
             {
                 frontier.UtilityValue = UtilityFunction(frontier, normalizerConstant);
+                message += $"Frontier: {string.Join(", ", frontier.Cells.Select(c => $"({c.Item1.x}, {c.Item1.y})"))} Utility: {frontier.UtilityValue}\n";
+                message += $"\t+_weightInfo {_weightInfo} InformationFactor(frontier) {InformationFactor(frontier)}\n";
+                message += $"\t+_weightDistance {_weightDistance} * DistanceFactor(frontier, _robotPos, normalizerConstant) {DistanceFactor(frontier, _robotPos, normalizerConstant)}\n";
+                message += $"\t-_weightCoordination {_weightCoordination} * CoordinationFactor(frontier) {CoordinationFactor(frontier)}\n";
+                message += $"\t-_weightFrontier {_weightFrontier} * FrontierCoordinationFactor(frontier) {FrontierCoordinationFactor(frontier)}\n";
             }
+            DebugScreenshotHelper.CaptureAndDump("frontiers"+count.ToString(), message);
 
             return _frontiers.OrderByDescending(f => f.UtilityValue).First();
-
         }
 
+        private int count = 0;
         private void MoveToFrontier(Frontier bestFrontier)
         {
             var targetCell = GetFrontierMoveTarget(bestFrontier);
+            List<UnityEngine.Vector3> lineFrom = new List<UnityEngine.Vector3>();
+            List<UnityEngine.Vector3> lineTo = new List<UnityEngine.Vector3>();
+            List<Color> lineColors = new List<Color>();
+            string message = "";
+
 
             var path = _map.GetTnfPathAsPathSteps(targetCell);
             if (path == null)
             {
                 Debug.LogWarning($"No path found at time {_logicTicks} seconds to target cell {targetCell} from robot position {_robotPosInt}.");
-                /*
-				var robot = _map.TileToWorld(_map.GetCurrentPosition());
+                message += $"No path found at time {_logicTicks} seconds to target cell {targetCell} from robot position {_robotPosInt}.\n";
+
+                lineFrom.Add(_map.TileToWorld(targetCell));
+                lineTo.Add(_map.TileToWorld(_robotPosInt));
+                lineColors.Add(Color.yellow);
+                var robot = _map.TileToWorld(_map.GetCurrentPosition());
+                var point2 = _map.TileToWorld(targetCell);
                 foreach (var cell in bestFrontier.Cells) {
-                        var point1 = _map.TileToWorld(cell.Item1);
-                        Debug.DrawLine(robot, point1, Color.blue, 3);
+                    var point1 = _map.TileToWorld(cell.Item1);
+                    lineFrom.Add(robot);
+                    lineTo.Add(point1);
+                    lineColors.Add(Color.blue);
+                    lineFrom.Add(point2);
+                    lineTo.Add(point1);
+                    lineColors.Add(Color.pink);
                 }
-				var point2 = _map.TileToWorld(targetCell);
-				Debug.DrawLine(robot, point2, Color.white, 3);
-                */
+                lineFrom.Add(robot);
+                lineTo.Add(point2);
+                lineColors.Add(Color.white);
 
                 _frontiers!.Remove(bestFrontier);
                 if (!_frontiers.Any())
                 {
                     _robotTnfStatus = TnfStatus.OutOfFrontiers;
+                    DebugScreenshotHelper.CaptureAndDump("dump"+count.ToString(), message, lineFrom, lineTo, lineColors);
+                    count++;
                     return;
                 }
                 var newFrontier = _frontiers.OrderByDescending(f => f.UtilityValue).First();
                 MoveToFrontier(newFrontier);
+                DebugScreenshotHelper.CaptureAndDump("dump"+count.ToString(), message, lineFrom, lineTo, lineColors);
+                count++;
                 return;
             }
-			/*
+
+            var frontierCells = string.Join(", ", bestFrontier.Cells.Select(c => $"({c.Item1.x}, {c.Item1.y})"));
             var paths = string.Join(", ", path.Select(step => $"({step.Start.x}, {step.Start.y}) -> ({step.End.x}, {step.End.y})"));
-            Debug.Log($"Robot {_robotId} found path to target cell {targetCell}: {paths}");
+            Debug.Log($"Robot {_robotId} located in {_map.GetCurrentPosition()} or {_robotPosInt} to best frontier {frontierCells}");
+            Debug.Log($"\tfound path to target cell {targetCell}: {paths}");
+            message += $"Robot {_robotId} located in {_map.GetCurrentPosition()} or {_robotPosInt} to best frontier {frontierCells}\n\tfound path to target cell {targetCell}: {paths}\n";
             foreach (var step in path)
             {
                 var start = _map.TileToWorld(step.Start);
                 var end = _map.TileToWorld(step.End);
-                Debug.DrawLine(start, end, Color.pink, 3);
+                lineFrom.Add(start);
+                lineTo.Add(end);
+                lineColors.Add(Color.pink);
             }
-			*/
 
             _path = new LinkedList<PathStep>(path);
             if (!_path.Any())
             {
                 _robotTnfStatus = TnfStatus.AwaitNextFrontier;
+                DebugScreenshotHelper.CaptureAndDump("dump"+count.ToString(), message, lineFrom, lineTo, lineColors);
+                count++;
                 return;
             }
             _robotTnfStatus = TnfStatus.AwaitMoving;
             var nextStep = _path.First;
             _path.Remove(nextStep);
             _nextTileInPath = nextStep.Value;
-/*
-            Debug.LogWarning($"going now from {robot} to {_nextTileInPath.Value.End}");
-
+            Debug.LogWarning($"going now from {_nextTileInPath.Value.Start} to {_nextTileInPath.Value.End}");
+            message += $"going now from {_nextTileInPath.Value.Start} to {_nextTileInPath.Value.End}\n";
             var start2 = _map.TileToWorld(_nextTileInPath.Value.Start);
             var end2 = _map.TileToWorld(_nextTileInPath.Value.End);
-            Debug.DrawLine(start2, end2, Color.orange, 3);
-*/
+            lineFrom.Add(start2);
+            lineTo.Add(end2);
+            lineColors.Add(Color.orange);
+            DebugScreenshotHelper.CaptureAndDump("dump"+count.ToString(), message, lineFrom, lineTo, lineColors);
+            count++;
             StartMoving();
         }
 
@@ -452,7 +653,8 @@ namespace Maes.Algorithms.Exploration.TheNextFrontier
                 (frontier.Cells[first].Item1.x + frontier.Cells[middle].Item1.x + frontier.Cells[last].Item1.x) / 3,
                 (frontier.Cells[first].Item1.y + frontier.Cells[middle].Item1.y + frontier.Cells[last].Item1.y) / 3
             );
-            return _map.GetTileCenterRelativePosition(dest).Distance < MinimumMoveDistance ? frontier.Cells[middle].Item1 : dest;
+            // michele changed this buggy behavior: return _map.GetTileCenterRelativePosition(dest).Distance < MinimumMoveDistance ? frontier.Cells[middle].Item1 : dest;
+            return frontier.Cells[middle].Item1;
         }
 
         private void DoMovement(LinkedList<PathStep>? path)

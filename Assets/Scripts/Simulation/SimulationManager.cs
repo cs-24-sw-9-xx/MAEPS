@@ -176,9 +176,11 @@ namespace Maes.Simulation
 
             var simulatedTimeSpan = TimeSpan.FromSeconds(CurrentSimulation.SimulateTimeSeconds);
             var output = simulatedTimeSpan.ToString(@"hh\:mm\:ss");
-            _physicsTicksValueLabel.text = CurrentSimulation.SimulatedPhysicsTicks.ToString();
-            _logicTicksValueLabel.text = CurrentSimulation.SimulatedLogicTicks.ToString();
-            _simulatedTimeValueLabel.text = output;
+            if (_physicsTicksValueLabel is not null && _logicTicksValueLabel is not null && _simulatedTimeValueLabel is not null) {
+                _physicsTicksValueLabel.text = CurrentSimulation.SimulatedPhysicsTicks.ToString();
+                _logicTicksValueLabel.text = CurrentSimulation.SimulatedLogicTicks.ToString();
+                _simulatedTimeValueLabel.text = output;
+            }
         }
 #endif
 

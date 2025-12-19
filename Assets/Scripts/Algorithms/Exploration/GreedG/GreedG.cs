@@ -585,7 +585,8 @@ namespace Maes.Algorithms.Exploration.GreedG
                 switch (_currentState)
                 {
                     case AlgorithmState.Idle:
-                        _controller.StartMoving();
+                        if (_controller.Status == Robot.Tasks.RobotStatus.Idle)
+                            _controller.StartMoving();
                         _currentState = AlgorithmState.ExploreRoom;
                         break;
                     case AlgorithmState.ExploreRoom:

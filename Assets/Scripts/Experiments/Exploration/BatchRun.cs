@@ -146,8 +146,7 @@ namespace Maes.Experiments.Exploration
             var algorithms = new Dictionary<string, RobotSpawner.CreateAlgorithmDelegate>
                 {
                     // BrickAndMortar commentato
-                    { "tnf", seed => new TnfExplorationAlgorithm(1, 10, seed) },
-                    { "fftnf", seed => new FfTnfExplorationAlgorithm(1, 10, seed) },
+                    { "tnf", seed => new TnfExplorationAlgorithm(4, 9, seed) },
                     { "minotaur", seed => new MinotaurAlgorithm(constraints, 2) },
                     { "greed", seed => new GreedAlgorithm() },
                     { "ballistic", seed => new RandomExplorationAlgorithm(seed) },
@@ -181,7 +180,7 @@ Parameters:
     --communication [Global,Material,LOS,None]
     --seed INT
     --mapsNumber INT
-    --algorithm [tnf,fftnf,minotaur,greed,ballistic,spiral,voronoi]
+    --algorithm [tnf,minotaur,greed,ballistic,spiral,voronoi]
     --robotsNumber INT
     --mapType [cave,building]
     --mapSize INT
@@ -282,15 +281,17 @@ Parameters:
                     if (
                         //(args[i] != "bricknmortar") &&
                         (args[i + 1] != "tnf") &&
-                        (args[i + 1] != "fftnf") &&
                         (args[i + 1] != "minotaur") &&
                         (args[i + 1] != "greed") &&
                         (args[i + 1] != "ballistic") &&
                         (args[i + 1] != "spiral") &&
                         (args[i + 1] != "voronoi") &&
-                        (args[i + 1] != "greedG_EuclidPath") &&
+                        (args[i + 1] != "greedG_simple") &&
                         (args[i + 1] != "greedG_util") &&
-                        (args[i + 1] != "greedG_simple")
+                        (args[i + 1] != "greedG_EuclidSimple") &&
+                        (args[i + 1] != "greedG_EuclidPath") &&
+                        (args[i + 1] != "greedG_ManhattanSimple") &&
+                        (args[i + 1] != "greedG_ManhattanPath")
                     )
                     {
                         PrintUsage();
@@ -479,19 +480,25 @@ Parameters:
             config.seed = 123456; // this is fixed
             config.mapsNumber = 100; // this is fixed
 
-
             //config.algorithm = "greedG_EuclidPath";
 //            string[] algos = { "greedG_EuclidPath", "greedG_util", "minotaur", "tnf", "greed" };
-            string[] algos = { "tnf" };
+            string[] algos = { "greedG_ManhattanSimple", "greedG_ManhattanPath" };
+            // ok: "tnf"  "minotaur" "greed" "ballistic" "greedG_simple" 
+            // ok: "greedG_util" "greedG_EuclidSimple" "greedG_EuclidPath"
+            // ok: "greedG_ManhattanSimple" "greedG_ManhattanPath"
+            // not working: "spiral" "bricknmortar" "voronoi" 
+            //int[] robotsNumbers = { 1 };
+            int[] robotsNumbers = { 16 };
+
+
             config.communication = "Material"; // this is fixed
             config.mapType = "building";
             //config.mapType = "cave";
             //config.mapSize = 150;
             //int[] mapSizes = { 50, 150 };
-            int[] mapSizes = { 150 };
+            int[] mapSizes = { 50 };
             //config.robotsNumber = 16;
             //int[] robotsNumbers = { 2, 16 };
-            int[] robotsNumbers = { 16 };
             var together = false; // this is fixed
 
             var random_master = new System.Random(config.seed);
@@ -517,7 +524,23 @@ Parameters:
                             var statisticsFileName = $"{config.algorithm}-{config.mapSize}-{config.mapType}-{config.communication}-{config.robotsNumber}-{together_string}-seedMap-{rand_seeds[2 * map_number]}-seedAlgo-{rand_seeds[2 * map_number + 1]}";
 
                             LogString(DateTime.Now.ToString("h:mm:ss tt") + ": experiment " + map_number + ": " + statisticsFileName);
-                            if (0 >= Directory.GetFiles(Path.GetFullPath("./" + GlobalSettings.StatisticsOutPutPath+"/"+statisticsFileName), statisticsFileName + "*.csv").Length)
+                            bool fileFound = false;
+                            try
+                            {
+                                if (0 < Directory.GetFiles(Path.GetFullPath("./" + GlobalSettings.StatisticsOutPutPath + "/" + statisticsFileName), statisticsFileName + "*.csv").Length)
+                                {
+                                    fileFound = true;
+                                }
+                            }
+                            catch (DirectoryNotFoundException dirEx)
+                            {
+                                fileFound = false;
+                            }
+                            if (fileFound)
+                            {
+                                LogString("EXISTS: file " + statisticsFileName);
+                            }
+                            else
                             {
                                 scenarios.Add(CreateSimulationScenario(
                                     config,
@@ -528,16 +551,12 @@ Parameters:
                                     statisticsFileName,
                                     2520)); // number of seconds
                             }
-                            else
-                            {
-                                LogString("EXISTS: file " + statisticsFileName);
-                            }
                         }
                     }
                 }
             }
                 //Just code to make sure the last experiment does not get lost
-                var dumpMap = new BuildingMapConfig(-1, widthInTiles: 50, heightInTiles: 50);
+                var dumpMap = new BuildingMapConfig(-1, widthInTiles: 20, heightInTiles: 20);
 
                 scenarios.Add(new MySimulationScenario(seed: 123,
                     mapSpawner: generator => generator.GenerateMap(dumpMap),
