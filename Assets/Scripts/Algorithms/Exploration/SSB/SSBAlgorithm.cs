@@ -327,10 +327,20 @@ namespace Maes.Algorithms.Exploration.SSB
                 // (This can happen when all sub tiles tiles are revealed)
                 // The first one (current tile of the robot) is skipped as the robot may be standing on a partly solid
                 // tile, either because it spawned there or because it was pushed there by other robots 
-                if (_nextBackTrackStep.Value.CrossedTiles.Skip(1).Any(t => _map.GetTileStatus(t, true) == SlamMap.SlamTileStatus.Solid))
+                try
                 {
+                    if (_nextBackTrackStep.Value.CrossedTiles.Skip(1).Any(t => _map.GetTileStatus(t, true) == SlamMap.SlamTileStatus.Solid))
+                    {
+                        _nextBackTrackStep = null;
+                        _backtrackingPath = null;
+                    }
+                } catch (System.ArgumentNullException ane)
+                {
+                    // If the next backtracking step is null, then we have reached the end of the path
                     _nextBackTrackStep = null;
                     _backtrackingPath = null;
+                    PerformSpiraling();
+                    return;
                 }
 
                 return;
@@ -524,7 +534,7 @@ namespace Maes.Algorithms.Exploration.SSB
 
         private void MarkTileExplored(Vector2Int exploredTile)
         {
-            //_map.SetTileExplored(exploredTile, true);
+            _map.SetTileExplored(exploredTile, true);
             Debug.Assert(_map.IsTileExplored(exploredTile));
             // Remove this from possible back tracking candidates, if present
             _backTrackingPoints.Remove(exploredTile);

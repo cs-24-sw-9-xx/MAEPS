@@ -61,17 +61,25 @@ namespace Maes.UI.SimulationInfoUIControllers
             _selectedRobotStickyCameraButton = modeSpecificUiDocument.rootVisualElement.Q<Button>("SelectedRobotStickyCameraButton");
 
             SelectVisualizationButton(_allRobotsExplorationButton);
-
             // Set listeners for all map visualization buttons
-            _allRobotsExplorationButton.RegisterCallback<ClickEvent>(AllRobotsExplorationButtonClicked);
-            _allRobotsCoverageButton.RegisterCallback<ClickEvent>(AllRobotsCoverageButtonClicked);
-            _allRobotsExplorationHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsExplorationHeatMapButtonClicked);
-            _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
-            _allRobotsVisualizeTagsButton.RegisterCallback<ClickEvent>(AllRobotsVisualizeTagsButtonClicked);
+            if ( _allRobotsExplorationButton is not null)
+                _allRobotsExplorationButton.RegisterCallback<ClickEvent>(AllRobotsExplorationButtonClicked);
+            if ( _allRobotsCoverageButton is not null)
+                _allRobotsCoverageButton.RegisterCallback<ClickEvent>(AllRobotsCoverageButtonClicked);
+            if ( _allRobotsExplorationHeatMapButton is not null)
+                _allRobotsExplorationHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsExplorationHeatMapButtonClicked);
+            if ( _allRobotsCoverageHeatMapButton is not null)
+                _allRobotsCoverageHeatMapButton.RegisterCallback<ClickEvent>(AllRobotsCoverageHeatMapButtonClicked);
+            if ( _allRobotsVisualizeTagsButton is not null)
+                _allRobotsVisualizeTagsButton.RegisterCallback<ClickEvent>(AllRobotsVisualizeTagsButtonClicked);
 
+if ( _selectedRobotCurrentlyVisibleButton is not null)
             _selectedRobotCurrentlyVisibleButton.RegisterCallback<ClickEvent>(SelectedRobotCurrentlyVisibleButtonClicked);
+if ( _selectedRobotSlamMapButton is not null)
             _selectedRobotSlamMapButton.RegisterCallback<ClickEvent>(SelectedRobotSlamMapButtonClicked);
+if ( _selectedRobotVisualizeTagsButton is not null)
             _selectedRobotVisualizeTagsButton.RegisterCallback<ClickEvent>(SelectedRobotVisualizeTagsButtonClicked);
+            
         }
 
         private void SelectedRobotVisualizeTagsButtonClicked(ClickEvent _)
@@ -151,12 +159,15 @@ namespace Maes.UI.SimulationInfoUIControllers
             SetExplorationProgress(explorationSimulation.ExplorationTracker.ExploredProportion);
             SetCoverageProgress(explorationSimulation.ExplorationTracker.CoverageProportion);
 
-            _explorationRateValueLabel.text = (explorationSimulation.ExplorationTracker.ExploredTriangles /
-                                          explorationSimulation.SimulateTimeSeconds).ToString("#.0");
+            if (_explorationRateValueLabel is not null && _coverageRateValueLabel is not null)
+            {
+                _explorationRateValueLabel.text = (explorationSimulation.ExplorationTracker.ExploredTriangles /
+                                              explorationSimulation.SimulateTimeSeconds).ToString("#.0");
 
-            // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
-            _coverageRateValueLabel.text = (explorationSimulation.ExplorationTracker.CoveredMiniTiles * 2 /
-                                            explorationSimulation.SimulateTimeSeconds).ToString("#.0");
+                // Covered tiles multiplied by two to convert from mini-tiles to triangles/cells ^
+                _coverageRateValueLabel.text = (explorationSimulation.ExplorationTracker.CoveredMiniTiles * 2 /
+                                                explorationSimulation.SimulateTimeSeconds).ToString("#.0");
+            }
         }
 
         public void Update()
