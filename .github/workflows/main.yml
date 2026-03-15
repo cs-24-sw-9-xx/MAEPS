@@ -15,7 +15,7 @@ jobs:
     name: Run all tests ✨
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/cache@v4
         with:
@@ -74,7 +74,7 @@ jobs:
     name: Run Player tests ✨
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/cache@v4
         with:
@@ -136,7 +136,7 @@ jobs:
           - { machine: windows-latest, platform: StandaloneWindows64 }
           # - { machine: macos-latest, platform: StandaloneOSX } # Macos has licensing issues for some reason
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/cache@v4
         with:
@@ -198,7 +198,7 @@ jobs:
     name: Build for Linux Server
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - uses: actions/cache@v4
         with:
@@ -260,7 +260,7 @@ jobs:
     runs-on: ubuntu-latest
     container: unityci/editor:ubuntu-6000.0.37f1-linux-il2cpp-3
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -296,7 +296,7 @@ jobs:
     name: Build MAEPS Data Processor
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
