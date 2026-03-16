@@ -51,6 +51,7 @@ namespace Maes.Experiments.Patrolling.GroupB
             { nameof(GlobalRedistributionWithCRAlgo), GlobalRobotConstraints },
             { nameof(AdaptiveRedistributionCRAlgo), MaterialRobotConstraints },
             { nameof(RandomRedistributionWithCRAlgo), MaterialRobotConstraints },
+            { nameof(PartitionSizeRedistribution), MaterialRobotConstraints },
         };
 
         // We both make building and cave maps, so 100 scenarios in total
@@ -88,6 +89,8 @@ namespace Maes.Experiments.Patrolling.GroupB
             {nameof(RandomRedistributionWithCRAlgo), (seed) => new RandomRedistributionWithCRAlgo(seed, 2)},
 
             { nameof(AdaptiveRedistributionCRAlgo), (_) => new AdaptiveRedistributionCRAlgo()},
+
+            { nameof(PartitionSizeRedistribution), (s) => new PartitionSizeRedistribution(s)},
         };
 
         public static readonly Dictionary<string, CreateAlgorithmDelegate> PartitionedAlgorithms = new()
@@ -101,11 +104,11 @@ namespace Maes.Experiments.Patrolling.GroupB
         {
             [2400] = new() //2.4 GHz
             {
-                [TileType.Room] = 0.25f,
-                [TileType.Hall] = 0.25f,
-                [TileType.Wall] = 0.25f,
-                [TileType.Concrete] = 15f,
-                [TileType.Wood] = 6.7f,
+                [TileType.Room] = 0.0f,
+                [TileType.Hall] = 0.0f,
+                [TileType.Wall] = 0.0f,
+                [TileType.Concrete] = 5.5f,
+                [TileType.Wood] = 5.5f,
                 [TileType.Brick] = 5.5f
             }
         };

@@ -36,21 +36,29 @@ namespace Maes.Experiments.Patrolling.GroupB
     {
         private void Start()
         {
+            var RobotCounts = new List<int>() { 32, 64 };
+            var partitionCounts = new List<int>() { 2, 4, 8 };
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, 50))
             {
                 foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                 {
-                    scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
-                        seed,
-                        algorithm.Key,
-                        algorithm.Value,
-                        GroupBParameters.StandardRobotCount,
-                        GroupBParameters.StandardMapSize,
-                        GroupBParameters.StandardAmountOfCycles,
-                        GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
-                        GroupBParameters.StandardPartitionCount,
-                        GroupBParameters.FaultInjection()));
+                    foreach (var robotCount in RobotCounts)
+                    {
+                        foreach (var partitionCount in partitionCounts)
+                        {
+                            scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                                seed,
+                                algorithm.Key,
+                                algorithm.Value,
+                                robotCount,
+                                GroupBParameters.StandardMapSize,
+                                GroupBParameters.StandardAmountOfCycles,
+                                GroupBParameters.RobotConstraintsDictionary[algorithm.Key],
+                                partitionCount,
+                                GroupBParameters.FaultInjection()));
+                        }
+                    }
                 }
             }
 

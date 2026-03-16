@@ -32,7 +32,7 @@ namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class CaveDataVaryingRobotCountExperiment : MonoBehaviour
+    internal class BuildingRobotCountExperiment : MonoBehaviour
     {
         private void Start()
         {
@@ -43,7 +43,7 @@ namespace Maes.Experiments.Patrolling.GroupB
                 {
                     foreach (var algorithm in GroupBParameters.AllPartitionedAlgorithms)
                     {
-                        scenarios.Add(ScenarioUtil.CreateCaveMapScenario(
+                        scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
                             seed,
                             algorithm.Key,
                             algorithm.Value,

@@ -37,7 +37,7 @@ internal static class Program
             Directory.SetCurrentDirectory(experimentsFolderPath);
         }
 
-        ProcessExperimentDirectories(experimentsFolderPath, groupBy);
+        ProcessSingleExperiment(experimentsFolderPath, groupBy);
     }
 
     private static void ProcessExperimentDirectories(string experimentsFolderPath, string groupBy)

@@ -20,6 +20,8 @@
 // Christian Ziegler Sejersen,
 // Jakob Meyer Olsen
 
+using System.Linq;
+
 using Maes.Algorithms.Patrolling.Components;
 using Maes.Algorithms.Patrolling.Components.Redistribution;
 using Maes.Map;
@@ -51,14 +53,14 @@ namespace Maes.Algorithms.Patrolling.PartitionedRedistribution
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
-            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, this, seed: _seed, probabilityFactor: _probabilityFactor);
+            _redistributionComponent = new RandomRedistributionComponent(controller, patrollingMap.Vertices, this, seed: _seed, patrollingMap, probabilityFactor: _probabilityFactor);
 
             return new IComponent[] { _goToNextVertexComponent, _redistributionComponent, _collisionRecoveryComponent };
         }
 
-        private static Vertex NextVertex(Vertex currentVertex)
+        private Vertex NextVertex(Vertex currentVertex)
         {
-            return ConscientiousReactiveLogic.NextVertex(currentVertex);
+            return ConscientiousReactiveLogic.NextVertex(currentVertex, currentVertex.Neighbors.Where(v => v.Partition == Controller.AssignedPartition).ToList());
         }
     }
 }

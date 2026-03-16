@@ -23,45 +23,35 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Maes.Algorithms.Patrolling;
+using Maes.Algorithms.Patrolling.PartitionedRedistribution;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
 
 using UnityEngine;
+using UnityEngine.Scripting;
 
 namespace Maes.Experiments.Patrolling.GroupB
 {
     using MySimulator = PatrollingSimulator;
 
-    internal class InternalAlgorithmsExperiment : MonoBehaviour
+    [Preserve]
+    internal class PartitionSizeRedistributionExperiment : MonoBehaviour
     {
-        private static readonly List<int> PartitionCount = new() { 1, 2, 4, 8 };
-        private static readonly List<string> AlgorithmName = new() { nameof(ConscientiousReactiveAlgorithm), nameof(RandomReactive) };
-
         private void Start()
         {
             var scenarios = new List<PatrollingSimulationScenario>();
             foreach (var seed in Enumerable.Range(0, GroupBParameters.StandardSeedCount))
             {
-                foreach (var algName in AlgorithmName)
-                {
-                    foreach (var count in PartitionCount)
-                    {
-
-                        scenarios.AddRange(ScenarioUtil.CreateScenarios(
-                            seed,
-                            algName,
-                            GroupBParameters.Algorithms[algName],
-                            GroupBParameters.StandardRobotCount,
-                            GroupBParameters.StandardMapSize,
-                            GroupBParameters.StandardAmountOfCycles,
-                            GroupBParameters.GlobalRobotConstraints,
-                            count,
-                            GroupBParameters.FaultInjection(seed,
-                                robotCount: 1))); // robotCount = 1 for no fault injection
-
-                    }
-                }
+                scenarios.Add(ScenarioUtil.CreateBuildingMapScenario(
+                    seed,
+                    nameof(PartitionSizeRedistribution),
+                    GroupBParameters.AllPartitionedAlgorithms[nameof(PartitionSizeRedistribution)],
+                    GroupBParameters.StandardRobotCount,
+                    GroupBParameters.StandardMapSize,
+                    GroupBParameters.StandardAmountOfCycles,
+                    GroupBParameters.MaterialRobotConstraints,
+                    GroupBParameters.StandardPartitionCount,
+                    GroupBParameters.FaultInjection()));
             }
 
             Debug.Log($"Total scenarios scheduled: {scenarios.Count}");
