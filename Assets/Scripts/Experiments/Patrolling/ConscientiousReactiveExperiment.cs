@@ -63,18 +63,19 @@ namespace Maes.Experiments.Patrolling
                 relativeMoveSpeed: 1f,
                 agentRelativeSize: 0.6f,
                 calculateSignalTransmissionProbability: (_, distanceThroughWalls) => distanceThroughWalls <= 3,
-                materialCommunication: true);
+                materialCommunication: true
+                );
 
             var mapSize = 100;
             var mapConfig = new BuildingMapConfig(123, widthInTiles: mapSize, heightInTiles: mapSize, brokenCollisionMap: false);
             var algoName = "conscientious_reactive";
-            const int robotCount = 1;
+            const int robotCount = 4;
 
             var scenarios = new MySimulationScenario[]
             {
                 new(
                     seed: 123,
-                    totalCycles: 4,
+                    totalCycles: 100,
                     stopAfterDiff: false,
                     robotSpawner: (buildingConfig, spawner) => spawner.SpawnRobotsApart(
                         collisionMap: buildingConfig,
@@ -83,8 +84,8 @@ namespace Maes.Experiments.Patrolling
                         createAlgorithmDelegate: (_) => new ConscientiousReactiveAlgorithm()),
                     mapSpawner: generator => generator.GenerateMap(mapConfig),
                     robotConstraints: robotConstraints,
-                    statisticsFileName:
-                    $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-Material-robots-{robotCount}-SpawnTogether"),
+                    maxLogicTicks: 100 * MySimulationScenario.DefaultMaxLogicTicks,
+                    statisticsFileName: $"{algoName}-seed-{mapConfig.RandomSeed}-size-{mapSize}-comms-Material-robots-{robotCount}-SpawnTogether"),
             };
 
             var simulator = new MySimulator(scenarios);

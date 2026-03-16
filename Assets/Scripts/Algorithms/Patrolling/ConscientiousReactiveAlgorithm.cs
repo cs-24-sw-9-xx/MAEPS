@@ -15,7 +15,7 @@ namespace Maes.Algorithms.Patrolling
 
         // Set by CreateComponents
         private GoToNextVertexComponent _goToNextVertexComponent = null!;
-        private CollisionRecoveryComponent _collisionRecoveryComponent = null!;
+        private CollisionRecoveryTradeInfoComponent _collisionRecoveryComponent = null!;
 
         public ConscientiousReactiveAlgorithm(bool useBuiltinCollisionAvoidance = false)
         {
@@ -25,11 +25,9 @@ namespace Maes.Algorithms.Patrolling
         protected override IComponent[] CreateComponents(IRobotController controller, PatrollingMap patrollingMap)
         {
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
-
-            _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap);
             if (!_useBuiltinCollisionAvoidance)
             {
-                _collisionRecoveryComponent = new CollisionRecoveryComponent(controller, _goToNextVertexComponent);
+                _collisionRecoveryComponent = new CollisionRecoveryTradeInfoComponent(controller, this, patrollingMap, _goToNextVertexComponent);
                 return new IComponent[] { _goToNextVertexComponent, _collisionRecoveryComponent };
             }
 
