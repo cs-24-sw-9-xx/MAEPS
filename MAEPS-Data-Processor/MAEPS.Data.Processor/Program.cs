@@ -4,6 +4,8 @@ using System.Globalization;
 using CsvHelper;
 using CsvHelper.Configuration;
 using MAEPS.Data.Processor.Utilities;
+
+using Maes.Statistics.Csv;
 using Maes.Statistics.Snapshots;
 using ScottPlot;
 
@@ -20,8 +22,6 @@ internal static class Program
 
     public static void Main(string[] args)
     {
-        DirectoryUtils.SetDefaultDataDirectory();
-        
         var argumentParser = new ArgumentParser();
         argumentParser.ParseArguments(args);
 
@@ -30,13 +30,7 @@ internal static class Program
         s_plotFailedRobots = argumentParser.GetArgument("--showFailed", bool.TryParse, false);
         s_plotIndividual = argumentParser.GetArgument("--plotIndividual", bool.TryParse, false);
         s_recompute = argumentParser.GetArgument("--recompute", bool.TryParse, false);
-
-
-        if (Directory.Exists(experimentsFolderPath))
-        {
-            Directory.SetCurrentDirectory(experimentsFolderPath);
-        }
-
+        
         ProcessExperimentDirectories(experimentsFolderPath, groupBy);
     }
 
@@ -114,21 +108,25 @@ internal static class Program
 
         var data = patrollingData[Path.GetFileName(algorithmDirectory)];
         
+        var worstIdleness = CalculateAverageIdleness(data, ps => ps.WorstGraphIdleness);
+        var averageIdleness = CalculateAverageIdleness(data, ps => ps.AverageGraphIdleness);
+        
         var worstIdlenessPlot = GeneratePlot(
             "Aggregated - Worst Idleness",
-            "Worst Idleness",
-            CalculateAverageIdleness(data, ps => ps.WorstGraphIdleness));
+            "Worst Idleness", worstIdleness);
         
         var averageIdlenessPlot = GeneratePlot(
             "Aggregated - Average Idleness",
             "Average Idleness",
-            CalculateAverageIdleness(data, ps => ps.AverageGraphIdleness));
+            averageIdleness);
         
         if (s_plotFailedRobots)
         {
             worstIdlenessPlot.AddDeadRobotsVerticalLines(data);
             averageIdlenessPlot.AddDeadRobotsVerticalLines(data);
         }
+        
+        
         
         SavePlot(worstIdlenessPlot, algorithmDirectory, "WorstGraphIdleness.png");
         SavePlot(averageIdlenessPlot, algorithmDirectory, "AverageGraphIdleness.png");
@@ -146,6 +144,37 @@ internal static class Program
             NumberOfRobotsStart = data.First().NumberOfRobots,
             NumberOfRobotsEnd = data.Last().NumberOfRobots
         };
+    }
+
+    struct AggregatedSnapshot : ICsvData
+    {
+        public int Tick { get; set; }
+        public double Idleness { get; set; }
+        
+        public AggregatedSnapshot(int tick, double idleness) 
+        {
+            Tick = tick;
+            Idleness = idleness;
+        }
+
+        public void WriteHeader(StreamWriter streamWriter, char delimiter)
+        {
+            streamWriter.Write(nameof(Tick));
+            streamWriter.Write(delimiter);
+            streamWriter.Write(nameof(Idleness));
+        }
+
+        public void WriteRow(StreamWriter streamWriter, char delimiter)
+        {
+            streamWriter.Write(Tick);
+            streamWriter.Write(delimiter);
+            streamWriter.Write(Idleness);
+        }
+
+        public ReadOnlySpan<string> ReadRow(ReadOnlySpan<string> columns)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     private static void GenerateIndividualPlots(string algoName, string path, List<PatrollingSnapshot> data)
@@ -204,9 +233,29 @@ internal static class Program
             var averageWorstIdlenessList = CalculateAverageIdleness(algoData, ps => ps.WorstGraphIdleness);
             var averageAvgIdlenessList = CalculateAverageIdleness(algoData, ps => ps.AverageGraphIdleness);
             
-            SaveAggregatedData(outputDirectory, algoData.ToList());
+            //SaveAggregatedData(outputDirectory, name, algoData.ToList());
             
-            worstIdlenessPlot.AddPlotLine(name, averageWorstIdlenessList);
+            using (var csv = new CsvDataWriter<AggregatedSnapshot>(Path.Combine(outputDirectory, name+ "WorstGraphIdleness.csv")))
+            {
+                for (var i = 0; i < averageWorstIdlenessList.Count; i++)
+                {
+                    csv.AddRecord(new AggregatedSnapshot(i, averageWorstIdlenessList[i]));
+                }
+                
+                csv.Finish();
+            }
+            
+            using (var csv = new CsvDataWriter<AggregatedSnapshot>(Path.Combine(outputDirectory, name+ "AverageGraphIdleness.csv")))
+            {
+                for (var i = 0; i < averageAvgIdlenessList.Count; i++)
+                {
+                    csv.AddRecord(new AggregatedSnapshot(i, averageAvgIdlenessList[i]));
+                }
+                
+                csv.Finish();
+            }
+            
+            worstIdlenessPlot.AddPlotLine(name,  averageWorstIdlenessList);
             averageIdlenessPlot.AddPlotLine(name, averageAvgIdlenessList);
         }
         
@@ -248,16 +297,15 @@ internal static class Program
         csv.WriteRecords(summaries);
     }
 
-    private static void SaveAggregatedData(string path, List<PatrollingSnapshot> data)
+    private static void SaveAggregatedData(string path, string name, List<PatrollingSnapshot> data)
     {
-        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        using var csv1 = new CsvDataWriter<PatrollingSnapshot>(Path.Combine(path, $"{name}AggregatedData.csv"));
+        foreach (var snapshot in data)
         {
-            HasHeaderRecord = true
-        };
-        
-        using var writer = new StreamWriter(Path.Combine(path, "AggregatedData.csv"));
-        using var csv = new CsvWriter(writer, config);
-        csv.WriteRecords(data);
+            csv1.AddRecord(snapshot);
+        }
+
+        csv1.Finish();
     }
     
     private static void AddPlotLine(this Plot plot, string name, List<double> data)

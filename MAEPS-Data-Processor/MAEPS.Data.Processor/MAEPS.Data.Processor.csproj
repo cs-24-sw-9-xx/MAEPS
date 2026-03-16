@@ -10,11 +10,13 @@
 
     <ItemGroup>
       <PackageReference Include="CsvHelper" Version="33.0.1" />
+      <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
       <PackageReference Include="ScottPlot" Version="5.0.55" />
     </ItemGroup>
 
     <ItemGroup>
         <Compile Include="..\..\Assets\Scripts\Statistics\Csv\ICsvData.cs" />
+        <Compile Include="..\..\Assets\Scripts\Statistics\Csv\CsvDataWriter.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Snapshots\*.cs" />
         <Compile Include="..\..\Assets\Scripts\Statistics\Writer\TypeConverter\*.cs" />
     </ItemGroup>

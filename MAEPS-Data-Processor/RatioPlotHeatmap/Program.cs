@@ -1,7 +1,7 @@
 ﻿using MAEPS.Data.Processor.Preprocessors;
 using MAEPS.Data.Processor.Utilities;
 
-using RatioPlots;
+using RatioPlotHeatmap;
 
 var argumentParser = new ArgumentParser();
 argumentParser.ParseArguments(args);
@@ -22,8 +22,7 @@ if (groupBys.Length != 2)
 
 var regenerate = argumentParser.GetArgument("--regenerate", bool.TryParse, false);
 
-var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "Ratio", regenerate: regenerate);
-var folderStructure = new Dictionary<string, IReadOnlyList<string>>();
+var dataFolder = DataPreProcessor.CopyDataFolder(experimentsFolderPath, folderName: "RatioHeatmap", regenerate: regenerate);
 var algorithmFolders = GroupingAlgorithm.GroupScenarioByAlgorithmName(dataFolder);
 foreach (var algorithmFolder in algorithmFolders)
 {
@@ -32,9 +31,6 @@ foreach (var algorithmFolder in algorithmFolders)
     {
         SummaryAlgorithmSeedsCreator.CreateSummaryFromScenarios(groupedFolderPath, regenerate: regenerate);
     }
-    folderStructure[algorithmFolder] = groupedFolderPaths;
+    var ratioPlotter = new RatioHeatmapComputer(dataFolder, groupBys, summery => summery.AverageIdleness, "averageIdleness");
+    ratioPlotter.GenerateRatioData(algorithmFolder, groupedFolderPaths);
 }
-
-var ratioPlotter = new RatioComputer(dataFolder, folderStructure, groupBys);
-ratioPlotter.GenerateRatioData();
-ratioPlotter.CreatePlots();
