@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ERAlgorithmSimplified;
 using Maes.FaultInjections.DestroyRobots;
 using Maes.Simulation.Patrolling;
 using Maes.UI;
@@ -61,13 +62,18 @@ namespace Maes.Experiments.Patrolling
 
         private void Start()
         {
+            var algorithms = new[]
+            {
+                ("HMP", GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"]),
+                ("ER", GroupAParameters.ReactiveAlgorithms[nameof(ERAlgorithmSimplified)]),
+            }; ;
             var regex = new Regex(FilterRegex, RegexOptions.Singleline | RegexOptions.CultureInvariant);
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(10))
             {
                 foreach (var mapSize in _mapSizes.OrderByDescending(x => x))
                 {
-                    foreach (var (algorithmName, lambda) in GroupAParameters.FaultTolerantAlgorithms)
+                    foreach (var (algorithmName, lambda) in algorithms)
                     {
                         foreach (var robotCount in _robotCounts)
                         {
