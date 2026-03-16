@@ -33,13 +33,14 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, bool forceTheThing, Func<int> getLogicTicks)
+        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, bool forceTheThing, Func<int> getLogicTicks, bool sendAll)
         {
             _robotId = controller.Id;
             _robotController = controller;
             _partitionGenerator = partitionGenerator;
             _forceTheThing = forceTheThing;
             _getLogicTicks = getLogicTicks;
+            _sendAll = sendAll;
         }
 
         public int PreUpdateOrder => -900;
@@ -101,6 +102,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
         private readonly PartitionGenerator _partitionGenerator;
         private readonly bool _forceTheThing;
         private readonly Func<int> _getLogicTicks;
+        private readonly bool _sendAll; // Whether to send all messages or not. Used for debugging.
 
         public PartitionInfo[] _partitions = null!;
 
@@ -171,7 +173,10 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public IEnumerable<ComponentWaitForCondition> ExchangeInformation(int meetingPointVertexId)
         {
-            _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
+            if (_sendAll)
+            {
+                _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
+            }
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
 
             var nextPossibleMeetingTime = 0;
@@ -347,9 +352,16 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             {
                 _meetingPointVertexIdToMeetingTimesStigmergyComponent.Put(meetingPointVertexId, new MeetingTimes(meetingTimes.NextNextMeetingAtTick, nextMeetingTime));
             }
-            _meetingPointVertexIdToMeetingTimesStigmergyComponent.SendAll();
 
-            _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
+            if (_sendAll)
+            {
+                _meetingPointVertexIdToMeetingTimesStigmergyComponent.SendAll();
+            }
+
+            if (_sendAll)
+            {
+                _partitionIdToRobotIdVirtualStigmergyComponent.SendAll();
+            }
 
             yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: false);
         }
