@@ -81,7 +81,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             RobotId = new StrongBox<int>(controller.Id);
             _partitionComponent = new PartitionComponent(RobotId, GeneratePartitions, _takeoverStrategy, _random);
             _goToNextVertexComponent = new GoToNextVertexComponent(NextVertex, this, controller, patrollingMap, GetInitialVertexToPatrol);
-            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent, RobotId);
+            _meetingComponent = new MeetingComponent(-200, -200, () => LogicTicks, EstimateTime, patrollingMap, Controller, _partitionComponent, ExchangeInformation, OnMissingRobotAtMeeting, _goToNextVertexComponent, RobotId, TrackInfo);
 
             return new IComponent[] { _partitionComponent, _meetingComponent, _goToNextVertexComponent };
         }

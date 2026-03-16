@@ -33,15 +33,17 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
 
         public delegate Dictionary<int, PartitionInfo> PartitionGenerator(HashSet<int> robots);
 
-        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, bool forceTheThing, Func<int> getLogicTicks)
+        public PartitionComponent(IRobotController controller, PartitionGenerator partitionGenerator, bool forceTheThing, Func<int> getLogicTicks, OnTrackInfo trackInfo)
         {
             _robotId = controller.Id;
             _robotController = controller;
             _partitionGenerator = partitionGenerator;
             _forceTheThing = forceTheThing;
             _getLogicTicks = getLogicTicks;
+            _trackInfo = trackInfo;
         }
 
+        private readonly OnTrackInfo _trackInfo;
         public int PreUpdateOrder => -900;
         public int PostUpdateOrder => -900;
 
@@ -199,6 +201,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.FaultTolerance
             var nextMeetingTime = Math.Max(meetingMessages.Select(m => m.ProposedNextNextMeetingAtTick).Append(int.MinValue).Max(), nextPossibleMeetingTime);
 
             overrideCurrentNextMeetingAtTick |= meetingMessages.Any(m => m.OverrideCurrentNextMeetingAtTick);
+
+            var robotWithLowestId = meetingMessages.Select(m => m.RobotId).Append(_robotId).Min();
+            if (robotWithLowestId == _robotId)
+            {
+                _trackInfo(new MeetingHeldTrackInfo(meetingPointVertexId));
+            }
 
             // Lets see if we actually should take over the partition
             if (_overTakingMeetingPoint == meetingPointVertexId)

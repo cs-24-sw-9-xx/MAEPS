@@ -26,7 +26,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             EstimateTimeDelegate estimateTime,
             PatrollingMap patrollingMap, IRobotController controller, PartitionComponent partitionComponent,
             ExchangeInformationAtMeetingDelegate exchangeInformation, OnMissingRobotsAtMeetingDelegate onMissingRobotsAtMeeting,
-            IMovementComponent movementComponent, StrongBox<int> robotIdClass)
+            IMovementComponent movementComponent, StrongBox<int> robotIdClass, OnTrackInfo trackInfo)
         {
             PreUpdateOrder = preUpdateOrder;
             PostUpdateOrder = postUpdateOrder;
@@ -40,6 +40,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
             _partitionComponent = partitionComponent;
             _patrollingMap = patrollingMap;
             _nextMeetingPointDecider = new NextMeetingPointDecider(getLogicTick);
+            _trackInfo = trackInfo;
         }
 
         public int PreUpdateOrder { get; }
@@ -55,6 +56,7 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
         private readonly OnMissingRobotsAtMeetingDelegate _onMissingRobotsAtMeeting;
         private readonly PartitionComponent _partitionComponent;
         private readonly PatrollingMap _patrollingMap;
+        private readonly OnTrackInfo _trackInfo;
 
         private Meeting _nextMeeting;
         private Meeting? GoingToMeeting { get; set; }
@@ -95,6 +97,12 @@ namespace Maes.Algorithms.Patrolling.HMPPatrollingAlgorithms.ImmediateTakeover
                     SenseNearbyRobots.SendRobotId(_controller, meeting, _robotIdClass);
                     yield return ComponentWaitForCondition.WaitForLogicTicks(1, shouldContinue: true);
                     senseNearByRobotIds = SenseNearbyRobots.GetRobotIds(_controller, meeting, _robotIdClass);
+                }
+
+                var robotWithLowestId = senseNearByRobotIds.Append(_robotIdClass.Value).Min();
+                if (robotWithLowestId == _robotIdClass.Value)
+                {
+                    _trackInfo(new MeetingHeldTrackInfo(meeting.Vertex.Id));
                 }
 
                 // If all other robots are at the meeting point, then exchange information
