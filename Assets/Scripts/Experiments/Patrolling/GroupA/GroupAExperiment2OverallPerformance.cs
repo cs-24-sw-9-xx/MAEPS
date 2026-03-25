@@ -52,11 +52,8 @@ namespace Maes.Experiments.Patrolling
             var scenarios = new List<MySimulationScenario>();
             foreach (var seed in GroupAParameters.SeedGenerator(100))
             {
-                foreach (var (algorithmName, lambda) in GroupAParameters.AllAlgorithms)
-                {
-                    var (patrollingMapFactory, algorithm) = lambda(GroupAParameters.StandardRobotCount);
-                    scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, algorithmName, algorithm, patrollingMapFactory));
-                }
+                var (patrollingMapFactory, algorithm) = GroupAParameters.FaultTolerantHMPVariants["FaultTolerance.NoMeetEarlyFixup.HMPPatrollingAlgorithm"](GroupAParameters.StandardRobotCount);
+                scenarios.AddRange(GroupAExperimentHelpers.CreateScenarios(seed, "HMP", algorithm, patrollingMapFactory));
             }
 
             if (scenarioFilters is not null && scenarioFilters.Any())
